@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <title>Login Page</title>
+</head>
+
+<body class="bg-black text-white flex items-center justify-between min-h-screen px-20">
+  <!-- Left: Login Form -->
+  <div class="bg-black/40 backdrop-blur-md rounded-2xl shadow-lg outline-none border border-gray-700 focus:border-[#E64249] px-10 py-10 w-[320px] gap-1">
+    <h2 class="text-3xl font-bold mb-2">Login</h2>
+    <p class="text-gray-400 mb-6">Glad you're back!</p>
+
+    <div class="space-y-4">
+      <input type="text" placeholder="Username" class="w-full p-3 bg-transparent rounded-xl outline-none border border-gray-700 focus:border-[#E64249] transition" />
+      <input type="password" placeholder="Password" class="w-full p-3 bg-transparent rounded-xl outline-none border border-gray-700 focus:border-[#E64249] transition" />
+    </div>
+
+    <div class="flex items-center mt-3">
+      <input type="checkbox" id="remember" class="mr-2 accent-[#E64249]" />
+      <label for="remember" class="text-gray-300 text-sm">Remember me</label>
+    </div>
+
+    <button class="w-full bg-gradient-to-r from-[#9E3234] via-[#D8585E] to-[#E64249] text-white py-2 rounded-md mt-4 hover:opacity-90 transition">Login</button>
+
+    <p class="text-center text-gray-400 text-sm mt-3 cursor-pointer hover:text-white">
+      Forgot password?
+    </p>
+
+    <!-- Divider -->
+    <div class="flex items-center my-6">
+      <hr class="flex-grow border-gray-700" />
+      <span class="text-gray-500 text-sm mx-3">or</span>
+      <hr class="flex-grow border-gray-700" />
+    </div>
+
+    <!-- Social Buttons -->
+    <div class="flex items-center justify-center gap-6">
+      <button class="w-9 h-9 bg-black/40 rounded-full flex items-center justify-center cursor-pointer">
+        <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" alt="Google" class="w-9 h-9" />
+      </button>
+      <button class="w-9 h-9 bg-gray-800 rounded-full flex items-center justify-center cursor-pointer">
+        <img src="https://cdn-icons-png.flaticon.com/512/25/25231.png" alt="GitHub" class="w-9 h-9 invert" />
+      </button>
+    </div>
+
+    <p class="text-center text-gray-400 text-sm mt-6">
+      Don't have an account?
+      <span class="text-[#E64249] cursor-pointer hover:underline">Sign up</span>
+    </p>
+  </div>
+
+  <!-- Right: Illustration -->
+  <div class="flex items-center justify-center">
+    <img src="images/pingpong2.jpg" alt="Athlete" class="w-[500px] object-contain" />
+  </div>
+</body>
+</html>
