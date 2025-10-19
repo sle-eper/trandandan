@@ -1,49 +1,52 @@
 import {renderNavBar} from "../components/navbar"
 import {renderSidebar} from "../components/sidebar"
+import { listOfMsg ,DM ,sendMsg,receivedMsg} from "../components/content";
+import {socket} from "../roomAndMsg";
 
-
-
+// console.log(`my socket id ${}`)
 const nav = document.getElementById('nav-bar');
-// const layout = document.getElementById('layout');
 const sidebar = document.getElementById('side-bar');
+const chatContent = document.getElementById('chat-content')
 
-// if(layout)
 if(nav) nav.innerHTML = renderNavBar();
 if(sidebar) sidebar.innerHTML = renderSidebar();
 
+if(chatContent){
+    const friends = [
+        { name: "Lana", lastMessage: "3mer lbota", time: "13:10", img: "./src/img/1_Ss70nvjqEXusREvoyutFuA.jpg" },
+        { name: "Yassine", lastMessage: "salam bro", time: "14:22", img: "./src/img/smiling-african-american-millennial-businessman-600nw-1437938108.webp" },
+        { name: "daniala", lastMessage: "wach rak", time: "15:03", img: "./src/img/360_F_382662173_NY65DAzJmdYGzWrfFcPsNLN6zAjbsdM6.jpg" },
+    ]
+    chatContent.innerHTML = listOfMsg(friends);
+    chatContent.innerHTML += DM('./src/img/smiling-african-american-millennial-businessman-600nw-1437938108.webp','hassan');
+}
+const sendButton = document.getElementById('send-button') as HTMLButtonElement;
+const chatZone = document.getElementById('chat-zone') as HTMLDivElement
+const inputMsgZone = document.getElementById('input-msg-zone') as HTMLInputElement;
 
 
+if(sendButton)
+{
+    function seft()
+    {
+        const value:string = inputMsgZone.value;
+        if(value.trim())
+            chatZone.innerHTML +=  sendMsg(value);
+        inputMsgZone.value  = "";
+    
+    }
+    sendButton.addEventListener('click',()=>{
+        seft();
+    })
+    inputMsgZone.addEventListener('keypress',(e)=>{
+        if(e.key === 'Enter')
+                seft();
+    })
+}
+socket.on('sendMsg',(msg)=>{
+})
+socket.on('msg',(msg)=>{
+    chatZone.innerHTML += receivedMsg(msg)
+    console.log("walo");
 
-
-//root of page
-// const app = document.getElementById("app");
-
-
-// // create heder tag 
-// const header = DOM.createElement("header");
-// /* ****************************************************** */
-// const nav =  DOM.createChild(header,"nav","flex" ,"flex-row", "justify-around", "items-center");
-// /* ****************************************************** */
-// const rightDiv = DOM.createChild(nav,"div","basis-15");
-// const middleDiv = DOM.createChild(nav,"div","basis-1/3", "flex" ,"items-center");
-// const liftDiv = DOM.createChild(nav,"div","basis-15");
-// /* *************************************************************************** */
-// const logo = DOM.createImg({src:'./img/canvas.png',alt:"logo",classes:["h-w-16"]});
-// rightDiv.append(logo);
-// /* *************************************************************************** */
-// const search = DOM.createInput({type:"text",placeholder:"Search",classes : ["Search","w-[400px]","h-8" ,"border-1","border-white","rounded-tl-lg","rounded-bl-lg","text-white","border-r-0","focus:outline-2", "focus:outline-offset-2", "focus:outline-[#FFB3B3]" ,"active:bg-violet-700"]});
-// middleDiv.append(search);
-
-// const searchButton = DOM.createButton({classes : ["w-[40px]" ,"h-8" ,"border-1","border-white","rounded-tr-lg","rounded-br-lg","text-white","border-l-0"]})
-
-// const searchImg = DOM.createSpan({textContent:"search",classes:["material-symbols-outlined" ,"h-6"]})
-// searchButton.append(searchImg);
-// middleDiv.append(searchButton);
-
-// /* *************************************************************************** */
-// const notificationsButton = DOM.createButton({classes : ["w-10","h-10" ,"rounded-full" ,"border-white" ,"border-1"  ,"bg-black" ,"hover:bg-[linear-gradient(to_right,#C0392B,#D8585E,#FFB3B3)]"]});
-
-// const notificationsImg = DOM.createSpan({textContent:"notifications",classes:["material-symbols-outlined" ,"color" ,"text-white"]})
-// notificationsButton.append(notificationsImg);
-// liftDiv.append(notificationsButton);
-// app?.append(header)
+})

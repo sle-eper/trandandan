@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./src/style.css">
+    <title>chat</title>
+  </head>
+  <body class="bg-gradient-to-b from-[#0E0E0E] to-[#1A1A1A]">
+    <div id="nav-bar"></div>
+    <div id="layout" class="flex flex-row  h-[calc(100vh-4rem)]" >
+      <div id="side-bar" ></div>
+      <div id="chat-content" class="flex justify-center items-center w-full gap-6 h-[93vh] gap-y-3"></div>
+    </div>
+    <script type="module" src="./ts/script.ts"></script>
+    <script type="module" src="./src/ts/roomAndMsg.ts"></script>
+  </body>
+</html>
