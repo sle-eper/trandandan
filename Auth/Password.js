@@ -28,13 +28,9 @@ function validatePassword(password, {
   if (requireDigit && !/[0-9]/.test(password)) {
     errors.push('Password must contain at least one digit.');
   }
-
-  // This regex covers common special characters. You can extend it if needed.
   if (requireSpecial && !/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~]/.test(password)) {
     errors.push('Password must contain at least one special character (e.g. !@#$%).');
   }
-
-  // Optional: disallow spaces
   if (/\s/.test(password)) {
     errors.push('Password must not contain spaces.');
   }
