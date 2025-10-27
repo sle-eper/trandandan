@@ -141,3 +141,28 @@ export async function verifyUser_get(request, reply) {
     })
     return { accessToken: token };
 }
+
+// #########################################################
+//                Remote Auth 
+// #########################################################
+
+
+export async function googleAuth_get(request, reply){   
+    // Implementation for Google Auth
+
+    console.log(request.headers);
+    return reply.code(200).send({
+        success: true,
+        message: 'Google Auth endpoint'
+    });
+}
+
+export async function githubAuth_get(request, reply){   
+    // Implementation for GitHub Auth
+
+    console.log(request.headers);
+    return reply.code(200).send({
+        success: true,
+        message: 'Github Auth endpoint'
+    });
+}

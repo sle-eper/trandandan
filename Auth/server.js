@@ -21,8 +21,13 @@ const __dirname = path.dirname(__filename);
 fastify.register(fastifyStatic, {
   root: join(__dirname, 'public'),
 });
+fastify.decorate('verifyInternal', async (request, reply) => {
+  const token = request.headers['x-internal-token'];
+  if (token !== process.env.INTERNAL_SECRET) {
+    reply.code(403).send({ error: 'Forbidden' });
+  }
+});
 await fastify.register(authRoutes, { prefix: '/auth' });
-
 const start = async () => {
     try {
         const PORT = process.env.PORT || 3000;
