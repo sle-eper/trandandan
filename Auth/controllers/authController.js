@@ -2,18 +2,22 @@ import bcrypt from 'bcrypt';
 import db from '../DataBase/DataBase.js';
 import { validatePassword } from '../Password.js'
 import jwt from 'jsonwebtoken';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 
 
 // #########################################################
 //                     signup post
 // #########################################################
+
 export async function signup_post(request, reply) {
     const { username, email, password, confirmPassword } = request.body;
 
     try {
         // 1️⃣ Check if the user already exists or mail 
         const checkStmt = db.prepare('SELECT * FROM users WHERE username = ? OR email = ?');
-        const existingUser = checkStmt.get(username, email); // .get() returns one row or undefined
+        const existingUser = checkStmt.get(username, email);
 
         if (existingUser) {
             return reply.code(400).send({
@@ -48,24 +52,26 @@ export async function signup_post(request, reply) {
         // ✅ Generate JWT
         const result = stmt.run(username, email, hashed);
         const id = result.lastInsertRowid;
-        const token = jwt.sign({ id, username }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ id, username }, process.env.JWT_SECRET, { expiresIn: '1min' });
 
         // ✅ Send JWT in cookie
+        const __Dir = fileURLToPath(import.meta.url);
+        const __dirname = path.dirname(__Dir);
+
+        const __filename = path.join(__dirname, '../public/authorized.html');
+        const fileStream = fs.createReadStream(__filename);
         reply
             .setCookie('token', token, {
                 path: '/',
-                httpOnly: true,
-                sameSite: 'strict',
-                maxAge: 3
+                httpOnly: true
             })
-            .code(200).send({
-                success: false,
-                message: 'You are Authourised'
-            });
+            .code(200).send(fileStream);
+
     } catch (err) {
         console.error('Error during registration:', err);
         reply.code(500).send({ success: false, message: 'Internal server error' });
     }
+    return { accessToken: token };
 }
 
 // #########################################################
@@ -85,19 +91,18 @@ export async function login_post(request, reply) {
     if (!match) {
         return reply.code(400).send({ success: false, message: 'Invalid password' });
     }
-    const token = jwt.sign({ id: row.id, username }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ id: row.id, username }, process.env.JWT_SECRET, { expiresIn: '1min' });
     // ✅ Send JWT in cookie
     reply
         .setCookie('token', token, {
             path: '/',
             httpOnly: true,
-            sameSite: 'strict',
-            maxAge: 3
         })
         .code(200).send({
-            success: false,
+            success: true,
             message: 'You are Authourised'
         });
+    return { accessToken: token };
 
 }
 
@@ -111,4 +116,28 @@ export async function login_get(request, reply) {
 
 export async function signup_get(request, reply) {
     return reply.sendFile('register.html');
+}
+
+
+// #########################################################
+//                Verify User Get Function()
+// should NOT be available to be accessed directly by the client i have to protect this endpoint
+// after merging 
+// #########################################################
+export async function verifyUser_get(request, reply) {
+    const token = request.cookies.token;
+    if (!token) {
+        return reply.code(401).sendFile('login.html');
+    }
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log('Decoded payload:', decoded);
+    } catch (err) {
+        return reply.code(401).sendFile('login.html');
+    }
+    reply.code(200).send({
+        authorization: true,
+        message: 'You are authenticated to access this resource.'
+    })
+    return { accessToken: token };
 }

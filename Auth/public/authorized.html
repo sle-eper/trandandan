@@ -1,44 +1,44 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Authorized Page</title>
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #74ABE2, #5563DE);
-      color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-    }
-    h1 {
-      font-size: 2.5rem;
-    }
-    p {
-      font-size: 1.3rem;
-      margin-top: 10px;
-    }
-  </style>
-</head>
-<body>
-  <h1>You are authorized ✅</h1>
-  <p id="username"></p>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Authorized Page</title>
+    <style>
+      body {
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(135deg, #74ABE2, #5563DE);
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+      }
+      h1 {
+        font-size: 2.5rem;
+      }
+      p {
+        font-size: 1.3rem;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>You are authorized ✅</h1>
+    <p id="username"></p>
 
-  <script>
-    // Get username from URL (e.g., ?username=Soumaya)
-    const params = new URLSearchParams(window.location.search);
-    const username = params.get('username');
+    <script>
+      // Get username from URL (e.g., ?username=Soumaya)
+      const params = new URLSearchParams(window.location.search);
+      const username = params.get('username');
 
-    // Show username on page
-    if (username) {
-      document.getElementById('username').textContent = `Welcome, ${username}!`;
-    } else {
-      document.getElementById('username').textContent = 'Welcome, guest!';
-    }
-  </script>
-</body>
-</html>
+      // Show username on page
+      if (username) {
+        document.getElementById('username').textContent = `Welcome, ${username}!`;
+      } else {
+        document.getElementById('username').textContent = 'Welcome, guest!';
+      }
+    </script>
+  </body>
+  </html>

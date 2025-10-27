@@ -3,7 +3,7 @@ import formbody from '@fastify/formbody';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 import path from 'path';
-import authRoutes from './Routes/AUthRoutes.js';
+import authRoutes from './Routes/AuthRoutes.js';
 import fastifyStatic from '@fastify/static';
 import dotenv from 'dotenv'
 import fastifyCookie from '@fastify/cookie';
