@@ -1,9 +1,10 @@
-// import {socket} from "../roomAndMsg";
 
 
 
-function friendCart(friend:{name: string; lastMessage: string; time: string; img: string,id:string}):string //done 
+
+function friendCart(friend:{id:string,name: string; img: string}):string //done 
 {
+    console.log(friend.id);
     return `<div id="msg-zone" class="flex justify-center  p-5 hover:bg-[#222222] transition-colors duration-300"">
                 <div  class=" friend-msg-zone flex w-[95%] hover:cursor-pointer" data-id="${friend.id}" data-name = "${friend.name}"  >
                     <div id="" class=" w-13 h-13  bg-cover bg-center rounded-full" 
@@ -15,8 +16,8 @@ function friendCart(friend:{name: string; lastMessage: string; time: string; img
                 <div class="ml-4 w-full flex flex-col justify-center">
                     <span class="font-semibold text-[#F5F5F5]">${friend.name}</span>
                     <div class="flex justify-between items-center ">
-                        <span class=" font-thin flex-grow  truncate  text-[#888]" >${friend.lastMessage}</span>
-                        <span class="text-sm text-[#888] text-right "> ${friend.time}</span>
+                        <span class=" font-thin flex-grow  truncate  text-[#888]" >ah mtafe9 m3ak</span>
+                        <span class="text-sm text-[#888] text-right "> 1:13 </span>
                     </div>
                     </div>
                 </div>
@@ -24,7 +25,7 @@ function friendCart(friend:{name: string; lastMessage: string; time: string; img
 }
 
 
-export function listOfMsg(friends: {name: string; lastMessage: string; time: string; img: string; id:string}[]): string //done
+export function listOfMsg(friends: {id:string;name: string;  img: string}[]): string //done
 {
     const friendCards = friends.map(element => friendCart(element)).join('\n')
     return `

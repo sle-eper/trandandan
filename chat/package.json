@@ -7,12 +7,14 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "start": "nodemon server.ts"
+    "start": "nodemon server.ts",
+    "db" : "nodemon /home/aabdenou/Desktop/trandandan/chat/src/db/databse.ts"
   },
   "devDependencies": {
     "@types/node": "^24.8.0",
     "@types/socket.io": "^3.0.1",
     "nodemon": "^3.1.10",
+    "tailwindcss": "^4.1.16",
     "ts-node": "^10.9.2",
     "typescript": "~5.9.3",
     "vite": "^7.1.7"
