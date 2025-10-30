@@ -19,11 +19,12 @@ console.log('✅ Database connected at:', dbFile);
 db.prepare(`
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_token TEXT UNIQUE,
     username TEXT UNIQUE,
     password TEXT,
     email TEXT UNIQUE,
     u_created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )
+  ) 
 `).run();
 
 export default db;

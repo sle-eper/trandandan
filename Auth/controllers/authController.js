@@ -4,6 +4,7 @@ import { validatePassword } from '../Password.js'
 import jwt from 'jsonwebtoken';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import axios from "axios";
 
 
 
@@ -121,9 +122,8 @@ export async function signup_get(request, reply) {
 
 // #########################################################
 //                Verify User Get Function()
-// should NOT be available to be accessed directly by the client i have to protect this endpoint
-// after merging 
 // #########################################################
+
 export async function verifyUser_get(request, reply) {
     const token = request.cookies.token;
     if (!token) {
@@ -147,22 +147,70 @@ export async function verifyUser_get(request, reply) {
 // #########################################################
 
 
-export async function googleAuth_get(request, reply){   
-    // Implementation for Google Auth
+export async function googleAuth_get(request, reply) {
 
-    console.log(request.headers);
-    return reply.code(200).send({
-        success: true,
-        message: 'Google Auth endpoint'
-    });
+    const clientId = '487026974303-kt8jdo8j5tv7806kjjcro3ercu5i8ls9.apps.googleusercontent.com'; // From your credential
+    const redirectUri = 'http://localhost:3000/auth/google/callback';
+    const scope = 'profile email';
+    const googleUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
+
+    reply.redirect(googleUrl);
 }
 
-export async function githubAuth_get(request, reply){   
-    // Implementation for GitHub Auth
+export async function githubAuth_get(request, reply) {
 
     console.log(request.headers);
     return reply.code(200).send({
         success: true,
         message: 'Github Auth endpoint'
     });
+}
+const CLIENT_ID = "487026974303-kt8jdo8j5tv7806kjjcro3ercu5i8ls9.apps.googleusercontent.com";
+const CLIENT_SECRET = "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";
+const REDIRECT_URI = "http://localhost:3000/auth/google/callback";
+const JWT_SECRET = process.env.JWT_SECRET;
+
+export async function googleAuthCallback_get(request, reply) {
+    const { code } = request.query; .0
+    try {
+        const tokenResponse = await axios.post(
+            "https://oauth2.googleapis.com/token",
+            {
+                code,
+                client_id: CLIENT_ID,
+                client_secret: CLIENT_SECRET,
+                redirect_uri: REDIRECT_URI,
+                grant_type: "authorization_code",
+            }
+        );
+        const { id_token, access_token } = tokenResponse.data;
+        const userInfo = jwt.decode(id_token);
+        console.log("Google user info:", userInfo);
+        console.log('id_token :', id_token);
+        const { name, email } = userInfo;
+        console.log('User Info:', name, email);
+        const token = jwt.sign({ name, email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const row = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+        if (!row) {
+            db.prepare('INSERT INTO users (username, email, id_token) VALUES (?, ?, ?)').run(name, email, id_token);
+            return reply
+                .setCookie('token', token, {
+                    path: '/',
+                    httpOnly: true,
+                })
+                .code(400).send({ success: false, message: 'Good' });
+        }
+        return reply
+            .setCookie('token', token, {
+                path: '/',
+                httpOnly: true,
+            })
+            .code(200).send({
+                success: true,
+                message: 'You are Authourised'
+            });
+    } catch (err) {
+        console.error(err);
+        reply.status(500).send("Authentication failed");
+    }
 }
