@@ -54,7 +54,7 @@ export function listOfMsg(friends: {id:string;name: string;  img: string}[]): st
 
 export function profileNav(img:string,userAccount:string):string{
     return`
-        <div id="profile-nav" class="flex h-[10%] items-center p-5 justify-between">
+        <div id="profile-nav" class="flex h-[10%] items-center p-5 justify-between relative ">
             <div class="flex items-center gap-6">
                 <div class="h-10 w-10  bg-cover bg-center rounded-full" 
                     style="
@@ -65,6 +65,18 @@ export function profileNav(img:string,userAccount:string):string{
                 <span class='font-semibold text-[#F5F5F5]'>${userAccount}</span>
             </div>
             <span id="more_vert" class="material-symbols-outlined text-[#E63946]  hover:cursor-pointer hover:bg-[#222222]  rounded-xl ">more_vert</span>
+            <div id="popup-option" class="hidden text-white flex flex-col items-center  w-50 bg-[#181818] absolute right-6 top-12 rounded-xl border border-[#E63946] shadow-[0_0_25px_rgba(0,0,0,0.6)]">
+                <div class="flex items-center justify-center w-[70%] rounded-xl border border-[#E63946] mt-5 mb-2 hover:cursor-pointer">
+                    <p>Challenge</p>
+                    <span class="material-symbols-outlined">swords</span>
+                </div>
+                <div class="flex items-center justify-center w-[70%] rounded-xl  bg-[#E63946] mb-5 hover:cursor-pointer">
+                    <p>Block</p>
+                    <span class="material-symbols-outlined">block</span>
+                </div>
+
+            </div>
+            
         </div>
         <div class="h-[2px] bg-gradient-to-r from-[#E63946] to-[#8A1C1C]"></div>`
 }
@@ -123,10 +135,20 @@ export function choseFriend():string{
 }
 
 export function chatZones():string{
-    return`<div id="chat-zone" class="flex flex-col h-[100%] overflow-y-auto hide-scrollbar">
-            </div>`
+    return`
+    <style>
+        #chat-zone {
+        scrollbar-width: none;
+        -ms-overflow-style: none; 
+        }
+        #chat-zone::-webkit-scrollbar {
+        display: none;
+        }
+    </style>
+    
+    <div id="chat-zone" class="flex flex-col h-[100%] overflow-y-auto">
+    </div>`
 }
-
 
 export function DM():string{
     return`

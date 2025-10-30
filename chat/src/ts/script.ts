@@ -70,6 +70,22 @@ if(chatContent){
                     sendButton = document.getElementById('send-button') as HTMLButtonElement;
                     chatZone = document.getElementById('chat-zone') as HTMLDivElement;
                     inputMsgZone = document.getElementById('input-msg-zone') as HTMLInputElement;
+
+                    // popup part
+                    const option = document.getElementById('more_vert') as HTMLSpanElement;
+                    const popupOption = document.getElementById('popup-option') as HTMLDivElement;
+                    option.addEventListener('click',(event)=>{
+                        if(popupOption.classList.contains("hidden"))
+                            popupOption.classList.remove("hidden")
+                        else
+                            popupOption.classList.add("hidden")
+                    })
+                    window.addEventListener('click',(event)=>{
+                        const target = event.target as HTMLElement;
+                        if(!popupOption.contains(target) && !popupOption.classList.contains("hidden") && event.target.id !== 'more_vert' )
+                            popupOption.classList.add("hidden")
+                    })
+                    //
     
     
                     if(sendButton)
@@ -107,6 +123,8 @@ window.addEventListener('keydown',(e)=>{
         if(dmZone) dmZone.innerHTML = choseFriend();
     }
 })
+
+
 
 // hena fach kayweslni msg
 socket.on('receive_message',(msg)=>{
