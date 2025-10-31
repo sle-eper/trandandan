@@ -2,7 +2,7 @@
 // import { fileURLToPath } from "url";
 // import fastifyStatic from "@fastify/static";
 
-import {getFriendsOfUser,getMyId} from "./src/db/database.ts"
+import {getFriendsOfUser,getMyId,changeStatusOfFriends} from "./src/db/database.ts"
 
 
 import fastify from "fastify";
@@ -34,7 +34,9 @@ server.ready().then(() => {
     socket.on('get_friends',(name)=>{
       const friends =  getFriendsOfUser(getMyId(name.name));
       socket.emit('friends_list',friends);
-      // console.log(`your name ${name.name} and your id ${getMyId(name.name)} and friends mane: ${friends.map(f => f.name).join(', ')}`)
+    })
+    socket.on('status',(data)=>{
+      changeStatusOfFriends(data);
     })
   });
 });
