@@ -77,6 +77,10 @@ export function changeStatusOfFriends({status,user_id,friend_id})
 {
     db.prepare(`UPDATE friendships SET status = ? WHERE user_id = ? AND friend_id = ?`).run(status,user_id,friend_id);
 }
+export function getStatusOfTowFriends(myId:string,friend_id:string):string
+{
+    return db.prepare(`SELECT status FROM friendships WHERE user_id = ? AND friend_id = ? `).get(myId,friend_id)
+}
 // // console.table(getFriendsOfUser(getMyId('Ayoub')))
 // // db.close();
 

@@ -51,7 +51,7 @@ export function listOfMsg(friends: {id:string;name: string;  img: string}[]): st
         </div>`;
 }
 
-function generateBlockButton(statis:string):string
+export function generateBlockButton(statis:string):string
 {
     if(statis === 'accepted'){
         return `<div id="block-button" class="block-button-class flex items-center justify-center w-[70%] rounded-xl  bg-[#E63946] mb-5 hover:cursor-pointer">

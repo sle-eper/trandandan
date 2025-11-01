@@ -1,6 +1,6 @@
 import {renderNavBar} from "../components/navbar"
 import {renderSidebar} from "../components/sidebar"
-import { chatZones,listOfMsg ,DM ,sendMsg,receivedMsg,profileNav,inputMsg,choseFriend} from "../components/content";
+import { chatZones,listOfMsg ,DM ,sendMsg,receivedMsg,profileNav,inputMsg,choseFriend,generateBlockButton} from "../components/content";
 import {socket} from "../roomAndMsg";
 // import {getFriendsOfUser,getMyId} from "../db/databse"
 
@@ -56,7 +56,7 @@ if(chatContent){
             friend.addEventListener('click',(event)=>{
                 const friendId = friend.dataset.id;
                 const friendFind = friends.find(f => f.id == friendId);
-                console.table(friendFind)
+                // console.table(friendFind)
                 if(friendFind)
                 {
                     const roomName = [myId,friendId].sort().join('_');
@@ -66,7 +66,6 @@ if(chatContent){
                     dmZone = document.getElementById("DM");
                     let contentChat = profileNav(friendFind.img,friendFind.name,friendFind.status)
                     contentChat += chatZones();
-                    console.log(contentChat);
                     if(dmZone)
                         dmZone.innerHTML = contentChat;
                     const msg = document.getElementById('x');
@@ -131,6 +130,8 @@ if(chatContent){
                         const unblockButton = document.getElementById("unblock-button");
                         const blockOption = document.getElementById("block-option");
                         const unblockOption = document.getElementById("unblock-option");
+                        const sendButton = document.getElementById('send-button') as HTMLButtonElement;
+                        const inputMsgZone = document.getElementById('input-msg-zone') as HTMLInputElement;
 
                         if (blockButton && blockOption) {
                             blockButton.addEventListener("click", () => blockOption.classList.remove("hidden"));
@@ -139,24 +140,31 @@ if(chatContent){
                         if (unblockButton && unblockOption) {
                             unblockButton.addEventListener("click", () => unblockOption.classList.remove("hidden"));
                         }
-                    }
-
-
-                    function generateBlockButton(status: string): string {
-                        if (status === 'accepted') {
-                            return `
-                            <div id="block-button" class="block-button-class flex items-center justify-center w-[70%] rounded-xl bg-[#E63946] mb-5 hover:cursor-pointer">
-                                <p class="block-button-class">Block</p>
-                                <span class="block-button-class material-symbols-outlined">block</span>
-                            </div>`;
-                        } else {
-                            return `
-                            <div id="unblock-button" class="unblock-button-class flex items-center justify-center w-[70%] rounded-xl bg-[#E63946] mb-5 hover:cursor-pointer">
-                                <p class="unblock-button-class">Unblock</p>
-                                <span class="unblock-button-class material-symbols-outlined">lock_open_right</span>
-                            </div>`;
+                        console.log(sendButton);
+                        if(sendButton)
+                        {
+                            console.log('hiiii');
+                            function send_message()
+                            {
+                                const value:string = inputMsgZone.value;
+                                if(value.trim())
+                                {
+                                    chatZone.innerHTML +=  sendMsg(value);
+                                    socket.emit('send_message',{value ,roomName,myId,friendFind});
+                                }
+                                inputMsgZone.value  = "";
+                            
+                            }
+                            sendButton.addEventListener('click',()=>{
+                                send_message();
+                            })
+                            inputMsgZone.addEventListener('keypress',(e)=>{
+                                if(e.key === 'Enter')
+                                    send_message();
+                            })
                         }
                     }
+
 
                     blockValid.addEventListener('click', () => {
                         socket.emit('status', { status: 'blocked', user_id: myId, friend_id: friendId });
@@ -165,7 +173,7 @@ if(chatContent){
                         const msg = document.getElementById('x');
                         if(msg)
                             msg.innerHTML = inputMsg(friendFind.status);
-                        const popupOption = document.getElementById("popup-option");
+                        const popupOption = document.getElementById("popup-option"); 
                         if (popupOption) {
                             popupOption.innerHTML = `
                                 <div class="flex items-center justify-center w-[70%] rounded-xl border border-[#E63946] mt-5 mb-2 hover:cursor-pointer">
@@ -204,8 +212,6 @@ if(chatContent){
                             `;
                         }
                         setupPopupEvents();
-                        document.getElementById('input-msg-blocked')?.classList.add('hidden');
-                        document.getElementById('input-msg')?.classList.remove('hidden');
                     })
                     unblockUnvalid.addEventListener('click',()=>{
                         unblockOption.classList.add('hidden');
@@ -223,7 +229,7 @@ if(chatContent){
                             if(value.trim())
                             {
                                 chatZone.innerHTML +=  sendMsg(value);
-                                socket.emit('send_message',value,roomName);
+                                socket.emit('send_message',{value ,roomName,myId,friendFind});
                             }
                             inputMsgZone.value  = "";
                         
