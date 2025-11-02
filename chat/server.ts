@@ -2,7 +2,8 @@
 // import { fileURLToPath } from "url";
 // import fastifyStatic from "@fastify/static";
 
-import {getFriendsOfUser,getMyId,changeStatusOfFriends,getStatusOfTowFriends} from "./src/db/database.ts"
+// import strict from "assert/strict";
+import {getFriendsOfUser,getMyId,changeStatusOfFriends,getStatusOfTowFriends,insertNewUSer,getLastUser} from "./src/db/database.ts"
 
 
 import fastify from "fastify";
@@ -16,30 +17,65 @@ server.register(fastifyIO,{
   }
 });
 
-const userData = new Map <string,{userName:string,img:string}>()
+// interface mySocket extends  {
+
+// }
+
+// const userData = new Map <string,{userName:string,img:string}>()
 server.ready().then(() => {
   const io = server.io;
   io.on("connection", (socket) => {
+
     socket.on('send_message',(data)=>{
-      const status:string = getStatusOfTowFriends(data.myId,data.friendFind.id).status
-      console.log(status);
-      if(status === 'accepted')
-        socket.to(data.roomName).emit('receive_message', data.value);
+      const myId:string = data.myId;
+      const msg:string = data.value;
+      const friendId = data.friendFind.id;
+      // console.log(typeof(data.friendFind.id))
+      const status:object = getStatusOfTowFriends(myId,friendId)
+      console.log(status)
+      const status1:string = status.status1?.status ;
+      const status2:string = status.status2?.status ;
+      // console.log(status1);
+      // console.log(`rooom ${roomName}`);
+      // console.log(`id friend ${friendId}`);
+      if(status1 && status2 && status1 === 'accepted' && status2 === 'accepted' ){
+        const roomName = [myId,friendId].sort().join('_');
+        socket.to(roomName).emit('receive_message', {msg,friendId});
+      }
+      // else{
+
+      // }
+
     })
-    socket.on('register',(socketData)=>{
-      userData.set(socket.id,socketData);
+    
+    socket.on('register',(newUser)=>{
+      const newId:string =  insertNewUSer(newUser);
+      socket.emit('registered',newId);
     })
+
+
     socket.on('joinToRoom',(roomName)=>{
-      console.log(`in join ${roomName} from ${socket.id}`)
+      const rooms = socket.rooms;
+      for(const room of rooms)
+      {
+        if(room != socket.id)
+          socket.leave(room)
+      }
       socket.join(roomName);
     })
-    socket.on('get_friends',(name)=>{
-      const friends =  getFriendsOfUser(getMyId(name.name));
+    socket.on('get_friends',(user_id)=>{
+      const friends =  getFriendsOfUser(user_id.id);
       socket.emit('friends_list',friends);
     })
     socket.on('status',(data)=>{
       changeStatusOfFriends(data);
+      socket.emit('tblockit',data.friend_id);
       // socket.emit('status_update',)//TODO 
+    })
+
+    socket.on('get_last_user',()=>{
+      const lastId:string = getLastUser()
+      socket.emit('last_user',lastId)
     })
   });
 });
