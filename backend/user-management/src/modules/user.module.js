@@ -27,9 +27,9 @@ class UserModule{
         );
     }
 
-    async isDisplayNameAvailable(displayName){
+    // async isDisplayNameAvailable(displayName){
 
-    }
+    // }
 
     async getProfile(userId) {
         return await this.db.get(

@@ -1,0 +1,24 @@
+{
+    "name": "api-gateway",
+    "version": "1.0.0",
+    "type": "module",
+    "description": "API Gateway for microservices architecture",
+    "main": "server.js",
+    "scripts": {
+      "start": "node server.js",
+      "dev": "nodemon server.js",
+      "docker:build": "docker build -t api-gateway .",
+      "docker:run": "docker run -p 4000:4000 api-gateway"
+    },
+    "dependencies": {
+      "fastify": "^4.25.0",
+      "@fastify/http-proxy": "^9.3.0",
+      "@fastify/cors": "^9.0.0",
+      "@fastify/jwt": "^8.0.0",
+      "@fastify/rate-limit": "^9.1.0",
+      "pino-pretty": "^10.3.0"
+    },
+    "devDependencies": {
+      "nodemon": "^3.0.0"
+    }
+  }

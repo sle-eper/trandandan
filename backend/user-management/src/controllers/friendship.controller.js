@@ -8,8 +8,8 @@ class FriendsController {
     // GET /friends - Get friends list
     async getFriends(request, reply) {
       try {
-        // const userId = request.user.userId;
-        const userId = 1
+  
+        const userId = request.user.userId;
         const friends = await this.friendshipModel.getFriends(userId);
         
         return { success: true, friends };
@@ -21,9 +21,9 @@ class FriendsController {
     // POST /friends/request - Send friend request
     async sendRequest(request, reply) {
       try {
-        // const userId = request.user.userId;
-
-        const {userId, friendId } = request.body;
+      
+        const userId = request.user.userId;
+        const { friendId } = request.body;
         
         if (userId === friendId) {
           return reply.code(400).send({ 
@@ -42,10 +42,11 @@ class FriendsController {
     // POST /friends/accept - Accept friend request
     async acceptRequest(request, reply) {
       try {
-        // const userId = request.user.userId;
-        const {userId, friendId } = request.body;
+       
+        const userId = request.user.userId;
+        const { friendId } = request.body;
         
-        const result = await this.friendshipModel.acceptRequest(userId, friendId);
+        const result = await this.friendshipModel.acceptRequest(friendId, userId);
         
         return result;
       } catch (error) {
@@ -56,6 +57,7 @@ class FriendsController {
     // DELETE /friends/:id - Remove friend
     async removeFriend(request, reply) {
       try {
+       
         const userId = request.user.userId;
         const { id } = request.params;
         
@@ -70,6 +72,7 @@ class FriendsController {
     // GET /friends/requests - Get pending requests
     async getPendingRequests(request, reply) {
       try {
+        
         const userId = request.user.userId;
         const requests = await this.friendshipModel.getPendingRequests(userId);
         

@@ -1,0 +1,39 @@
+# version: '3.8'
+
+services:
+  # API Gateway Service
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "4000:4000"
+    env_file:
+      - ./api-gateway/.env
+    depends_on:
+      - user-management
+    volumes:
+      - ./api-gateway:/app
+      - /app/node_modules
+    networks:
+      - app-network
+
+  # User Management Service
+  user-management:
+    build: ./backend/user-management
+    container_name: user-management
+    ports:
+      - "3001:3000"
+    env_file:
+      - ./backend/user-management/.env
+    volumes:
+      - ./backend/user-management/src:/usr/src/app/src
+      - ./backend/user-management/public:/usr/src/app/public
+      - ./backend/user-management/PINGPONG.db:/usr/src/app/PINGPONG.db
+      - /usr/src/app/node_modules
+    command: npm run dev
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

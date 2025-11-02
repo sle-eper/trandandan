@@ -60,7 +60,7 @@ export async  function createTables(){
               updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
           `);
-        console.log('✅ User Table created ');
+        // console.log('✅ User Table created ');
         await db.run(`
             CREATE TABLE IF NOT EXISTS user_stats (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
