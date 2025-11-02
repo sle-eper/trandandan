@@ -190,7 +190,7 @@ export function chatZones():string{
 
 export function DM():string{
     return`
-            <div id="DM" class="w-[55%] h-[90%] rounded-2xl p-4 flex flex-col bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A]">
+            <div id="DM" class="w-[55%] h-[90%] rounded-2xl p-4 flex flex-col bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A]" data-roomname="">
             ${choseFriend()}
             </div>`;
 }

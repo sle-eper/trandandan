@@ -32,7 +32,7 @@ server.ready().then(() => {
       const friendId = data.friendFind.id;
       // console.log(typeof(data.friendFind.id))
       const status:object = getStatusOfTowFriends(myId,friendId)
-      console.log(status)
+      // console.log(status)
       const status1:string = status.status1?.status ;
       const status2:string = status.status2?.status ;
       // console.log(status1);
@@ -69,8 +69,31 @@ server.ready().then(() => {
     })
     socket.on('status',(data)=>{
       changeStatusOfFriends(data);
-      socket.emit('tblockit',data.friend_id);
+      console.log(data.friend_id , data.user_id)
+      const roomName = [data.user_id,data.friend_id].sort().join('_');
+      const status:object = getStatusOfTowFriends(data.user_id,data.friend_id)
+
+      // console.log(status)
+      const status1:string = status.status1?.status ;
+      const status2:string = status.status2?.status ;
+      let statusGlobal:string = 'blocked';
+      if(status1 && status2 && status1 === 'accepted' && status2 === 'accepted' )
+        statusGlobal = 'accepted'
+      io.emit('x',roomName,statusGlobal);
       // socket.emit('status_update',)//TODO 
+    })
+    socket.on('get_status',(data)=>{
+      console.log(data.myId,data.friendId)
+      const status:object = getStatusOfTowFriends(data.myId,data.friendId)
+      console.log(status)
+      const status1:string = status.status1?.status ;
+      const status2:string = status.status2?.status ;
+      let allow:Boolean = false ;
+      if(status1 == undefined || status2 == undefined)
+          allow = true
+      if(status1 && status2 && status1 === 'accepted' && status2 === 'accepted' )
+        allow = true;
+      socket.emit('allowMsg',allow);
     })
 
     socket.on('get_last_user',()=>{

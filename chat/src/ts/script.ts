@@ -25,7 +25,7 @@ async function showMainUI()
     function fetchListOfFriends(): Promise<any> {
         return new Promise((resolve) => {
             socket.once('friends_list', (friends) => {
-                console.log(friends);
+                // console.log(friends);
                 resolve(friends);
             });
             socket.emit('get_friends', { id: myId });
@@ -36,6 +36,7 @@ async function showMainUI()
             const friends = await fetchListOfFriends();
             chatContent.innerHTML = listOfMsg(friends);
             chatContent.innerHTML += DM();
+            
             //get all of list friends 
             const friendsEvent = document.querySelectorAll('.friend-msg-zone');
             // add click event 
@@ -46,7 +47,10 @@ async function showMainUI()
                     // console.table(friendFind)
                     if(friendFind)
                     {
-                        const roomName = [myId,friendId].sort().join('_');
+                        const roomName:string = [myId,friendId].sort().join('_');
+                        const dm = document.getElementById('DM');
+                        if(dm)
+                            dm.dataset.roomName = roomName;
                         // const oldRoomName = roomName;
                         socket.emit('joinToRoom',roomName);
                         console.log(roomName);
@@ -57,8 +61,14 @@ async function showMainUI()
                         if(dmZone)
                             dmZone.innerHTML = contentChat;
                         const msg = document.getElementById('x');
-                        if(msg)
-                            msg.innerHTML = inputMsg(friendFind.status);
+                        socket.emit('get_status',({myId,friendId}));
+                        socket.on('allowMsg',(allow:boolean)=>{
+                            if(msg && allow)
+                                msg.innerHTML = inputMsg('accepted');
+                            else 
+                                msg.innerHTML = inputMsg('blocked');
+
+                        })
                         ////////////////////////////////////////////////////////////////////////////////
                         sendButton = document.getElementById('send-button') as HTMLButtonElement;
                         chatZone = document.getElementById('chat-zone') as HTMLDivElement;
@@ -126,7 +136,6 @@ async function showMainUI()
                             if (unblockButton && unblockOption) {
                                 unblockButton.addEventListener("click", () => unblockOption.classList.remove("hidden"));
                             }
-                            console.log(sendButton);
                             if(sendButton)
                             {
                                 function send_message()
@@ -154,10 +163,10 @@ async function showMainUI()
                         blockValid.addEventListener('click', () => {
                             socket.emit('status', { status: 'blocked', user_id: myId, friend_id: friendId });
                             blockOption.classList.add("hidden");
-                            friendFind.status = 'blocked';
-                            const msg = document.getElementById('x');
-                            if(msg)
-                                msg.innerHTML = inputMsg(friendFind.status);
+                            // friendFind.status = 'blocked';
+                            // const msg = document.getElementById('x');
+                            // if(msg)
+                            //     msg.innerHTML = inputMsg(friendFind.status);
                             const popupOption = document.getElementById("popup-option"); 
                             if (popupOption) {
                                 popupOption.innerHTML = `
@@ -165,31 +174,21 @@ async function showMainUI()
                                         <p>Challenge</p>
                                         <span class="material-symbols-outlined">swords</span>
                                     </div>
-                                    ${generateBlockButton(friendFind.status)}
+                                    ${generateBlockButton('blocked')}
                                 `;
                             }
                             setupPopupEvents();
                         });
-                        // socket.on('tblockit',(id)=>{
-                        //     console.log(`hena ${id}`)
-                        //     if(id == myId)
-                        //     {
-                        //             const msg = document.getElementById('x');
-                        //             if(msg)
-                        //                 msg.innerHTML = inputMsg(friendFind.status);
-                        //             const popupOption = document.getElementById("popup-option"); 
-                        //             if (popupOption) {
-                        //                 popupOption.innerHTML = `
-                        //                     <div class="flex items-center justify-center w-[70%] rounded-xl border border-[#E63946] mt-5 mb-2 hover:cursor-pointer">
-                        //                         <p>Challenge</p>
-                        //                         <span class="material-symbols-outlined">swords</span>
-                        //                     </div>
-                        //                     ${generateBlockButton(friendFind.status)}
-                        //                 `;
-                        //             }
-                        //             setupPopupEvents();
-                        //     }
-                        // })
+                        socket.on('x',(roomName,statusGlobal)=>{
+                            const dm = document.getElementById('DM');
+                            if(dm.dataset.roomName == roomName)
+                            {
+                                    const msg = document.getElementById('x');
+                                    if(msg)
+                                        msg.innerHTML = inputMsg(statusGlobal);
+                                    setupPopupEvents();
+                            }
+                        })
                         blockUnvalid.addEventListener('click',()=>{
                             blockOption.classList.add('hidden');
                             popupOption.classList.remove('hidden')
@@ -199,11 +198,11 @@ async function showMainUI()
                         unblockValid.addEventListener('click',()=>{
                             socket.emit('status',{status: 'accepted',user_id:myId,friend_id:friendId})
                             unblockOption.classList.add("hidden");
-                            friendFind.status = 'accepted';
+                            // friendFind.status = 'accepted';
     
-                            const msg = document.getElementById('x');
-                            if(msg)
-                                msg.innerHTML = inputMsg(friendFind.status);
+                            // const msg = document.getElementById('x');
+                            // if(msg)
+                            //     msg.innerHTML = inputMsg(friendFind.status);
     
                             const popupOption = document.getElementById("popup-option");
                             if (popupOption) {
@@ -212,7 +211,7 @@ async function showMainUI()
                                         <p>Challenge</p>
                                         <span class="material-symbols-outlined">swords</span>
                                     </div>
-                                    ${generateBlockButton(friendFind.status)}
+                                    ${generateBlockButton('accepted')}
                                 `;
                             }
                             setupPopupEvents();
