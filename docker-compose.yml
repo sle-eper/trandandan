@@ -1,12 +1,11 @@
-# version: '3.8'
-
 services:
 
- 
   # User Management Service
   user-management:
     build: ./backend/user-management
     container_name: user-management
+    depends_on:
+      - authentication
     ports:
       - "3001:3000"
     env_file:
@@ -17,6 +16,28 @@ services:
       - ./backend/user-management/PINGPONG.db:/usr/src/app/PINGPONG.db
       - /usr/src/app/node_modules
     command: npm run dev
+    networks:
+      - app-network
+
+  # Authentication Service
+  authentication:
+    build: ./backend/Auth
+    container_name: authentication
+    ports: 
+      - "5000:5000"           # ✅ must be a list
+    env_file:
+      - ./backend/Auth/.env   # ✅ should be a list
+    volumes:
+      - ./backend/Auth/DataBase:/Auth/DataBase
+    networks:
+      - app-network
+
+  # API Gateway Service
+  api-gateway:
+    build: ./api-gateway
+    container_name: nginx
+    ports:
+      - "80:80"
     networks:
       - app-network
 
