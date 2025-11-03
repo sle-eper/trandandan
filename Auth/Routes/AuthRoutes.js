@@ -11,4 +11,5 @@ export default fp(async function (fastify) {
   fastify.get('/auth/google', authController.googleAuth_get);
   fastify.get('/auth/github', authController.githubAuth_get);
   fastify.get('/auth/google/callback', authController.googleAuthCallback_get);
+  fastify.get('/auth/github/callback', authController.githubAuthCallback_get);
 });

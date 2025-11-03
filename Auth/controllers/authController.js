@@ -143,43 +143,40 @@ export async function verifyUser_get(request, reply) {
 }
 
 // #########################################################
-//                Remote Auth 
+//               OAuth 
 // #########################################################
 
 
 export async function googleAuth_get(request, reply) {
 
-    const clientId = '487026974303-kt8jdo8j5tv7806kjjcro3ercu5i8ls9.apps.googleusercontent.com'; // From your credential
-    const redirectUri = 'http://localhost:3000/auth/google/callback';
+    const clientId = process.env.Google_ID;
+    const redirectUri = process.env.Google_REDIRECT_URI;
     const scope = 'profile email';
-    const googleUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
+    const googleUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&Google_ID=${clientId}&Google_REDIRECT_URI=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
 
     reply.redirect(googleUrl);
 }
 
 export async function githubAuth_get(request, reply) {
 
-    console.log(request.headers);
-    return reply.code(200).send({
-        success: true,
-        message: 'Github Auth endpoint'
-    });
+    const clientId = process.env.Github_ID;
+    const redirectUri = process.env.Github_Redirect_URI;
+    const scope = 'user:email';
+    const githubUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
+
+    reply.redirect(githubUrl);
 }
-const CLIENT_ID = "487026974303-kt8jdo8j5tv7806kjjcro3ercu5i8ls9.apps.googleusercontent.com";
-const CLIENT_SECRET = "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";
-const REDIRECT_URI = "http://localhost:3000/auth/google/callback";
-const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function googleAuthCallback_get(request, reply) {
-    const { code } = request.query; .0
+    const { code } = request.query;
     try {
         const tokenResponse = await axios.post(
             "https://oauth2.googleapis.com/token",
             {
                 code,
-                client_id: CLIENT_ID,
-                client_secret: CLIENT_SECRET,
-                redirect_uri: REDIRECT_URI,
+                Google_ID: process.env.Google_ID,
+                Google_SECRET: process.env.Google_SECRET,
+                Google_REDIRECT_URI: process.env.Google_REDIRECT_URI,
                 grant_type: "authorization_code",
             }
         );
@@ -193,6 +190,57 @@ export async function googleAuthCallback_get(request, reply) {
         const row = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
         if (!row) {
             db.prepare('INSERT INTO users (username, email, id_token) VALUES (?, ?, ?)').run(name, email, id_token);
+            return reply
+                .setCookie('token', token, {
+                    path: '/',
+                    httpOnly: true,
+                })
+                .code(400).send({ success: false, message: 'Good' });
+        }
+        return reply
+            .setCookie('token', token, {
+                path: '/',
+                httpOnly: true,
+            })
+            .code(200).send({
+                success: true,
+                message: 'You are Authourised'
+            });
+    } catch (err) {
+        console.error(err);
+        reply.status(500).send("Authentication failed");
+    }
+}
+
+
+export async function githubAuthCallback_get(request, reply) {
+    const { code } = request.query;
+    try {
+        const tokenResponse = await axios.post(
+            "https://github.com/login/oauth/access_token",
+            {
+                client_id: process.env.Github_ID,
+                client_secret: process.env.Github_SECRET,
+                code,
+            },
+            {
+                headers: {
+                    Accept: "application/json",
+                },
+            }
+        );
+        const { access_token } = tokenResponse.data;
+        const userInfo = await axios.get("https://api.github.com/user", {
+            headers: {
+                Authorization: `Bearer ${access_token}`,
+            },
+        });
+        console.log("Github user info:", userInfo.data);
+        const { name, email } = userInfo.data;
+        const token = jwt.sign({ name, email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const row = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+        if (!row) {
+            db.prepare('INSERT INTO users (username, email) VALUES (?, ?)').run(name, email);
             return reply
                 .setCookie('token', token, {
                     path: '/',
