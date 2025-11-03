@@ -1,0 +1,25 @@
+# version: '3.8'
+
+services:
+
+ 
+  # User Management Service
+  user-management:
+    build: ./backend/user-management
+    container_name: user-management
+    ports:
+      - "3001:3000"
+    env_file:
+      - ./backend/user-management/.env
+    volumes:
+      - ./backend/user-management/src:/usr/src/app/src
+      - ./backend/user-management/public:/usr/src/app/public
+      - ./backend/user-management/PINGPONG.db:/usr/src/app/PINGPONG.db
+      - /usr/src/app/node_modules
+    command: npm run dev
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

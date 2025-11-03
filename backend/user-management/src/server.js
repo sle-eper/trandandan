@@ -1,65 +1,14 @@
-// import Fastify from 'fastify'
-// import { initializeDatabase, getDatabase, closeDatabase } from './config/database.js';
-// import userRoutes from './routes/user.routes.js';
-// const fastify = Fastify({
-//     logger: true
-// });
-
-
-// fastify.get('/',(req, reply) => {
-//     return{
-//         message: 'Hello World'
-//     }
-// });
-
-
-// async function start() {
-//     try {
-        
-//         console.log('🔄 Initializing database...');
-//         await initializeDatabase();
-        
-//         console.log('🔄 Getting database instance...');
-//         const db = getDatabase();
-        
-//         // 3. Attach database to fastify (YOU'RE MISSING THIS!)
-//         console.log('🔄 Attaching database to Fastify...');
-//         fastify.decorate('db', db);
-//         console.log('✅ Database attached, fastify.db exists:', !!fastify.db);
-        
-
-//         fastify.register(userRoutes, { 
-//             prefix: '/api/users' 
-//         });
-       
-        
-//         console.log('🔄 Starting server...');
-//         await fastify.listen({ port: 3000 });
-
-        
-//     } catch (error) {
-//         fastify.log.error( error,'❌ Error starting server:');
-//         process.exit(1);
-//     }
-// }
-
-
-
-// start();
-
-
-
-
 import Fastify from 'fastify';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fastifyStatic from '@fastify/static';
 import fastifyCors from '@fastify/cors';
-import { initializeDatabase, getDatabase, closeDatabase } from './config/database.js';
-import userRoutes from './routes/user.routes.js';
-import profileRoutes from './routes/profileRoutes.js';
+import { initializeDatabase, getDatabase, closeDatabase } from './config/database.js'
+import profileRoutes from './routes/profileRoutes.js'; 
+import friendshipRoutes from './routes/friendshipRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 import multipart from '@fastify/multipart';
-// Get __dirname equivalent in ES modules
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -67,10 +16,6 @@ const fastify = Fastify({
     logger: true
 });
 fastify.register(multipart);
-
-// =====================================================
-// 2. REGISTER PLUGINS FIRST (BEFORE ROUTES)
-// =====================================================
 
 // Enable CORS for frontend-backend communication
 fastify.register(fastifyCors, {
@@ -85,10 +30,6 @@ fastify.register(fastifyStatic, {
     prefix: '/' // Serve files at root URL
 });
 
-// =====================================================
-// 3. ROOT ROUTE (API endpoint, not HTML)
-// =====================================================
-
 // This returns JSON for API testing
 fastify.get('/api', (req, reply) => {
     return {
@@ -100,10 +41,6 @@ fastify.get('/api', (req, reply) => {
         }
     };
 });
-
-// =====================================================
-// 4. START SERVER WITH DATABASE
-// =====================================================
 
 async function start() {
     try {
@@ -118,10 +55,13 @@ async function start() {
         console.log('✅ Database attached, fastify.db exists:', !!fastify.db);
         
         // Register API routes
-        fastify.register(userRoutes, { 
-            prefix: '/api/users' 
+        fastify.register(authRoutes, { 
+            prefix: '/' 
         });
         fastify.register(profileRoutes, { 
+            prefix: '/' 
+        });
+        fastify.register(friendshipRoutes, { 
             prefix: '/' 
         });
        
@@ -129,7 +69,7 @@ async function start() {
         await fastify.listen({ port: 3000, host: '0.0.0.0' });
         
         console.log('✅ Server started successfully!');
-        console.log('📱 Frontend: http://localhost:3000/');
+        console.log('📱 Frontend: http://localhost:3002/');
         console.log('🔌 API: http://localhost:3000/api');
         console.log('👥 Users API: http://localhost:3000/api/users');
         

@@ -23,7 +23,6 @@ class ProfileController {
         return reply.code(400).send({ error: 'All fields are required' });
       }
 
-  
       const passwordHash = await bcrypt.hash(password, 10);
      
       const userId = await this.userModel.create({
@@ -47,9 +46,7 @@ class ProfileController {
   }
 
   
-    // GET /profile - Get current user profile
-    
-
+    // GET /profile - Get current user profile(user information and stats) will be used in dashboard
     async getMyProfile(request, reply) {
       try {
         const userId = request.user.userId;
@@ -65,7 +62,7 @@ class ProfileController {
       }
     }
   
-    // GET /profile/:id - Get another user's profile
+    // GET /profile/:id - Get another user's profile (view another user's profile /dashboard)
     async getUserProfile(request, reply) {
       try {
         const { id } = request.params;
@@ -75,7 +72,7 @@ class ProfileController {
           return reply.code(404).send({ error: 'User not found' });
         }
         
-        // Check if they're friends
+        //Check if they're friends
         // const areFriends = await this.friendshipModel.areFriends(
         //   request.user.userId, 
         //   id
@@ -87,18 +84,14 @@ class ProfileController {
       }
     }
   
-    // PUT /profile - Update profile
-  
+
+  // PUT /profile - Update profile
   async updateProfile(request, reply) {
     try {
-      // later i have to use the current user 
-      const { userId, ...updates } = request.body;
+    
+      const userId = request.user.userId;
+      const updates = request.body;
       
-      if (!userId) {
-        return reply.code(400).send({ 
-          error: 'userId is required' 
-        });
-      }
       console.log('User is updating:', Object.keys(updates));
       
       if (updates.email) {
@@ -111,14 +104,14 @@ class ProfileController {
         }
       }
 
-        if (updates.displayName) {
-          const availableName = await this.userModel.findByDisplayName(
-            updates.displayName, 
+      if (updates.displayName) {
+        const availableName = await this.userModel.findByDisplayName(
+          updates.displayName, 
         );
         
         if (availableName && availableName.id !== userId) {
           return reply.code(409).send({ 
-            error: 'Email already taken' 
+            error: 'Display name already taken' 
           });
         }
       }
@@ -138,15 +131,15 @@ class ProfileController {
     // POST /profile/avatar - Upload avatar
     async uploadAvatar(request, reply) {
       try {
-        // const userId = request.user.userId;
-        const  userId  = 1;
+        
+        const userId = request.user.userId;
         const data = await request.file();
         
         if (!data) {
           return reply.code(400).send({ error: 'No file uploaded' });
         }
         
-        // Validate file type
+        // Validate file type add size limit later !!!
         const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
         if (!allowedTypes.includes(data.mimetype)) {
           return reply.code(400).send({ 
@@ -178,7 +171,7 @@ class ProfileController {
       }
     }
   
-    // GET /profile/search - Search users
+    // GET /users/search?q=John - Search users 
     async searchUsers(request, reply) {
       try {
         const { q } = request.query;
