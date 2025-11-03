@@ -7,7 +7,6 @@ COPY package*.json ./
 RUN npm ci && npm cache clean --force
 
 COPY src ./src
-COPY public ./public
 
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001 -G nodejs && \

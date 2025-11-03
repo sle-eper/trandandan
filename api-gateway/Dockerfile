@@ -1,6 +1,6 @@
 FROM nginx:latest
 
-COPY ./api-gateway.conf /etc/nginx/nginx.conf
+COPY ./api-gateway.conf /etc/nginx/conf.d/api-gateway.conf
 
 EXPOSE 80
 

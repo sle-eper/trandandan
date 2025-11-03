@@ -44,29 +44,28 @@ export async function signup_post(request, reply) {
             return reply.code(400).send({ success: false, message: 'Weak password.', errors });
         }
         const hashed = await bcrypt.hash(password, 10);
-        const stmt = db.prepare('INSERT INTO users (username, email, password) VALUES (?, ?, ?)');
-
+        // const stmt = db.prepare('INSERT INTO users (username, email, password) VALUES (?, ?, ?)');
+        const response = await axios.post('http://user-management:3000/profile/create', {
+            username,
+            email,
+            displayName: username,
+            password: hashed,
+        });
         // reply
         if (!process.env.JWT_SECRET) {
             throw new Error('JWT_SECRET is missing');
         }
-        // ✅ Generate JWT
-        const result = stmt.run(username, email, hashed);
-        const id = result.lastInsertRowid;
+        // ✅ Generate JWT.
+        const id = response.data.profile.id;
         const token = jwt.sign({ id, username }, process.env.JWT_SECRET, { expiresIn: '1min' });
 
         // ✅ Send JWT in cookie
-        const __Dir = fileURLToPath(import.meta.url);
-        const __dirname = path.dirname(__Dir);
-
-        const __filename = path.join(__dirname, '../public/authorized.html');
-        const fileStream = fs.createReadStream(__filename);
         reply
+            .code(200)
             .setCookie('token', token, {
                 path: '/',
                 httpOnly: true
-            })
-            .code(200).send(fileStream);
+            });
 
     } catch (err) {
         console.error('Error during registration:', err);
@@ -132,13 +131,17 @@ export async function verifyUser_get(request, reply) {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         console.log('Decoded payload:', decoded);
+        reply
+            .code(200)
+            .headers({ 'x-user': decoded.username })
+            .headers({ 'x-user-id': decoded.id })
+            .send({
+                authorization: true,
+                message: 'You are authenticated to access this resource.'
+            })
     } catch (err) {
         return reply.code(401).sendFile('login.html');
     }
-    reply.code(200).send({
-        authorization: true,
-        message: 'You are authenticated to access this resource.'
-    })
     return { accessToken: token };
 }
 

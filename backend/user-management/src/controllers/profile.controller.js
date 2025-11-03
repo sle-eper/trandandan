@@ -49,7 +49,7 @@ class ProfileController {
     // GET /profile - Get current user profile(user information and stats) will be used in dashboard
     async getMyProfile(request, reply) {
       try {
-        const userId = request.user.userId;
+        const userId = request.headers['x-user-id'];
         const profile = await this.userModel.getProfile(userId);
         
         if (!profile) {

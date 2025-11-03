@@ -10,6 +10,6 @@ RUN npm install --legacy-peer-deps --no-audit --no-fund
 COPY . .
 RUN touch /Auth/DataBase/mydatabase.db
 
-EXPOSE 3000
+EXPOSE 5000
 
 CMD ["node", "server.js"]
