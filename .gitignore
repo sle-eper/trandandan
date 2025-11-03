@@ -3,5 +3,5 @@ Backend_backup/
 node_modules/
 .DS_Store
 .vscode/
-user-management/public/
+public/
 
