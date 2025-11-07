@@ -1,6 +1,7 @@
 import sqlite3 from "sqlite3";
 import { open } from 'sqlite';
-
+import path from 'path';
+import fs from 'fs';
 
 
 
@@ -8,12 +9,17 @@ let db = null;
 
 export async function initializeDatabase() {
     try {
-        //open connection
-        db = await open({
-        filename: "PINGPONG.db",
-        driver: sqlite3.Database
-        });
+    
+        // const dataDir = path.join(process.cwd(), 'data');
+        // if (!fs.existsSync(dataDir)) {
+        //     fs.mkdirSync(dataDir, { recursive: true });
+        // }
 
+        db = await open({
+            filename:  "PINGPONG.db",
+            driver: sqlite3.Database
+        });
+        // console.log('🔄 Connected to SQLite database at', path.join(dataDir, "PINGPONG.db"));
         console.log('✅ Connected to SQLite database');
         await db.exec('PRAGMA foreign_keys = ON;');
         await createTables();
@@ -60,8 +66,8 @@ export async  function createTables(){
               updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
           `);
-        // console.log('✅ User Table created ');
-        await db.run(`
+          
+          await db.run(`
             CREATE TABLE IF NOT EXISTS user_stats (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               user_id INTEGER UNIQUE NOT NULL,

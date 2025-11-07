@@ -12,6 +12,9 @@ RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001 -G nodejs && \
     chown -R nodejs:nodejs /usr/src/app
 
+
+# RUN chmod  777 /usr/src/app/PINGPONG.db
+
 USER nodejs
 
 EXPOSE 3000

@@ -33,7 +33,8 @@ class ProfileController {
       });
 
       const profile = await this.userModel.getProfile(userId);
-
+      console.log('Created user profile:', profile);
+      
       return reply.code(201).send({
         success: true,
         message: 'User created successfully',
@@ -49,7 +50,7 @@ class ProfileController {
     // GET /profile - Get current user profile(user information and stats) will be used in dashboard
     async getMyProfile(request, reply) {
       try {
-        const userId = request.user.userId;
+        const userId = request.headers['x-user-id'];
         const profile = await this.userModel.getProfile(userId);
         
         if (!profile) {

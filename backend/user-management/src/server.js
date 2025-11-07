@@ -6,7 +6,6 @@ import fastifyCors from '@fastify/cors';
 import { initializeDatabase, getDatabase, closeDatabase } from './config/database.js'
 import profileRoutes from './routes/profileRoutes.js'; 
 import friendshipRoutes from './routes/friendshipRoutes.js';
-import authRoutes from './routes/authRoutes.js';
 import multipart from '@fastify/multipart';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -19,7 +18,7 @@ fastify.register(multipart);
 
 // Enable CORS for frontend-backend communication
 fastify.register(fastifyCors, {
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    origin: ['http://localhost:5000', 'http://127.0.0.1:3000'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
 });
@@ -55,9 +54,7 @@ async function start() {
         console.log('✅ Database attached, fastify.db exists:', !!fastify.db);
         
         // Register API routes
-        fastify.register(authRoutes, { 
-            prefix: '/' 
-        });
+      
         fastify.register(profileRoutes, { 
             prefix: '/' 
         });
