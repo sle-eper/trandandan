@@ -51,6 +51,7 @@ export async function signup_post(request, reply) {
             password: hashed,
         });
         // reply
+        console.log('User creation response:', response.data);
         if (!process.env.JWT_SECRET) {
             throw new Error('JWT_SECRET is missing');
         }
@@ -58,7 +59,7 @@ export async function signup_post(request, reply) {
         const id = response.data.profile.id;
         console.log('New user ID:', id);
         const token = jwt.sign({ id, username }, process.env.JWT_SECRET, { expiresIn: '1min' });
-
+        console.log( '*******************************Generated JWT token:', token);
         // ✅ Send JWT in cookie
         reply
             .code(200)
@@ -71,7 +72,7 @@ export async function signup_post(request, reply) {
         console.error('Error during registration:', err);
         reply.code(500).send({ success: false, message: 'Internal server error' });
     }
-    return { accessToken: token };
+    // return { accessToken: token };
 }
 
 // #########################################################

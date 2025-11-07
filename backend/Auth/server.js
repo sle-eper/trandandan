@@ -30,7 +30,7 @@ fastify.decorate('verifyInternal', async (request, reply) => {
   }
 });
 fastify.get('/verify', authController.verifyUser_get);
-await fastify.register(authRoutes, { prefix: '/api/auth' });
+await fastify.register(authRoutes, { prefix: '/' });
 const start = async () => {
   try {
     const PORT = process.env.PORT || 5000;
