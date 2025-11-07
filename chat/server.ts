@@ -50,7 +50,7 @@ server.ready().then(() => {
         // {
           await  saveMsg(myId,friendId,msg,roomName,'waiting');
           socket.to(roomName).emit('receive_message', msg,myId);
-          socket.to(friendSocketId).emit('cc',myId,roomName);
+          socket.to(friendSocketId).emit('cc',myId,roomName,msg);
         // }
         // else{
         //   await saveMsg(myId,friendId,msg,roomName,'waiting');

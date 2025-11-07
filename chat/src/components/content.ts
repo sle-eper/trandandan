@@ -1,5 +1,5 @@
 
-export function lastMsg(recv:number,msg:string,friendId:string):string
+export function lastMsg(recv:number,msg:string,friendId?:string):string
 {
     if(!msg)
         return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#888]" > new friend </span>`
@@ -24,6 +24,12 @@ function  friendCart(friend:{id:string,name: string; img: string;msg:string; sen
     // {
         const roomName = [myId,friend.id].sort().join('_');
         const unreadMsg:number = waitingMsg.filter(m=> m.room === roomName).length
+        let rcv:number;
+        if(friend.recv==myId)
+            rcv = 1
+        else
+            rcv =3
+
         return `<div id='msg-zone' data-id="${friend.id}" class="flex justify-center  p-5 hover:bg-[#222222] transition-colors duration-300"">
                     <div  class=" friend-msg-zone flex w-[95%] hover:cursor-pointer" data-id="${friend.id}" data-name = "${friend.name}" data-roomname = "${roomName}"  >
                         <div id="" class=" w-13 h-13  bg-cover bg-center rounded-full" 
@@ -39,7 +45,7 @@ function  friendCart(friend:{id:string,name: string; img: string;msg:string; sen
                         </div>
                         <div class="flex justify-between items-center ">
                             <div id='container-of-last-msg-of-${friend.id}'>
-                                ${lastMsg(friend.recv==myId,friend.msg,friend.id)} 
+                                ${lastMsg(rcv,friend.msg,friend.id)} 
                             </div>
                             <span class="text-sm text-[#888] text-right "> 1:13 </span>
                         </div>

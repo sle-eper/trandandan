@@ -41,19 +41,31 @@ async function showMainUI()
             const friends = await fetchListOfFriends();
             chatContent.innerHTML = listOfMsg(friends.friends,friends.waitingMsg,myId);
 
-            socket.on('cc',(id,roomName)=>{
+            function moveUp(id:string){
+                const container = document.getElementById('list-of-msg')
+                const target = Array.from(container!.children).find(el=> el.dataset.id == id );
+                if(target)
+                    container?.prepend(target);
+
+            }
+
+            socket.on('cc',(id,roomName,msg)=>{
                 if(roomName !== imInRoom)
                 {
-                    const container = document.getElementById('list-of-msg')
-                    const target = Array.from(container!.children).find(el=> el.dataset.id == id );
-                    if(target)
-                            container?.prepend(target);
+                    moveUp(id);
 
                     const counterElement:HTMLDivElement = document.getElementById(`counter-of-${id}`) as HTMLDivElement;
                     if(counterElement?.classList.contains('hidden'))
                         counterElement?.classList.remove('hidden')
                     let counterElementValue:number = Number(counterElement.textContent);
                     counterElement.innerText =String(++counterElementValue);
+                    console.log('sssssssssssssssssssssssssssss');
+
+                    const containerMsg = document.getElementById(`container-of-last-msg-of-${id}`)
+                    console.log(containerMsg);
+                    if(containerMsg)
+                        containerMsg.innerHTML = lastMsg(1,msg,id)
+
                 }
             });
             chatContent.innerHTML += DM();
@@ -187,10 +199,11 @@ async function showMainUI()
                                         chatZone.innerHTML +=  sendMsg(value);
                                         const friendId:string = friendFind.id;
                                         socket.emit('send_message',{value,myId,friendId});
+                                        moveUp(friendId)
                                         const container = document.getElementById(`container-of-last-msg-of-${friendFind.id}`)
-                                        console.log(container);
+                                        // console.log(container);
                                         if(container)
-                                            container.innerHTML = lastMsg(false,value)
+                                            container.innerHTML = lastMsg(3,value,friendFind.id)
                                     }
                                     inputMsgZone.value  = "";
                                 
@@ -269,10 +282,12 @@ async function showMainUI()
                                 {
                                     chatZone.innerHTML +=  sendMsg(value);
                                     socket.emit('send_message',{value ,roomName,myId,friendFind});
+                                    moveUp(friendFind.id)
                                     const container = document.getElementById(`container-of-last-msg-of-${friendFind.id}`)
                                     console.log(container);
                                     if(container)
-                                        container.innerHTML = lastMsg(false,value)
+                                        container.innerHTML = lastMsg(3,value,friendFind.id)
+
                                 }
                                 inputMsgZone.value  = "";
                             
@@ -307,11 +322,11 @@ async function showMainUI()
         // console.log('wawawawaw');
         // if(myId == data.friendId){
             chatZone.insertAdjacentHTML("beforeend", receivedMsg(msg));
-            console.log(friendId);
+            console.log('sssssssssssssssssssssssssssss');
             const container = document.getElementById(`container-of-last-msg-of-${friendId}`)
             console.log(container);
             if(container)
-                container.innerHTML = lastMsg(2,msg)
+                container.innerHTML = lastMsg(2,msg,friendId)
         // }
     })
     socket.on('aji_message',(msg)=>{
