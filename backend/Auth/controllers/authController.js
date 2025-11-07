@@ -159,16 +159,20 @@ export async function googleAuth_get(request, reply) {
     console.log('Google Redirect URI:', redirectUri);
     console.log('Google Scope:', scope);
     const googleUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
-    console.log('Google OAuth URL:', googleUrl);
     reply.redirect(googleUrl);
 }
 
 export async function githubAuth_get(request, reply) {
 
+    console.log('------------------------------------------------------------------------------------');
     const clientId = process.env.Github_ID;
+    console.log('Github Client ID:', clientId);
     const redirectUri = process.env.Github_Redirect_URI;
     const scope = 'user:email';
+    console.log('Github Redirect URI:', redirectUri);
+    console.log('Github Scope:', scope);
     const githubUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
+    console.log('Github OAuth URL:', githubUrl);
     reply.redirect(githubUrl);
 }
 
@@ -179,18 +183,15 @@ export async function googleAuthCallback_get(request, reply) {
             "https://oauth2.googleapis.com/token",
             {
                 code,
-                Google_ID: process.env.Google_ID,
-                Google_SECRET: process.env.Google_SECRET,
-                Google_REDIRECT_URI: process.env.Google_REDIRECT_URI,
+                client_id: process.env.Google_ID,
+                client_secret: process.env.Google_SECRET,
+                redirect_uri: process.env.Google_REDIRECT_URI,
                 grant_type: "authorization_code",
             }
         );
         const { id_token, access_token } = tokenResponse.data;
         const userInfo = jwt.decode(id_token);
-        console.log("Google user info:", userInfo);
-        console.log('id_token :', id_token);
         const { name, email } = userInfo;
-        console.log('User Info:', name, email);
         const token = jwt.sign({ name, email }, process.env.JWT_SECRET, { expiresIn: '1h' });
         const row = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
         if (!row) {
@@ -220,6 +221,7 @@ export async function googleAuthCallback_get(request, reply) {
 
 export async function githubAuthCallback_get(request, reply) {
     const { code } = request.query;
+    console.log('------------------------------------------------------------------------------------');
     try {
         const tokenResponse = await axios.post(
             "https://github.com/login/oauth/access_token",
