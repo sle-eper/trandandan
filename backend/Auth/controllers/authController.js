@@ -13,7 +13,7 @@ import axios from "axios";
 // #########################################################
 
 export async function signup_post(request, reply) {
-    const { username, email, password, confirmPassword } = request.body;
+    const {     username, email, password, confirmPassword } = request.body;
 
     try {
         // 1️⃣ Check if the user already exists or mail 
@@ -44,7 +44,6 @@ export async function signup_post(request, reply) {
             return reply.code(400).send({ success: false, message: 'Weak password.', errors });
         }
         const hashed = await bcrypt.hash(password, 10);
-        // const stmt = db.prepare('INSERT INTO users (username, email, password) VALUES (?, ?, ?)');
         const response = await axios.post('http://user-management:3000/profile/create', {
             username,
             email,
@@ -57,6 +56,7 @@ export async function signup_post(request, reply) {
         }
         // ✅ Generate JWT.
         const id = response.data.profile.id;
+        console.log('New user ID:', id);
         const token = jwt.sign({ id, username }, process.env.JWT_SECRET, { expiresIn: '1min' });
 
         // ✅ Send JWT in cookie
@@ -155,8 +155,11 @@ export async function googleAuth_get(request, reply) {
     const clientId = process.env.Google_ID;
     const redirectUri = process.env.Google_REDIRECT_URI;
     const scope = 'profile email';
-    const googleUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&Google_ID=${clientId}&Google_REDIRECT_URI=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
-
+    console.log('Google Client ID:', clientId);
+    console.log('Google Redirect URI:', redirectUri);
+    console.log('Google Scope:', scope);
+    const googleUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
+    console.log('Google OAuth URL:', googleUrl);
     reply.redirect(googleUrl);
 }
 
@@ -166,7 +169,6 @@ export async function githubAuth_get(request, reply) {
     const redirectUri = process.env.Github_Redirect_URI;
     const scope = 'user:email';
     const githubUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
-
     reply.redirect(githubUrl);
 }
 

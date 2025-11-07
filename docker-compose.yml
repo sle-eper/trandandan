@@ -11,7 +11,7 @@ services:
     volumes:
       - ./backend/user-management/src:/usr/src/app/src
       - ./backend/user-management/public:/usr/src/app/public
-      - ./backend/user-management/PINGPONG.db:/usr/src/app/PINGPONG.db
+      - ./backend/user-management:/usr/src/app
       - /usr/src/app/node_modules
     command: npm run dev
     networks:
@@ -25,6 +25,7 @@ services:
       - "5000:5000"           # ✅ must be a list
     env_file:
       - ./backend/Auth/.env   # ✅ should be a list
+    command: npm start
     volumes:
       - ./backend/Auth/DataBase:/Auth/DataBase
     networks:
@@ -35,7 +36,7 @@ services:
     build: ./api-gateway
     container_name: nginx
     ports:
-      - "80:80"
+      - "8080:8080"
     networks:
       - app-network
     depends_on:
