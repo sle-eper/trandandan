@@ -1,10 +1,12 @@
 import {renderNavBar} from "../components/navbar"
 import {renderSidebar} from "../components/sidebar"
-import { chatZones,listOfMsg ,DM ,sendMsg,receivedMsg,profileNav,inputMsg,choseFriend,generateBlockButton,} from "../components/content";
+import {lastMsg, chatZones,listOfMsg ,DM ,sendMsg,receivedMsg,profileNav,inputMsg,choseFriend,generateBlockButton,} from "../components/content";
 import {socket} from "../roomAndMsg";
 
 
 let myId:string = ''; 
+let imInRoom:string = ''; 
+
 const nav = document.getElementById('nav-bar');
 const sidebar = document.getElementById('side-bar');
 const chatContent = document.getElementById('chat-content')
@@ -20,40 +22,78 @@ async function showMainUI()
     let chatZone:HTMLDivElement;
     let inputMsgZone:HTMLInputElement;
     let dmZone:HTMLElement | null ;
+
+    socket.emit('con',myId);
     
     
     function fetchListOfFriends(): Promise<any> {
         return new Promise((resolve) => {
             socket.once('friends_list', (friends) => {
                 // console.log(friends);
+                // console.table(friends.waitingMsg); 
                 resolve(friends);
             });
-            socket.emit('get_friends', { id: myId });
+            socket.emit('get_friends',myId);
         });
     }
 
     if(chatContent){
             const friends = await fetchListOfFriends();
-            chatContent.innerHTML = listOfMsg(friends);
+            chatContent.innerHTML = listOfMsg(friends.friends,friends.waitingMsg,myId);
+
+            socket.on('cc',(id,roomName)=>{
+                if(roomName !== imInRoom)
+                {
+                    const container = document.getElementById('list-of-msg')
+                    const target = Array.from(container!.children).find(el=> el.dataset.id == id );
+                    if(target)
+                            container?.prepend(target);
+
+                    const counterElement:HTMLDivElement = document.getElementById(`counter-of-${id}`) as HTMLDivElement;
+                    if(counterElement?.classList.contains('hidden'))
+                        counterElement?.classList.remove('hidden')
+                    let counterElementValue:number = Number(counterElement.textContent);
+                    counterElement.innerText =String(++counterElementValue);
+                }
+            });
             chatContent.innerHTML += DM();
             
             //get all of list friends 
             const friendsEvent = document.querySelectorAll('.friend-msg-zone');
-            // add click event 
             friendsEvent.forEach((friend)=>{
                 friend.addEventListener('click',(event)=>{
+                    imInRoom = friend.dataset.roomname;
+
                     const friendId = friend.dataset.id;
-                    const friendFind = friends.find(f => f.id == friendId);
+                    const friendFind = friends.friends.find(f => f.id == friendId);
                     // console.table(friendFind)
                     if(friendFind)
                     {
-                        const roomName:string = [myId,friendId].sort().join('_');
+                        const roomName:string = [myId,friendFind.id].sort().join('_');
                         const dm = document.getElementById('DM');
                         if(dm)
                             dm.dataset.roomName = roomName;
                         // const oldRoomName = roomName;
+
+                        
                         socket.emit('joinToRoom',roomName);
-                        console.log(roomName);
+
+                        const counterElement:HTMLDivElement = document.getElementById(`counter-of-${friendId}`) as HTMLDivElement;
+                        const lastMsgVar:HTMLSpanElement = document.getElementById(`last-msg-${friendId}`) as HTMLSpanElement;
+                        if(!counterElement.classList.contains('hidden'))
+                        {
+                            counterElement.textContent = '0'
+                            counterElement.classList.add('hidden')
+                        }
+                        if(lastMsgVar.classList.contains('font-semibold'))
+                        {
+                            lastMsgVar.classList.remove('font-semibold')
+                            lastMsgVar.classList.remove('text-[#F5F5F5]')
+                            lastMsgVar.classList.add('font-thin')
+                            lastMsgVar.classList.add('text-[#888]')
+                        }
+
+                        // console.log(roomName);
                         //*********************************************************************** */
                         dmZone = document.getElementById("DM");
                         let contentChat = profileNav(friendFind.img,friendFind.name,friendFind.status)
@@ -62,12 +102,13 @@ async function showMainUI()
                             dmZone.innerHTML = contentChat;
                         const msg = document.getElementById('x');
                         socket.emit('get_status',({myId,friendId}));
+
                         socket.on('allowMsg',(allow:boolean)=>{
                             if(msg && allow)
                                 msg.innerHTML = inputMsg('accepted');
                             else 
                                 msg.innerHTML = inputMsg('blocked');
-
+                            setupPopupEvents();
                         })
                         ////////////////////////////////////////////////////////////////////////////////
                         sendButton = document.getElementById('send-button') as HTMLButtonElement;
@@ -144,7 +185,12 @@ async function showMainUI()
                                     if(value.trim())
                                     {
                                         chatZone.innerHTML +=  sendMsg(value);
-                                        socket.emit('send_message',{value,myId,friendFind});
+                                        const friendId:string = friendFind.id;
+                                        socket.emit('send_message',{value,myId,friendId});
+                                        const container = document.getElementById(`container-of-last-msg-of-${friendFind.id}`)
+                                        console.log(container);
+                                        if(container)
+                                            container.innerHTML = lastMsg(false,value)
                                     }
                                     inputMsgZone.value  = "";
                                 
@@ -163,10 +209,6 @@ async function showMainUI()
                         blockValid.addEventListener('click', () => {
                             socket.emit('status', { status: 'blocked', user_id: myId, friend_id: friendId });
                             blockOption.classList.add("hidden");
-                            // friendFind.status = 'blocked';
-                            // const msg = document.getElementById('x');
-                            // if(msg)
-                            //     msg.innerHTML = inputMsg(friendFind.status);
                             const popupOption = document.getElementById("popup-option"); 
                             if (popupOption) {
                                 popupOption.innerHTML = `
@@ -198,12 +240,6 @@ async function showMainUI()
                         unblockValid.addEventListener('click',()=>{
                             socket.emit('status',{status: 'accepted',user_id:myId,friend_id:friendId})
                             unblockOption.classList.add("hidden");
-                            // friendFind.status = 'accepted';
-    
-                            // const msg = document.getElementById('x');
-                            // if(msg)
-                            //     msg.innerHTML = inputMsg(friendFind.status);
-    
                             const popupOption = document.getElementById("popup-option");
                             if (popupOption) {
                                 popupOption.innerHTML = `
@@ -233,6 +269,10 @@ async function showMainUI()
                                 {
                                     chatZone.innerHTML +=  sendMsg(value);
                                     socket.emit('send_message',{value ,roomName,myId,friendFind});
+                                    const container = document.getElementById(`container-of-last-msg-of-${friendFind.id}`)
+                                    console.log(container);
+                                    if(container)
+                                        container.innerHTML = lastMsg(false,value)
                                 }
                                 inputMsgZone.value  = "";
                             
@@ -254,6 +294,8 @@ async function showMainUI()
     window.addEventListener('keydown',(e)=>{
         if(e.key === 'Escape')
         {
+            //TODO handel if exit set imInRoom = '';
+            imInRoom = '';
             if(dmZone) dmZone.innerHTML = choseFriend();
         }
     })
@@ -261,10 +303,22 @@ async function showMainUI()
     
     
     // hena fach kayweslni msg
-    socket.on('receive_message',(data)=>{
-        if(myId == data.friendId){
-            chatZone.insertAdjacentHTML("beforeend", receivedMsg(data.msg));
-        }
+    socket.on('receive_message',(msg,friendId)=>{
+        // console.log('wawawawaw');
+        // if(myId == data.friendId){
+            chatZone.insertAdjacentHTML("beforeend", receivedMsg(msg));
+            console.log(friendId);
+            const container = document.getElementById(`container-of-last-msg-of-${friendId}`)
+            console.log(container);
+            if(container)
+                container.innerHTML = lastMsg(2,msg)
+        // }
+    })
+    socket.on('aji_message',(msg)=>{
+        // if(myId == data.friendId){
+            // chatZone.insertAdjacentHTML("beforeend", receivedMsg(msg));
+            chatZone.innerHTML +=  sendMsg(msg);
+        // }
     })
 
 }

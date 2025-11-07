@@ -1,33 +1,60 @@
 
-
-
-
-function friendCart(friend:{id:string,name: string; img: string}):string //done 
+export function lastMsg(recv:number,msg:string,friendId:string):string
 {
-    // console.log(friend.id);
-    return `<div id="msg-zone" class="flex justify-center  p-5 hover:bg-[#222222] transition-colors duration-300"">
-                <div  class=" friend-msg-zone flex w-[95%] hover:cursor-pointer" data-id="${friend.id}" data-name = "${friend.name}"  >
-                    <div id="" class=" w-13 h-13  bg-cover bg-center rounded-full" 
-                        style="
-                            background-image : url('${friend.img}');
-                            aspect-ratio: 1/1;
-                        ">
-                    </div>
-                <div class="ml-4 w-full flex flex-col justify-center">
-                    <span class="font-semibold text-[#F5F5F5]">${friend.name}</span>
-                    <div class="flex justify-between items-center ">
-                        <span class=" font-thin flex-grow  truncate  text-[#888]" >ah mtafe9 m3ak</span>
-                        <span class="text-sm text-[#888] text-right "> 1:13 </span>
-                    </div>
-                    </div>
-                </div>
-            </div>`
+    if(!msg)
+        return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#888]" > new friend </span>`
+    if(recv == 1)
+        return `<span id='last-msg-${friendId}' class=" font-semibold flex-grow  truncate  text-[#F5F5F5]" > ${msg} </span>`
+    if(recv == 2)
+        return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#F5F5F5]" > ${msg} </span>`
+    return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#888]" > You: ${msg} </span>`
+}
+
+function unreadMsgNumber(nbr:number,friendId:string):string
+{
+    if(nbr != 0)
+        return `<div id="counter-of-${friendId}" class="text-[#F5F5F5] text-sm flex items-center justify-center rounded-full h-5 w-5 bg-[#E63946]">${nbr}</div>`
+    return `<div id="counter-of-${friendId}" class=" hidden text-[#F5F5F5] text-sm flex items-center justify-center rounded-full h-5 w-5 bg-[#E63946]">${nbr}</div>`
 }
 
 
-export function listOfMsg(friends: {id:string;name: string;  img: string}[]): string //done
+function  friendCart(friend:{id:string,name: string; img: string;msg:string; send:string ;recv:string;send_at:string},waitingMsg:object,myId:string):string //done 
 {
-    const friendCards = friends.map(element => friendCart(element)).join('\n')
+    // if(friend.msg)
+    // {
+        const roomName = [myId,friend.id].sort().join('_');
+        const unreadMsg:number = waitingMsg.filter(m=> m.room === roomName).length
+        return `<div id='msg-zone' data-id="${friend.id}" class="flex justify-center  p-5 hover:bg-[#222222] transition-colors duration-300"">
+                    <div  class=" friend-msg-zone flex w-[95%] hover:cursor-pointer" data-id="${friend.id}" data-name = "${friend.name}" data-roomname = "${roomName}"  >
+                        <div id="" class=" w-13 h-13  bg-cover bg-center rounded-full" 
+                            style="
+                                background-image : url('${friend.img}');
+                                aspect-ratio: 1/1;
+                            ">
+                        </div>
+                    <div class="ml-4 w-full flex flex-col justify-center">
+                        <div class="flex justify-between">
+                            <span class="font-semibold text-[#F5F5F5]">${friend.name}</span>
+                            <span>${unreadMsgNumber(unreadMsg,friend.id)}</span>
+                        </div>
+                        <div class="flex justify-between items-center ">
+                            <div id='container-of-last-msg-of-${friend.id}'>
+                                ${lastMsg(friend.recv==myId,friend.msg,friend.id)} 
+                            </div>
+                            <span class="text-sm text-[#888] text-right "> 1:13 </span>
+                        </div>
+                        </div>
+                    </div>
+                </div>`
+    // }
+    // return ''
+}
+
+
+export function listOfMsg(friends: {id:string;name: string; img: string;msg:string; send:string ;recv:string;send_at:string}[],waitingMsg:object,myId:string): string //done
+{
+    // console.log('ssss', waitingMsg);
+    const friendCards = friends.map(element => friendCart(element,waitingMsg,myId)).join('\n')
     return `
             <style>
                 #list-of-msg::-webkit-scrollbar {
