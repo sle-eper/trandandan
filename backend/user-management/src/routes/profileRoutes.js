@@ -4,8 +4,11 @@ async function profileRoutes(fastify, options) {
   const profileController = new ProfileController(fastify.db);
   
   // Profile routes
+
+  fastify.get('/profile/User',profileController.getUserBYemailorUsername.bind(profileController));
+  
   fastify.post('/profile/create'
-    // {
+  // {
   //   schema: {
   //     body: {
   //       type: 'object',

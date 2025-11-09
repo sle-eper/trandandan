@@ -13,14 +13,19 @@ import axios from "axios";
 // #########################################################
 
 export async function signup_post(request, reply) {
-    const {     username, email, password, confirmPassword } = request.body;
+    const {username, email, password, confirmPassword } = request.body;
 
     try {
         // 1️⃣ Check if the user already exists or mail 
-        const checkStmt = db.prepare('SELECT * FROM users WHERE username = ? OR email = ?');
-        const existingUser = checkStmt.get(username, email);
-
-        if (existingUser) {
+         //const checkStmt = db.prepare('SELECT * FROM users WHERE username = ? OR email = ?');
+        const existingUser = await axios.get('http://user-management:3000/profile/User', {
+            params: {
+                username,
+                email,
+            }
+        });
+        if (existingUser.data) {
+            console.log('Existing user check response:', existingUser);
             return reply.code(400).send({
                 success: false,
                 message: 'User already exists!'

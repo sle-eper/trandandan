@@ -9,17 +9,11 @@ let db = null;
 
 export async function initializeDatabase() {
     try {
-    
-        // const dataDir = path.join(process.cwd(), 'data');
-        // if (!fs.existsSync(dataDir)) {
-        //     fs.mkdirSync(dataDir, { recursive: true });
-        // }
-
+        const dbPath = path.join(process.cwd(), 'data', 'PINGPONG.db');
         db = await open({
-            filename:  "PINGPONG.db",
+            filename:  dbPath,
             driver: sqlite3.Database
         });
-        // console.log('🔄 Connected to SQLite database at', path.join(dataDir, "PINGPONG.db"));
         console.log('✅ Connected to SQLite database');
         await db.exec('PRAGMA foreign_keys = ON;');
         await createTables();
@@ -47,6 +41,7 @@ export async function closeDatabase() {
     }
 }
 
+
 export async  function createTables(){
 
 
@@ -62,6 +57,7 @@ export async  function createTables(){
               bio TEXT,
               online_status VARCHAR(20) DEFAULT 'offline',
               last_seen DATETIME,
+              id_token TEXT UNIQUE,
               created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
               updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )

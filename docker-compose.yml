@@ -10,8 +10,7 @@ services:
       - "3001:3000"
     volumes:
       - ./backend/user-management/src:/usr/src/app/src
-      - ./backend/user-management/public:/usr/src/app/public
-      - ./backend/user-management:/usr/src/app
+      - ./backend/user-management/data:/usr/src/app/data:rw      
       - /usr/src/app/node_modules
     command: npm run dev
     networks:
