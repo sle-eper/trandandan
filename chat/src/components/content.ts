@@ -1,24 +1,28 @@
 
-export function lastMsg(recv:number,msg:string,friendId?:string):string
+export function lastMsg(recv:number,msg:string,friendId:string,status?:string):string//TODO ba3ed lmerat kayetla3 msg ma m9erich wakha howa m9eri f lbedaya 
 {
     if(!msg)
         return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#888]" > new friend </span>`
+    const shortMsg = msg.length > 20 ? msg.slice(0,20) + '...' : msg
     if(recv == 1)
-        return `<span id='last-msg-${friendId}' class=" font-semibold flex-grow  truncate  text-[#F5F5F5]" > ${msg} </span>`
+        return `<span id='last-msg-${friendId}' class=" font-semibold flex-grow  truncate  text-[#F5F5F5]" > ${shortMsg} </span>`
     if(recv == 2)
-        return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#F5F5F5]" > ${msg} </span>`
-    return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#888]" > You: ${msg} </span>`
+        return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#F5F5F5]" > ${shortMsg} </span>`
+    return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#888]" > You: ${shortMsg} </span>`
 }
 
-function unreadMsgNumber(nbr:number,friendId:string):string
+export function unreadMsgNumber(nbr:number,friendId:string):string
 {
-    if(nbr != 0)
+    if(nbr == 0)
+        return `<div id="counter-of-${friendId}" class=" hidden text-[#F5F5F5] text-sm flex items-center justify-center rounded-full h-5 w-5 bg-[#E63946]">${nbr}</div>`
+    if(nbr <= 9)
         return `<div id="counter-of-${friendId}" class="text-[#F5F5F5] text-sm flex items-center justify-center rounded-full h-5 w-5 bg-[#E63946]">${nbr}</div>`
-    return `<div id="counter-of-${friendId}" class=" hidden text-[#F5F5F5] text-sm flex items-center justify-center rounded-full h-5 w-5 bg-[#E63946]">${nbr}</div>`
+    else
+        return `<div id="counter-of-${friendId}" class="text-[#F5F5F5] text-sm flex items-center justify-center rounded-full h-5 w-5 bg-[#E63946]">+9</div>`
 }
 
 
-function  friendCart(friend:{id:string,name: string; img: string;msg:string; send:string ;recv:string;send_at:string},waitingMsg:object,myId:string):string //done 
+function  friendCart(friend:{id:string,name: string; img: string;status:string ; msg:string; send:string ;recv:string;send_at:string},waitingMsg:object,myId:string):string //done 
 {
     // if(friend.msg)
     // {
@@ -47,7 +51,7 @@ function  friendCart(friend:{id:string,name: string; img: string;msg:string; sen
                             <div id='container-of-last-msg-of-${friend.id}'>
                                 ${lastMsg(rcv,friend.msg,friend.id)} 
                             </div>
-                            <span class="text-sm text-[#888] text-right "> 1:13 </span>
+                            <span id='time-of-msg-${friend.id}' class="text-sm text-[#888] text-right "> </span>
                         </div>
                         </div>
                     </div>
@@ -149,44 +153,65 @@ export function inputMsg(status:string):string //done
                     <p class="text-[#E63946]">Contacting this account requires unblocking</p>
                 </div>`
     }
-    else{
-        
+    else{//TODO N9ra 3la ay l3ayba  dyal css
         return `
+                <style>
+                    #input-msg-zone {
+                    scrollbar-width: none;
+                    -ms-overflow-style: none; 
+                    }
+                    #input-msg-zone::-webkit-scrollbar {
+                    display: none;
+                    }
+                </style>
                 <div class="h-[100%] border-[#E63946] rounded-xl border-2 flex items-center mt-2">
-                    <input type="text" placeholder="Message..." id="input-msg-zone" class="h-[100%] w-[95%] text-[#F5F5F5] p-5 focus:outline-none">
+                    <textarea
+                        id="input-msg-zone"
+                        placeholder="Message..."
+                        autofocus
+                        class="h-[100%] w-[95%] text-[#F5F5F5] p-5 focus:outline-none "
+                    ></textarea>
                     <button id="send-button" class="bg-gradient-to-br from-[#E63946] to-[#8A1C1C] hover:from-[#FF4D4D] hover:to-[#A02020] rounded-xl w-[5%] h-[80%] mr-2 ml-4 flex justify-center items-center">
                         <span class="material-symbols-outlined text-white">send</span>
                     </button>
                 </div>`
     }
 }
-export function sendMsg(msg:string):string{
+function escapeHTML(str: string): string {
+    return str.replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+}
+
+export function sendMsg(msg:string,time:string,img:string):string{
     return `<div id="received-msg" class="flex mt-5 h-auto w-[65%]  justify-end ml-auto pr-5 ">
     <div id="content-received" class="max-w-[80%] flex flex-col ">
-        <div id="text-received" class=" bg-[#E63946] rounded-xl p-3 ">
-        <span class="text-[#F5F5F5]">
-            ${msg}
+        <div class=" bg-[#E63946] rounded-xl p-3 ">
+        <span class="text-[#F5F5F5]  break-all">
+            ${escapeHTML(msg)}
         </span>
         </div> 
-        <span id="text-received-time " class="text-xs text-[#888] mt-1 self-end">1:16</span>
+        <span id="text-received-time " class="text-xs text-[#888] mt-1 self-end">${time}</span>
     </div>
-    <img src="./src/img/smiling-african-american-millennial-businessman-600nw-1437938108.webp" alt="" class="h-10 w-10 rounded-full mt-2 ml-2">
+    <img src="${img}" alt="" class="h-10 w-10 rounded-full mt-2 ml-2">
     </div>`
             
 }
 
 
-export function receivedMsg(msg:string):string{
+export function receivedMsg(msg:string,time:string,img:string):string{
 
     return `<div id="sent-msg" class="flex mt-5 h-auto w-[65%] justify-start pl-5 ">
-                <img src="./src/img/360_F_382662173_NY65DAzJmdYGzWrfFcPsNLN6zAjbsdM6.jpg" alt="" class="h-10 w-10 rounded-full mt-2 mr-2">
+                <img src="${img}" alt="" class="h-10 w-10 rounded-full mt-2 mr-2">
                 <div id="content-sent" class="max-w-[80%] flex flex-col">
                     <div  class="border-2 border-[#E63946] rounded-xl p-3  ">
-                        <span class="text-[#F5F5F5]">
-                            ${msg}
+                        <span class="text-[#F5F5F5]  break-all">
+                            ${escapeHTML(msg)}
                         </span>
                     </div>
-                <span id="text-sent-time " class="text-xs text-[#888] mt-1">1:15</span>
+                <span id="text-sent-time " class="text-xs text-[#888] mt-1">${time}</span>
                 </div>
             </div>`
 }
@@ -215,7 +240,7 @@ export function chatZones():string{
         }
     </style>
     
-    <div id="chat-zone" class="flex flex-col h-[100%] overflow-y-auto">
+    <div id="chat-zone" class="flex flex-col h-[100%] overflow-y-auto ">
     </div>
     <div id="x" class=" h-15">
     </div>`
@@ -223,7 +248,8 @@ export function chatZones():string{
 
 export function DM():string{
     return`
-            <div id="DM" class="w-[55%] h-[90%] rounded-2xl p-4 flex flex-col bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A]" data-roomname="">
+            <div id="DM" class="w-[55%] h-[90%] rounded-2xl p-4 flex flex-col bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A] " data-roomname="">
             ${choseFriend()}
             </div>`;
 }
+

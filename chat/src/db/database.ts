@@ -27,7 +27,7 @@ db.prepare(`CREATE TABLE IF NOT EXISTS msg (
     send INTEGER NOT NULL,
     recv INTEGER NOT NULL,
     msg TEXT NOT NULL,
-    room TXT NOT NULL,
+    room TEXT NOT NULL,
     status TEXT NOT NULL,
     send_at DATETIME DEFAULT (datetime('now', 'localtime')),
     FOREIGN KEY (send) REFERENCES users(id),
@@ -79,7 +79,7 @@ const insertFriend = db.prepare(`INSERT INTO friendships (user_id,friend_id) VAL
 // update.run('block','1','3')
 export function getFriendsOfUser(user_id:string):any{
     // return db.prepare(`SELECT users.id,users.name,users.img,friendships.status FROM users INNER JOIN friendships ON users.id = friendships.friend_id WHERE friendships.user_id = ? `).all(user_id);
-    return db.prepare(`SELECT f.id,f.name ,f.img ,fs.status, m.msg , m.send , m.recv , m.send_at
+    return db.prepare(`SELECT f.id,f.name ,f.img ,fs.status, m.msg , m.send , m.recv , m.status AS msg_status ,m.send_at
                         FROM users AS u
                         JOIN friendships AS fs
                         ON u.id = fs.user_id
@@ -104,11 +104,14 @@ export function getMyId(name:string):string
     const user = db.prepare(`SELECT id FROM users WHERE name = ?`).get(name);
     return user.id
 }
-export function changeStatusOfFriends({status,user_id,friend_id})
+export function changeStatusOfFriends({status,user_id,friend_id}):object
 {
     db.prepare(`UPDATE friendships SET status = ? WHERE user_id = ? AND friend_id = ?`).run(status,user_id,friend_id);
+    const status1 = db.prepare(`SELECT status FROM friendships WHERE user_id = ? AND friend_id = ? `).get(user_id,friend_id)
+    const status2 = db.prepare(`SELECT status FROM friendships WHERE user_id = ? AND friend_id = ? `).get(friend_id,user_id)
+    return {status1,status2}
 }
-export function getStatusOfTowFriends(myId:string,friend_id:number):object
+export function getStatusOfTowFriends(myId:string,friend_id:string):object
 {
     const status1 = db.prepare(`SELECT status FROM friendships WHERE user_id = ? AND friend_id = ? `).get(myId,friend_id)
     const status2 = db.prepare(`SELECT status FROM friendships WHERE user_id = ? AND friend_id = ? `).get(friend_id,myId)
@@ -117,7 +120,6 @@ export function getStatusOfTowFriends(myId:string,friend_id:number):object
 }
 export function insertNewUSer({userName,img}):string{
     const user  = db.prepare(`INSERT INTO users(name,img) VALUES (?,?)`).run(userName,img)
-    console.log(user.lastInsertRowid);
     return user.lastInsertRowid
 }
 
@@ -126,21 +128,41 @@ export function getLastUser():string {
     const user = stmt.get();
   return user.id; // { id, name, img }
 }
-export function saveMsg(send:string,recv:number,msg:string,room:string,status:string)
+export function saveMsg(send:string,recv:string,msg:string,room:string,status:string):string
 {
-    db.prepare(`INSERT INTO msg(send,recv,msg,room,status) VALUES (?,?,?,?,?)`).run(send,recv,msg,room,status)
+    const msgData = db.prepare(`INSERT INTO msg(send,recv,msg,room,status) VALUES (?,?,?,?,?)`).run(send,recv,msg,room,status)
+    return msgData.lastInsertRowid
+}
+export function getTimeOfMsg(msgId:string):string
+{
+    const time = db.prepare(`SELECT strftime('%H:%M', send_at) AS time FROM msg WHERE id = ?`).get(msgId)
+    return time.time
 }
 export function getWaitingMsg(recv:string)
 {
     return db.prepare(`SELECT id,msg,room FROM msg WHERE recv = ? AND status = ?`).all(recv,'waiting');
 }
-export function getAllMsg(roomName:string)
+
+export function getAllMsg(roomName:string,limit: number = 20, offset: number = 0)
 {
-    return db.prepare(`SELECT id,send,recv,msg,status FROM msg WHERE room = ?`).all(roomName);
+    return db.prepare(`SELECT id,send,recv,msg,status,strftime('%H:%M', send_at) AS time FROM msg WHERE room = ? ORDER BY send_at DESC LIMIT ? OFFSET ?`).all(roomName,limit,offset);
+}
+// export function getAllMsg(roomName:string)
+// {
+//     return db.prepare(`SELECT id,send,recv,msg,status FROM msg WHERE room = ? ORDER BY send_at ASC`).all(roomName);
+// }
+export function changeAllToRecv(id:string,roomName:string)
+{
+    db.prepare(`UPDATE msg SET status = 'send' WHERE room = ? AND recv = ? AND status = 'waiting' `).run(roomName,id)
 }
 export function changeToRecv(id:string)
 {
     db.prepare(`UPDATE msg SET status = ? WHERE id = ?`).run('send',id)
+}
+
+export function dataOfUser(id:string):string
+{
+    return db.prepare(`SELECT * FROM users WHERE id = ? `).get(id)
 }
 // // console.table(getFriendsOfUser(getMyId('Ayoub')))
 // // db.close();
