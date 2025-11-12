@@ -1,4 +1,4 @@
-import UserModule from '../modules/user.module.js';
+import UserModule from '../modules/userModule.js';
 import Friendship from '../modules/Friendship.js';
 import UserStats from '../modules/UserStats.js';
 import bcrypt from 'bcryptjs';
@@ -33,7 +33,8 @@ class ProfileController {
       });
 
       const profile = await this.userModel.getProfile(userId);
-
+      console.log('Created user profile:', profile);
+      
       return reply.code(201).send({
         success: true,
         message: 'User created successfully',
@@ -44,7 +45,27 @@ class ProfileController {
       return reply.code(500).send({ error: error.message });
     }
   }
+  async getUserBYemailorUsername(request, reply) {
 
+    try {
+      const { email, userame } = request.query; // can be email or username
+
+
+      let user = await this.userModel.findByEmail(email);
+      if(user){
+        return reply.code(200).send(user);
+      }
+      user = await this.userModel.findByUsername( userame);
+      if(user){
+        return reply.code(200).send(user);
+      }
+      return reply.code(200).send(null);
+    }
+    catch (error) {
+      console.error(error);
+      return reply.code(500).send({ error: error.message });
+    }
+  }
   
     // GET /profile - Get current user profile(user information and stats) will be used in dashboard
     async getMyProfile(request, reply) {

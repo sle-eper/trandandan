@@ -1,6 +1,7 @@
 import sqlite3 from "sqlite3";
 import { open } from 'sqlite';
-
+import path from 'path';
+import fs from 'fs';
 
 
 
@@ -8,12 +9,11 @@ let db = null;
 
 export async function initializeDatabase() {
     try {
-        //open connection
+        const dbPath = path.join(process.cwd(), 'data', 'PINGPONG.db');
         db = await open({
-        filename: "PINGPONG.db",
-        driver: sqlite3.Database
+            filename:  dbPath,
+            driver: sqlite3.Database
         });
-
         console.log('✅ Connected to SQLite database');
         await db.exec('PRAGMA foreign_keys = ON;');
         await createTables();
@@ -41,6 +41,7 @@ export async function closeDatabase() {
     }
 }
 
+
 export async  function createTables(){
 
 
@@ -56,12 +57,13 @@ export async  function createTables(){
               bio TEXT,
               online_status VARCHAR(20) DEFAULT 'offline',
               last_seen DATETIME,
+              id_token TEXT UNIQUE,
               created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
               updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
           `);
-        // console.log('✅ User Table created ');
-        await db.run(`
+          
+          await db.run(`
             CREATE TABLE IF NOT EXISTS user_stats (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               user_id INTEGER UNIQUE NOT NULL,

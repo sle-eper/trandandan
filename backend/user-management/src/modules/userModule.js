@@ -12,7 +12,12 @@ class UserModule{
             id
         );
     }
-
+    async findByUsername(username) {
+        return this.db.get(
+            'SELECT * FROM users WHERE username = ?',
+            [username]  
+        );
+    }
     async findByEmail(email) {
         return this.db.get(
             'SELECT * FROM users WHERE email = ?',

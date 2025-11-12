@@ -13,14 +13,17 @@ import axios from "axios";
 // #########################################################
 
 export async function signup_post(request, reply) {
-    const {     username, email, password, confirmPassword } = request.body;
+    const {username, email, password, confirmPassword } = request.body;
 
     try {
-        // 1️⃣ Check if the user already exists or mail 
-        const checkStmt = db.prepare('SELECT * FROM users WHERE username = ? OR email = ?');
-        const existingUser = checkStmt.get(username, email);
-
-        if (existingUser) {
+        const existingUser = await axios.get('http://user-management:3000/profile/User', {
+            params: {
+                username,
+                email,
+            }
+        });
+        if (existingUser.data) {
+            console.log('Existing user check response:', existingUser);
             return reply.code(400).send({
                 success: false,
                 message: 'User already exists!'
@@ -51,6 +54,7 @@ export async function signup_post(request, reply) {
             password: hashed,
         });
         // reply
+        console.log('User creation response:', response.data);
         if (!process.env.JWT_SECRET) {
             throw new Error('JWT_SECRET is missing');
         }
@@ -58,7 +62,7 @@ export async function signup_post(request, reply) {
         const id = response.data.profile.id;
         console.log('New user ID:', id);
         const token = jwt.sign({ id, username }, process.env.JWT_SECRET, { expiresIn: '1min' });
-
+        console.log( '*******************************Generated JWT token:', token);
         // ✅ Send JWT in cookie
         reply
             .code(200)
@@ -71,7 +75,7 @@ export async function signup_post(request, reply) {
         console.error('Error during registration:', err);
         reply.code(500).send({ success: false, message: 'Internal server error' });
     }
-    return { accessToken: token };
+    // return { accessToken: token };
 }
 
 // #########################################################

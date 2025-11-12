@@ -4,35 +4,40 @@ async function profileRoutes(fastify, options) {
   const profileController = new ProfileController(fastify.db);
   
   // Profile routes
-  fastify.post('/profile/create', {
-    // schema: {
-    //   body: {
-    //     type: 'object',
-    //     required: ['username', 'email', 'displayName', 'password'],
-    //     properties: {
-    //       username: { 
-    //         type: 'string', 
-    //         minLength: 3, 
-    //         maxLength: 50,
-    //         pattern: '^[a-zA-Z0-9_]+$'
-    //       },
-    //       email: { 
-    //         type: 'string', 
-    //         format: 'email',
-    //         maxLength: 100
-    //       },
-    //       displayName: { 
-    //         type: 'string', 
-    //         minLength: 2, 
-    //         maxLength: 50
-    //       },
-    //       password: { 
-    //         type: 'string', 
-    //         minLength: 8,
-    //         maxLength: 128
-    //       }
-        // }
-      }
+
+  fastify.get('/profile/User',profileController.getUserBYemailorUsername.bind(profileController));
+  
+  fastify.post('/profile/create'
+  // {
+  //   schema: {
+  //     body: {
+  //       type: 'object',
+  //       required: ['username', 'email', 'displayName', 'password'],
+  //       properties: {
+  //         username: { 
+  //           type: 'string', 
+  //           minLength: 3, 
+  //           maxLength: 50,
+  //           pattern: '^[a-zA-Z0-9_]+$'
+  //         },
+  //         email: { 
+  //           type: 'string', 
+  //           format: 'email',
+  //           maxLength: 100
+  //         },
+  //         displayName: { 
+  //           type: 'string', 
+  //           minLength: 2, 
+  //           maxLength: 50
+  //         },
+  //         password: { 
+  //           type: 'string', 
+  //           minLength: 8,
+  //           maxLength: 128
+  //         }
+  //       }
+  //     }
+  //   }
   // }
   , profileController.setUser.bind(profileController));
 
