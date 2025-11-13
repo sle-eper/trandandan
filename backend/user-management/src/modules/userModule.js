@@ -15,7 +15,7 @@ class UserModule{
     async findByUsername(username) {
         return this.db.get(
             'SELECT * FROM users WHERE username = ?',
-            [username]  
+            [username]
         );
     }
     async findByEmail(email) {

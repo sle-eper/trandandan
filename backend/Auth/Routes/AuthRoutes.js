@@ -1,5 +1,6 @@
 // import fp from 'fastify-plugin';
 import * as authController from '../controllers/authController.js';
+import * as oauthController from '../controllers/OauthController.js';
 export default async function (fastify){
   console.log('Registering Auth Routes emoji 🚀');
   console.log('-----------------------------------');
@@ -7,8 +8,8 @@ export default async function (fastify){
   fastify.post('/login', authController.login_post);
   fastify.get('/signup', authController.signup_get);
   fastify.get('/login', authController.login_get);
-  fastify.get('/google', authController.googleAuth_get);
-  fastify.get('/github', authController.githubAuth_get);
-  fastify.get('/google/callback', authController.googleAuthCallback_get);
-  fastify.get('/github/callback', authController.githubAuthCallback_get);
+  fastify.get('/google', oauthController.googleAuth_get);
+  fastify.get('/github', oauthController.githubAuth_get);
+  fastify.get('/google/callback', oauthController.googleAuthCallback_get);
+  fastify.get('/github/callback', oauthController.githubAuthCallback_get);
 }

@@ -5,10 +5,10 @@ WORKDIR /Auth
 COPY package*.json ./
 
 RUN npm install --legacy-peer-deps --no-audit --no-fund
+RUN npm ci && npm cache clean --force
 
 
 COPY . .
-RUN touch /Auth/DataBase/mydatabase.db
 
 EXPOSE 5000
 
