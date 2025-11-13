@@ -19,6 +19,16 @@ let myImg: string = "";
 let imInRoom: string = "";
 let friendId: string = "";
 
+const app = document.getElementById('app');
+if(app)
+{
+    app.innerHTML = `<div id="nav-bar"></div>
+                    <div id="layout" class="flex flex-row  h-[calc(100vh-4rem)]" >
+                    <div id="side-bar" ></div>
+                    <div id="chat-content" class="flex justify-center items-center w-full gap-6 h-[93vh] gap-y-3"></div>
+                    </div>` 
+}
+
 const nav = document.getElementById("nav-bar");
 const sidebar = document.getElementById("side-bar");
 const chatContent = document.getElementById("chat-content");
