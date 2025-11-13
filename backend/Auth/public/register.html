@@ -1,120 +1,16 @@
-
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <title>Login / Register</title>
-  <link rel="stylesheet" href="login.css">
-  <style>
-    /* You can keep this inline or move it to login.css */
-    .social-login {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 20px;
-    }
-
-    .social-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 10px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-      font-weight: 500;
-    }
-
-    .google-btn {
-      background-color: #fff;
-      border: 1px solid #ccc;
-      color: #444;
-    }
-
-    .google-btn img {
-      width: 20px;
-    }
-
-    .github-btn {
-      background-color: #24292e;
-      color: #fff;
-    }
-
-    .github-btn img {
-      width: 20px;
-      filter: invert(1);
-    }
-  </style>
-</head>
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <title>Login / Register</title>
-  <link rel="stylesheet" href="login.css">
-  <style>
-    /* You can keep this inline or move it to login.css */
-    .social-login {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 20px;
-    }
-
-    .social-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 10px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-      font-weight: 500;
-    }z
-
-    .google-btn {
-      background-color: #fff;
-      border: 1px solid #ccc;
-      color: #444;
-    }
-
-    .google-btn img {
-      width: 20px;
-    }
-
-    .github-btn {
-      background-color: #24292e;
-      color: #fff;
-    }
-
-    .github-btn img {
-      width: 20px;
-      filter: invert(1);
-    }
-  </style>
-</head>
-
-<!DOCTYPE html>
-<html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <title>Register</title>
-  <link rel="stylesheet" href="login.css"> <!-- reuse the same CSS -->
-
-  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="/Auth/public/login.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 
 <body>
   <div class="login-card">
     <h2>Register</h2>
+
     <form action="/api/auth/signup" method="POST">
       <input type="text" name="username" placeholder="Username" required>
       <input type="email" name="email" placeholder="Email" required>
@@ -122,23 +18,24 @@
       <input type="password" name="confirmPassword" placeholder="Confirm Password" required>
       <button type="submit">Register</button>
     </form>
+
     <div class="social-login">
       <button class="social-btn google-btn" onclick="window.location.href='/api/auth/google'">
         <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google logo">
-        Login with Gmail
+        Sign up with Gmail
       </button>
 
       <button class="social-btn github-btn" onclick="window.location.href='/api/auth/github'">
         <img src="https://www.svgrepo.com/show/512317/github-142.svg" alt="GitHub logo">
-        Login with GitHub
+        Sign up with GitHub
       </button>
+    </div>
 
-    <!-- Login link/icon -->
     <p class="login-link">
       <i class="fa-solid fa-right-to-bracket"></i>
-      Already have an account? <a href="login.html">Login</a>
+      Already have an account?
+      <a href="/api/auth/login">Login</a>
     </p>
   </div>
 </body>
-
 </html>

@@ -22,8 +22,7 @@ export async function signup_post(request, reply) {
                 email,
             }
         });
-        if (existingUser.data) {
-            console.log('Existing user check response:', existingUser);
+        if (existingUser.data != null) {
             return reply.code(400).send({
                 success: false,
                 message: 'User already exists!'
@@ -54,21 +53,22 @@ export async function signup_post(request, reply) {
             password: hashed,
         });
         // reply
-        console.log('User creation response:', response.data);
         if (!process.env.JWT_SECRET) {
             throw new Error('JWT_SECRET is missing');
         }
         // ✅ Generate JWT.
         const id = response.data.profile.id;
-        console.log('New user ID:', id);
         const token = jwt.sign({ id, username }, process.env.JWT_SECRET, { expiresIn: '1min' });
-        console.log( '*******************************Generated JWT token:', token);
         // ✅ Send JWT in cookie
         reply
             .code(200)
             .setCookie('token', token, {
                 path: '/',
                 httpOnly: true
+            })
+            .send({
+                success: true,
+                message: 'Registration successful'
             });
 
     } catch (err) {
@@ -86,8 +86,12 @@ export async function login_post(request, reply) {
     const { username, password } = request.body;
     console.log('🔍 Login attempt:', username, password);
     const authHeader = request.headers['authorization'];
-    const row = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
-
+    const row = await axios.get('http://user-management:3000/profile/User', {
+            params: {
+                username,
+                email,
+            }
+        });
     if (!row) {
         return reply.code(400).send({ success: false, message: 'User not found' });
     }
@@ -107,7 +111,6 @@ export async function login_post(request, reply) {
             message: 'You are Authourised'
         });
     return { accessToken: token };
-
 }
 
 // #########################################################
