@@ -13,24 +13,16 @@ export async function googleAuth_get(request, reply) {
     const clientId = process.env.Google_ID;
     const redirectUri = process.env.Google_REDIRECT_URI;
     const scope = 'profile email';
-    console.log('Google Client ID:', clientId);
-    console.log('Google Redirect URI:', redirectUri);
-    console.log('Google Scope:', scope);
     const googleUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
     reply.redirect(googleUrl);
 }
 
 export async function githubAuth_get(request, reply) {
 
-    console.log('------------------------------------------------------------------------------------');
     const clientId = process.env.Github_ID;
-    console.log('Github Client ID:', clientId);
     const redirectUri = process.env.Github_Redirect_URI;
     const scope = 'user:email';
-    console.log('Github Redirect URI:', redirectUri);
-    console.log('Github Scope:', scope);
     const githubUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
-    console.log('Github OAuth URL:', githubUrl);
     reply.redirect(githubUrl);
 }
 
@@ -51,27 +43,36 @@ export async function googleAuthCallback_get(request, reply) {
         const userInfo = jwt.decode(id_token);
         const { name, email } = userInfo;
         const token = jwt.sign({ name, email }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        const row = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
-        if (!row) {
-            db.prepare('INSERT INTO users (username, email, id_token) VALUES (?, ?, ?)').run(name, email, id_token);
+        const row = await axios.get('http://user-management:3000/profile/User', {
+            params: {
+                email,
+            }
+        });
+        if (row.data) {
             return reply
                 .setCookie('token', token, {
                     path: '/',
                     httpOnly: true,
                 })
-                .code(400).send({ success: false, message: 'You are Authourised' });
+                .code(200).send({
+                    success: true,
+                    message: 'You are Authourised'
+                });
+
         }
-        return reply
-            .setCookie('token', token, {
-                path: '/',
-                httpOnly: true,
-            })
-            .code(200).send({
-                success: true,
-                message: 'You are Authourised'
+        else {
+            console.log('-----------------------------------------------------', name, '===', email, '===', id_token);
+            const response = await axios.post('http://user-management:3000/profile/create', {
+                username: name,
+                email,
+                displayName: name,
+                id_token: id_token,
             });
+            return reply
+                .code(200).send({ success: false, message: 'You are Authourised' });
+        }
     } catch (err) {
-        console.error(err);
+        cosole
         reply.status(500).send("Authentication failed");
     }
 }
@@ -79,7 +80,6 @@ export async function googleAuthCallback_get(request, reply) {
 
 export async function githubAuthCallback_get(request, reply) {
     const { code } = request.query;
-    console.log('------------------------------------------------------------------------------------');
     try {
         const tokenResponse = await axios.post(
             "https://github.com/login/oauth/access_token",
@@ -98,32 +98,32 @@ export async function githubAuthCallback_get(request, reply) {
         const userInfo = await axios.get("https://api.github.com/user", {
             headers: {
                 Authorization: `Bearer ${access_token}`,
+                Accept: "application/vnd.github+json",
             },
         });
-        console.log("Github user info:", userInfo.data);
-        const { name, email } = userInfo.data;
+
+        const emails = await axios.get("https://api.github.com/user/emails", {
+            headers: {
+                Authorization: `Bearer ${access_token}`,
+                Accept: "application/vnd.github+json",
+            },
+        });
+
+        // 4. Extract primary email
+        const primaryEmail = emails.data.find(e => e.primary)?.email;
+
+        // 5. Prepare user data
+        const name = userInfo.data.name || userInfo.data.login;
+        const email = primaryEmail;
+
         const token = jwt.sign({ name, email }, process.env.JWT_SECRET, { expiresIn: '1h' });
         const row = await axios.get('http://user-management:3000/profile/User', {
             params: {
-                name,
                 email,
             }
         });
-        if (!row) {
-            const response = await axios.post('http://user-management:3000/profile/create', {
-                name,
-                email,
-                displayName: name,
-                token_id: access_token,
-            });
+        if (row.data) {
             return reply
-                .setCookie('token', token, {
-                    path: '/',
-                    httpOnly: true,
-                })
-                .code(400).send({ success: false, message: 'Good' });
-        }
-        return reply
             .setCookie('token', token, {
                 path: '/',
                 httpOnly: true,
@@ -132,8 +132,24 @@ export async function githubAuthCallback_get(request, reply) {
                 success: true,
                 message: 'You are Authourised'
             });
+        }
+        else {
+            
+            const response = await axios.post('http://user-management:3000/profile/create', {
+                username: name,
+                email,
+                displayName: name,
+                password : access_token,
+            });
+            return reply
+                .setCookie('token', token, {
+                    path: '/',
+                    httpOnly: true,
+                })
+                .code(400).send({ success: false, message: 'Good' });
+        }
+
     } catch (err) {
-        console.error(err);
         reply.status(500).send("Authentication failed");
     }
 }

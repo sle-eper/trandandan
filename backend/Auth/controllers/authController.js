@@ -17,7 +17,7 @@ export async function signup_post(request, reply) {
                 email,
             }
         });
-        if (existingUser.data != null) {
+        if (existingUser.data) {
             return reply.code(400).send({
                 success: false,
                 message: 'User already exists!'
@@ -89,8 +89,6 @@ export async function login_post(request, reply) {
     if (!row) {
         return reply.code(400).send({ success: false, message: 'User not found' });
     }
-    console.log('User found:', row.username);
-    console.log('User found:', row.password);
     const match = await bcrypt.compare(password, row.password);
     if (!match) {
         return reply.code(400).send({ success: false, message: 'Invalid password' });
@@ -133,7 +131,6 @@ export async function verifyUser_get(request, reply) {
     }
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        console.log('Decoded payload:', decoded);
         reply
             .code(200)
             .headers({ 'x-user': decoded.username })

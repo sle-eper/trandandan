@@ -2,8 +2,6 @@
 import * as authController from '../controllers/authController.js';
 import * as oauthController from '../controllers/OauthController.js';
 export default async function (fastify){
-  console.log('Registering Auth Routes emoji 🚀');
-  console.log('-----------------------------------');
   fastify.post('/signup', authController.signup_post);
   fastify.post('/login', authController.login_post);
   fastify.get('/signup', authController.signup_get);

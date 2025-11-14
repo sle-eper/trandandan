@@ -17,12 +17,11 @@ class ProfileController {
 
   async setUser(request, reply) {
     try {
-      const { username, email, displayName, password } = request.body;
-
-      if (!username || !email || !displayName || !password) {
+      const { username, email, displayName, password, id_token } = request.body;
+      if (!username || !email || !displayName || (!password && !id_token)) {
         return reply.code(400).send({ error: 'All fields are required' });
       }
-
+      
       const passwordHash = await bcrypt.hash(password, 10);
      
       const userId = await this.userModel.create({
