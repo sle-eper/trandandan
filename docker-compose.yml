@@ -41,6 +41,19 @@ services:
       - user-management
       - authentication
 
+  # Frontend Service
+  # frontend:
+  #   build:
+  #     context: .
+  #     dockerfile: frontend/login_page/Dockerfile
+  #   container_name: frontend
+  #   ports:
+  #     - "8080:80"
+  #   volumes:
+  #     - /frontend/login_page:/usr/share/nginx/html
+  #   restart: always
+
+
 networks:
   app-network:
     driver: bridge

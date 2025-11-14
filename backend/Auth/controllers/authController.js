@@ -17,6 +17,7 @@ export async function signup_post(request, reply) {
                 email,
             }
         });
+        console.log('🔍 Existing user check:', existingUser.data);
         if (existingUser.data) {
             return reply.code(400).send({
                 success: false,
@@ -86,6 +87,7 @@ export async function login_post(request, reply) {
             username,
         }
     });
+    console.log('🔍 User fetched from user-management:', row.data);
     if (!row) {
         return reply.code(400).send({ success: false, message: 'User not found' });
     }
