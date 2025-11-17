@@ -22,14 +22,13 @@ class ProfileController {
         return reply.code(400).send({ error: 'All fields are required' });
       }
       console.log('Creating user:', { username, email, displayName });
-      console.log('Password:', password ? 'Provided' : 'Not provided');
+      console.log('Password:', password);
       const userId = await this.userModel.create({
         username,
         email,
         password,
         display_name: displayName
       });
-
       const profile = await this.userModel.getProfile(userId);
       console.log('Created user profile:', profile);
       
