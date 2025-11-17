@@ -86,10 +86,13 @@ export async function login_post(request, reply) {
             username,
         }
     });
+    console.log('************Retrieved user data:', row.data);
     if (!row) {
         return reply.code(400).send({ success: false, message: 'User not found' });
     }
-    const match = await bcrypt.compare(password, row.password);
+      const passwordHash = await bcrypt.hash(password, 10);
+     console.log('Comparing password hash:', passwordHash, 'with stored hash:', row.data.password_hash);
+    const match = await bcrypt.compare(passwordHash, row.data.password_hash);
     if (!match) {
         return reply.code(400).send({ success: false, message: 'Invalid password' });
     }
