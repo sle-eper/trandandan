@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/socket.io": "^3.0.1"
+  },
+  "dependencies": {
+    "fastify-socket.io": "^5.1.0"
+  }
+}
