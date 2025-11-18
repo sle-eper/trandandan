@@ -36,7 +36,7 @@ server.ready().then(() => {
 
     socket.on("con", (id: string) => {
       try{
-        // socket.userId = id;
+        socket.userId = id;
         const datOfUser = dataOfUser(id); 
         socket.data.userId = id;
         onlineUsers.set(id, socket.id);
