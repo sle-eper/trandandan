@@ -1,4 +1,3 @@
-import { Console } from "console";
 import {
   getAllMsg,
   changeToRecv,
@@ -14,7 +13,6 @@ import {
 
 import fastify from "fastify";
 import fastifyIO from "fastify-socket.io";
-import { Socket } from "socket.io";
 
 const server = fastify();
 server.register(fastifyIO, {
@@ -32,14 +30,11 @@ server.ready().then(() => {
 
   io.on("connection", (socket) => {
 
+    //get data of user on connection 
     socket.on("con", (id: string) => {
       try{
         // socket.userId = id;
         const datOfUser = dataOfUser(id); 
-          if (!datOfUser) {
-            console.log(`User with id ${id} not found!`);
-            return; // أو إرسال رسالة خطأ للعميل
-        }
         socket.data.userId = id;
         onlineUsers.set(id, socket.id);
         socket.emit('setIMg',datOfUser.img)
@@ -51,6 +46,7 @@ server.ready().then(() => {
         console.error('Error :', err);
       }
     });
+
     socket.on("send_message", async (data) => {
       try{
         const myId: string = data.myId; //
@@ -60,7 +56,7 @@ server.ready().then(() => {
         const roomName = [myId, friendId].sort().join("_");
         if(!statusOfTowFriend.has(roomName))
         {
-          const status: object = await getStatusOfTowFriends(myId, friendId);
+          const status:object = await getStatusOfTowFriends(myId, friendId);
           statusOfTowFriend.set(roomName,status);
         }
         const status:any = statusOfTowFriend.get(roomName);
