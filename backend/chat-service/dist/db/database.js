@@ -1,6 +1,21 @@
-import Database from 'better-sqlite3';
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getFriendsOfUser = getFriendsOfUser;
+exports.changeStatusOfFriends = changeStatusOfFriends;
+exports.getStatusOfTowFriends = getStatusOfTowFriends;
+exports.saveMsg = saveMsg;
+exports.getTimeOfMsg = getTimeOfMsg;
+exports.getWaitingMsg = getWaitingMsg;
+exports.getAllMsg = getAllMsg;
+exports.changeAllToRecv = changeAllToRecv;
+exports.changeToRecv = changeToRecv;
+exports.dataOfUser = dataOfUser;
+const better_sqlite3_1 = __importDefault(require("better-sqlite3"));
 // const dbPath = path.join(process.cwd(), 'src', 'db', 'database.db');
-const db = new Database('./src/db/database.db');
+const db = new better_sqlite3_1.default('./src/db/database.db');
 // db.prepare(`DROP TABLE friendships `).run();
 // db.prepare(`DROP TABLE users `).run();
 // db.prepare(`DROP TABLE msg `).run();
@@ -42,9 +57,9 @@ const friends = db.prepare(`SELECT id FROM users WHERE id != ?`).all('1');
 const insertFriend = db.prepare(`INSERT INTO friendships (user_id,friend_id) VALUES (?,?)`);
 // const update = db.prepare(`UPDATE friendships SET status = ? WHERE user_id = ? AND friend_id = ?`);
 // const matchFriends = db.prepare(`SELECT users.id,users.name,users.img FROM users INNER JOIN friendships ON users.id = friendships.friend_id WHERE friendships.user_id = ? `).all(user.id);
-for (const f of friends) {
-    insertFriend.run(user.id, f.id);
-}
+// for(const f of friends){
+//     insertFriend.run(user.id,f.id);
+// }
 // // for (const u of matchFriends)
 // //    console.table(matchFriends);
 // // insertFriend.run(user,friends);
@@ -53,7 +68,7 @@ for (const f of friends) {
 // // console.log(rows);
 // // process.on('exit', () => db.close());
 // update.run('block','1','3')
-export function getFriendsOfUser(user_id) {
+function getFriendsOfUser(user_id) {
     // return db.prepare(`SELECT users.id,users.name,users.img,friendships.status FROM users INNER JOIN friendships ON users.id = friendships.friend_id WHERE friendships.user_id = ? `).all(user_id);
     return db.prepare(`SELECT f.id,f.name ,f.img ,fs.status, m.msg , m.send , m.recv , m.status AS msg_status ,m.send_at
                         FROM users AS u
@@ -75,44 +90,44 @@ export function getFriendsOfUser(user_id) {
                         ORDER BY m.send_at DESC 
                         `).all(user_id);
 }
-export function changeStatusOfFriends({ status, user_id, friend_id }) {
+function changeStatusOfFriends({ status, user_id, friend_id }) {
     db.prepare(`UPDATE friendships SET status = ? WHERE user_id = ? AND friend_id = ?`).run(status, user_id, friend_id);
     const status1 = db.prepare(`SELECT status FROM friendships WHERE user_id = ? AND friend_id = ? `).get(user_id, friend_id);
     const status2 = db.prepare(`SELECT status FROM friendships WHERE user_id = ? AND friend_id = ? `).get(friend_id, user_id);
     return { status1, status2 };
 }
-export function getStatusOfTowFriends(myId, friend_id) {
+function getStatusOfTowFriends(myId, friend_id) {
     const status1 = db.prepare(`SELECT status FROM friendships WHERE user_id = ? AND friend_id = ? `).get(myId, friend_id);
     const status2 = db.prepare(`SELECT status FROM friendships WHERE user_id = ? AND friend_id = ? `).get(friend_id, myId);
     return { status1, status2 };
     // return db.prepare(`SELECT status FROM friendships WHERE user_id = ? AND friend_id = ? `).get(myId,friend_id)
 }
-export function saveMsg(send, recv, msg, room, status) {
+function saveMsg(send, recv, msg, room, status) {
     const msgData = db.prepare(`INSERT INTO msg(send,recv,msg,room,status) VALUES (?,?,?,?,?)`).run(send, recv, msg, room, status);
     const msgId = String(msgData.lastInsertRowid);
     return msgId;
 }
-export function getTimeOfMsg(msgId) {
+function getTimeOfMsg(msgId) {
     const time = db.prepare(`SELECT strftime('%H:%M', send_at) AS time FROM msg WHERE id = ?`).get(msgId);
     const msgTime = String(time.time);
     return msgTime;
 }
-export function getWaitingMsg(recv) {
+function getWaitingMsg(recv) {
     return db.prepare(`SELECT id,msg,room FROM msg WHERE recv = ? AND status = ?`).all(recv, 'waiting');
 }
-export function getAllMsg(roomName, limit = 20, offset = 0) {
+function getAllMsg(roomName, limit = 20, offset = 0) {
     return db.prepare(`SELECT id,send,recv,msg,status,strftime('%H:%M', send_at) AS time FROM msg WHERE room = ? ORDER BY send_at DESC LIMIT ? OFFSET ?`).all(roomName, limit, offset);
 }
 // export function getAllMsg(roomName:string)
 // {
 //     return db.prepare(`SELECT id,send,recv,msg,status FROM msg WHERE room = ? ORDER BY send_at ASC`).all(roomName);
 // }
-export function changeAllToRecv(id, roomName) {
+function changeAllToRecv(id, roomName) {
     db.prepare(`UPDATE msg SET status = 'send' WHERE room = ? AND recv = ? AND status = 'waiting' `).run(roomName, id);
 }
-export function changeToRecv(id) {
+function changeToRecv(id) {
     db.prepare(`UPDATE msg SET status = ? WHERE id = ?`).run('send', id);
 }
-export function dataOfUser(id) {
+function dataOfUser(id) {
     return db.prepare(`SELECT * FROM users WHERE id = ? `).get(id);
 }

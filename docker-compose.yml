@@ -1,34 +1,34 @@
 services:
 
-  # # User Management Service
-  # user-management:
-  #   build: ./backend/user-management
-  #   container_name: user-management
-  #   depends_on:
-  #     - authentication
-  #   ports:
-  #     - "3001:3000"
-  #   volumes:
-  #     - ./backend/user-management/src:/usr/src/app/src
-  #     - ./backend/user-management/data:/usr/src/app/data:rw      
-  #     - /usr/src/app/node_modules
-  #   command: npm run dev
-  #   networks:
-  #     - app-network
+  # User Management Service
+  user-management:
+    build: ./backend/user-management
+    container_name: user-management
+    depends_on:
+      - authentication
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./backend/user-management/src:/usr/src/app/src
+      - ./backend/user-management/data:/usr/src/app/data:rw      
+      - /usr/src/app/node_modules
+    command: npm run dev
+    networks:
+      - app-network
 
-  # # authentication Service
-  # authentication:
-  #   build: ./backend/Auth
-  #   container_name: auth
-  #   ports: 
-  #     - "5000:5000"           # ✅ must be a list
-  #   env_file:
-  #     - ./backend/Auth/.env   # ✅ should be a list
-  #   command: npm start
-  #   volumes:
-  #     - ./backend/Auth/DataBase:/Auth/DataBase
-  #   networks:
-  #     - app-network
+  # authentication Service
+  authentication:
+    build: ./backend/Auth
+    container_name: auth
+    ports: 
+      - "5000:5000"           # ✅ must be a list
+    env_file:
+      - ./backend/Auth/.env   # ✅ should be a list
+    command: npm start
+    volumes:
+      - ./backend/Auth/DataBase:/Auth/DataBase
+    networks:
+      - app-network
     
   front-end:
     build: ./frontend
@@ -52,17 +52,17 @@ services:
       - ./backend/chat-service/src:/app/src
       - /app/node_modules
 
-  # # API Gateway Service
-  # api-gateway:
-  #   build: ./api-gateway
-  #   container_name: nginx
-  #   ports:
-  #     - "8080:8080"
-  #   networks:
-  #     - app-network
-  #   depends_on:
-  #     - user-management
-  #     - authentication
+  # API Gateway Service
+  api-gateway:
+    build: ./api-gateway
+    container_name: nginx
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+    depends_on:
+      - user-management
+      - authentication
   
 
 networks:
