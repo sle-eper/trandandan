@@ -2,7 +2,11 @@ import { renderNavBar } from "../components/navbar";
 import { renderSidebar } from "../components/sidebar";
 import { io } from "socket.io-client";
 const socket = io("http://localhost:3000");//TODO hadi ra hebla o khedama 
-
+// const socket = io("http://localhost:8080/api/chat", {
+//     path: "/socket.io",
+//     withCredentials: true, // Send cookies for auth
+//     transports: ['websocket', 'polling']
+// });
 
 import {
     lastMsg,

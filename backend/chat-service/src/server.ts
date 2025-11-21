@@ -47,7 +47,7 @@ server.ready().then(() => {
     //get data of user on connection 
     socket.on("con", async(id: string) => {
       try{
-        // const id: string = socket.data.userId;
+        const id: string = socket.data.userId;
         const datOfUser = await fetchUserData(id); // get data of user from user-management service
         onlineUsers.set(id, socket.id);
         // socket.emit('setIMg',datOfUser.img)
