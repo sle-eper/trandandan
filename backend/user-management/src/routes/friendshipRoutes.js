@@ -9,7 +9,8 @@ async function friendshipRoutes(fastify, options) {
     
   }, friendsController.getFriends.bind(friendsController));
 
-  fastify.post('/friends/request', {
+   fastify.post('/friends/request',
+     {
     schema: {
       body: {
         type: 'object',
@@ -21,7 +22,8 @@ async function friendshipRoutes(fastify, options) {
       }
     },
     
-  }, friendsController.sendRequest.bind(friendsController));
+  },
+   friendsController.sendRequest.bind(friendsController));
 
   fastify.post('/friends/accept', {
     schema: {
@@ -53,6 +55,34 @@ async function friendshipRoutes(fastify, options) {
   fastify.get('/friends/requests', {
     
   }, friendsController.getPendingRequests.bind(friendsController));
-}
 
+
+fastify.get('/friends/status', {
+    schema: {
+      querystring: {
+        type: 'object',
+        required: ['friendId'],
+        properties: {
+          friendId: { type: 'integer', minimum: 1 }
+        }
+      }
+    },
+    
+  }, friendsController.getStatusOfFriends.bind(friendsController));
+
+  fastify.put('/friends/:userId/status', {
+    schema: {
+      body: {
+        type: 'object',
+        required: ['friendId', 'status'],
+        properties: {
+          friendId: { type: 'integer', minimum: 1 },
+          status: { type: 'string', enum: ['pending', 'accepted', 'blocked'] }
+        },
+        additionalProperties: false
+      }
+    },
+    
+  }, friendsController.changeFriendStatus.bind(friendsController));
+}
 export default friendshipRoutes;

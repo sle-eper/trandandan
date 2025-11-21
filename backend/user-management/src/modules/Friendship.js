@@ -78,7 +78,36 @@ class Friendship {
         [userId]
       );
     }
+
+
+
+
+    // Change friend status (e.g., block, unblock)
+    async changeFriendStatus(userId, friendId, status) {
+      await this.db.run(
+        `UPDATE friendships 
+         SET status = ? 
+         WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)`,
+        [status, userId, friendId, friendId, userId]
+      );
+      return { success: true, message: 'Friend status updated' };
+    }
   
+
+    // Get status of two friends
+    async getStatusOfTwoFriends(myId, friendId) {
+      const status1 = await this.db.get(
+        `SELECT status FROM friendships WHERE user_id = ? AND friend_id = ? `,
+        [myId, friendId]
+      );
+      const status2 = await this.db.get(
+        `SELECT status FROM friendships WHERE user_id = ? AND friend_id = ? `,
+        [friendId, myId]
+      );
+      return { status1, status2 };
+    } 
+
+
     // Check if users are friends
     // async areFriends(userId, friendId) {
     //   const friendship = await this.db.get(

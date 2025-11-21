@@ -145,3 +145,4 @@ export function dataOfUser(id:string):any
 {
     return db.prepare(`SELECT * FROM users WHERE id = ? `).get(id)
 }
+export { db };

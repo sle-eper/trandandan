@@ -131,3 +131,6 @@ function changeToRecv(id) {
 function dataOfUser(id) {
     return db.prepare(`SELECT * FROM users WHERE id = ? `).get(id);
 }
+
+
+export default db;
