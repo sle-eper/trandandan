@@ -90,7 +90,10 @@ function setupPopupEvents() {
             const value: string = inputMsgZone.value;
             if (value.trim()) {
                 const chatZone = document.getElementById("chat-zone") as HTMLDivElement;
-                chatZone.innerHTML += sendMsg(value,getTime(),myImg);
+                const msgTime = document.getElementById(`time-of-msg-${friendId}`)
+                const time = getTime();
+                chatZone.innerHTML += sendMsg(value,time,myImg);
+
                 // const friendId:string = friendFind.id;
                 socket.emit("send_message", { value, myId, friendId });
                 moveUp(friendId);
@@ -98,7 +101,8 @@ function setupPopupEvents() {
                     `container-of-last-msg-of-${friendId}`
                 );
                 chatZone.scrollTop = chatZone.scrollHeight
-                if (container) container.innerHTML = lastMsg(3, value, friendId);
+                if (container) container.innerHTML = lastMsg('send', value, friendId);
+                if(msgTime) msgTime.innerHTML = time
             }
             inputMsgZone.value = '';
             inputMsgZone.style.height = 'auto';//TODO nsayeb dak input 
@@ -132,12 +136,12 @@ function socketListener() {
                 counterElement.innerText = String(counterElementValue);//TODO handel 9+ msg
             else if(counterElementValue > 9)
                 counterElement.innerText = '+9'
+            const containerMsg = document.getElementById(
+                `container-of-last-msg-of-${id}`
+            );
+            if (containerMsg) containerMsg.innerHTML = lastMsg('recv', msg, id);
+            if(timeOfMsgSpan) timeOfMsgSpan.innerText = timeOfMsg 
         }
-        // const containerMsg = document.getElementById(
-        //     `container-of-last-msg-of-${id}`
-        // );
-        // if (containerMsg) containerMsg.innerHTML = lastMsg(2, msg, id);
-        if(timeOfMsgSpan) timeOfMsgSpan.innerText = timeOfMsg 
     });
     socket.on("receive_message", (msg, msgId ,friendId,timeOfMsg,friendImg) => {
         const chatZone = document.getElementById("chat-zone") as HTMLDivElement;
@@ -147,7 +151,7 @@ function socketListener() {
         const container = document.getElementById(
             `container-of-last-msg-of-${friendId}`
         );
-        if (container) container.innerHTML = lastMsg(2, msg, friendId);
+        // if (container) container.innerHTML = lastMsg('recv', msg, friendId);
     });
     socket.on("allowMsg", (allow: boolean) => {
         const msg = document.getElementById("x");
@@ -213,48 +217,39 @@ async function showMainUI() {
 
     if (chatContent) {
         const friends = await fetchListOfFriends();
-        chatContent.innerHTML = listOfMsg(
-            friends.friends,
-            friends.waitingMsg,
-            myId
-        );
+        chatContent.innerHTML = listOfMsg(friends.friends,friends.waitingMsg,myId);
         chatContent.innerHTML += DM();
 
         //get all of list friends
         const friendsEvent = document.querySelectorAll(".friend-msg-zone");
         friendsEvent.forEach((friend) => {
             friend.addEventListener("click", (event) => {
-
-                /******************************************get msg on scroll*******************************/
-
-                let firestOne:boolean = false 
-                let isFetching = false;
-                function onScroll()
+            /******************************************get msg on scroll*******************************/
+            let firestOne:boolean = false 
+            let isFetching = false;
+            function onScroll()
+            {
+                let offset:number = 0;
+                if(!firestOne)
                 {
-                    let offset:number = 0;
-                    if(!firestOne)
-                    {
-                        socket.emit('get_messages',{myId,friendId,limit: 20, offset})//TODO MAZL KHASEHA TFEHAM 
-                        firestOne = true;
-                    }
-
-                    const chatZone = document.getElementById('chat-zone');
-                    if(chatZone)
-                    {
-                        chatZone.addEventListener('scroll',async()=>{
-                            if(chatZone.scrollTop < 190  && !isFetching )
-                            {
-                                isFetching = true;
-                                offset += 20;
-                                await socket.emit('get_old_messages',{myId,friendId,limit: 20, offset})//TODO MAZL KHASEHA TFEHAM 
-                                isFetching = false;
-                            }
-                        })
-                    }
+                    socket.emit('get_messages',{myId,friendId,limit: 20, offset})
+                    firestOne = true;
                 }
-                /*******************************************************************/
-
-
+                const chatZone = document.getElementById('chat-zone');
+                if(chatZone)
+                {
+                    chatZone.addEventListener('scroll',async()=>{
+                        if(chatZone.scrollTop < 190  && !isFetching )
+                        {
+                            isFetching = true;
+                            offset += 20;
+                            await socket.emit('get_old_messages',{myId,friendId,limit: 20, offset})
+                            isFetching = false;
+                        }
+                    })
+                }
+            }
+                /**********************************************************************************************/
 
                 imInRoom = friend.dataset.roomname;
                 friendId = friend.dataset.id;
@@ -268,12 +263,8 @@ async function showMainUI() {
                     // socket.emit('get_messages',{myId,friendId,limit: 20, offset: 0})//TODO MAZL KHASEHA TFEHAM 
                     socket.emit("joinToRoom", roomName);
 
-                    const counterElement: HTMLDivElement = document.getElementById(
-                        `counter-of-${friendId}`
-                    ) as HTMLDivElement;
-                    const lastMsgVar: HTMLSpanElement = document.getElementById(
-                        `last-msg-${friendId}`
-                    ) as HTMLSpanElement;
+                    const counterElement: HTMLDivElement = document.getElementById(`counter-of-${friendId}`) as HTMLDivElement;
+                    const lastMsgVar: HTMLSpanElement = document.getElementById(`last-msg-${friendId}`) as HTMLSpanElement;
                     if (!counterElement.classList.contains("hidden")) {
                         counterElement.textContent = "0";
                         counterElement.classList.add("hidden");

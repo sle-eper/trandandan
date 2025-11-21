@@ -1,14 +1,38 @@
 
-export function lastMsg(recv:number,msg:string,friendId:string,status?:string):string//TODO ba3ed lmerat kayetla3 msg ma m9erich wakha howa m9eri f lbedaya 
+// export function lastMsg(recv:number,msg:string,friendId:string,status?:string):string//TODO ba3ed lmerat kayetla3 msg ma m9erich wakha howa m9eri f lbedaya 
+// {
+//     if(!msg)
+//         return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#888]" > new friend </span>`
+//     const shortMsg = msg.length > 20 ? msg.slice(0,20) + '...' : msg
+//     if(recv == 1)
+//         return `<span id='last-msg-${friendId}' class=" font-semibold flex-grow  truncate  text-[#F5F5F5]" > ${shortMsg} </span>`
+//     if(recv == 2)
+//         return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#F5F5F5]" > ${shortMsg} </span>`
+//     return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#888]" > You: ${shortMsg} </span>`
+// }
+
+export function lastMsg(status:string,msg:string,friendId:string):string
 {
     if(!msg)
         return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#888]" > new friend </span>`
     const shortMsg = msg.length > 20 ? msg.slice(0,20) + '...' : msg
-    if(recv == 1)
+    if(status === 'recv')
         return `<span id='last-msg-${friendId}' class=" font-semibold flex-grow  truncate  text-[#F5F5F5]" > ${shortMsg} </span>`
-    if(recv == 2)
-        return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#F5F5F5]" > ${shortMsg} </span>`
-    return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#888]" > You: ${shortMsg} </span>`
+    if(status === 'seen')
+    {
+        return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#888]" > ${shortMsg} </span>`
+    }
+    if(status === 'send')
+        return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#888]" > You: ${shortMsg} </span>`
+    return ''
+}
+
+function msgTime(send_at:string):string
+{
+    if(send_at)
+        return `${send_at}`
+    return ''
+
 }
 
 export function unreadMsgNumber(nbr:number,friendId:string):string
@@ -24,15 +48,16 @@ export function unreadMsgNumber(nbr:number,friendId:string):string
 
 function  friendCart(friend:{id:string,name: string; img: string;status:string ; msg:string; send:string ;recv:string;send_at:string},waitingMsg:object,myId:string):string //done 
 {
-    // if(friend.msg)
-    // {
         const roomName = [myId,friend.id].sort().join('_');
         const unreadMsg:number = waitingMsg.filter(m=> m.room === roomName).length
-        let rcv:number;
-        if(friend.recv==myId)
-            rcv = 1
+        console.table(friend.msg_status)
+        let status:string;
+        if(friend.recv==myId && friend.msg_status && friend.msg_status === 'waiting')//TODO add this object msg_status
+            status = 'recv'
+        else if(friend.recv==myId && friend.msg_status && friend.msg_status === 'send')
+            status = 'seen'
         else
-            rcv =3
+            status = 'send'
 
         return `<div id='msg-zone' data-id="${friend.id}" class="flex justify-center  p-5 hover:bg-[#222222] transition-colors duration-300"">
                     <div  class=" friend-msg-zone flex w-[95%] hover:cursor-pointer" data-id="${friend.id}" data-name = "${friend.name}" data-roomname = "${roomName}"  >
@@ -49,15 +74,13 @@ function  friendCart(friend:{id:string,name: string; img: string;status:string ;
                         </div>
                         <div class="flex justify-between items-center ">
                             <div id='container-of-last-msg-of-${friend.id}'>
-                                ${lastMsg(rcv,friend.msg,friend.id)} 
+                                ${lastMsg(status,friend.msg,friend.id)} 
                             </div>
-                            <span id='time-of-msg-${friend.id}' class="text-sm text-[#888] text-right "> </span>
+                            <span id='time-of-msg-${friend.id}' class="text-sm text-[#888] text-right ">${ msgTime(friend.send_at)}</span>
                         </div>
                         </div>
                     </div>
                 </div>`
-    // }
-    // return ''
 }
 
 
