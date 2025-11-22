@@ -28,6 +28,29 @@ services:
       - ./backend/user-management/data:/usr/src/app/data:rw   
     networks:
       - app-network
+    
+  front-end:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "5173:5173"
+    networks:
+      - app-network
+    volumes:
+      - ./frontend/chat-frontend/src:/app/src
+      - ./frontend/auth_frontend/src_auth:/app/src_auth
+      - /app/node_modules
+
+  chat-serves:
+    build: ./backend/chat-service
+    container_name: chat
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+    volumes:
+      - ./backend/chat-service/src:/app/src
+      - /app/node_modules
 
   # API Gateway Service
   api-gateway:
@@ -40,6 +63,7 @@ services:
     depends_on:
       - user-management
       - authentication
+  
 
 networks:
   app-network:

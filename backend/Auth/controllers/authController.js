@@ -8,8 +8,8 @@ import axios from "axios";
 // #########################################################
 
 export async function signup_post(request, reply) {
-    const { username, email, password, confirmPassword } = request.body;
-
+    const { username, email, password, confirm } = request.body;
+    
     try {
         const existingUser = await axios.get('http://user-management:3000/profile/User', {
             params: {
@@ -17,6 +17,8 @@ export async function signup_post(request, reply) {
                 email,
             }
         });
+
+        console.log("-----", username);
         if (existingUser.data) {
             return reply.code(400).send({
                 success: false,
@@ -33,7 +35,7 @@ export async function signup_post(request, reply) {
         if (password.length < 8) {
             return reply.code(400).send({ message: 'Password must be at least 8 characters long' });
         }
-        if (password !== confirmPassword) {
+        if (password !== confirm) {
             return reply.code(400).send({ success: false, message: 'Passwords do not match.' });
         }
         const { valid, errors } = validatePassword(password, { minLen: 8 });
