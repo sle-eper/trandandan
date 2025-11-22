@@ -24,9 +24,8 @@ services:
       - "5000:5000"           # ✅ must be a list
     env_file:
       - ./backend/Auth/.env   # ✅ should be a list
-    command: npm start
     volumes:
-      - ./backend/Auth/DataBase:/Auth/DataBase
+      - ./backend/user-management/data:/usr/src/app/data:rw   
     networks:
       - app-network
     

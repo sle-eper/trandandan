@@ -17,21 +17,18 @@ class ProfileController {
 
   async setUser(request, reply) {
     try {
-      const { username, email, displayName, password } = request.body;
-
-      if (!username || !email || !displayName || !password) {
+      const { username, email, displayName, password, id_token } = request.body;
+      if (!username || !email || !displayName || (!password && !id_token)) {
         return reply.code(400).send({ error: 'All fields are required' });
       }
-
-      const passwordHash = await bcrypt.hash(password, 10);
-     
+      console.log('Creating user:', { username, email, displayName });
+      console.log('Password:', password);
       const userId = await this.userModel.create({
         username,
         email,
-        passwordHash,
+        password,
         display_name: displayName
       });
-
       const profile = await this.userModel.getProfile(userId);
       console.log('Created user profile:', profile);
       
@@ -48,14 +45,14 @@ class ProfileController {
   async getUserBYemailorUsername(request, reply) {
 
     try {
-      const { email, userame } = request.query; // can be email or username
+      const { email, username } = request.query; // can be email or username
 
 
       let user = await this.userModel.findByEmail(email);
       if(user){
         return reply.code(200).send(user);
       }
-      user = await this.userModel.findByUsername( userame);
+      user = await this.userModel.findByUsername( username);
       if(user){
         return reply.code(200).send(user);
       }
