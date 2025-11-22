@@ -8,12 +8,16 @@ import fastifyStatic from '@fastify/static';
 import dotenv from 'dotenv'
 import fastifyCookie from '@fastify/cookie';
 import * as authController from './controllers/authController.js';
-
+import cors from "@fastify/cors";
 
 dotenv.config();
 
 const fastify = Fastify({ logger: true });
-
+await fastify.register(cors, {
+  origin: "*",            // or "http://localhost:5173"
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type"],
+});
 await fastify.register(formbody);
 await fastify.register(fastifyCookie);
 
@@ -30,7 +34,7 @@ fastify.decorate('verifyInternal', async (request, reply) => {
   }
 });
 fastify.get('/verify', authController.verifyUser_get);
-await fastify.register(authRoutes, { prefix: '/' });
+await fastify.register(authRoutes, { prefix: '/api/auth' });
 const start = async () => {
   try {
     const PORT = process.env.PORT || 5000;
