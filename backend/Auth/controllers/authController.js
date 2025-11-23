@@ -89,8 +89,6 @@ export async function login_post(request, reply) {
             username,
         }
     });
-    console.log("username = ", username);
-    console.log("password = ", password);
     if (!row) {
         return reply.code(400).send({ success: false, message: 'User not found' });
     }

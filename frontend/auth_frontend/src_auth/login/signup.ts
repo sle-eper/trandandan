@@ -40,7 +40,7 @@ function attachSignupHandlers() {
       console.log("Login success:", result);
 
       // show dashboard
-      navigate("dashboard");
+      navigate("login");
     } else {
       alert("Invalid username or password");
     }
