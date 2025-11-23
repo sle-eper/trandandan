@@ -1,69 +1,142 @@
-
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
-  <title>Login / Register</title>
-  <link rel="stylesheet" href="login.css">
+  <title>Sign Up</title>
+  
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
   <style>
-    /* You can keep this inline or move it to login.css */
-    .social-login {
+    /* Reset & basics */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background-color: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    /* Card */
+    .signup-card {
+      background-color: #fff;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      width: 360px;
+      text-align: center;
+    }
+
+    .signup-card h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    /* Form inputs */
+    form input {
+      width: 100%;
+      padding: 12px 15px;
+      margin: 10px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    form button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 15px;
+      border: none;
+      border-radius: 6px;
+      background-color: #28a745;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    form button:hover {
+      background-color: #218838;
+    }
+
+    /* Social buttons */
+    .social-signup {
+      margin-top: 20px;
       display: flex;
       flex-direction: column;
       gap: 10px;
-      margin-top: 20px;
     }
 
     .social-btn {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 10px;
       padding: 10px;
+      border-radius: 6px;
       border: none;
-      border-radius: 5px;
       cursor: pointer;
-      font-size: 16px;
-      font-weight: 500;
+      font-size: 14px;
+      transition: background 0.3s;
     }
 
     .google-btn {
-      background-color: #fff;
-      border: 1px solid #ccc;
-      color: #444;
+      background-color: #db4437;
+      color: white;
     }
 
-    .google-btn img {
-      width: 20px;
+    .google-btn:hover {
+      background-color: #a33d2d;
     }
 
     .github-btn {
       background-color: #24292e;
-      color: #fff;
+      color: white;
     }
 
-    .github-btn img {
-      width: 20px;
-      filter: invert(1);
+    .github-btn:hover {
+      background-color: #0d1117;
+    }
+
+    /* Icons inside buttons */
+    .oauth-icon {
+      width: 20px;   /* Control icon size */
+      height: 20px;
+    }
+
+    /* Footer link */
+    .signup-link {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .signup-link a {
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    .signup-link a:hover {
+      text-decoration: underline;
+    }
+
+    .signup-link i {
+      margin-right: 5px;
     }
   </style>
 </head>
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <title>Register</title>
-  <link rel="stylesheet" href="login.css"> <!-- reuse the same CSS -->
-
-  <!-- Font Awesome for icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-</head>
 
 <body>
-  <div class="login-card">
-    <h2>Register</h2>
+  <div class="signup-card">
+    <h2>Sign Up</h2>
+
     <form action="/api/auth/signup" method="POST">
       <input type="text" name="username" placeholder="Username" required>
       <input type="email" name="email" placeholder="Email" required>
@@ -71,23 +144,24 @@
       <input type="password" name="confirmPassword" placeholder="Confirm Password" required>
       <button type="submit">Register</button>
     </form>
-    <div class="social-login">
+
+    <div class="social-signup">
       <button class="social-btn google-btn" onclick="window.location.href='/api/auth/google'">
-        <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google logo">
-        Login with Gmail
+        <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google logo" class="oauth-icon">
+        Sign up with Google
       </button>
 
       <button class="social-btn github-btn" onclick="window.location.href='/api/auth/github'">
-        <img src="https://www.svgrepo.com/show/512317/github-142.svg" alt="GitHub logo">
-        Login with GitHub
+        <img src="https://www.svgrepo.com/show/512317/github-142.svg" alt="GitHub logo" class="oauth-icon">
+        Sign up with GitHub
       </button>
+    </div>
 
-    <!-- Login link/icon -->
-    <p class="login-link">
-      <i class="fa-solid fa-right-to-bracket"></i>
-      Already have an account? <a href="login.html">Login</a>
+    <p class="signup-link">
+      <i class="fa-solid fa-arrow-left"></i>
+      Already have an account?
+      <a href="/api/auth/login">Login</a>
     </p>
   </div>
 </body>
-
 </html>

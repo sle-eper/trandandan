@@ -1,16 +1,27 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="./src/style.css">
-    <title>chat</title>
-  </head>
-  <body class="bg-gradient-to-b from-[#0E0E0E] to-[#1A1A1A]">
-      <div id="app"></div>
-    <script type="module" src="./src/ts/script.ts"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <link rel="stylesheet" href="./src/style.css">
+  <title>PingPong Chat & Auth</title>
+</head>
+<body class="bg-black text-white flex flex-col md:flex-row items-center justify-center min-h-screen px-6 md:px-20">
+
+  <!-- Login Container -->
+  <div id="login-app"></div>
+
+  <!-- Chat Container (hidden initially) -->
+  <!-- <div id="chat-app" class="hidden"></div> -->
+
+  <!-- Scripts -->
+  <script type="module" src="./src_auth/app.ts"></script>
+  <!-- <script type="module" src="./src/ts/script.ts"></script> -->
+  <!-- <script src="./login_page/dashboard.ts"></script> -->
+  <!-- <script type="module" src="./chat/src/roomAndMsg.ts"></script>
+  <script type="module" src="./chat/src/ts/script.ts"></script> -->
+</body>
 </html>
