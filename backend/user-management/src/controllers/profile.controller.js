@@ -35,7 +35,6 @@ class ProfileController {
         return reply.code(400).send({ error: 'All fields are required' });
       }
       
-     
       const userId = await this.userModel.create({
         username,
         email,

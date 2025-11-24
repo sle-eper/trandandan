@@ -14,13 +14,13 @@ class UserModule{
     }
     async findByUsername(username) {
         return this.db.get(
-            'SELECT id, email, username ,display_name ,password FROM users WHERE username = ?',
+            'SELECT id, email, username ,display_name ,password_hash FROM users WHERE username = ?',
             [username]
         );
     }
     async findByEmail(email) {
         return this.db.get(
-            'SELECT id, email, username ,display_name ,password FROM users WHERE email = ?',
+            'SELECT id, email, username ,display_name ,password_hash FROM users WHERE email = ?',
             [email]  
         );
     }
