@@ -31,6 +31,6 @@ function attachForgotHandlers() {
 
     // TODO: call reset API -> then navigate
     alert("If that email exists, a reset link was sent (stub).");
-    navigate("login");
+    navigate("change");
   });
 }
