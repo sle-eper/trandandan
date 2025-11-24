@@ -36,6 +36,8 @@ class ProfileController {
       }
       
      
+      console.log('Creating user:', { username, email, displayName });
+      console.log('Password:', password);
       const userId = await this.userModel.create({
         username,
         email,
@@ -43,7 +45,7 @@ class ProfileController {
         display_name: displayName
       });
 
-      const profile = await this.userModel.getById(userId);
+      const profile = await this.userModel.getProfile(userId);
       console.log('Created user profile:', profile);
       
       return reply.code(201).send({
@@ -59,14 +61,14 @@ class ProfileController {
   async getUserBYemailorUsername(request, reply) {
 
     try {
-      const { email, userame } = request.query; // can be email or username
+      const { email, username } = request.query; // can be email or username
 
 
       let user = await this.userModel.findByEmail(email);
       if(user){
         return reply.code(200).send(user);
       }
-      user = await this.userModel.findByUsername( userame);
+      user = await this.userModel.findByUsername( username);
       if(user){
         return reply.code(200).send(user);
       }

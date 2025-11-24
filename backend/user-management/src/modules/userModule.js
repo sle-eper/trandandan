@@ -55,7 +55,7 @@ class UserModule{
     async create(user) {
         const result = await this.db.run(
             'INSERT INTO users (email, username, password_hash, display_name) VALUES (?, ?, ?, ?)',
-            [user.email, user.username, user.passwordHash, user.display_name || user.username]
+            [user.email, user.username, user.password, user.display_name || user.username]
         );
 
         await this.db.run(

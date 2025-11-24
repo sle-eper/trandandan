@@ -8,8 +8,8 @@ import axios from "axios";
 // #########################################################
 
 export async function signup_post(request, reply) {
-    const { username, email, password, confirmPassword } = request.body;
-
+    const { username, email, password, confirm } = request.body;
+    
     try {
         const existingUser = await axios.get('http://user-management:3000/profile/User', {
             params: {
@@ -34,7 +34,7 @@ export async function signup_post(request, reply) {
         if (password.length < 8) {
             return reply.code(400).send({ message: 'Password must be at least 8 characters long' });
         }
-        if (password !== confirmPassword) {
+        if (password !== confirm) {
             return reply.code(400).send({ success: false, message: 'Passwords do not match.' });
         }
         const { valid, errors } = validatePassword(password, { minLen: 8 });
@@ -42,6 +42,7 @@ export async function signup_post(request, reply) {
             return reply.code(400).send({ success: false, message: 'Weak password.', errors });
         }
         const hashed = await bcrypt.hash(password, 10);
+        console.log('Hashed password:', hashed);
         const response = await axios.post('http://user-management:3000/profile/create', {
             username,
             email,
@@ -91,7 +92,7 @@ export async function login_post(request, reply) {
     if (!row) {
         return reply.code(400).send({ success: false, message: 'User not found' });
     }
-    const match = await bcrypt.compare(password, row.password);
+    const match = await bcrypt.compare(password, row.data.password_hash);
     if (!match) {
         return reply.code(400).send({ success: false, message: 'Invalid password' });
     }

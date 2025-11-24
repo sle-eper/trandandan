@@ -64,7 +64,7 @@ server.ready().then(() => {
       try{
         const myId: string = data.myId; //
         const friendId: string = data.friendId; //
-        console.log(friendId);
+        // console.log(friendId);
         const msg: string = data.value; //
         const roomName = [myId, friendId].sort().join("_");
         if(!statusOfTowFriend.has(roomName))
@@ -119,6 +119,7 @@ server.ready().then(() => {
       try{
         const friends = await getFriendsOfUser(id);// get friends from user-management service
         const waitingMsg = await getWaitingMsg(id);
+        console.table(waitingMsg)
         socket.emit("friends_list", { friends, waitingMsg });
       }catch(err)
       {

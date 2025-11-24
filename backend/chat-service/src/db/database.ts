@@ -48,8 +48,8 @@ const users = [
 //         insertUsers.run(user.name,user.img);
 //     })
     
-const user:any =  db.prepare(`SELECT id FROM users WHERE id = ?`).get('1');
-const friends:any = db.prepare(`SELECT id FROM users WHERE id != ?`).all('1')
+const user:any =  db.prepare(`SELECT id FROM users WHERE id = ?`).get('2');
+const friends:any = db.prepare(`SELECT id FROM users WHERE id != ?`).all('2')
 const insertFriend = db.prepare(`INSERT INTO friendships (user_id,friend_id) VALUES (?,?)`);
 // const update = db.prepare(`UPDATE friendships SET status = ? WHERE user_id = ? AND friend_id = ?`);
 // const matchFriends = db.prepare(`SELECT users.id,users.name,users.img FROM users INNER JOIN friendships ON users.id = friendships.friend_id WHERE friendships.user_id = ? `).all(user.id);
@@ -71,7 +71,7 @@ const insertFriend = db.prepare(`INSERT INTO friendships (user_id,friend_id) VAL
 // update.run('block','1','3')
 export function getFriendsOfUser(user_id:string):any{
     // return db.prepare(`SELECT users.id,users.name,users.img,friendships.status FROM users INNER JOIN friendships ON users.id = friendships.friend_id WHERE friendships.user_id = ? `).all(user_id);
-    return db.prepare(`SELECT f.id,f.name ,f.img ,fs.status, m.msg , m.send , m.recv , m.status AS msg_status ,m.send_at
+    return db.prepare(`SELECT f.id,f.name ,f.img ,fs.status, m.msg , m.send , m.recv , m.status AS msg_status ,strftime('%H:%M', m.send_at) AS send_at
                         FROM users AS u
                         JOIN friendships AS fs
                         ON u.id = fs.user_id
@@ -121,7 +121,7 @@ export function getTimeOfMsg(msgId:string):string
 }
 export function getWaitingMsg(recv:string)
 {
-    return db.prepare(`SELECT id,msg,room FROM msg WHERE recv = ? AND status = ?`).all(recv,'waiting');
+    return db.prepare(`SELECT id,msg,room,strftime('%H:%M', send_at) FROM msg WHERE recv = ? AND status = ?`).all(recv,'waiting');
 }
 
 export function getAllMsg(roomName:string,limit: number = 20, offset: number = 0)

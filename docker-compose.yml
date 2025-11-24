@@ -39,6 +39,7 @@ services:
       - app-network
     volumes:
       - ./frontend/chat-frontend/src:/app/src
+      - ./frontend/auth_frontend/src_auth:/app/src_auth
       - /app/node_modules
 
   chat-serves:

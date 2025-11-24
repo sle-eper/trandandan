@@ -1,12 +1,17 @@
 import { renderNavBar } from "../components/navbar";
 import { renderSidebar } from "../components/sidebar";
 import { io } from "socket.io-client";
+<<<<<<< HEAD
 const socket = io("http://localhost:3000");//TODO hadi ra hebla o khedama 
 // const socket = io("http://localhost:8080/api/chat", {
 //     path: "/socket.io",
 //     withCredentials: true, // Send cookies for auth
 //     transports: ['websocket', 'polling']
 // });
+=======
+const socket = io("http://localhost:3000");
+
+>>>>>>> origin/abn
 
 import {
     lastMsg,
@@ -26,19 +31,19 @@ let myImg: string = "";
 let imInRoom: string = "";
 let friendId: string = "";
 
-const app = document.getElementById('app');
-if(app)
-{
-    app.innerHTML = `<div id="nav-bar"></div>
-                    <div id="layout" class="flex flex-row  h-[calc(100vh-4rem)]" >
-                    <div id="side-bar" ></div>
-                    <div id="chat-content" class="flex justify-center items-center w-full gap-6 h-[93vh] gap-y-3"></div>
-                    </div>` 
-}
+// const app = document.getElementById('login-app');
+// if(app)
+// {
+//     app.innerHTML = `<div id="nav-bar"></div>
+//                     <div id="layout" class="flex flex-row  h-[calc(100vh-4rem)]" >
+//                     <div id="side-bar" ></div>
+//                     <div id="chat-content" class="flex justify-center items-center w-full gap-6 h-[93vh] gap-y-3"></div>
+//                     </div>` 
+// }
 
-const nav = document.getElementById("nav-bar");
-const sidebar = document.getElementById("side-bar");
-const chatContent = document.getElementById("chat-content");
+// const nav = document.getElementById("nav-bar");
+// const sidebar = document.getElementById("side-bar");
+// const chatContent = document.getElementById("chat-content");
 
 
 function moveUp(id: string) {
@@ -94,7 +99,10 @@ function setupPopupEvents() {
             const value: string = inputMsgZone.value;
             if (value.trim()) {
                 const chatZone = document.getElementById("chat-zone") as HTMLDivElement;
-                chatZone.innerHTML += sendMsg(value,getTime(),myImg);
+                const msgTime = document.getElementById(`time-of-msg-${friendId}`)
+                const time = getTime();
+                chatZone.innerHTML += sendMsg(value,time,myImg);
+
                 // const friendId:string = friendFind.id;
                 socket.emit("send_message", { value, myId, friendId });
                 moveUp(friendId);
@@ -102,7 +110,8 @@ function setupPopupEvents() {
                     `container-of-last-msg-of-${friendId}`
                 );
                 chatZone.scrollTop = chatZone.scrollHeight
-                if (container) container.innerHTML = lastMsg(3, value, friendId);
+                if (container) container.innerHTML = lastMsg('send', value, friendId);
+                if(msgTime) msgTime.innerHTML = time
             }
             inputMsgZone.value = '';
             inputMsgZone.style.height = 'auto';//TODO nsayeb dak input 
@@ -136,12 +145,12 @@ function socketListener() {
                 counterElement.innerText = String(counterElementValue);//TODO handel 9+ msg
             else if(counterElementValue > 9)
                 counterElement.innerText = '+9'
+            const containerMsg = document.getElementById(
+                `container-of-last-msg-of-${id}`
+            );
+            if (containerMsg) containerMsg.innerHTML = lastMsg('recv', msg, id);
+            if(timeOfMsgSpan) timeOfMsgSpan.innerText = timeOfMsg 
         }
-        // const containerMsg = document.getElementById(
-        //     `container-of-last-msg-of-${id}`
-        // );
-        // if (containerMsg) containerMsg.innerHTML = lastMsg(2, msg, id);
-        if(timeOfMsgSpan) timeOfMsgSpan.innerText = timeOfMsg 
     });
     socket.on("receive_message", (msg, msgId ,friendId,timeOfMsg,friendImg) => {
         const chatZone = document.getElementById("chat-zone") as HTMLDivElement;
@@ -151,7 +160,7 @@ function socketListener() {
         const container = document.getElementById(
             `container-of-last-msg-of-${friendId}`
         );
-        if (container) container.innerHTML = lastMsg(2, msg, friendId);
+        // if (container) container.innerHTML = lastMsg('recv', msg, friendId);
     });
     socket.on("allowMsg", (allow: boolean) => {
         const msg = document.getElementById("x");
@@ -195,7 +204,38 @@ function socketListener() {
     })
 }
 
-async function showMainUI() {
+export async function showMainUI() {
+    // const bodyElement = document.getElementById('myBody')
+    // if(bodyElement)
+    // {
+    //     console.log(bodyElement)
+    //     /*     ') */
+    //     bodyElement.classList.remove('bg-black') /*  flex flex-col md:flex-row items-center justify-center min-h-screen px-6 md:px-20') */
+    //     bodyElement.classList.remove('text-white') /* text-white  flex-col md:flex-row items-center justify-center min-h-screen px-6 md:px-20') */
+    //     bodyElement.classList.remove('flex') 
+    //     bodyElement.classList.remove('flex-col') 
+    //     bodyElement.classList.remove('md:flex-row') 
+    //     bodyElement.classList.remove('items-center') 
+    //     bodyElement.classList.remove('min-h-screen') 
+    //     bodyElement.classList.remove('px-6') 
+    //     bodyElement.classList.remove('md:px-20') 
+    //     bodyElement.classList.add('bg-gradient-to-b from-[#0E0E0E] to-[#1A1A1A]')
+
+    // }
+    const app = document.getElementById('login-app');
+    if(app)
+    {
+        app.innerHTML = `<div id="nav-bar"></div>
+                        <div id="layout" class="flex flex-row  h-[calc(100vh-4rem)]" >
+                        <div id="side-bar" ></div>
+                        <div id="chat-content" class="flex justify-center items-center w-full gap-6 h-[93vh] gap-y-3"></div>
+                        </div>` 
+    }
+
+    const nav = document.getElementById("nav-bar");
+    const sidebar = document.getElementById("side-bar");
+    const chatContent = document.getElementById("chat-content");
+
     if (nav) nav.innerHTML = renderNavBar();
     if (sidebar) sidebar.innerHTML = renderSidebar();
 
@@ -217,48 +257,39 @@ async function showMainUI() {
 
     if (chatContent) {
         const friends = await fetchListOfFriends();
-        chatContent.innerHTML = listOfMsg(
-            friends.friends,
-            friends.waitingMsg,
-            myId
-        );
+        chatContent.innerHTML = listOfMsg(friends.friends,friends.waitingMsg,myId);
         chatContent.innerHTML += DM();
 
         //get all of list friends
         const friendsEvent = document.querySelectorAll(".friend-msg-zone");
         friendsEvent.forEach((friend) => {
             friend.addEventListener("click", (event) => {
-
-                /******************************************get msg on scroll*******************************/
-
-                let firestOne:boolean = false 
-                let isFetching = false;
-                function onScroll()
+            /******************************************get msg on scroll*******************************/
+            let firestOne:boolean = false 
+            let isFetching = false;
+            function onScroll()
+            {
+                let offset:number = 0;
+                if(!firestOne)
                 {
-                    let offset:number = 0;
-                    if(!firestOne)
-                    {
-                        socket.emit('get_messages',{myId,friendId,limit: 20, offset})//TODO MAZL KHASEHA TFEHAM 
-                        firestOne = true;
-                    }
-
-                    const chatZone = document.getElementById('chat-zone');
-                    if(chatZone)
-                    {
-                        chatZone.addEventListener('scroll',async()=>{
-                            if(chatZone.scrollTop < 190  && !isFetching )
-                            {
-                                isFetching = true;
-                                offset += 20;
-                                await socket.emit('get_old_messages',{myId,friendId,limit: 20, offset})//TODO MAZL KHASEHA TFEHAM 
-                                isFetching = false;
-                            }
-                        })
-                    }
+                    socket.emit('get_messages',{myId,friendId,limit: 20, offset})
+                    firestOne = true;
                 }
-                /*******************************************************************/
-
-
+                const chatZone = document.getElementById('chat-zone');
+                if(chatZone)
+                {
+                    chatZone.addEventListener('scroll',async()=>{
+                        if(chatZone.scrollTop < 190  && !isFetching )
+                        {
+                            isFetching = true;
+                            offset += 20;
+                            await socket.emit('get_old_messages',{myId,friendId,limit: 20, offset})
+                            isFetching = false;
+                        }
+                    })
+                }
+            }
+                /**********************************************************************************************/
 
                 imInRoom = friend.dataset.roomname;
                 friendId = friend.dataset.id;
@@ -272,12 +303,8 @@ async function showMainUI() {
                     // socket.emit('get_messages',{myId,friendId,limit: 20, offset: 0})//TODO MAZL KHASEHA TFEHAM 
                     socket.emit("joinToRoom", roomName);
 
-                    const counterElement: HTMLDivElement = document.getElementById(
-                        `counter-of-${friendId}`
-                    ) as HTMLDivElement;
-                    const lastMsgVar: HTMLSpanElement = document.getElementById(
-                        `last-msg-${friendId}`
-                    ) as HTMLSpanElement;
+                    const counterElement: HTMLDivElement = document.getElementById(`counter-of-${friendId}`) as HTMLDivElement;
+                    const lastMsgVar: HTMLSpanElement = document.getElementById(`last-msg-${friendId}`) as HTMLSpanElement;
                     if (!counterElement.classList.contains("hidden")) {
                         counterElement.textContent = "0";
                         counterElement.classList.add("hidden");
@@ -448,26 +475,26 @@ async function showMainUI() {
 }
 socketListener();
 
-chatContent!.innerHTML = `
-  <div id="user-choice" class="flex flex-col items-center justify-center h-full text-white">
-    <p class="text-xl mb-3">ID</p>
-    <input class="text-white" id="username-input" type="text" placeholder="Enter username"
-      class="p-2 rounded mb-3 text-black w-[200px] text-center"/>
-    <div class="flex gap-5">
-      <button id="yes-btn" class="bg-green-600 px-4 py-2 rounded">ok</button>
-    </div>
-  </div>
-`;
+// chatContent!.innerHTML = `
+//   <div id="user-choice" class="flex flex-col items-center justify-center h-full text-white">
+//     <p class="text-xl mb-3">ID</p>
+//     <input class="text-white" id="username-input" type="text" placeholder="Enter username"
+//       class="p-2 rounded mb-3 text-black w-[200px] text-center"/>
+//     <div class="flex gap-5">
+//       <button id="yes-btn" class="bg-green-600 px-4 py-2 rounded">ok</button>
+//     </div>
+//   </div>
+// `;
 
-const yesBtn = document.getElementById("yes-btn")!;
-const usernameInput = document.getElementById(
-    "username-input"
-) as HTMLInputElement;
-const userChoice = document.getElementById("user-choice");
+// const yesBtn = document.getElementById("yes-btn")!;
+// const usernameInput = document.getElementById(
+//     "username-input"
+// ) as HTMLInputElement;
+// const userChoice = document.getElementById("user-choice");
 
-yesBtn.addEventListener("click", () => {
-    const name = usernameInput.value.trim();
-    myId = name;
-    if (userChoice) userChoice.remove();
-    showMainUI();
-});
+// yesBtn.addEventListener("click", () => {
+//     const name = usernameInput.value.trim();
+//     myId = name;
+//     if (userChoice) userChoice.remove();
+//     showMainUI();
+// });
