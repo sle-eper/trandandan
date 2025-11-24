@@ -84,28 +84,34 @@ export const forgotTemplate = () => `
     </p>
   </div>
 `;
-export const ChangePass = () =>`
+export const ChangePass = () => `
 <div class="bg-black/40 backdrop-blur-md rounded-2xl shadow-lg border border-gray-700 
     px-8 py-8 md:px-10 md:py-10 w-full max-w-sm md:h-[550px] md:w-[320px] mb-10 md:mb-0">
+
       <div>
         <h2 class="text-2xl md:text-3xl font-bold mb-4">Change Password</h2>
+
         <div class="space-y-4">
-          <input type="password" placeholder="Password" 
+          <input id="change-pass" type="password" placeholder="Password" 
           class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
-          <input type="password" placeholder="Confirm Password" 
+
+          <input id="change-confirm" type="password" placeholder="Confirm Password" 
           class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
         </div>
-        <button class="w-full bg-gradient-to-r from-[#9E3234] via-[#D8585E] to-[#E64249] 
+
+        <button id="change-btn" 
+        class="w-full bg-gradient-to-r from-[#9E3234] via-[#D8585E] to-[#E64249] 
         text-white py-2 rounded-md mt-6 hover:opacity-90 transition">
           Change Password
         </button>
       </div>
-      <p class="text-center text-gray-400 text-sm mt-6 cursor-pointer hover:text-white" 
-        onclick="showPage('login-page')">
+
+      <p id="change-back" class="text-center text-gray-400 text-sm mt-6 cursor-pointer hover:text-white">
         Back to Login
       </p>
     </div>
-`
+`;
+
 // src/login/templates.ts
 export const images: Record<string, string> = {
   "login-page": "/src_auth/images/pingpong2.jpg",

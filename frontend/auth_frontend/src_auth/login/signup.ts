@@ -1,7 +1,7 @@
 // src/login/signup.ts
 import { signupTemplate, sharedImage } from "./templates";
 import { navigate } from "../app";
-import { signupUser } from "./api"
+import { signupUser } from "./api";
 
 export function showSignupPage(containerId = "login-app") {
   const app = document.getElementById(containerId);
