@@ -1,16 +1,13 @@
 import {
   getAllMsg,
   changeToRecv,
-  getFriendsOfUser,
   getWaitingMsg,
-  changeStatusOfFriends,
-  getStatusOfTowFriends,
   saveMsg,
   changeAllToRecv,
   getTimeOfMsg,
-  dataOfUser
 } from "./db/database";
 
+import { fetchUserData, getStatusOfTowFriends,changeStatusOfFriends,getFriendsOfUser } from "./fetchingData";
 import fastify from "fastify";
 import fastifyIO from "fastify-socket.io";
 
@@ -28,16 +25,32 @@ const statusOfTowFriend = new Map<string,object>();//TODO cash on time
 server.ready().then(() => {
   const io = (server as any).io;
 
-  io.on("connection", (socket) => {
+  io.use((socket, next) => {
+    // Get user ID from handshake headers (set by nginx)
+    const userId = socket.handshake.headers['x-user-id'];
+    const user = socket.handshake.headers['x-user'];
+    console.log('User ID from headers:', userId);
+    console.log('User Data from headers:', user);
+    if (!userId) {
+      return next(new Error('Authentication error'));
+    }
+    
+    // Attach user data to socket
+    socket.data.userId = userId;
+    socket.data.user = user;
+    
+    next();
+  });
+
+  io.on("connection", async (socket) => {
 
     //get data of user on connection 
-    socket.on("con", (id: string) => {
+    socket.on("con", async(id: string) => {
       try{
-        // socket.userId = id;
-        const datOfUser = dataOfUser(id); 
-        socket.data.userId = id;
+        const id: string = socket.data.userId;
+        const datOfUser = await fetchUserData(id); // get data of user from user-management service
         onlineUsers.set(id, socket.id);
-        socket.emit('setIMg',datOfUser.img)
+        // socket.emit('setIMg',datOfUser.img)
         // console.log(Array.from(onlineUsers.entries()));
         // console.log('----------------------');
         
@@ -73,7 +86,7 @@ server.ready().then(() => {
             const msgId:string =  await saveMsg(myId, friendId, msg, roomName, "waiting");
             const timeOfMsg:string = getTimeOfMsg(msgId);
 
-            const UserData = dataOfUser(friendId); 
+            const UserData = await fetchUserData(friendId); // get data of user from user-management service
 
             socket.to(roomName).emit("receive_message", msg, msgId ,myId,timeOfMsg,UserData);
             socket.to(friendSocketId).emit("live", myId, roomName, msg,timeOfMsg,UserData);
@@ -104,7 +117,7 @@ server.ready().then(() => {
 
     socket.on("get_friends", async (id: string) => {
       try{
-        const friends = await getFriendsOfUser(id);
+        const friends = await getFriendsOfUser(id);// get friends from user-management service
         const waitingMsg = await getWaitingMsg(id);
         console.table(waitingMsg)
         socket.emit("friends_list", { friends, waitingMsg });
@@ -116,10 +129,11 @@ server.ready().then(() => {
 
     socket.on("status", async (data) => {
       try{
-        const roomName = [data.user_id, data.friend_id].sort().join("_");
-        const newStatus:object = await changeStatusOfFriends(data);
+        const roomName = [data.user_id, data.friend_id].sort().join("_");//room name 
+        console.log("status data:", data);
+        const newStatus:object = await changeStatusOfFriends(data.status, data.user_id, data.friend_id);// update status in database blocked/accepted
         if(statusOfTowFriend.has(roomName))
-        {
+        {                    
           statusOfTowFriend.set(roomName,newStatus);
         }
         else(!statusOfTowFriend.has(roomName))
@@ -197,7 +211,7 @@ server.ready().then(() => {
         const offset = data.offset || 0;
         await changeAllToRecv(data.myId,roomName)
         const messages = await getAllMsg(roomName, limit, offset);
-        const UserData = dataOfUser(data.friendId); 
+        const UserData = await fetchUserData(data.friendId); 
         // console.log('---------get all--------');
         // console.table(messages);
         // console.log('------------------------');
@@ -211,7 +225,7 @@ server.ready().then(() => {
         const offset = data.offset || 0;
         await changeAllToRecv(data.myId,roomName)
         const messages = await getAllMsg(roomName, limit, offset);
-        const UserData = dataOfUser(data.friendId); 
+        const UserData = await fetchUserData(data.friendId); 
 
         // console.table(messages);
         // console.log('---------get old--------');

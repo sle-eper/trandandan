@@ -11,9 +11,9 @@
     "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
-    "vite": "^7.1.7",
-    "typescript": "~5.9.3",
+    "@types/node": "^24.8.0",
     "tailwindcss": "^4.1.16",
-    "@types/node": "^24.8.0"
+    "typescript": "~5.9.3",
+    "vite": "^7.1.7"
   }
 }

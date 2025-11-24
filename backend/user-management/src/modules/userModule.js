@@ -8,19 +8,19 @@ class UserModule{
 
     async findById(id) {
         return this.db.get(
-            'SELECT id, email, username FROM users WHERE id = ?',
+            'SELECT id, email, username, avatar_url ,display_name FROM users WHERE id = ?',
             id
         );
     }
     async findByUsername(username) {
         return this.db.get(
-            'SELECT * FROM users WHERE username = ?',
+            'SELECT id, email, username ,display_name ,password FROM users WHERE username = ?',
             [username]
         );
     }
     async findByEmail(email) {
         return this.db.get(
-            'SELECT * FROM users WHERE email = ?',
+            'SELECT id, email, username ,display_name ,password FROM users WHERE email = ?',
             [email]  
         );
     }

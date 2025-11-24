@@ -12,7 +12,20 @@ class ProfileController {
       this.statsModel = new UserStats(database);
     }
 
-
+    async getById(request, reply) { 
+      try {
+        const { id } = request.params;
+        const user = await this.userModel.getById(id);
+        
+        if (!user) {
+          return reply.code(404).send({ error: 'User not found' });
+        }
+        
+        return { success: true, user };
+      } catch (error) {
+        return reply.code(500).send({ error: error.message });
+      }
+    }
 
 
   async setUser(request, reply) {
@@ -21,15 +34,16 @@ class ProfileController {
       if (!username || !email || !displayName || (!password && !id_token)) {
         return reply.code(400).send({ error: 'All fields are required' });
       }
-      console.log('Creating user:', { username, email, displayName });
-      console.log('Password:', password);
+      
+     
       const userId = await this.userModel.create({
         username,
         email,
         password,
         display_name: displayName
       });
-      const profile = await this.userModel.getProfile(userId);
+
+      const profile = await this.userModel.getById(userId);
       console.log('Created user profile:', profile);
       
       return reply.code(201).send({
@@ -83,7 +97,7 @@ class ProfileController {
     // GET /profile/:id - Get another user's profile (view another user's profile /dashboard)
     async getUserProfile(request, reply) {
       try {
-        const { id } = request.params;
+        const id = request.headers['x-user-id'];
         const profile = await this.userModel.getProfile(id);
         
         if (!profile) {
@@ -107,7 +121,7 @@ class ProfileController {
   async updateProfile(request, reply) {
     try {
     
-      const userId = request.user.userId;
+      const userId = request.headers['x-user-id'];
       const updates = request.body;
       
       console.log('User is updating:', Object.keys(updates));
@@ -150,7 +164,7 @@ class ProfileController {
     async uploadAvatar(request, reply) {
       try {
         
-        const userId = request.user.userId;
+        const userId = request.headers['x-user-id'];
         const data = await request.file();
         
         if (!data) {
