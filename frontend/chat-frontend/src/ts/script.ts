@@ -22,19 +22,19 @@ let myImg: string = "";
 let imInRoom: string = "";
 let friendId: string = "";
 
-const app = document.getElementById('app');
-if(app)
-{
-    app.innerHTML = `<div id="nav-bar"></div>
-                    <div id="layout" class="flex flex-row  h-[calc(100vh-4rem)]" >
-                    <div id="side-bar" ></div>
-                    <div id="chat-content" class="flex justify-center items-center w-full gap-6 h-[93vh] gap-y-3"></div>
-                    </div>` 
-}
+// const app = document.getElementById('login-app');
+// if(app)
+// {
+//     app.innerHTML = `<div id="nav-bar"></div>
+//                     <div id="layout" class="flex flex-row  h-[calc(100vh-4rem)]" >
+//                     <div id="side-bar" ></div>
+//                     <div id="chat-content" class="flex justify-center items-center w-full gap-6 h-[93vh] gap-y-3"></div>
+//                     </div>` 
+// }
 
-const nav = document.getElementById("nav-bar");
-const sidebar = document.getElementById("side-bar");
-const chatContent = document.getElementById("chat-content");
+// const nav = document.getElementById("nav-bar");
+// const sidebar = document.getElementById("side-bar");
+// const chatContent = document.getElementById("chat-content");
 
 
 function moveUp(id: string) {
@@ -195,7 +195,38 @@ function socketListener() {
     })
 }
 
-async function showMainUI() {
+export async function showMainUI() {
+    // const bodyElement = document.getElementById('myBody')
+    // if(bodyElement)
+    // {
+    //     console.log(bodyElement)
+    //     /*     ') */
+    //     bodyElement.classList.remove('bg-black') /*  flex flex-col md:flex-row items-center justify-center min-h-screen px-6 md:px-20') */
+    //     bodyElement.classList.remove('text-white') /* text-white  flex-col md:flex-row items-center justify-center min-h-screen px-6 md:px-20') */
+    //     bodyElement.classList.remove('flex') 
+    //     bodyElement.classList.remove('flex-col') 
+    //     bodyElement.classList.remove('md:flex-row') 
+    //     bodyElement.classList.remove('items-center') 
+    //     bodyElement.classList.remove('min-h-screen') 
+    //     bodyElement.classList.remove('px-6') 
+    //     bodyElement.classList.remove('md:px-20') 
+    //     bodyElement.classList.add('bg-gradient-to-b from-[#0E0E0E] to-[#1A1A1A]')
+
+    // }
+    const app = document.getElementById('login-app');
+    if(app)
+    {
+        app.innerHTML = `<div id="nav-bar"></div>
+                        <div id="layout" class="flex flex-row  h-[calc(100vh-4rem)]" >
+                        <div id="side-bar" ></div>
+                        <div id="chat-content" class="flex justify-center items-center w-full gap-6 h-[93vh] gap-y-3"></div>
+                        </div>` 
+    }
+
+    const nav = document.getElementById("nav-bar");
+    const sidebar = document.getElementById("side-bar");
+    const chatContent = document.getElementById("chat-content");
+
     if (nav) nav.innerHTML = renderNavBar();
     if (sidebar) sidebar.innerHTML = renderSidebar();
 
@@ -435,26 +466,26 @@ async function showMainUI() {
 }
 socketListener();
 
-chatContent!.innerHTML = `
-  <div id="user-choice" class="flex flex-col items-center justify-center h-full text-white">
-    <p class="text-xl mb-3">ID</p>
-    <input class="text-white" id="username-input" type="text" placeholder="Enter username"
-      class="p-2 rounded mb-3 text-black w-[200px] text-center"/>
-    <div class="flex gap-5">
-      <button id="yes-btn" class="bg-green-600 px-4 py-2 rounded">ok</button>
-    </div>
-  </div>
-`;
+// chatContent!.innerHTML = `
+//   <div id="user-choice" class="flex flex-col items-center justify-center h-full text-white">
+//     <p class="text-xl mb-3">ID</p>
+//     <input class="text-white" id="username-input" type="text" placeholder="Enter username"
+//       class="p-2 rounded mb-3 text-black w-[200px] text-center"/>
+//     <div class="flex gap-5">
+//       <button id="yes-btn" class="bg-green-600 px-4 py-2 rounded">ok</button>
+//     </div>
+//   </div>
+// `;
 
-const yesBtn = document.getElementById("yes-btn")!;
-const usernameInput = document.getElementById(
-    "username-input"
-) as HTMLInputElement;
-const userChoice = document.getElementById("user-choice");
+// const yesBtn = document.getElementById("yes-btn")!;
+// const usernameInput = document.getElementById(
+//     "username-input"
+// ) as HTMLInputElement;
+// const userChoice = document.getElementById("user-choice");
 
-yesBtn.addEventListener("click", () => {
-    const name = usernameInput.value.trim();
-    myId = name;
-    if (userChoice) userChoice.remove();
-    showMainUI();
-});
+// yesBtn.addEventListener("click", () => {
+//     const name = usernameInput.value.trim();
+//     myId = name;
+//     if (userChoice) userChoice.remove();
+//     showMainUI();
+// });

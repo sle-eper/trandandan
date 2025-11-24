@@ -3,6 +3,7 @@ import { loginTemplate, sharedImage } from "./templates";
 import { navigate } from "../app";
 import { loginUser } from "./api";
 // import { showDashboard } from "../dashboard/dashboard";
+import {showMainUI} from '../../src/ts/script.ts'
 
 export function showLoginPage(containerId = "login-app") {
   const app = document.getElementById(containerId);
@@ -46,7 +47,9 @@ function attachLoginHandlers() {
       console.log("Login success:", result);
 
       // show dashboard
-      navigate("dashboard");
+      // navigate("dashboard");
+      showMainUI()
+
     } else {
       alert("Invalid username or password");
     }
