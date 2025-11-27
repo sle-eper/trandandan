@@ -4,7 +4,7 @@ import { db } from './db/database';
 const USER_MANAGEMENT_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://user-management:3000';
 
 // Service function to fetch user data
- async function fetchUserData(userId: string) {
+async function fetchUserData(userId: string) {
   try {
     const response = await axios.get(`${USER_MANAGEMENT_SERVICE_URL}/user/${userId}`, {
       headers: {

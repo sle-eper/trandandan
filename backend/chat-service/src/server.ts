@@ -11,13 +11,15 @@ import { fetchUserData, getStatusOfTowFriends,changeStatusOfFriends,getFriendsOf
 import fastify from "fastify";
 import fastifyIO from "fastify-socket.io";
 
-const server = fastify();
+const server = fastify({ logger: true });
 server.register(fastifyIO, {
+  path: "/socket.io",
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
-  },
+  }
 });
+
 //TODO convert all ids to string
 const onlineUsers = new Map<string, string>(); //TODO handel multiple tab
 const statusOfTowFriend = new Map<string,object>();//TODO cash on time
@@ -25,22 +27,36 @@ const statusOfTowFriend = new Map<string,object>();//TODO cash on time
 server.ready().then(() => {
   const io = (server as any).io;
 
-  io.use((socket, next) => {
-    // Get user ID from handshake headers (set by nginx)
-    const userId = socket.handshake.headers['x-user-id'];
-    const user = socket.handshake.headers['x-user'];
-    console.log('User ID from headers:', userId);
-    console.log('User Data from headers:', user);
-    if (!userId) {
-      return next(new Error('Authentication error'));
-    }
+//   io.use(async (socket, next) => {
+//   const token = socket.handshake.auth.token;
+//   if (!token) return next(new Error("No token"));
+//   console.log(token)
+
+//   // const user = verifyToken(token); // JWT, or call auth microservice
+  
+//   // if (!user) return next(new Error("Invalid token"));
+  
+//   socket.data.userId = user.id;
+//   next();
+// });
+
+
+  // io.use((socket, next) => {
+  //   // Get user ID from handshake headers (set by nginx)
+  //   const userId = socket.handshake.headers['x-user-id'];
+  // const user = socket.handshake.headers['x-user'];
+  //   console.log('User ID from headers:', userId);
+  //   console.log('User Data from headers:', user);
+  //   if (!userId) {
+  //     return next(new Error('Authentication error'));
+  //   }
     
-    // Attach user data to socket
-    socket.data.userId = userId;
-    socket.data.user = user;
+  //   // Attach user data to socket
+  //   socket.data.userId = userId;
+  //   socket.data.user = user;
     
-    next();
-  });
+  //   next();
+  // });
 
   // io.on("connection", async (socket) => {
 
@@ -246,13 +262,20 @@ server.ready().then(() => {
   //   });
   // });
 
-  // io.on("connection", async (socket) => {
-  //   console.log('hii',socket.data.userId);
-  // })
+  io.on("connection", async (socket) => {
+    socket.on('con',(id)=>{
+      fetchUserData(id);
+    })
+    // const userId = socket.handshake.headers['x-user-id'];
+    // const user = socket.handshake.headers['x-user'];
+    // console.log('hii  ',userId)
+    // console.log("user  ",user)
+  })
 });
 
 async function startServer() {
   await server.listen({ port: 3000, host: '0.0.0.0' });
+  
   console.log("Server running on 0.0.0.0:3000");
 }
 

@@ -3,7 +3,7 @@ import { loginTemplate, sharedImage } from "./templates";
 import { navigate } from "../app";
 import { loginUser } from "./api";
 // import { showDashboard } from "../dashboard/dashboard";
-import {showMainUI} from '../../src/ts/script.ts'
+import { showMainUI } from "../../src/ts/script.ts";
 
 export function showLoginPage(containerId = "login-app") {
   const app = document.getElementById(containerId);
@@ -31,8 +31,12 @@ function attachLoginHandlers() {
 
   // ⬅️ FIXED: async handler because we use await
   btn.addEventListener("click", async () => {
-    const username = (document.getElementById("login-username") as HTMLInputElement).value.trim();
-    const password = (document.getElementById("login-password") as HTMLInputElement).value.trim();
+    const username = (
+      document.getElementById("login-username") as HTMLInputElement
+    ).value.trim();
+    const password = (
+      document.getElementById("login-password") as HTMLInputElement
+    ).value.trim();
 
     if (!username || !password) {
       alert("Please fill all fields.");
@@ -40,16 +44,21 @@ function attachLoginHandlers() {
     }
 
     // ----------- CALL BACKEND -----------
-    const result = await loginUser(username, password);
-    // ------------------------------------
+    const { response, body } = await loginUser(username, password);
 
-    if (result.success) {
-      console.log("Login success:", result);
+// Body first
+if (body.success && response) {
+  // console.log(body);
+  // console.log(response.headers)
+  // Read headers from the REAL response
+  // const user = response.headers.get("x-user");
+  // const userId = response.headers.get("x-user-id");
 
-      // show dashboard
-      // navigate("dashboard");
-      showMainUI()
+  // console.log("Header username:", user);
+  const userId = response.headers.get('x-user-id')
+  console.log("Header userId:", userId);
 
+    showMainUI(userId);
     } else {
       alert("Invalid username or password");
     }
