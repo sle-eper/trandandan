@@ -7,7 +7,9 @@ export function showDashboard() {
   const app = document.getElementById("login-app");
 
   if (!app) return;
-  
+document.body.classList.remove("flex", "items-center", "justify-center", "px-6", "md:px-20");
+document.body.classList.add("bg-gray-900", "min-h-screen");
+
   app.innerHTML = `
   <div class="flex flex-col h-screen bg-[#111] text-white">
       

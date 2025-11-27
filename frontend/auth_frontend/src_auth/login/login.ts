@@ -1,7 +1,7 @@
 // login.ts
 import { loginTemplate, sharedImage } from "./templates";
-import { navigate } from "../app";
 import { loginUser } from "./api";
+import { navigate } from "../app";
 // import { showDashboard } from "../dashboard/dashboard";
 
 export function showLoginPage(containerId = "login-app") {
@@ -22,6 +22,8 @@ function attachLoginHandlers() {
   const btn = document.getElementById("login-btn") as HTMLButtonElement | null;
   const signup = document.getElementById("login-signup");
   const forgot = document.getElementById("login-forgot");
+  const googleBtn = document.getElementById("login-google");
+  const githubBtn = document.getElementById("login-github");
 
   if (signup) signup.addEventListener("click", () => navigate("signup"));
   if (forgot) forgot.addEventListener("click", () => navigate("forgot"));
@@ -51,4 +53,23 @@ function attachLoginHandlers() {
       alert("Invalid username or password");
     }
   });
+  if(googleBtn)
+  googleBtn.addEventListener("click", async () => {
+    try {
+      // Your backend route
+      window.location.href = "http://localhost:8080/api/auth/google";
+    } catch (err) {
+      console.error(err);
+    }
+  });
+  if(githubBtn)
+    githubBtn.addEventListener("click", async () => {
+    try {
+      // Your backend route
+      window.location.href = "http://localhost:8080/api/auth/github";
+    } catch (err) {
+      console.error(err);
+    }
+  });
 }
+
