@@ -13,7 +13,7 @@ export function showLoginPage(containerId = "login-app") {
       ${loginTemplate()}
       ${sharedImage("login-page")}
     </div>
-  `;
+    `;
 
   attachLoginHandlers();
 }

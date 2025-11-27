@@ -128,7 +128,7 @@ export async function githubAuthCallback_get(request, reply) {
             //     message: 'You are Authourised'
                 
             // });
-            .redirect("http://localhost:8080/api/auth/signup");
+            .redirect("http://localhost:8080/auth/success?token=" + jwt);
         }
         else {
             

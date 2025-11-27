@@ -202,14 +202,16 @@ import { showSignupPage } from "./login/signup";
 import { showForgotPage } from "./login/forgot_pass";
 import { showDashboard } from "./dashboard/dashboard"; // your dashboard module
 import { showchangePassPage } from "./login/change_pass";
+import { handleOAuthSuccess } from "./login/auth_success";
 
-export function navigate(page: "login" | "signup" | "forgot" | "dashboard" | "change") {
+export function navigate(page: "login" | "signup" | "forgot" | "dashboard" | "change" | "auth") {
   switch (page) {
     case "login": showLoginPage(); break;
     case "signup": showSignupPage(); break;
     case "forgot": showForgotPage(); break;
     case "dashboard": showDashboard(); break;
     case "change" : showchangePassPage() ; break;
+    case "auth" : handleOAuthSuccess(); break;
   }
 }
 

@@ -2,6 +2,7 @@
 
 import { renderNavBar } from "./navbar";
 import { renderSidebar } from "./sidebar";
+import { navBarLogic } from "./navbar";
 
 export function showDashboard() {
   const app = document.getElementById("login-app");
@@ -34,6 +35,7 @@ document.body.classList.add("bg-gray-900", "min-h-screen");
   
     if (nav) nav.innerHTML = renderNavBar();
     if (sidebar) sidebar.innerHTML = renderSidebar();
+    navBarLogic();
 
   // Render navbar and sidebar
 }
