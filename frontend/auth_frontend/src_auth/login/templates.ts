@@ -28,12 +28,17 @@ export const loginTemplate = () => `
         <hr class="flex-grow border-gray-700" />
       </div>
       <div class="flex items-center justify-center gap-6">
-        <button class="w-9 h-9 bg-black/40 rounded-full flex items-center justify-center cursor-pointer">
-          <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" alt="Google" class="w-9 h-9" />
+        <button id="login-google" class="w-9 h-9 bg-black/40 rounded-full flex items-center justify-center cursor-pointer">
+        <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" 
+          alt="Google" class="w-9 h-9" />
         </button>
-        <button class="w-9 h-9 bg-gray-800 rounded-full flex items-center justify-center cursor-pointer">
-          <img src="https://cdn-icons-png.flaticon.com/512/25/25231.png" alt="GitHub" class="w-9 h-9 invert" />
+        
+        <button id="login-github" 
+          class="w-9 h-9 bg-gray-800 rounded-full flex items-center justify-center cursor-pointer">
+          <img src="https://cdn-icons-png.flaticon.com/512/25/25231.png" 
+              alt="GitHub" class="w-9 h-9 invert" />
         </button>
+
       </div>
     </div>
 

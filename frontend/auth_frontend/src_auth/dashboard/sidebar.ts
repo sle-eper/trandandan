@@ -1,6 +1,6 @@
 export function renderSidebar(): string {
-  return `<div id="layout" class="flex justify-center items-center h-[calc(100vh-4rem)] w-30 ">
-      <aside id="sidebar" class="bg-gradient-to-t from-[#711F21] via-[#E63946] to-[#711F21] h-[50%] w-[50%] rounded-3xl">
+  return `<div id="layout" class="flex justify-center items-center h-[calc(90vh-3rem)] w-30 ">
+      <aside id="sidebar" class="bg-gradient-to-t from-[#711F21] via-[#E63946] to-[#711F21] h-[65%] w-[50%] rounded-3xl">
         <nav class="flex flex-col justify-around h-full items-center">
           <a href="">
             <span class="material-symbols-outlined 
