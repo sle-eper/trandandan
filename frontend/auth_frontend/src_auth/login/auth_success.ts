@@ -2,17 +2,10 @@
 import { navigate } from "../app";
 
 export function handleOAuthSuccess() {
-  const params = new URLSearchParams(window.location.search);
-  const token = params.get("token");
+  // Example
+  document.body.innerHTML = "<h1>Logging you in...</h1>";
 
-  if (!token) {
-    alert("OAuth failed");
-    return;
-  }
-
-  // store the user session
-  localStorage.setItem("token", token);
-
-  // redirect to dashboard
-  navigate("dashboard");
+  // Fetch the session from your backend
+  fetch("/api/auth/google/callback", { credentials: "include" })
+    .then(() => navigate("dashboard"));
 }
