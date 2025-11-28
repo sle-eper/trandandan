@@ -2,7 +2,7 @@ export function renderNavBar(): string {
   return `
     <nav id="nav-bar"
       class="w-full flex items-center justify-between 
-             px-8 py-4 rounded-3xl sticky top-0 z-50 bg-[#111]">
+             px-8 py-4  sticky top-0 z-50 bg-[#111]">
 
       <!-- Logo -->
       <div class="flex items-center gap-4">
