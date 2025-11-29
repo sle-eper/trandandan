@@ -1,6 +1,6 @@
-
 import jwt from 'jsonwebtoken';
 import axios from "axios";
+
 
 
 // #########################################################
@@ -54,11 +54,7 @@ export async function googleAuthCallback_get(request, reply) {
                     path: '/',
                     httpOnly: true,
                 })
-                .code(200).send({
-                    success: true,
-                    message: 'You are Authourised'
-                });
-
+                .redirect("http://localhost:5173/")
         }
         else {
             console.log('-----------------------------------------------------', name, '===', email, '===', id_token);
@@ -72,7 +68,6 @@ export async function googleAuthCallback_get(request, reply) {
                 .code(200).send({ success: false, message: 'You are Authourised' });
         }
     } catch (err) {
-        cosole
         reply.status(500).send("Authentication failed");
     }
 }
@@ -128,10 +123,12 @@ export async function githubAuthCallback_get(request, reply) {
                 path: '/',
                 httpOnly: true,
             })
-            .code(200).send({
-                success: true,
-                message: 'You are Authourised'
-            });
+            // .code(200).send({
+            //     success: true,
+            //     message: 'You are Authourised'
+                
+            // });
+            .redirect("http://localhost:8080/auth/success?token=" + jwt);
         }
         else {
             

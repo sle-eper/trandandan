@@ -7,6 +7,10 @@ const socket = io("http://localhost:3000");//TODO hadi ra hebla o khedama
 //     withCredentials: true, // Send cookies for auth
 //     transports: ['websocket', 'polling']
 // });
+// =========
+// const socket = io("http://localhost:3000");
+
+// >>>>>>>>> Temporary merge branch 2
 
 import {
     lastMsg,
@@ -21,7 +25,7 @@ import {
     generateBlockButton,
 } from "../components/content";
 
-let myId: string = "";
+// let myId: string = "";
 let myImg: string = "";
 let imInRoom: string = "";
 let friendId: string = "";
@@ -199,7 +203,9 @@ function socketListener() {
     })
 }
 
-export async function showMainUI() {
+export async function showMainUI(myId:string) {
+    socket.emit("con", myId);
+    // console.log("from chat frontend",myId)
     // const bodyElement = document.getElementById('myBody')
     // if(bodyElement)
     // {
@@ -239,7 +245,7 @@ export async function showMainUI() {
     let inputMsgZone: HTMLInputElement;
     let dmZone: HTMLElement | null;
 
-    socket.emit("con", myId);
+    
 
     function fetchListOfFriends(): Promise<any> {
         return new Promise((resolve) => {

@@ -15,7 +15,7 @@ class ProfileController {
     async getById(request, reply) { 
       try {
         const { id } = request.params;
-        const user = await this.userModel.getById(id);
+        const user = await this.userModel.findById(id);
         
         if (!user) {
           return reply.code(404).send({ error: 'User not found' });
@@ -35,9 +35,6 @@ class ProfileController {
         return reply.code(400).send({ error: 'All fields are required' });
       }
       
-     
-      console.log('Creating user:', { username, email, displayName });
-      console.log('Password:', password);
       const userId = await this.userModel.create({
         username,
         email,
@@ -45,7 +42,7 @@ class ProfileController {
         display_name: displayName
       });
 
-      const profile = await this.userModel.getProfile(userId);
+      const profile = await this.userModel.getById(userId);
       console.log('Created user profile:', profile);
       
       return reply.code(201).send({
