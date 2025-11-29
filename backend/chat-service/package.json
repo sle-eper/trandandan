@@ -2,7 +2,7 @@
   "name": "chat-backend",
   "version": "1.0.0",
   "scripts": {
-    "dev": "nodemon --watch src --exec ts-node src/server.ts",
+    "dev": "nodemon -L --watch src --exec node server.js",
     "build": "tsc",
     "start": "node dist/server.js"
   },
