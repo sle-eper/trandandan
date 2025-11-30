@@ -63,7 +63,7 @@ services:
     depends_on:
       - user-management
       - authentication
-  
+      - front-end
 
 networks:
   app-network:

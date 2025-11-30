@@ -1,11 +1,17 @@
-// authSuccess.ts
 import { navigate } from "../app";
-
 export function handleOAuthSuccess() {
-  // Example
-  document.body.innerHTML = "<h1>Logging you in...</h1>";
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
 
-  // Fetch the session from your backend
-  fetch("/api/auth/google/callback", { credentials: "include" })
-    .then(() => navigate("dashboard"));
+  if (!token) {
+    document.body.innerHTML = "<h1>OAuth failed</h1>";
+    return;
+  }
+
+  // Save token
+  localStorage.setItem("token", token);
+
+  // Load dashboard
+  navigate("dashboard");
 }
+
