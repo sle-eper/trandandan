@@ -9,6 +9,7 @@ RUN npm install
 COPY ./index.html ./
 COPY ./chat-frontend ./
 COPY ./auth_frontend ./
+COPY ./vite.config.js ./
 
 EXPOSE 5173
 

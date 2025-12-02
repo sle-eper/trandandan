@@ -54,7 +54,8 @@ export async function googleAuthCallback_get(request, reply) {
                     path: '/',
                     httpOnly: true,
                 })
-                .redirect("http://localhost:5173/")
+            .redirect(`http://localhost:8080/auth/success?token=${token}`)
+
         }
         else {
             console.log('-----------------------------------------------------', name, '===', email, '===', id_token);
@@ -123,12 +124,8 @@ export async function githubAuthCallback_get(request, reply) {
                 path: '/',
                 httpOnly: true,
             })
-            // .code(200).send({
-            //     success: true,
-            //     message: 'You are Authourised'
-                
-            // });
-            .redirect("http://localhost:8080/auth/success?token=" + jwt);
+            .redirect(`http://localhost:8080/auth/success?token=${token}`)
+
         }
         else {
             
@@ -145,7 +142,6 @@ export async function githubAuthCallback_get(request, reply) {
                 })
                 .code(400).send({ success: false, message: 'Good' });
         }
-
     } catch (err) {
         reply.status(500).send("Authentication failed");
     }

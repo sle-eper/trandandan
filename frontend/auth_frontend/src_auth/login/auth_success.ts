@@ -1,18 +1,17 @@
-// authSuccess.ts
 import { navigate } from "../app";
-
 export function handleOAuthSuccess() {
   const params = new URLSearchParams(window.location.search);
   const token = params.get("token");
 
   if (!token) {
-    alert("OAuth failed");
+    document.body.innerHTML = "<h1>OAuth failed</h1>";
     return;
   }
 
-  // store the user session
+  // Save token
   localStorage.setItem("token", token);
 
-  // redirect to dashboard
+  // Load dashboard
   navigate("dashboard");
 }
+

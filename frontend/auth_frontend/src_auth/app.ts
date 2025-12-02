@@ -200,7 +200,7 @@
 import { showLoginPage } from "./login/login";
 import { showSignupPage } from "./login/signup";
 import { showForgotPage } from "./login/forgot_pass";
-import { showDashboard } from "./dashboard/dashboard"; // your dashboard module
+import { showDashboard } from "./dashboard/dashboard";
 import { showchangePassPage } from "./login/change_pass";
 import { handleOAuthSuccess } from "./login/auth_success";
 
@@ -210,13 +210,20 @@ export function navigate(page: "login" | "signup" | "forgot" | "dashboard" | "ch
     case "signup": showSignupPage(); break;
     case "forgot": showForgotPage(); break;
     case "dashboard": showDashboard(); break;
-    case "change" : showchangePassPage() ; break;
-    case "auth" : handleOAuthSuccess(); break;
+    case "change" : showchangePassPage(); break;
+    case "auth"   : handleOAuthSuccess(); break;
   }
 }
 
-// initial boot
+// 🚨 IMPORTANT PART 🚨
 window.addEventListener("DOMContentLoaded", () => {
-  navigate("login");
+  const path = window.location.pathname;
+
+  if (path === "/auth/success") {
+    navigate("auth");      // ← triggers handleOAuthSuccess()
+  } else {
+    navigate("login");     // default entry
+  }
 });
+
 
