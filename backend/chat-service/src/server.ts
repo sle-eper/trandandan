@@ -1,3 +1,4 @@
+import { get } from "http";
 import {
   getAllMsg,
   changeToRecv,
@@ -61,12 +62,12 @@ server.ready().then(() => {
   // io.on("connection", async (socket) => {
 
   //   //get data of user on connection 
-  //   socket.on("con", async(id: string) => {
+  //   socket.on("con", async(id) => {
   //     try{
-  //       const id: string = socket.data.userId;
+  //       // const id: string = socket.data.userId;
   //       const datOfUser = await fetchUserData(id); // get data of user from user-management service
   //       onlineUsers.set(id, socket.id);
-  //       // socket.emit('setIMg',datOfUser.img)
+  //       socket.emit('setIMg',datOfUser.img)
   //       // console.log(Array.from(onlineUsers.entries()));
   //       // console.log('----------------------');
         
@@ -263,8 +264,17 @@ server.ready().then(() => {
   // });
 
   io.on("connection", async (socket) => {
-    socket.on('con',(id)=>{
-      fetchUserData(id);
+    socket.on('con',async (id)=>{
+      const id_friend  = "1"; //TODO remove this hardcoded value
+       const userData = await fetchUserData(id);
+       console.log('User connected:', userData);
+       const userFriends = await getFriendsOfUser(id);
+        console.log('User friends:', userFriends);
+        const friendsStatus = await getStatusOfTowFriends(id,id_friend);
+        console.log('Friends status:', friendsStatus);
+        const changeStatus = await changeStatusOfFriends('blocked',id,id_friend);
+        console.log('Changed status:', changeStatus);
+        
     })
     // const userId = socket.handshake.headers['x-user-id'];
     // const user = socket.handshake.headers['x-user'];

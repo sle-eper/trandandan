@@ -26,13 +26,10 @@ async function fetchUserData(userId: string) {
 
 async function getFriendsOfUser(userId: string) {
   try {
-    const response = await axios.get(`${USER_MANAGEMENT_SERVICE_URL}/friends`, {
+    const response = await axios.get(`${USER_MANAGEMENT_SERVICE_URL}/${userId}/friends`, {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
-      },
-      params: {
-        userId
       },
       timeout: 5000 
     });
@@ -73,7 +70,7 @@ async function getFriendsOfUser(userId: string) {
     const messageMap = new Map();
     latestMessages.forEach((m: { friend_id: string | number; }) => {
     messageMap.set(m.friend_id, m);
-  });
+    });
 
 
     const result = friends.map((friend: { id: any; }) => {
@@ -98,17 +95,14 @@ async function getFriendsOfUser(userId: string) {
   }
 }
 
-async function getStatusOfTowFriends(myId:string,friendId:string):Promise<object> {
+async function getStatusOfTowFriends(userId:string,friendId:string):Promise<object> {
   try {
-    const response = await axios.get(`${USER_MANAGEMENT_SERVICE_URL}/friendship/status`, {
+    const response = await axios.get(`${USER_MANAGEMENT_SERVICE_URL}/friendship/status/${userId}/${friendId}`, {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      params: {
-        userId: myId,
-        friendId: friendId
-      },
+     
       timeout: 5000 
     });
     
