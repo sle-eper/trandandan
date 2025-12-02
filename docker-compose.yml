@@ -51,7 +51,16 @@ services:
     volumes:
       - ./backend/chat-service/src:/app/src
       - /app/node_modules
-
+  tournament-service:
+    build: ./backend/tournament
+    container_name: tournament
+    ports:
+      - "5500:5500"
+    networks:
+      - app-network
+    volumes:
+      - ./backend/tournament-service/src:/app/src
+      - /app/node_modules
   # API Gateway Service
   api-gateway:
     build: ./api-gateway
