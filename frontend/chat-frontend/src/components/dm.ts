@@ -36,18 +36,6 @@ export function sendMsg(msg:string):string{
           `
 }
 
-// <div id="received-msg" class="flex mt-5 h-auto w-[65%]  justify-end ml-auto pr-5">
-//   <div id="content-received" class="max-w-[80%] flex flex-col ">
-//     <div id="text-received" class=" bg-[#E63946] rounded-xl p-3 ">
-//       <span class="text-[#F5F5F5]">
-//         Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-//       </span>
-//     </div>
-//     <span id="text-received-time " class="text-xs text-[#888] mt-1 self-end">1:16</span>
-//   </div>
-//   <img src="./src/img/smiling-african-american-millennial-businessman-600nw-1437938108.webp" alt="" class="h-10 w-10 rounded-full mt-2 ml-2">
-// </div>
-
 function chatZone():string{
     return`<div id="chat-zone" class="flex flex-col h-[100%] overflow-y-auto hide-scrollbar">
           </div>`

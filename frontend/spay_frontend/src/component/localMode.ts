@@ -19,26 +19,18 @@ export function handelNum(target:string,max:number)
     }
 }
 
-function card(img:string, defaultSpiesCount: number,id:string):string
-{
-    const hideSpinnersStyle = `style="-moz-appearance: textfield;"`
+function card(img: string, defaultSpiesCount: number, id: string, globalId?: string): string {
     return `
-            <div class = " relative w-full max-w-[350px] group  cursor-pointer transition-transform duration-200 
-                        hover:scale-105" >
-                <img src="${img}" alt="Spy Config Card" class="w-full h-auto object-contain ">
-                <div class="absolute bottom-[28%] left-0 right-0 flex justify-center items-center z-10">
-                    <input
-                        type="number"
-                        min="1"
-                        max="10"
-                        value="${defaultSpiesCount}"
-                        ${hideSpinnersStyle}
-                        class="w-1/3 bg-transparent text-center text-red-500 font-mono text-5xl font-bold border-none focus:ring-0 focus:outline-none "
-                        id= "${id}"
-                    />
-                </div>
+        <div id="${globalId ?? ''}" class="relative w-full max-w-[350px] group cursor-pointer transition-transform duration-200 hover:scale-105">
+            <img src="${img}" alt="Spy Config Card" class="w-full h-auto object-contain">
+            
+            <div id="${id}" class="absolute bottom-[29%] left-0 right-0 flex justify-center items-center z-10
+                text-4xl font-bold uppercase text-[#ff4d4d] tracking-wide font-['Share_Tech_Mono']
+                [text-shadow:0_0_5px_#ff0000,0_0_15px_#ff0000]">
+                    ${defaultSpiesCount}
             </div>
-    `
+        </div>
+    `;
 }
 
 export function renderLocalMode():string
@@ -56,12 +48,19 @@ export function renderLocalMode():string
             -moz-appearance: textfield;
             }
         </style>
-        <div class ="grid grid-cols-3 gap-4 justify-items-center items-center  w-full h-full border">
+        <div id="local-mode" class ="grid grid-cols-3 gap-4 justify-items-center items-center  w-full h-full border">
             ${card(players,7,"playersInput")}
             ${card(spays,1,"spaysInput")}
-            ${card(sections,1,"spaysInput")}
-            <div id="next" class="flex justify-center items-center w-[30%] p-3 col-span-3 border-2 border-[#E63946] text-[#E63946] text-xl  rounded-xl hover:scale-105 transition-transform duration-200 cursor-pointer hover:bg-[#E63946] hover:text-black">
-                NEXT
+            ${card(sections,1,"sectionInput","sections")}
+            <div class="col-span-3 w-full flex justify-center">
+                <button id="next"
+                        class="px-10 py-4 text-xl font-bold rounded-lg 
+                            bg-[#ff4d4d] text-white shadow-lg
+                            hover:bg-[#e63939] hover:scale-105 
+                            transition-all duration-200 cursor-pointer
+                            font-['Share_Tech_Mono'] tracking-wider">
+                    NEXT
+                </button>
             </div>
         </div>
     `

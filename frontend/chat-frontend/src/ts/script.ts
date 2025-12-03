@@ -212,24 +212,7 @@ function socketListener() {
 
 export async function showMainUI(myId:string) {
     socket.emit("con", myId);
-    // console.log("from chat frontend",myId)
-    // const bodyElement = document.getElementById('myBody')
-    // if(bodyElement)
-    // {
-    //     console.log(bodyElement)
-    //     /*     ') */
-    //     bodyElement.classList.remove('bg-black') /*  flex flex-col md:flex-row items-center justify-center min-h-screen px-6 md:px-20') */
-    //     bodyElement.classList.remove('text-white') /* text-white  flex-col md:flex-row items-center justify-center min-h-screen px-6 md:px-20') */
-    //     bodyElement.classList.remove('flex') 
-    //     bodyElement.classList.remove('flex-col') 
-    //     bodyElement.classList.remove('md:flex-row') 
-    //     bodyElement.classList.remove('items-center') 
-    //     bodyElement.classList.remove('min-h-screen') 
-    //     bodyElement.classList.remove('px-6') 
-    //     bodyElement.classList.remove('md:px-20') 
-    //     bodyElement.classList.add('bg-gradient-to-b from-[#0E0E0E] to-[#1A1A1A]')
-
-    // }
+    
     const app = document.getElementById('login-app');
     if(app)
     {

@@ -1,22 +1,48 @@
 
 import normalPlayer from '../img/normalPlayer.png' 
 import spayCard from '../img/spayCard.png' 
+import backCard from "../img/backCard.png"
+import spaySections from "../sectionsData/sectionsData"
+
 
 
 function rand(min:number, max:number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+export function renderBackCard():string
+{
+    return `
+        <div class = "card cursor-pointer transition-transform duration-200 
+                        hover:scale-105" >
+                        <img src="${backCard}" alt="Spy Config Card" class="w-full h-auto object-contain ">
+                    </div>
+    `
+}
+
+function winningWord():object
+{
+    const section =  spaySections.find((s)=>{
+        return s.id == '1'
+    })
+    const itemsOfSection = section?.items || '';
+    const index:number = rand(0,itemsOfSection?.length - 1)
+    return({name:itemsOfSection[index].name,img:itemsOfSection[index].imageUrl})
+}
+
 export function roleDistribution(playersData:any,numberOfPlayer:number,spays:number)
 {
     const spaysId:number[] = []
+    const winItem = winningWord();
+    //kankhetar id dyal spay 
     while(spaysId.length < spays)
     {
         let id = rand(1,numberOfPlayer)
         if(!spaysId.includes(id))
             spaysId.push(id)
     }
-    const game = playersData.map(p=>{
+
+    const game = playersData.map( p =>{
         if(spaysId.includes(p.id))
         {
             p.spay = true
@@ -25,14 +51,20 @@ export function roleDistribution(playersData:any,numberOfPlayer:number,spays:num
                         <img src="${spayCard}" alt="Spy Config Card" class="w-full h-auto object-contain ">
                     </div>`
         }else{
-            p.card = `<div class = "card cursor-pointer transition-transform duration-200 
+            p.card = `<div class = "relative card cursor-pointer transition-transform duration-200 
                         hover:scale-105" >
                         <img src="${normalPlayer}" alt="Spy Config Card" class="w-full h-auto object-contain ">
+                        <img src="${winItem.img}" class="h-46 w-61 absolute bottom-[54%] left-[20%]">
+                        <div class="absolute bottom-[25%] left-0 right-0 flex justify-center items-center z-10
+                        text-2xl font-bold uppercase text-[#ff4d4d] tracking-wide font-['Share_Tech_Mono'] [text-shadow:0_0_5px_#ff0000,0_0_15px_#ff0000]
+                        ">
+                            ${winItem.name}
+                        </div>
                     </div>`
         }
         return p
     })
-    // console.log(typeof(game))
+    // console.log(winningWord())
     return game
     return `
             <div class = "cursor-pointer transition-transform duration-200 
