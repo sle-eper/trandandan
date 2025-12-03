@@ -5,6 +5,8 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
+    "dev": "nodemon --watch src --exec node server.js",
+    "build": "tsc",
     "start": "node server.js"
   },
   "author": "",

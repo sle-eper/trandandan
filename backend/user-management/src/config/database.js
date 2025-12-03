@@ -53,7 +53,7 @@ export async  function createTables(){
               email VARCHAR(100) UNIQUE NOT NULL,
               password_hash VARCHAR(255),
               display_name VARCHAR(100) UNIQUE NOT NULL,
-              avatar_url VARCHAR(500) DEFAULT '/avatars/default.png',
+              avatar_url VARCHAR(500) DEFAULT '/avatars/default_avatar.jpg',
               bio TEXT,
               online_status VARCHAR(20) DEFAULT 'offline',
               last_seen DATETIME,

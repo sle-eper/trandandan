@@ -5,7 +5,7 @@ async function friendshipRoutes(fastify, options) {
   const friendsController = new FriendsController(fastify.db);
 
   // All friendship routes require authentication
-  fastify.get('/friends', {
+  fastify.get('/:id/friends', {
     
   }, friendsController.getFriends.bind(friendsController));
 
@@ -14,9 +14,10 @@ async function friendshipRoutes(fastify, options) {
     schema: {
       body: {
         type: 'object',
-        required: ['friendId'],
+        required: ['friendId', 'userId'],
         properties: {
-          friendId: { type: 'integer', minimum: 1 }
+          friendId: { type: 'integer', minimum: 1 },
+          userId: { type: 'integer', minimum: 1 }
         },
         additionalProperties: false
       }
@@ -29,9 +30,10 @@ async function friendshipRoutes(fastify, options) {
     schema: {
       body: {
         type: 'object',
-        required: ['friendId'],
+        required: ['friendId','userId'],
         properties: {
-          friendId: { type: 'integer', minimum: 1 }
+          friendId: { type: 'integer', minimum: 1 },
+          userId: { type: 'integer', minimum: 1 }
         },
         additionalProperties: false
       }
@@ -57,16 +59,17 @@ async function friendshipRoutes(fastify, options) {
   }, friendsController.getPendingRequests.bind(friendsController));
 
 
-fastify.get('/friends/status', {
-    schema: {
-      querystring: {
-        type: 'object',
-        required: ['friendId'],
-        properties: {
-          friendId: { type: 'integer', minimum: 1 }
-        }
-      }
-    },
+fastify.get('/friendship/status/:userId/:friendId', {
+    // schema: {
+    //   querystring: {
+    //     type: 'object',
+    //     required: ['userId', 'friendId'],
+    //     properties: {
+    //       userId: { type: 'integer', minimum: 1 },
+    //       friendId: { type: 'integer', minimum: 1 }
+    //     }
+    //   }
+    // },
     
   }, friendsController.getStatusOfFriends.bind(friendsController));
 

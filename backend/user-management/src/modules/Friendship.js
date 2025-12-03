@@ -46,24 +46,22 @@ class Friendship {
     }
   
     // Get friends list with online status
-    async getFriends(userId) {
-      return await this.db.all(
-        `SELECT 
-          u.id, u.username, u.display_name, u.avatar_url, 
-          u.online_status, u.last_seen,
-          f.accepted_at
-         FROM friendships f
-         JOIN users u ON (
-           CASE 
-             WHEN f.user_id = ? THEN u.id = f.friend_id
-             ELSE u.id = f.user_id
-           END
-         )
-         WHERE (f.user_id = ? OR f.friend_id = ?) AND f.status = 'accepted'
-         ORDER BY u.online_status DESC, u.display_name ASC`,
-        [userId, userId, userId]
-      );
-    }
+   async getFriends(userId) {
+    return await this.db.all(
+      `SELECT 
+        u.id, u.username, u.display_name, u.avatar_url, 
+        u.online_status, u.last_seen,
+        f.accepted_at
+      FROM friendships f
+      JOIN users u ON (
+        (f.user_id = ? AND u.id = f.friend_id) OR
+        (f.friend_id = ? AND u.id = f.user_id)
+      )
+      WHERE f.status = 'pending' OR f.status = 'accepted'
+      ORDER BY u.online_status DESC, u.display_name ASC`,
+      [userId, userId]
+    );
+  }
   
     // Get pending friend requests
     async getPendingRequests(userId) {
@@ -84,12 +82,16 @@ class Friendship {
 
     // Change friend status (e.g., block, unblock)
     async changeFriendStatus(userId, friendId, status) {
-      await this.db.run(
+     const result = await this.db.run(
         `UPDATE friendships 
          SET status = ? 
          WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)`,
         [status, userId, friendId, friendId, userId]
       );
+  
+      if (result.changes === 0) {
+        throw new Error('No friendship found to update');
+      }
       return { success: true, message: 'Friend status updated' };
     }
   

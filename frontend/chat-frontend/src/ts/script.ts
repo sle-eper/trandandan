@@ -7,17 +7,10 @@ const socket = io("http://localhost:3000");//TODO hadi ra hebla o khedama
 //     withCredentials: true, // Send cookies for auth
 //     transports: ['websocket', 'polling']
 // });
-// const socket = io("ws://localhost:8080", {
-//   path: "/socket.io",
-//   auth: {
-//     token: localStorage.getItem("token")
-//   }
-// });
-// const socket = io("http://localhost:8080", {
-//     path: "/socket.io",
-//     transports: ["websocket", "polling"],
-// });
+// =========
+// const socket = io("http://localhost:3000");
 
+// >>>>>>>>> Temporary merge branch 2
 
 import {
     lastMsg,

@@ -2,4 +2,4 @@ Backend_backup/
 node_modules/
 .DS_Store
 .vscode/
-
+# backend/user-management/data/*.db

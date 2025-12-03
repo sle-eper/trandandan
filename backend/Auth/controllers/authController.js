@@ -107,11 +107,15 @@ export async function login_post(request, reply) {
   if (!row) {
     return reply.code(400).send({ success: false, message: "User not found" });
   }
+  //$2b$10$36x.AMt4IuAnb7Owt.Uev.g1WXuUJt1GgOtFbspJA4r53ZTDICUBa
+  console.log("🔍 Comparing passwords");
+  console.log(row.data.password_hash);
+  console.log(password);
   const match = await bcrypt.compare(password, row.data.password_hash);
   if (!match) {
     return reply
-      .code(400)
-      .send({ success: false, message: "Invalid password" });
+    .code(400)
+    .send({ success: false, message: "Invalid password" });
   }
   const token = jwt.sign(
     { id: row.data.id, username },
