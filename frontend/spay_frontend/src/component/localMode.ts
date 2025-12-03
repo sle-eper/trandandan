@@ -4,24 +4,10 @@ import players from "../img/players.png"
 import sections from "../img/sections.png"
 
 
-export function handelNum(target:string,max:number)
-{
-    const spaysInput = document.getElementById(target) as HTMLLIElement ;
-    if(spaysInput)
-    {
-        spaysInput.addEventListener('keyup',()=>{//TODO handel >10 and <1
-            const value:number =  spaysInput.value;
-            if(value >  max )
-                spaysInput.value = max;
-            // else if(value == 0)
-            //     spaysInput.value = 1;
-        })
-    }
-}
 
-function card(img: string, defaultSpiesCount: number, id: string, globalId?: string): string {
+function card(img: string, defaultSpiesCount: number, id: string, globalId: string): string {
     return `
-        <div id="${globalId ?? ''}" class="relative w-full max-w-[350px] group cursor-pointer transition-transform duration-200 hover:scale-105">
+        <div id="${globalId}" class="relative w-full max-w-[350px] group cursor-pointer transition-transform duration-200 hover:scale-105">
             <img src="${img}" alt="Spy Config Card" class="w-full h-auto object-contain">
             
             <div id="${id}" class="absolute bottom-[29%] left-0 right-0 flex justify-center items-center z-10
@@ -49,9 +35,9 @@ export function renderLocalMode():string
             }
         </style>
         <div id="local-mode" class ="grid grid-cols-3 gap-4 justify-items-center items-center  w-full h-full border">
-            ${card(players,7,"playersInput")}
-            ${card(spays,1,"spaysInput")}
-            ${card(sections,1,"sectionInput","sections")}
+            ${card(players,7,"playersInput","playersCard")}
+            ${card(spays,1,"spaysInput","spaysCard")}
+            ${card(sections,1,"sectionInput","sectionsCard")}
             <div class="col-span-3 w-full flex justify-center">
                 <button id="next"
                         class="px-10 py-4 text-xl font-bold rounded-lg 

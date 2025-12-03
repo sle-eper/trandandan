@@ -1,11 +1,12 @@
 import {renderNavBar} from '../../auth_frontend/src_auth/dashboard/navbar'
 import {renderSidebar} from '../../auth_frontend/src_auth/dashboard/sidebar'
 import { renderGameMode } from './component/gameMode';
-import { renderLocalMode,handelNum } from './component/localMode';
+import { renderLocalMode } from './component/localMode';
 import { renderPlayers } from './component/players';
 import { roleDistribution } from './component/roleDistribution';
 import { renderBackCard } from './component/roleDistribution';
 import { renderSection,selectSection } from './component/sections';
+import {PlayerAndSpaySelection} from "./component/PlayerAndSpaySelection.ts"
 
 document.body.classList.remove("bg-black","flex", "items-center", "justify-center", "px-6", "md:px-20");
 document.body.classList.add("bg-[#111]", "min-h-screen");
@@ -32,6 +33,7 @@ if(main)
 {
     //show game mode
     main.innerHTML = renderGameMode()
+    // main.innerHTML = PlayerAndSpaySelection()
     const localMode = document.getElementById("localMode")
     if(localMode)
     {
@@ -42,20 +44,126 @@ if(main)
         // if chose local mode
         localMode.addEventListener('click',()=>{
             // game settings
-            main.innerHTML = renderLocalMode()
-            main.innerHTML += renderSection()
-            // max arg//////////////////////////
-            handelNum("playersInput",10)
-            handelNum("spaysInput",3)
+            main.innerHTML = renderLocalMode() + renderSection() + PlayerAndSpaySelection("players",7) + PlayerAndSpaySelection("spays",1)
             ////////////////////////////////////
             const next = document.getElementById("next");
-            const section = document.getElementById("sections");//card of sections
-            if(section)
+            const sectionCard = document.getElementById("sectionsCard");//card of sections
+            const playersCard = document.getElementById("playersCard");//card of sections
+            const spaysCard = document.getElementById("spaysCard");//card of sections
+            if(spaysCard)
+            {
+                let spaysNumber:number;
+                spaysCard.addEventListener("click",()=>{
+                    document.getElementById("local-mode")?.classList.add('hidden')
+                    document.getElementById("counter-spays")?.classList.remove('hidden')
+                    const plus = document.getElementById("counter-increase-spays");
+                    const minus = document.getElementById("counter-decrease-spays");
+                    plus?.addEventListener("click",()=>{
+                        const nbr = document.getElementById("counter-value-spays");
+                        if(nbr)
+                        {
+                            let value = Number(nbr.innerText);
+                            if(!isNaN(value))
+                            {
+                                
+                                if(value < 3)
+                                {
+                                    value++
+                                    spaysNumber = value
+                                    nbr.innerHTML = String(value);
+                                }
+                            }
+                        }
+                    })
+                    minus?.addEventListener("click",()=>{
+                        const nbr = document.getElementById("counter-value-spays");
+                        if(nbr)
+                        {
+                            let value = Number(nbr.innerText);
+                            if(!isNaN(value))
+                            {
+                                if(value > 1)
+                                {
+                                    value--
+                                    spaysNumber = value
+                                    nbr.innerHTML = String(value);
+                                }
+                            }
+                        }
+                    })
+                    const confirm = document.getElementById("confirm-spays")
+                    confirm?.addEventListener("click",()=>{
+                        if(spaysNumber > 0 && spaysNumber <= 3 )
+                        {
+
+                            document.getElementById("local-mode")?.classList.remove('hidden')
+                            document.getElementById("counter-spays")?.classList.add('hidden')
+                            const playerInput = document.getElementById("spaysInput");
+                            if(playerInput) playerInput.innerHTML = String(spaysNumber)
+                        }
+                        
+                    })
+                })
+            }
+            if(playersCard)
+            {
+                let playerNumber:number;
+                playersCard.addEventListener("click",()=>{
+                    document.getElementById("local-mode")?.classList.add('hidden')
+                    document.getElementById("counter-players")?.classList.remove('hidden')
+                    const plus = document.getElementById("counter-increase-players");
+                    const minus = document.getElementById("counter-decrease-players");
+                    plus?.addEventListener("click",()=>{
+                        const nbr = document.getElementById("counter-value-players");
+                        if(nbr)
+                        {
+                            let value = Number(nbr.innerText);
+                            if(!isNaN(value))
+                            {
+                                if(value < 10)
+                                {
+                                    value++
+                                    playerNumber = value
+                                    nbr.innerHTML = String(value);
+                                }
+                            }
+                        }
+                    })
+                    minus?.addEventListener("click",()=>{
+                        const nbr = document.getElementById("counter-value-players");
+                        if(nbr)
+                        {
+                            let value = Number(nbr.innerText);
+                            if(!isNaN(value))
+                            {
+                                if(value > 1)
+                                {
+                                    value--
+                                    playerNumber = value
+                                    nbr.innerHTML = String(value);
+                                }
+                            }
+                        }
+                    })
+                    const confirm = document.getElementById("confirm-players")
+                    confirm?.addEventListener("click",()=>{
+                        if(playerNumber > 0 && playerNumber <= 10)
+                        {
+                            document.getElementById("local-mode")?.classList.remove('hidden')
+                            document.getElementById("counter-players")?.classList.add('hidden')
+                            const playerInput = document.getElementById("playersInput");
+                            if(playerInput) playerInput.innerHTML = String(playerNumber)
+                        }
+                        
+                    })
+                })
+            }
+            if(sectionCard)
             {
                 const selected: string[] = []
                 selectSection(selected)//TODO 3lach hena khedama ola habetha ltahet la 
 
-                section.addEventListener('click',()=>{
+                sectionCard.addEventListener('click',()=>{
                     document.getElementById("local-mode")?.classList.add('hidden')
                     document.getElementById("sections-selection")?.classList.remove('hidden')
                     const confirmSections = document.getElementById("confirm-sections");
@@ -66,6 +174,8 @@ if(main)
                             {
                                 document.getElementById("local-mode")?.classList.remove('hidden')
                                 document.getElementById("sections-selection")?.classList.add('hidden')
+                                const sectionInput = document.getElementById("sectionInput");
+                                if(sectionInput) sectionInput.innerHTML = String(selected.length)
                             }
                         })
                     }
@@ -79,16 +189,17 @@ if(main)
                         return (spays < players) && (players - spays > spays) 
                     }
                     //////////////////////// set data of game ///////////////////////////////////////////////////
-                    const playersInput:HTMLInputElement = document.getElementById("playersInput") as HTMLInputElement;
-                    const spaysInput:HTMLInputElement = document.getElementById("spaysInput") as HTMLInputElement;
-                    const numberOfPlayer = Number(playersInput.value)
-                    const numberOfSpays = Number(spaysInput.value)
+                    const playersInput:HTMLDivElement = document.getElementById("playersInput") as HTMLDivElement;
+                    const spaysInput:HTMLDivElement = document.getElementById("spaysInput") as HTMLDivElement;
+                    const numberOfPlayer = Number(playersInput.innerText)
+                    const numberOfSpays = Number(spaysInput.innerText)
                     if(playersInput && numberOfPlayer > 0 && numberOfPlayer <= 10 )
-                        data.players =  Number(playersInput.value);
+                        data.players =  numberOfPlayer
                     if(spaysInput && validNumberOfSpays(numberOfPlayer,numberOfSpays))
-                        data.spays = Number(spaysInput.value);
+                        data.spays = numberOfSpays
+                    
                     //////////////////////////////////////////////////////////////////////////////////////////
-                    // console.log(data);
+                    console.log(data.spays,data.players);
                     if(data.spays && data.players)
                     {
                         console.log(data.spays,data.players)
