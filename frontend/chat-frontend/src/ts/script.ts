@@ -2,6 +2,21 @@ import { renderNavBar } from "../components/navbar";
 import { renderSidebar } from "../components/sidebar";
 import { io } from "socket.io-client";
 const socket = io("http://localhost:3000");//TODO hadi ra hebla o khedama 
+// const socket = io("http://localhost:8080/api/chat", {
+//     path: "/socket.io",
+//     withCredentials: true, // Send cookies for auth
+//     transports: ['websocket', 'polling']
+// });
+// const socket = io("ws://localhost:8080", {
+//   path: "/socket.io",
+//   auth: {
+//     token: localStorage.getItem("token")
+//   }
+// });
+// const socket = io("http://localhost:8080", {
+//     path: "/socket.io",
+//     transports: ["websocket", "polling"],
+// });
 
 
 import {
@@ -17,24 +32,24 @@ import {
     generateBlockButton,
 } from "../components/content";
 
-let myId: string = "";
+// let myId: string = "";
 let myImg: string = "";
 let imInRoom: string = "";
 let friendId: string = "";
 
-const app = document.getElementById('app');
-if(app)
-{
-    app.innerHTML = `<div id="nav-bar"></div>
-                    <div id="layout" class="flex flex-row  h-[calc(100vh-4rem)]" >
-                    <div id="side-bar" ></div>
-                    <div id="chat-content" class="flex justify-center items-center w-full gap-6 h-[93vh] gap-y-3"></div>
-                    </div>` 
-}
+// const app = document.getElementById('login-app');
+// if(app)
+// {
+//     app.innerHTML = `<div id="nav-bar"></div>
+//                     <div id="layout" class="flex flex-row  h-[calc(100vh-4rem)]" >
+//                     <div id="side-bar" ></div>
+//                     <div id="chat-content" class="flex justify-center items-center w-full gap-6 h-[93vh] gap-y-3"></div>
+//                     </div>` 
+// }
 
-const nav = document.getElementById("nav-bar");
-const sidebar = document.getElementById("side-bar");
-const chatContent = document.getElementById("chat-content");
+// const nav = document.getElementById("nav-bar");
+// const sidebar = document.getElementById("side-bar");
+// const chatContent = document.getElementById("chat-content");
 
 
 function moveUp(id: string) {
@@ -195,7 +210,23 @@ function socketListener() {
     })
 }
 
-export async function showMainUI() {
+export async function showMainUI(myId:string) {
+    socket.emit("con", myId);
+    
+    const app = document.getElementById('login-app');
+    if(app)
+    {
+        app.innerHTML = `<div id="nav-bar"></div>
+                        <div id="layout" class="flex flex-row  h-[calc(100vh-4rem)]" >
+                        <div id="side-bar" ></div>
+                        <div id="chat-content" class="flex justify-center items-center w-full gap-6 h-[93vh] gap-y-3"></div>
+                        </div>` 
+    }
+
+    const nav = document.getElementById("nav-bar");
+    const sidebar = document.getElementById("side-bar");
+    const chatContent = document.getElementById("chat-content");
+
     if (nav) nav.innerHTML = renderNavBar();
     if (sidebar) sidebar.innerHTML = renderSidebar();
 
@@ -204,7 +235,7 @@ export async function showMainUI() {
     let inputMsgZone: HTMLInputElement;
     let dmZone: HTMLElement | null;
 
-    socket.emit("con", myId);
+    
 
     function fetchListOfFriends(): Promise<any> {
         return new Promise((resolve) => {
@@ -435,26 +466,26 @@ export async function showMainUI() {
 }
 socketListener();
 
-chatContent!.innerHTML = `
-  <div id="user-choice" class="flex flex-col items-center justify-center h-full text-white">
-    <p class="text-xl mb-3">ID</p>
-    <input class="text-white" id="username-input" type="text" placeholder="Enter username"
-      class="p-2 rounded mb-3 text-black w-[200px] text-center"/>
-    <div class="flex gap-5">
-      <button id="yes-btn" class="bg-green-600 px-4 py-2 rounded">ok</button>
-    </div>
-  </div>
-`;
+// chatContent!.innerHTML = `
+//   <div id="user-choice" class="flex flex-col items-center justify-center h-full text-white">
+//     <p class="text-xl mb-3">ID</p>
+//     <input class="text-white" id="username-input" type="text" placeholder="Enter username"
+//       class="p-2 rounded mb-3 text-black w-[200px] text-center"/>
+//     <div class="flex gap-5">
+//       <button id="yes-btn" class="bg-green-600 px-4 py-2 rounded">ok</button>
+//     </div>
+//   </div>
+// `;
 
-const yesBtn = document.getElementById("yes-btn")!;
-const usernameInput = document.getElementById(
-    "username-input"
-) as HTMLInputElement;
-const userChoice = document.getElementById("user-choice");
+// const yesBtn = document.getElementById("yes-btn")!;
+// const usernameInput = document.getElementById(
+//     "username-input"
+// ) as HTMLInputElement;
+// const userChoice = document.getElementById("user-choice");
 
-yesBtn.addEventListener("click", () => {
-    const name = usernameInput.value.trim();
-    myId = name;
-    if (userChoice) userChoice.remove();
-    showMainUI();
-});
+// yesBtn.addEventListener("click", () => {
+//     const name = usernameInput.value.trim();
+//     myId = name;
+//     if (userChoice) userChoice.remove();
+//     showMainUI();
+// });

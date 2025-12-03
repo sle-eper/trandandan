@@ -9,7 +9,7 @@ class FriendsController {
     async getFriends(request, reply) {
       try {
   
-        const userId = request.user.userId;
+        const userId = request.headers['x-user-id'];
         const friends = await this.friendshipModel.getFriends(userId);
         
         return { success: true, friends };
@@ -81,6 +81,33 @@ class FriendsController {
         return reply.code(500).send({ error: error.message });
       }
     }
+
+    // PUT /friends/status - Change friend status
+    async changeFriendStatus(request, reply) {
+      try {
+        const userId = request.query.userId;
+        const { friendId, status } = request.body;
+
+        const result = await this.friendshipModel.changeFriendStatus(userId, friendId, status);
+
+        return result;
+      } catch (error) {
+        return reply.code(500).send({ error: error.message });
+      }
+    }
+
+    // GET /friendships/status - Get status of two friends
+    async getStatusOfFriends(request, reply) {
+      try {
+        const { myId, friendId } = request.query;
+       
+        
+        const result = await this.friendshipModel.getStatusOfTwoFriends(myId, friendId);
+        return result;
+      } catch (error) {
+        return reply.code(500).send({ error: error.message });
+      }
+    }
   }
-  
+
   export default FriendsController;

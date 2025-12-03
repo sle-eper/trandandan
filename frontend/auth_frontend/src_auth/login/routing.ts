@@ -1,4 +1,4 @@
-import { showMainUI } from "../../../src/ts/script.ts"
+import { showMainUI } from "../../src/ts/script.ts"
 import { currentUserId } from "./login.ts"
 export function updateContent(html: string) {
     const content = document.getElementById("dashboard-content");

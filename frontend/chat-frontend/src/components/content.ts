@@ -86,7 +86,6 @@ function  friendCart(friend:{id:string,name: string; img: string;status:string ;
 
 export function listOfMsg(friends: {id:string;name: string; img: string;msg:string; send:string ;recv:string;send_at:string}[],waitingMsg:object,myId:string): string //done
 {
-    // console.log('ssss', waitingMsg);
     const friendCards = friends.map(element => friendCart(element,waitingMsg,myId)).join('\n')
     return `
             <style>
