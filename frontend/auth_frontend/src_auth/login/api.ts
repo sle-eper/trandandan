@@ -6,7 +6,8 @@ export async function loginUser(username: string, password: string) {
       body: JSON.stringify({ username, password })
     });
 
-    return await response.json();
+    const body =  await response.json();
+    return {response , body};
   } catch (err) {
     console.error(err);
     return { success: false };

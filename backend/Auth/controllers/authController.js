@@ -129,21 +129,25 @@ export async function signup_get(request, reply) {
 
 export async function verifyUser_get(request, reply) {
     const token = request.cookies.token;
+
     if (!token) {
-        return reply.code(401).sendFile('login.html');
+        return reply
+            .code(401)
+            .send({ success: false, message: 'Not authenticated' });
     }
+
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        reply
+
+        return reply
             .code(200)
-            .headers({ 'x-user': decoded.username })
-            .headers({ 'x-user-id': decoded.id })
-            .send({
-                authorization: true,
-                message: 'You are authenticated to access this resource.'
-            })
+            .header('x-user', decoded.username)
+            .header('x-user-id', decoded.id)
+            .send({ success: true, message: 'Authenticated' });
     } catch (err) {
-        return reply.code(401).sendFile('login.html');
+        return reply
+            .code(401)
+            .send({ success: false, message: 'Invalid token' });
     }
-    return { accessToken: token };
 }
+

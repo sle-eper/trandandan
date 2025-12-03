@@ -195,7 +195,7 @@ function socketListener() {
     })
 }
 
-async function showMainUI() {
+export async function showMainUI() {
     if (nav) nav.innerHTML = renderNavBar();
     if (sidebar) sidebar.innerHTML = renderSidebar();
 

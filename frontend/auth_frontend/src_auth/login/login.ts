@@ -17,8 +17,8 @@ export function showLoginPage(containerId = "login-app") {
 
   attachLoginHandlers();
 }
-
-function attachLoginHandlers() {
+let currentUserId: string | null = null; // store user_id globally if needed
+export function attachLoginHandlers() {
   const btn = document.getElementById("login-btn") as HTMLButtonElement | null;
   const signup = document.getElementById("login-signup");
   const forgot = document.getElementById("login-forgot");
@@ -30,7 +30,6 @@ function attachLoginHandlers() {
 
   if (!btn) return;
 
-  // ⬅️ FIXED: async handler because we use await
   btn.addEventListener("click", async () => {
     const username = (document.getElementById("login-username") as HTMLInputElement).value.trim();
     const password = (document.getElementById("login-password") as HTMLInputElement).value.trim();
@@ -40,36 +39,38 @@ function attachLoginHandlers() {
       return;
     }
 
-    // ----------- CALL BACKEND -----------
-    const result = await loginUser(username, password);
-    // ------------------------------------
+    try {
+      const result = await loginUser(username, password);
 
-    if (result.success) {
-      console.log("Login success:", result);
+      if (result.success) {
+        // Optionally store user_id globally
+        currentUserId = result.user_id || null; 
+        console.log("Login success:", result);
 
-      // show dashboard
-      navigate("dashboard");
-    } else {
-      alert("Invalid username or password");
+        // Navigate to dashboard
+        navigate("dashboard");
+      } else {
+        alert(result.message || "Invalid username or password");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Login failed. Please try again.");
     }
   });
-  if(googleBtn)
-  googleBtn.addEventListener("click", async () => {
-    try {
-      // Your backend route
+
+  if (googleBtn) {
+    googleBtn.addEventListener("click", () => {
       window.location.href = "http://localhost:8080/api/auth/google";
-    } catch (err) {
-      console.error(err);
-    }
-  });
-  if(githubBtn)
-    githubBtn.addEventListener("click", async () => {
-    try {
-      // Your backend route
+    });
+  }
+
+  if (githubBtn) {
+    githubBtn.addEventListener("click", () => {
       window.location.href = "http://localhost:8080/api/auth/github";
-    } catch (err) {
-      console.error(err);
-    }
-  });
+    });
+  }
 }
+
+// Export the current user ID if needed in other modules
+export { currentUserId };
 
