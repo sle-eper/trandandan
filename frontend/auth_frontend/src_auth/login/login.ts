@@ -4,7 +4,7 @@ import { loginUser } from "./api";
 import { navigate } from "../app";
 // import { showDashboard } from "../dashboard/dashboard";
 import { showMainUI } from "../../src/ts/script.ts";
-
+import {ProfileApp} from "../../../profile_frontend/src/main.ts";
 export function showLoginPage(containerId = "login-app") {
   const app = document.getElementById(containerId);
   if (!app) return;
@@ -65,6 +65,7 @@ if (body.success && response) {
       alert("Invalid username or password");
     }
   });
+  ProfileApp();
   if(googleBtn)
   googleBtn.addEventListener("click", async () => {
     try {
