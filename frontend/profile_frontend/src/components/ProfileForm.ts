@@ -332,11 +332,11 @@ export class ProfileForm {
     }
 
     // Fetch user data
-    await this.loadUserData();
-
+   const userData = await this.loadUserData();
+    console.log('User data loaded:', userData);
     // Render with actual data
-    container.innerHTML = this.render();
-    this.attachEventListeners();
+    // container.innerHTML = this.render();
+    // this.attachEventListeners();
   }
 
    }

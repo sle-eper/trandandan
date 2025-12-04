@@ -7,25 +7,23 @@
     onlineStatus?: boolean;
 }
 
-
+import axios from "axios";
 export class User {
     static async fetchUserProfile(): Promise<UserProfile | null> {
 
         try {
-            const response = await fetch('/api/users/profile', {
-                method: 'GET',
+            const response = await axios.get<UserProfile>('http://localhost:3001/user/13', {
+                // credentials: 'include',
                 headers: {
-                    'Content-Type': 'application/json'
-        }
+                    'Content-Type': 'application/json',
+                },
             });
-            if(response.ok) {
+            if (response && response.data) {
                 console.log('User profile fetched successfully', response);
-                const data: UserProfile = await response.json();
+                const data: UserProfile = response.data;
                 console.log('Fetched user data:', data);
                 return data;
             }
-
-            
         }catch (error) {
                 console.error('Error fetching user profile:', error);
                 return null;
