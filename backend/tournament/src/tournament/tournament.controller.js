@@ -1,6 +1,7 @@
 import * as service from './tournament.service.js';
 
 export async function createTournament_post(request, reply) {
+    console.log("This is the Header :" , request.headers);
     console.log("Creating tournament with data:", request.body);
     const tournament = await service.createTournament(request.body);
     return reply.send(tournament);

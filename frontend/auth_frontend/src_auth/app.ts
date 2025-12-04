@@ -16,17 +16,17 @@ export function navigate(page: "login" | "signup" | "forgot" | "dashboard" | "ch
     case "auth"   : handleOAuthSuccess(); break;
   }
 }
-// async function checkSession(): Promise<boolean> {
-//   try {
-//     const response = await fetch("/auth/verify/", {
-//       method: "GET",
-//       credentials: "include" // send cookies
-//     });
-//     return response.status === 200;
-//   } catch {
-//     return false;
-//   }
-// }
+async function checkSession(): Promise<boolean> {
+  try {
+    const response = await fetch("/auth/verify/", {
+      method: "GET",
+      credentials: "include" // send cookies
+    });
+    return response.status === 200;
+  } catch {
+    return false;
+  }
+}
 
 
 // 🚨 IMPORTANT PART 🚨
@@ -39,13 +39,13 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 
   // Check if session is valid
-  // const loggedIn = await checkSession();
-  // console.log(loggedIn);
-  // if (loggedIn) {
-  //   navigate("dashboard");
-  // } else {
+  const loggedIn = await checkSession();
+  console.log(loggedIn);
+  if (loggedIn) {
+    navigate("dashboard");
+  } else {
     navigate("login");
-  // }
+  }
 });
 
 

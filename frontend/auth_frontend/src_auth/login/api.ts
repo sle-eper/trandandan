@@ -3,6 +3,7 @@ export async function loginUser(username: string, password: string) {
     const response = await fetch("http://localhost:8080/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include", // VERY IMPORTANT FOR Cookies
       body: JSON.stringify({ username, password }),
       credentials: "include", // VERY IMPORTANT to handle cookies
     });
