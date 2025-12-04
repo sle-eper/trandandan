@@ -114,8 +114,8 @@ export async function login_post(request, reply) {
   const match = await bcrypt.compare(password, row.data.password_hash);
   if (!match) {
     return reply
-    .code(400)
-    .send({ success: false, message: "Invalid password" });
+      .code(400)
+      .send({ success: false, message: "Invalid password" });
   }
   const token = jwt.sign(
     { id: row.data.id, username },
@@ -127,7 +127,12 @@ export async function login_post(request, reply) {
     .header("Access-Control-Expose-Headers", "x-user, x-user-id")
     .header("x-user", username)
     .header("x-user-id", row.data.id)
-    .setCookie("token", token, { path: "/", httpOnly: true })
+    .setCookie("token", token, {
+      path: "/",
+      httpOnly: true,
+      sameSite: "none",
+      secure: true
+    })
     .code(200)
     .send({ success: true, message: "You are Authourised" });
   return { accessToken: token };

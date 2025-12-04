@@ -57,9 +57,14 @@ if (body.success && response) {
   // const userId = response.headers.get("x-user-id");
 
   // console.log("Header username:", user);
+  console.log("****************************************************************");
+  const cookies = response.headers.get("set-cookie");
+  console.log("Cookies:", cookies);
+  console.log("****************************************************************");
   const userId = response.headers.get('x-user-id')
   console.log("Header userId:", userId);
-
+  console.log("=====================", response);
+  console.log("-------", body);
     showMainUI(userId);
     } else {
       alert("Invalid username or password");

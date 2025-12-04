@@ -100,9 +100,9 @@ services:
     build: ./backend/Auth
     container_name: auth
     ports: 
-      - "5000:5000"           # ✅ must be a list
+      - "5000:5000" 
     env_file:
-      - ./backend/Auth/.env   # ✅ should be a list
+      - ./backend/Auth/.env 
     command: npm start
     volumes:
       - ./backend/Auth/DataBase:/Auth/DataBase
@@ -120,7 +120,13 @@ services:
       - ./frontend/chat-frontend/src:/app/src
       - ./frontend/auth_frontend/src_auth:/app/src_auth
       - /app/node_modules
-
+  tournament:
+    build: ./backend/tournament
+    container_name: tournament
+    ports:
+      - "5500:5500"
+    networks:
+      - app-network
   chat-serves:
     build: ./backend/chat-service
     container_name: chat

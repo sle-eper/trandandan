@@ -17,7 +17,7 @@ await fastify.register(TourRoutes, { prefix: '/tournament/' });
 await fastify.register(participantRoutes, { prefix: '/participant/' });
 const start = async () => {
   try {
-    const PORT = process.env.PORT || 5000;
+    const PORT =  5500;
     await fastify.listen({ port: PORT, host: '0.0.0.0' });
     console.log(fastify.printRoutes());
     console.log('Server listening on port 5500');
