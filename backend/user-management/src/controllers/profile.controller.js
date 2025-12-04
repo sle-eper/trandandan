@@ -42,7 +42,7 @@ class ProfileController {
         display_name: displayName
       });
 
-      const profile = await this.userModel.getById(userId);
+      const profile = await this.userModel.findById(userId);
       console.log('Created user profile:', profile);
       
       return reply.code(201).send({

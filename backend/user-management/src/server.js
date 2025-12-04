@@ -18,8 +18,8 @@ fastify.register(multipart);
 
 // Enable CORS for frontend-backend communication
 fastify.register(fastifyCors, {
-    origin: ['http://localhost:5000', 'http://127.0.0.1:3000'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    origin: ['*'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true
 });
 
@@ -56,7 +56,7 @@ async function start() {
         // Register API routes
       
         fastify.register(profileRoutes, { 
-            prefix: '/' 
+             prefix: '/'
         });
         fastify.register(friendshipRoutes, { 
             prefix: '/' 
@@ -65,11 +65,7 @@ async function start() {
         console.log('🔄 Starting server...');
         await fastify.listen({ port: 3000, host: '0.0.0.0' });
         
-        console.log('✅ Server started successfully!');
-        console.log('📱 Frontend: http://localhost:3002/');
-        console.log('🔌 API: http://localhost:3000/api');
-        console.log('👥 Users API: http://localhost:3000/api/users');
-        
+        console.log('✅ Server listening on port 3000');
     } catch (error) {
         fastify.log.error(error, '❌ Error starting server:');
         process.exit(1);

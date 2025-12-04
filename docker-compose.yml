@@ -1,82 +1,3 @@
-# services:
-
-#   # User Management Service
-#   user-management:
-#     build: ./backend/user-management
-#     container_name: user-management
-#     depends_on:
-#       - authentication
-#     ports:
-#       - "3001:3000"
-#     volumes:
-#       - ./backend/user-management/src:/usr/src/app/src
-#       - ./backend/user-management/data:/usr/src/app/data:rw
-#       - /usr/src/app/node_modules
-#     command: npm run dev
-#     networks:
-#       - app-network
-
-#   # authentication Service
-#   authentication:
-#     build: ./backend/Auth
-#     container_name: auth
-#     ports: 
-#       - "5000:5000"           # ✅ must be a list
-#     env_file:
-#       - ./backend/Auth/.env   # ✅ should be a list
-#     command: npm start
-#     volumes:
-#       - ./backend/Auth/DataBase:/Auth/DataBase
-#     networks:
-#       - app-network
-#   front-end:
-#     build: ./frontend
-#     container_name: frontend
-#     ports:
-#       - "5173:5173"
-#     networks:
-#       - app-network
-#     volumes:
-#       - ./frontend/chat-frontend/src:/app/src
-#       - ./frontend/auth_frontend/src_auth:/app/src_auth
-#       - /app/node_modules
-
-#   chat-serves:
-#     build: ./backend/chat-service
-#     container_name: chat
-#     ports:
-#       - "3000:3000"
-#     networks:
-#       - app-network
-#     volumes:
-#       - ./backend/chat-service/src:/app/src
-#       - /app/node_modules
-#   tournament-service:
-#     build: ./backend/tournament
-#     container_name: tournament
-#     ports:
-#       - "5500:5500"
-#     networks:
-#       - app-network
-#     volumes:
-#       - ./backend/tournament-service/src:/app/src
-#       - /app/node_modules
-#   # API Gateway Service
-#   api-gateway:
-#     build: ./api-gateway
-#     container_name: nginx
-#     ports:
-#       - "8080:8080"
-#     networks:
-#       - app-network
-#     depends_on:
-#       - user-management
-#       - authentication
-#       - front-end
-
-# networks:
-#   app-network:
-#     driver: bridge
 services:
 
   # User Management Service
@@ -119,7 +40,11 @@ services:
     volumes:
       - ./frontend/chat-frontend/src:/app/src
       - ./frontend/auth_frontend/src_auth:/app/src_auth
+      - ./frontend/profile_frontend/src:/app/profile_frontend/src
       - /app/node_modules
+    depends_on:
+      - user-management
+      - authentication
   tournament:
     build: ./backend/tournament
     container_name: tournament
@@ -127,6 +52,7 @@ services:
       - "5500:5500"
     networks:
       - app-network
+
   chat-serves:
     build: ./backend/chat-service
     container_name: chat
