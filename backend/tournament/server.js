@@ -1,6 +1,5 @@
 import Fastify from 'fastify';
 import formbody from '@fastify/formbody';
-import fastifyStatic from '@fastify/static';
 import cors from "@fastify/cors";
 import TourRoutes from './src/tournament/tournament.controller.js'
 import participantRoutes from './src/participant/participant.controller.js'

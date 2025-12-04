@@ -48,46 +48,36 @@ function attachLoginHandlers() {
     // ----------- CALL BACKEND -----------
     const { response, body } = await loginUser(username, password);
 
-// Body first
-if (body.success && response) {
-  // console.log(body);
-  // console.log(response.headers)
-  // Read headers from the REAL response
-  // const user = response.headers.get("x-user");
-  // const userId = response.headers.get("x-user-id");
-
-  // console.log("Header username:", user);
-  console.log("****************************************************************");
-  const cookies = response.headers.get("set-cookie");
-  console.log("Cookies:", cookies);
-  console.log("****************************************************************");
-  const userId = response.headers.get('x-user-id')
-  console.log("Header userId:", userId);
-  console.log("=====================", response);
-  console.log("-------", body);
-    showMainUI(userId);
+    // Body first
+    if (body.success && response) {
+      const res = await fetch("http://localhost:8080/auth/verify", {
+        method: "GET",
+        credentials: "include"
+      });
+      const bd = await res.json();
+      showMainUI(bd.id);
     } else {
       alert("Invalid username or password");
     }
   });
-  
-  if(googleBtn)
-  googleBtn.addEventListener("click", async () => {
-    try {
-      // Your backend route
-      window.location.href = "http://localhost:8080/api/auth/google";
-    } catch (err) {
-      console.error(err);
-    }
-  });
-  if(githubBtn)
+
+  if (googleBtn)
+    googleBtn.addEventListener("click", async () => {
+      try {
+        // Your backend route
+        window.location.href = "http://localhost:8080/api/auth/google";
+      } catch (err) {
+        console.error(err);
+      }
+    });
+  if (githubBtn)
     githubBtn.addEventListener("click", async () => {
-    try {
-      // Your backend route
-      window.location.href = "http://localhost:8080/api/auth/github";
-    } catch (err) {
-      console.error(err);
-    }
-  });
+      try {
+        // Your backend route
+        window.location.href = "http://localhost:8080/api/auth/github";
+      } catch (err) {
+        console.error(err);
+      }
+    });
 }
 

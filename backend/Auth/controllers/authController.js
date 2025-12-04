@@ -72,14 +72,13 @@ export async function signup_post(request, reply) {
     });
     // ✅ Send JWT in cookie
     reply
-      .code(200)
-      .headers({ "x-user": username })
-      .headers({ "x-user-id": id })
       .setCookie("token", token, {
         path: "/",
         httpOnly: true,
+        sameSite: "none",
+        secure: true,
       })
-      .send({
+      .code(200).send({
         success: true,
         message: "Registration successful",
       });
@@ -107,7 +106,6 @@ export async function login_post(request, reply) {
   if (!row) {
     return reply.code(400).send({ success: false, message: "User not found" });
   }
-  //$2b$10$36x.AMt4IuAnb7Owt.Uev.g1WXuUJt1GgOtFbspJA4r53ZTDICUBa
   console.log("🔍 Comparing passwords");
   console.log(row.data.password_hash);
   console.log(password);
@@ -124,30 +122,14 @@ export async function login_post(request, reply) {
   );
   // ✅ Send JWT in cookie
   reply
-    .header("Access-Control-Expose-Headers", "x-user, x-user-id")
-    .header("x-user", username)
-    .header("x-user-id", row.data.id)
     .setCookie("token", token, {
       path: "/",
       httpOnly: true,
       sameSite: "none",
-      secure: true
+      secure: true,
     })
-    .code(200)
-    .send({ success: true, message: "You are Authourised" });
+    .code(200).send({ success: true, message: "You are Authourised" });
   return { accessToken: token };
-}
-
-// #########################################################
-//                     Get Functions
-// #########################################################
-
-export async function login_get(request, reply) {
-  return reply.sendFile("login.html");
-}
-
-export async function signup_get(request, reply) {
-  return reply.sendFile("register.html");
 }
 
 // #########################################################
@@ -156,6 +138,11 @@ export async function signup_get(request, reply) {
 
 export async function verifyUser_get(request, reply) {
   const token = request.cookies.token;
+  const origin = request.headers.origin;
+  if (origin != "http://localhost:5173")
+  {
+    return reply.code(403);
+  }
   if (!token) {
     return reply.code(401).sendFile("login.html");
   }
@@ -163,11 +150,11 @@ export async function verifyUser_get(request, reply) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     reply
       .code(200)
-      .headers({ "x-user": decoded.username })
-      .headers({ "x-user-id": decoded.id })
       .send({
         authorization: true,
         message: "You are authenticated to access this resource.",
+        id: decoded.id,
+        username: decoded.username
       });
   } catch (err) {
     return reply.code(401).sendFile("login.html");
