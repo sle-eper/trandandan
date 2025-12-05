@@ -141,10 +141,10 @@ export async function verifyUser_get(request, reply) {
   const origin = request.headers.origin;
   if (origin != "http://localhost:5173")
   {
-    return reply.code(403);
+    return reply.code(403).send("Forbidden");
   }
   if (!token) {
-    return reply.code(401).sendFile("login.html");
+    return reply.code(401).send("Not Authorized")
   }
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -157,7 +157,7 @@ export async function verifyUser_get(request, reply) {
         username: decoded.username
       });
   } catch (err) {
-    return reply.code(401).sendFile("login.html");
+    return reply.code(401).send("Not authorized");
   }
   return { accessToken: token };
 }
