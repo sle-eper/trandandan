@@ -1,11 +1,13 @@
 import spaySections from "../sectionsData/sectionsData"
 import sectionName from "../img/sectionName.png"
 
-
+let sectionBound = false;
 export function selectSection(selected: string[] )
 {
+    if (sectionBound) return;  // ⛔ لا تعيد إضافة الأحداث
+    sectionBound = true;
+    document.querySelector(`[data-id="1"]`)?.classList.remove("border-transparent");
     const cards = document.querySelectorAll(".section-card");
-    // let selected: string[] = [];
     cards.forEach(c =>{
         c.addEventListener('click',()=>{
             const id  = c.getAttribute("data-id")
@@ -20,7 +22,6 @@ export function selectSection(selected: string[] )
                 selected.push(id);
                 element?.classList.remove("border-transparent");
             }
-            // console.log(selected.length)
         })
     })
 }

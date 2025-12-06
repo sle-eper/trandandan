@@ -7,6 +7,7 @@ import { roleDistribution } from './component/roleDistribution';
 import { renderBackCard } from './component/roleDistribution';
 import { renderSection,selectSection } from './component/sections';
 import {PlayerAndSpaySelection} from "./component/PlayerAndSpaySelection.ts"
+import { findingSpy } from './component/findingSpy.ts';
 
 document.body.classList.remove("bg-black","flex", "items-center", "justify-center", "px-6", "md:px-20");
 document.body.classList.add("bg-[#111]", "min-h-screen");
@@ -29,35 +30,34 @@ if (nav) nav.innerHTML = renderNavBar();
 if (sidebar) sidebar.innerHTML = renderSidebar();
 //start og game 
 const main = document.getElementById("spay-content")
+
 if(main)
 {
     //show game mode
     main.innerHTML = renderGameMode()
-    // main.innerHTML = PlayerAndSpaySelection()
-    const localMode = document.getElementById("localMode")
-    if(localMode)
-    {
-        const data = {
-            players:0,
-            spays:0,
-        }
-        // if chose local mode
-        localMode.addEventListener('click',()=>{
-            // game settings
-            main.innerHTML = renderLocalMode() + renderSection() + PlayerAndSpaySelection("players",7) + PlayerAndSpaySelection("spays",1)
-            ////////////////////////////////////
-            const next = document.getElementById("next");
-            const sectionCard = document.getElementById("sectionsCard");//card of sections
-            const playersCard = document.getElementById("playersCard");//card of sections
-            const spaysCard = document.getElementById("spaysCard");//card of sections
-            if(spaysCard)
+    const game = document.getElementById("spay-content")
+    const data = {
+        players:0,
+        spays:0,
+    }
+    const selected: string[] = []
+    selected.push('1');
+
+
+    game?.addEventListener("click",(e)=>{
+            const el = e.target as HTMLElement;
+            console.log(el.id)
+            if(el.id === 'localMode')
+                game.innerHTML = renderLocalMode() + renderSection() + PlayerAndSpaySelection("players",7) + PlayerAndSpaySelection("spays",1) 
+            if(el.id === 'spaysCard' || el.id === 'spaysInput')
             {
-                let spaysNumber:number;
-                spaysCard.addEventListener("click",()=>{
-                    document.getElementById("local-mode")?.classList.add('hidden')
-                    document.getElementById("counter-spays")?.classList.remove('hidden')
-                    const plus = document.getElementById("counter-increase-spays");
-                    const minus = document.getElementById("counter-decrease-spays");
+                let spaysNumber:number = Number(document.getElementById("counter-value-spays")?.innerText);
+                document.getElementById("local-mode")?.classList.add('hidden')
+                document.getElementById("counter-spays")?.classList.remove('hidden')
+                const plus = document.getElementById("counter-increase-spays");
+                const minus = document.getElementById("counter-decrease-spays");
+                if(plus && !plus.dataset.bound)
+                {
                     plus?.addEventListener("click",()=>{
                         const nbr = document.getElementById("counter-value-spays");
                         if(nbr)
@@ -75,6 +75,10 @@ if(main)
                             }
                         }
                     })
+                    plus.dataset.bound = "true";
+                }
+                if(minus && !minus.dataset.bound)
+                {
                     minus?.addEventListener("click",()=>{
                         const nbr = document.getElementById("counter-value-spays");
                         if(nbr)
@@ -91,29 +95,34 @@ if(main)
                             }
                         }
                     })
-                    const confirm = document.getElementById("confirm-spays")
-                    confirm?.addEventListener("click",()=>{
+                    minus.dataset.bound = "true"
+                }
+                const confirm = document.getElementById("confirm-spays")
+                if(confirm && !confirm.dataset.bound)
+                {
+                    confirm.addEventListener("click",()=>{
+                        console.log(spaysNumber)
                         if(spaysNumber > 0 && spaysNumber <= 3 )
                         {
-
                             document.getElementById("local-mode")?.classList.remove('hidden')
                             document.getElementById("counter-spays")?.classList.add('hidden')
                             const playerInput = document.getElementById("spaysInput");
                             if(playerInput) playerInput.innerHTML = String(spaysNumber)
                         }
-                        
                     })
-                })
+                    confirm.dataset.bound = "true"
+                }
             }
-            if(playersCard)
+            if(el.id === 'playersCard' || el.id === 'playersInput')
             {
-                let playerNumber:number;
-                playersCard.addEventListener("click",()=>{
-                    document.getElementById("local-mode")?.classList.add('hidden')
-                    document.getElementById("counter-players")?.classList.remove('hidden')
-                    const plus = document.getElementById("counter-increase-players");
-                    const minus = document.getElementById("counter-decrease-players");
-                    plus?.addEventListener("click",()=>{
+                let playerNumber:number = Number(document.getElementById("counter-value-players")?.innerText);
+                document.getElementById("local-mode")?.classList.add('hidden')
+                document.getElementById("counter-players")?.classList.remove('hidden')
+                const plus = document.getElementById("counter-increase-players");
+                const minus = document.getElementById("counter-decrease-players");
+                if(plus && !plus.dataset.bound)
+                {
+                    plus.addEventListener("click",()=>{
                         const nbr = document.getElementById("counter-value-players");
                         if(nbr)
                         {
@@ -129,7 +138,11 @@ if(main)
                             }
                         }
                     })
-                    minus?.addEventListener("click",()=>{
+                    plus.dataset.bound = "true"
+                }
+                if(minus && !minus.dataset.bound)
+                {
+                    minus.addEventListener("click",()=>{
                         const nbr = document.getElementById("counter-value-players");
                         if(nbr)
                         {
@@ -145,8 +158,12 @@ if(main)
                             }
                         }
                     })
-                    const confirm = document.getElementById("confirm-players")
-                    confirm?.addEventListener("click",()=>{
+                    minus.dataset.bound = "true"
+                }
+                const confirm = document.getElementById("confirm-players")
+                if(confirm && !confirm.dataset.bound)
+                {
+                    confirm.addEventListener("click",()=>{
                         if(playerNumber > 0 && playerNumber <= 10)
                         {
                             document.getElementById("local-mode")?.classList.remove('hidden')
@@ -156,18 +173,16 @@ if(main)
                         }
                         
                     })
-                })
+                    confirm.dataset.bound = "true"
+                }
             }
-            if(sectionCard)
+            if(el.id === 'sectionsCard' || el.id === 'sectionInput' )
             {
-                const selected: string[] = []
-                selectSection(selected)//TODO 3lach hena khedama ola habetha ltahet la 
-
-                sectionCard.addEventListener('click',()=>{
+                    selectSection(selected)//TODO 3lach hena khedama ola habetha ltahet la 
                     document.getElementById("local-mode")?.classList.add('hidden')
                     document.getElementById("sections-selection")?.classList.remove('hidden')
                     const confirmSections = document.getElementById("confirm-sections");
-                    if(confirmSections)
+                    if(confirmSections && !confirmSections.dataset.bound )
                     {
                         confirmSections.addEventListener("click",()=>{
                             if(selected.length > 0)
@@ -178,12 +193,11 @@ if(main)
                                 if(sectionInput) sectionInput.innerHTML = String(selected.length)
                             }
                         })
+                        confirmSections.dataset.bound = 'true'
                     }
-                })
             }
-            if(next)
+            if(el.id === 'next')
             {
-                next.addEventListener('click',()=>{
                     function validNumberOfSpays(players:number,spays:number):boolean
                     {
                         return (spays < players) && (players - spays > spays) 
@@ -202,75 +216,51 @@ if(main)
                     console.log(data.spays,data.players);
                     if(data.spays && data.players)
                     {
-                        console.log(data.spays,data.players)
-                        main.innerHTML = renderPlayers(data) 
+                        // console.log(data.spays,data.players)
+                        game.innerHTML = renderPlayers(data) 
                     }
 
-                    const play = document.getElementById("play");
-                    if(play)
-                    {
-                        play.addEventListener('click',()=>{
-                            function turnOver(spays)
-                            {
-                                const cardContainer = document.getElementById("cards-container");
-                                const backCard = renderBackCard()
-                                let index = 0;
-                                const end = spays.length * 2;
-                                if(cardContainer) 
-                                {
-                                    cardContainer.innerHTML = backCard
-                                    cardContainer.addEventListener('click',()=>{
-                                        if(index < end)
-                                        {
-                                            if(!(index % 2))
-                                            {
-                                                console.log(index)
-                                                cardContainer.innerHTML = spays[index / 2].card
-                                            }
-                                            else
-                                                cardContainer.innerHTML = backCard
-                                        }
-                                        index++
-                                    })
-                                }
-                            }
-                            const players = []
-                            for(let i = 0 ; i < data.players ; i++)
-                            {
-                                let p:HTMLInputElement = document.getElementById(`player-${i+1}`) as HTMLInputElement
-                                if(p)
-                                    players.push({id:i+1,name:p.value,spay:false,card:''});
-                            }
-                            //kanfar9 3lihom roles 
-                            const spays = roleDistribution(players,data.players,data.spays)
-                            // carts kayt9elbo hena 
-                            main.innerHTML = `<div id="cards-container"></div>`;
-                            turnOver(spays)
-                            // const cardContainer = document.getElementById("cards-container");
-                            // const backCard = renderBackCard()
-                            // let index = 0;
-                            // const end = spays.length * 2;
-                            // if(cardContainer) 
-                            // {
-                            //     cardContainer.innerHTML = backCard
-                            //     cardContainer.addEventListener('click',()=>{
-                            //         if(index < end)
-                            //         {
-                            //             if(!(index % 2))
-                            //             {
-                            //                 console.log(index)
-                            //                 cardContainer.innerHTML = spays[index / 2].card
-                            //             }
-                            //             else
-                            //                 cardContainer.innerHTML = backCard
-                            //         }
-                            //         index++
-                            //     })
-                            // }
-                        })
-                    }
-                })
             }
-        })
-    }
+            if(el.id === 'play')
+            {
+                const players = []
+                for(let i = 0 ; i < data.players ; i++)
+                {
+                    let p:HTMLInputElement = document.getElementById(`player-${i+1}`) as HTMLInputElement
+                    if(p)
+                        players.push({id:i+1,name:p.value,spay:false,card:''});
+                }
+                //kanfar9 3lihom roles 
+                const spays = roleDistribution(players,data.players,data.spays,selected)
+                // carts kayt9elbo hena 
+                game.innerHTML = `<div id="cards-container"></div>`;
+                const backCard = renderBackCard()
+                let index = 0;
+                const end = spays.length * 2;
+                const cardContainer = document.getElementById("cards-container");
+                if(cardContainer) 
+                {
+                    cardContainer.innerHTML = backCard
+                    cardContainer.addEventListener('click',()=>{
+                        if(index < end)
+                        {
+                            if(!(index % 2))
+                            {
+                                cardContainer.innerHTML = spays[index / 2].card
+                            }
+                            else
+                                cardContainer.innerHTML = backCard
+                        }
+                        if(index === end)//weslat card lkhera 
+                            game.innerHTML=findingSpy()
+                        index++
+                    })
+                }
+            }
+            if(el.id === 'new-game')
+            {
+                game.innerHTML = renderLocalMode() + renderSection() + PlayerAndSpaySelection("players",7) + PlayerAndSpaySelection("spays",1) 
+            }
+        }
+    )
 }

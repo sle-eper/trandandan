@@ -20,20 +20,24 @@ export function renderBackCard():string
     `
 }
 
-function winningWord():object
+function winningWord(selected):object
 {
+
+    const idSection =  selected[rand(0,selected.length - 1)]
+    // console.log(selected.length -1)
+    // console.log(rand(0,selected.length - 1))
     const section =  spaySections.find((s)=>{
-        return s.id == '1'
+        return s.id == idSection
     })
     const itemsOfSection = section?.items || '';
     const index:number = rand(0,itemsOfSection?.length - 1)
     return({name:itemsOfSection[index].name,img:itemsOfSection[index].imageUrl})
 }
 
-export function roleDistribution(playersData:any,numberOfPlayer:number,spays:number)
+export function roleDistribution(playersData:any,numberOfPlayer:number,spays:number,selected)
 {
     const spaysId:number[] = []
-    const winItem = winningWord();
+    const winItem = winningWord(selected);
     //kankhetar id dyal spay 
     while(spaysId.length < spays)
     {
@@ -66,10 +70,4 @@ export function roleDistribution(playersData:any,numberOfPlayer:number,spays:num
     })
     // console.log(winningWord())
     return game
-    return `
-            <div class = "cursor-pointer transition-transform duration-200 
-                        hover:scale-105" >
-                <img src="${normalPlayer}" alt="Spy Config Card" class="w-full h-auto object-contain ">
-            </div>
-    `
 }

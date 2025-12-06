@@ -7,8 +7,8 @@ import sections from "../img/sections.png"
 
 function card(img: string, defaultSpiesCount: number, id: string, globalId: string): string {
     return `
-        <div id="${globalId}" class="relative w-full max-w-[350px] group cursor-pointer transition-transform duration-200 hover:scale-105">
-            <img src="${img}" alt="Spy Config Card" class="w-full h-auto object-contain">
+        <div  class=" border relative w-full max-w-[350px] group cursor-pointer transition-transform duration-200 hover:scale-105">
+            <img id="${globalId}" src="${img}" alt="Spy Config Card" class="w-full h-auto object-contain">
             
             <div id="${id}" class="absolute bottom-[29%] left-0 right-0 flex justify-center items-center z-10
                 text-4xl font-bold uppercase text-[#ff4d4d] tracking-wide font-['Share_Tech_Mono']
@@ -35,7 +35,7 @@ export function renderLocalMode():string
             }
         </style>
         <div id="local-mode" class ="grid grid-cols-3 gap-4 justify-items-center items-center  w-full h-full border">
-            ${card(players,7,"playersInput","playersCard")}
+            ${card(players,3,"playersInput","playersCard")}
             ${card(spays,1,"spaysInput","spaysCard")}
             ${card(sections,1,"sectionInput","sectionsCard")}
             <div class="col-span-3 w-full flex justify-center">

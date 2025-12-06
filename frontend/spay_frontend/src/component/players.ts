@@ -1,9 +1,4 @@
-// import playerBored from "../img/playerBored.png"
 
-// interface data  {
-//             players:number,
-//             spays:number
-//         }
 
 export function renderPlayers(data):string
 {
@@ -12,7 +7,7 @@ export function renderPlayers(data):string
     for(let i:number = 0;i < data.players ;i++)
     {
         content += `
-                <div class="bottom-[37%] left-0 right-0 flex justify-center items-center z-10  border-[#E63946] rounded-xl border-2">
+                <div class="flex justify-center items-center border-[#E63946] rounded-xl border-2">
                     <input
                         ${hideSpinnersStyle}
                         value = "player ${i+1}"
