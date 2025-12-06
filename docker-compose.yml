@@ -40,7 +40,10 @@ services:
     volumes:
       - ./frontend/chat-frontend/src:/app/src
       - ./frontend/auth_frontend/src_auth:/app/src_auth
-      - /app/node_modules
+      - ./frontend/profile_frontend/src:/app/profile_frontend/src
+    depends_on:
+      - user-management
+      - authentication
 
   chat-serves:
     build: ./backend/chat-service

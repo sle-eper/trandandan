@@ -14,7 +14,7 @@ class UserModule{
     }
     async findByUsername(username) {
         return this.db.get(
-            'SELECT id, email, username ,display_name ,password_hash FROM users WHERE username = ?',
+            'SELECT id, email, username,avatar_url ,display_name ,password_hash FROM users WHERE username = ?',
             [username]
         );
     }

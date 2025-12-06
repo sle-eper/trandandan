@@ -9,9 +9,9 @@ class FriendsController {
     async getFriends(request, reply) {
       try {
   
-        const userId = request.headers['x-user-id'];
+        // const userId = request.headers['x-user-id'];
+        const userId = request.params.id;
         const friends = await this.friendshipModel.getFriends(userId);
-        
         return { success: true, friends };
       } catch (error) {
         return reply.code(500).send({ error: error.message });
@@ -22,9 +22,9 @@ class FriendsController {
     async sendRequest(request, reply) {
       try {
       
-        const userId = request.user.userId;
+        // const userId = request.user.userId;
         const { friendId } = request.body;
-        
+        const { userId } = request.body;
         if (userId === friendId) {
           return reply.code(400).send({ 
             error: 'Cannot send friend request to yourself' 
@@ -43,10 +43,10 @@ class FriendsController {
     async acceptRequest(request, reply) {
       try {
        
-        const userId = request.user.userId;
-        const { friendId } = request.body;
+        // const userId = request.user.userId;
+        const { friendId ,userId} = request.body;
         
-        const result = await this.friendshipModel.acceptRequest(friendId, userId);
+        const result = await this.friendshipModel.acceptRequest( userId,friendId);
         
         return result;
       } catch (error) {
@@ -85,11 +85,9 @@ class FriendsController {
     // PUT /friends/status - Change friend status
     async changeFriendStatus(request, reply) {
       try {
-        const userId = request.query.userId;
+        const userId = request.params.userId;
         const { friendId, status } = request.body;
-
         const result = await this.friendshipModel.changeFriendStatus(userId, friendId, status);
-
         return result;
       } catch (error) {
         return reply.code(500).send({ error: error.message });
@@ -99,10 +97,11 @@ class FriendsController {
     // GET /friendships/status - Get status of two friends
     async getStatusOfFriends(request, reply) {
       try {
-        const { myId, friendId } = request.query;
-       
+        const { userId, friendId } = request.params;
         
-        const result = await this.friendshipModel.getStatusOfTwoFriends(myId, friendId);
+        
+        const result = await this.friendshipModel.getStatusOfTwoFriends(userId, friendId);
+        
         return result;
       } catch (error) {
         return reply.code(500).send({ error: error.message });
