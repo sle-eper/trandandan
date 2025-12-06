@@ -14,10 +14,10 @@ dotenv.config();
 
 const fastify = Fastify({ logger: true });
 await fastify.register(cors, {
-  origin: "*", 
+  origin: "http://localhost:5173", 
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type"],
-  // credentials: true
+  credentials: true
 });
 await fastify.register(formbody);
 await fastify.register(fastifyCookie);
@@ -34,7 +34,7 @@ fastify.decorate('verifyInternal', async (request, reply) => {
     reply.code(403).send({ error: 'Forbidden' });
   }
 });
-fastify.get('/verify', authController.verifyUser_get);
+fastify.get('/auth/verify', authController.verifyUser_get);
 await fastify.register(authRoutes, { prefix: '/api/auth' });
 const start = async () => {
   try {

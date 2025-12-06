@@ -3,8 +3,8 @@ import { loginTemplate, sharedImage } from "./templates";
 import { loginUser } from "./api";
 import { navigate } from "../app";
 // import { showDashboard } from "../dashboard/dashboard";
-import { showMainUI } from "../../src/ts/script.ts";
-// import {ProfileApp} from "../../../profile_frontend/src/main.ts";
+// import { showMainUI } from "../../src/ts/script.ts";
+
 export function showLoginPage(containerId = "login-app") {
   const app = document.getElementById(containerId);
   if (!app) return;
@@ -18,8 +18,9 @@ export function showLoginPage(containerId = "login-app") {
 
   attachLoginHandlers();
 }
+let currentUserId: string | null = null; // store user_id globally
 
-function attachLoginHandlers() {
+export function attachLoginHandlers() {
   const btn = document.getElementById("login-btn") as HTMLButtonElement | null;
   const signup = document.getElementById("login-signup");
   const forgot = document.getElementById("login-forgot");
@@ -31,58 +32,46 @@ function attachLoginHandlers() {
 
   if (!btn) return;
 
-  // ⬅️ FIXED: async handler because we use await
   btn.addEventListener("click", async () => {
-    const username = (
-      document.getElementById("login-username") as HTMLInputElement
-    ).value.trim();
-    const password = (
-      document.getElementById("login-password") as HTMLInputElement
-    ).value.trim();
+    const username = (document.getElementById("login-username") as HTMLInputElement).value.trim();
+    const password = (document.getElementById("login-password") as HTMLInputElement).value.trim();
 
     if (!username || !password) {
       alert("Please fill all fields.");
       return;
     }
 
-    // ----------- CALL BACKEND -----------
-    const { response, body } = await loginUser(username, password);
+    try {
+      const { response, body } = await loginUser(username, password);
 
-// Body first
-if (body.success && response) {
-  // console.log(body);
-  // console.log(response.headers)
-  // Read headers from the REAL response
-  // const user = response.headers.get("x-user");
-  // const userId = response.headers.get("x-user-id");
+      if (body.success) {
+        // ✅ Read user_id from headers if backend sends it
+        currentUserId = response?.headers.get("x-user-id") || null;
 
-  // console.log("Header username:", user);
-  const userId = response.headers.get('x-user-id')
-  console.log("Header userId:", userId);
+        console.log("Login success:", body, "User ID:", currentUserId);
 
-    showMainUI(userId);
-    } else {
-      alert("Invalid username or password");
+        navigate("dashboard");
+      } else {
+        alert(body.message || "Invalid username or password");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Login failed. Please try again.");
     }
   });
-  
-  if(googleBtn)
-  googleBtn.addEventListener("click", async () => {
-    try {
-      // Your backend route
+
+  if (googleBtn) {
+    googleBtn.addEventListener("click", () => {
       window.location.href = "http://localhost:8080/api/auth/google";
-    } catch (err) {
-      console.error(err);
-    }
-  });
-  if(githubBtn)
-    githubBtn.addEventListener("click", async () => {
-    try {
-      // Your backend route
+    });
+  }
+
+  if (githubBtn) {
+    githubBtn.addEventListener("click", () => {
       window.location.href = "http://localhost:8080/api/auth/github";
-    } catch (err) {
-      console.error(err);
-    }
-  });
+    });
+  }
 }
+
+export { currentUserId };
 

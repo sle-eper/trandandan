@@ -278,7 +278,7 @@ server.ready().then(() => {
     })
     // const userId = socket.handshake.headers['x-user-id'];
     // const user = socket.handshake.headers['x-user'];
-    // console.log('hii  ',userId)
+    console.log('hii  ')
     // console.log("user  ",user)
   })
 });
