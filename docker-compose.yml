@@ -29,7 +29,7 @@ services:
       - ./backend/Auth/DataBase:/Auth/DataBase
     networks:
       - app-network
-    
+
   front-end:
     build: ./frontend
     container_name: frontend
@@ -48,6 +48,8 @@ services:
   tournament:
     build: ./backend/tournament
     container_name: tournament
+    volumes:
+      - ./backend/tournament/data:/tournament/data 
     ports:
       - "5500:5500"
     networks:
