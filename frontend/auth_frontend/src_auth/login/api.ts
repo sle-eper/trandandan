@@ -5,7 +5,7 @@ export async function loginUser(username: string, password: string) {
       headers: { "Content-Type": "application/json" },
       credentials: "include", // VERY IMPORTANT FOR Cookies
       body: JSON.stringify({ username, password }),
-      credentials: "include", // VERY IMPORTANT to handle cookies
+      // credentials: "include", // VERY IMPORTANT to handle cookies
     });
     const body = await response.json();
     return { response, body };
