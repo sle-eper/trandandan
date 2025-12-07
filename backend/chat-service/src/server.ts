@@ -12,7 +12,7 @@ import { fetchUserData, getStatusOfTowFriends,changeStatusOfFriends,getFriendsOf
 import fastify from "fastify";
 import fastifyIO from "fastify-socket.io";
 
-const server = fastify({ logger: true });
+const server = fastify(/* { logger: true } */);
 server.register(fastifyIO, {
   path: "/socket.io",
   cors: {
@@ -265,21 +265,115 @@ server.ready().then(() => {
 
   io.on("connection", async (socket) => {
     socket.on('con',async (id)=>{
-      const id_friend  = "1"; //TODO remove this hardcoded value
-       const userData = await fetchUserData(id);
-       console.log('User connected:', userData);
-       const userFriends = await getFriendsOfUser(id);
-        console.log('User friends:', userFriends);
-        const friendsStatus = await getStatusOfTowFriends(id,id_friend);
-        console.log('Friends status:', friendsStatus);
-        const changeStatus = await changeStatusOfFriends('blocked',id,id_friend);
-        console.log('Changed status:', changeStatus);
+        socket.data.userId = id;
+        // const id_friend  = "1"; //TODO remove this hardcoded value
+        // const userData = await fetchUserData(id);
+        // console.log('User connected:', userData);
+        // const userFriends = await getFriendsOfUser(id);
+        // console.log('User friends:', userFriends);
+        // const friendsStatus = await getStatusOfTowFriends(id,id_friend);
+        // console.log('Friends status:', friendsStatus);
+        // const changeStatus = await changeStatusOfFriends('blocked',id,id_friend);
+        // console.log('Changed status:', changeStatus);
         
     })
-    // const userId = socket.handshake.headers['x-user-id'];
-    // const user = socket.handshake.headers['x-user'];
-    console.log('hii  ')
-    // console.log("user  ",user)
+    socket.on("get_friends", async() => {
+      try{
+        const id = socket.data.userId
+        const friends = await getFriendsOfUser(id);// get friends from user-management service
+        const waitingMsg = await getWaitingMsg(id);
+        socket.emit("friends_list", { friends, waitingMsg });
+      }catch(err)
+      {
+        console.error('Error in sendMsg:', err);
+      }
+    });
+    socket.on("get_status", async (friendId) => {
+      try{
+        const id = socket.data.userId
+        const roomName = [id, friendId].sort().join("_");
+        if(!statusOfTowFriend.has(roomName))
+        {
+          const status: object = await getStatusOfTowFriends(id,friendId);
+          statusOfTowFriend.set(roomName,status);
+        }
+        const status:any = statusOfTowFriend.get(roomName);
+        if(status)
+        {
+          const status1: string = status.status1;
+          const status2: string = status.status2;
+
+          let allow: Boolean = false;
+          if (status1 === "accepted" &&status2 === "accepted")
+                allow = true;
+          console.log(allow)
+          socket.emit("allowMsg", allow);
+        }
+      }catch(err)
+      {
+        console.error('Error in sendMsg:', err);
+      }
+    });
+    socket.on("status", async (data) => {
+      try{
+        const id = socket.data.userId
+        const roomName = [id, data.friendId].sort().join("_");//room name 
+        // console.log("status data:", id,data);
+        const newStatus:object = await changeStatusOfFriends(data.status, id, data.friendId);// update status in database blocked/accepted
+        console.log("newStatus",newStatus)
+        if(statusOfTowFriend.has(roomName))
+        {                    
+          statusOfTowFriend.set(roomName,newStatus);
+        }
+        else(!statusOfTowFriend.has(roomName))
+        {
+          const status: object = await getStatusOfTowFriends(id,data.friendId);
+          statusOfTowFriend.set(roomName,status);
+        }
+
+        const status:any = statusOfTowFriend.get(roomName);
+        if(status)
+        {
+          const status1: string = status.status1;
+          const status2: string = status.status2;
+          let statusGlobal: string = "blocked";
+          if (status1 === "accepted" && status2 === "accepted")
+            statusGlobal = "accepted";
+          const userSocket = onlineUsers.get(id);
+          const friendSocket = onlineUsers.get(data.friendId); 
+          if (userSocket) io.to(userSocket).emit("blockOrAccepted", roomName, statusGlobal);
+          if (friendSocket) io.to(friendSocket).emit("blockOrAccepted", roomName, statusGlobal);
+        }
+      }catch(err)
+      {
+        console.error('Error in sendMsg:', err);
+      }
+    });
+    socket.on('ack_message', async(msgId:string) => {
+      await changeToRecv(msgId); // update status to 'sent'
+    });
+    socket.on("joinToRoom", (roomName: string) => {
+      try{
+        const rooms = socket.rooms;
+        for (const room of rooms) {
+          if (room != socket.id) socket.leave(room);
+        }
+        socket.join(roomName);
+      }catch(err)
+      {
+        console.error('Error in sendMsg:', err);
+      }
+    });
+    socket.on("disconnect", () => {
+      try{
+        const id = socket.data.userId;
+        if (id && onlineUsers.get(id) === socket.id)
+          onlineUsers.delete(id);
+      }catch(err)
+      {
+        console.error('Error in sendMsg:', err);
+      }
+    });
   })
 });
 

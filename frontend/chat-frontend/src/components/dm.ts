@@ -1,15 +1,15 @@
 
-function profileNav():string{
-    return`
-        <div id="profile-nav" class="flex h-[10%] items-center p-5 justify-between">
-            <div class="flex items-center gap-6">
-              <img src="./src/img/smiling-african-american-millennial-businessman-600nw-1437938108.webp" alt="" class="h-10 w-10 rounded-full ">
-              <span class='font-semibold text-[#F5F5F5]'>hassan</span>
-            </div>
-            <span class="material-symbols-outlined text-[#E63946]">report</span>
-          </div>
-          <div class="h-[2px] bg-gradient-to-r from-[#E63946] to-[#8A1C1C]"></div>`
-}
+// function profileNav():string{
+//     return`
+//         <div id="profile-nav" class="flex h-[10%] items-center p-5 justify-between">
+//             <div class="flex items-center gap-6">
+//               <img src="./src/img/smiling-african-american-millennial-businessman-600nw-1437938108.webp" alt="" class="h-10 w-10 rounded-full ">
+//               <span class='font-semibold text-[#F5F5F5]'>hassan</span>
+//             </div>
+//             <span class="material-symbols-outlined text-[#E63946]">report</span>
+//           </div>
+//           <div class="h-[2px] bg-gradient-to-r from-[#E63946] to-[#8A1C1C]"></div>`
+// }
 
 function inputMsg():string{
     return `<div id="input-msg" class="h-15 border-[#E63946] rounded-xl border-2 flex items-center mt-2">
@@ -40,10 +40,10 @@ function chatZone():string{
     return`<div id="chat-zone" class="flex flex-col h-[100%] overflow-y-auto hide-scrollbar">
           </div>`
 }
+// ${profileNav()}
 export function DM():string{
     return`
     <div id="DM" class="w-[55%] h-[90%] rounded-2xl p-4 flex flex-col bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A]">
-        ${profileNav()}
         ${chatZone()}
         ${inputMsg()}
     </div>

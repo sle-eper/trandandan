@@ -1,5 +1,5 @@
-// import { showMainUI } from "../../src/ts/script.ts"
-// import { currentUserId } from "./login.ts"
+import { showMainUI } from "../../src/ts/script.ts"
+// import { currentUserId }? from "./login.ts"
 export function updateContent(html: string) {
     const content = document.getElementById("dashboard-content");
   if (!content) return;
@@ -23,11 +23,11 @@ export function loadHome() {
 }
 
 export function loadChat() {
-  updateContent(`
-    <h1 class="text-3xl font-bold">Chat</h1>
-    <p class="text-gray-400 mt-2">Your messages appear here.</p>
-  `);
-    // showMainUI(currentUserId);
+  // updateContent(`
+  //   <h1 class="text-3xl font-bold">Chat</h1>
+  //   <p class="text-gray-400 mt-2">Your messages appear here.</p>
+  // `);
+    showMainUI(13);
 }
 
 export function loadProfile() {
