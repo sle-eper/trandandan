@@ -116,19 +116,21 @@ class ProfileController {
     }
   
 
-  // PUT /profile - Update profile
+  // PUT /profile/update - Update profile
   async updateProfile(request, reply) {
     try {
     
-      const userId = request.headers['x-user-id'];
+      // const userId = request.headers['x-user-id'];
+      const { id: userId } = request.params;
       const updates = request.body;
-      
+      console.log('Update request received for user ID:', updates);
       console.log('User is updating:', Object.keys(updates));
       
       if (updates.email) {
         const existingUser = await this.userModel.findByEmail(updates.email);
         
         if (existingUser && existingUser.id !== userId) {
+          console.log('Email already taken:', updates.email);
           return reply.code(409).send({ 
             error: 'Email already taken' 
           });
@@ -141,6 +143,7 @@ class ProfileController {
         );
         
         if (availableName && availableName.id !== userId) {
+          console.log('Display name already taken:', updates.displayName);
           return reply.code(409).send({ 
             error: 'Display name already taken' 
           });

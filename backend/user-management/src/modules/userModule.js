@@ -8,7 +8,7 @@ class UserModule{
 
     async findById(id) {
         return this.db.get(
-            'SELECT id, email, username, avatar_url ,display_name FROM users WHERE id = ?',
+            'SELECT id, email, username, avatar_url ,display_name,bio FROM users WHERE id = ?',
             id
         );
     }
@@ -66,11 +66,14 @@ class UserModule{
     }
     
     async updateProfile(userId, updates) {
-        const { displayName, bio, avatarUrl,email } = updates;
+        const { displayName, bio, avatarUrl,email,username } = updates;
         
         const fields = [];
         const values = [];
-
+        if (username) {
+            fields.push('username = ?');
+            values.push(username);
+        }
         if (email) {
             fields.push('email = ?');
             values.push(email);
