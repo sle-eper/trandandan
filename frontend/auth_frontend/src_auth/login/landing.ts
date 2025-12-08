@@ -14,8 +14,7 @@ export function showLandingPage(containerId = "login-app") {
         </div>
 
         <div class="flex items-center gap-5">
-          <button id="go-login" class="text-white hover:text-red-400 transition">Login</button>
-          <button id="get-started" class="bg-red-600 hover:bg-red-700 transition px-4 py-2 rounded-lg font-semibold">
+            <button id="get-started" class="bg-red-600 hover:bg-red-700 transition px-4 py-2 rounded-lg font-semibold">
             Get Started
           </button>
         </div>
@@ -39,30 +38,32 @@ export function showLandingPage(containerId = "login-app") {
           </p>
 
           <div class="flex gap-4 mt-8">
-            <button class="bg-red-600 hover:bg-red-700 transition px-6 py-3 rounded-xl font-semibold flex items-center gap-2">
+            <button id = "play" class="bg-red-600 hover:bg-red-700 transition px-6 py-3 rounded-xl font-semibold flex items-center gap-2">
               ⚡ Play Now
-            </button>
-            <button class="bg-white/10 hover:bg-white/20 transition px-6 py-3 rounded-xl font-semibold">
-              Learn More
             </button>
           </div>
         </div>
 
         <!-- RIGHT IMAGE -->
         <div class="flex justify-center">
-        <img
-        src="/src_auth/images/gogo1.jpg"
-        class="w-[450px] rounded-xl border-2 border-red-500 shadow-[0_0_25px_rgba(255,0,0,0.6)]"
-        />
+<img
+  src="/src_auth/images/gogo1.jpg"
+  class="w-[450px] rounded-xl border-none outline-none
+  [mask-image:radial-gradient(circle,white_20%,transparent_100%)]
+  shadow-none"
+/>
+
+
+
         </div>
       </main>
     </div>
   `;
 
   // Allow navigation to login page
-  const goLogin = document.getElementById("go-login");
-  if (goLogin) {
-    goLogin.addEventListener("click", () => {
+  const play = document.getElementById("play");
+  if (play) {
+    play.addEventListener("click", () => {
         navigate("/login");
     });
   }
