@@ -1,52 +1,69 @@
+// async function checkSession(): Promise<boolean> {
+  //   try {
+    //     const response = await fetch("/auth/verify/", {
+      //       method: "GET",
+//       credentials: "include" // send cookies
+//     });
+//     return response.status === 200;
+//   } catch {
+//     return false;
+//   }
+// }
+
+import { initRouter, addRoute, navigate } from "./login/router";
+import { showLandingPage } from "./login/landing";
 import { showLoginPage } from "./login/login";
 import { showSignupPage } from "./login/signup";
 import { showForgotPage } from "./login/forgot_pass";
 import { showDashboard } from "./dashboard/dashboard";
 import { showchangePassPage } from "./login/change_pass";
 import { handleOAuthSuccess } from "./login/auth_success";
-// import lookup from "socket.io-client";
-
-export function navigate(page: "login" | "signup" | "forgot" | "dashboard" | "change" | "auth") {
-  switch (page) {
-    case "login": showLoginPage(); break;
-    case "signup": showSignupPage(); break;
-    case "forgot": showForgotPage(); break;
-    case "dashboard": showDashboard(); break;
-    case "change" : showchangePassPage(); break;
-    case "auth"   : handleOAuthSuccess(); break;
-  }
-}
-async function checkSession(): Promise<boolean> {
-  try {
-    const response = await fetch("/auth/verify/", {
-      method: "GET",
-      credentials: "include" // send cookies
-    });
-    return response.status === 200;
-  } catch {
-    return false;
-  }
-}
+import { showNotFound } from "./login/not_found";
+import { loadHome, loadGame, loadtournament, loadProfile, loadChat } from "./login/routing";
 
 
-// 🚨 IMPORTANT PART 🚨
-window.addEventListener("DOMContentLoaded", async () => {
-  const path = window.location.pathname;
+// Register all routes
+addRoute("/", () => showLandingPage());
+addRoute("/landing", () => showLandingPage());
+addRoute("/login", () => showLoginPage());
+addRoute("/signup", () => showSignupPage());
+addRoute("/forgot", () => showForgotPage());
+addRoute("/dashboard", () => showDashboard());
+addRoute("/change", () => showchangePassPage());
+addRoute("/auth/success", () => handleOAuthSuccess());
+addRoute("/dashboard", () => showDashboard());
 
-  // OAuth success case
-  if (path === "/auth/success") {
-    return navigate("auth");
-  }
-
-  // Check if session is valid
-  const loggedIn = await checkSession();
-  console.log(loggedIn);
-  if (loggedIn) {
-    navigate("dashboard");
-  } else {
-    navigate("login");
-  }
+// Dashboard sub-pages
+addRoute("/home", () => {
+    showDashboard();   // ensures the dashboard layout is loaded
+    loadHome();        // loads Home content
 });
+
+addRoute("/game", () => {
+    showDashboard();
+    loadGame();
+});
+addRoute("/chat", () => {
+    showDashboard();
+    loadChat();
+});
+addRoute("/tournament", () => {
+    showDashboard();
+    loadtournament();
+});
+
+addRoute("/profile", () => {
+    showDashboard();
+    loadProfile();
+});
+
+// Start router
+window.addEventListener("DOMContentLoaded", () => {
+  initRouter(() => showNotFound());
+});
+
+export { navigate };
+
 
 
 

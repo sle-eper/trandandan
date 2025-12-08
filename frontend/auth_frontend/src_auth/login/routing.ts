@@ -42,6 +42,7 @@ export function loadGame()
     <h1 class="text-3xl font-bold">game</h1>
     <p class="text-gray-400 mt-2">Your account settings.</p>
   `);
+  
 }
 export function loadtournament()
 {
