@@ -7,10 +7,6 @@ const socket = io("http://localhost:3000");//TODO hadi ra hebla o khedama
 //     withCredentials: true, // Send cookies for auth
 //     transports: ['websocket', 'polling']
 // });
-// =========
-// const socket = io("http://localhost:3000");
-
-// >>>>>>>>> Temporary merge branch 2
 
 import {
     lastMsg,
@@ -29,20 +25,6 @@ import {
 let myImg: string = "";
 let imInRoom: string = "";
 let friendId: string = "";
-
-// const app = document.getElementById('login-app');
-// if(app)
-// {
-//     app.innerHTML = `<div id="nav-bar"></div>
-//                     <div id="layout" class="flex flex-row  h-[calc(100vh-4rem)]" >
-//                     <div id="side-bar" ></div>
-//                     <div id="chat-content" class="flex justify-center items-center w-full gap-6 h-[93vh] gap-y-3"></div>
-//                     </div>` 
-// }
-
-// const nav = document.getElementById("nav-bar");
-// const sidebar = document.getElementById("side-bar");
-// const chatContent = document.getElementById("chat-content");
 
 
 function moveUp(id: string) {
@@ -205,67 +187,34 @@ function socketListener() {
 
 export async function showMainUI(myId:string) {
     socket.emit("con", myId);
-    // console.log("from chat frontend",myId)
-    // const bodyElement = document.getElementById('myBody')
-    // if(bodyElement)
-    // {
-    //     console.log(bodyElement)
-    //     /*     ') */
-    //     bodyElement.classList.remove('bg-black') /*  flex flex-col md:flex-row items-center justify-center min-h-screen px-6 md:px-20') */
-    //     bodyElement.classList.remove('text-white') /* text-white  flex-col md:flex-row items-center justify-center min-h-screen px-6 md:px-20') */
-    //     bodyElement.classList.remove('flex') 
-    //     bodyElement.classList.remove('flex-col') 
-    //     bodyElement.classList.remove('md:flex-row') 
-    //     bodyElement.classList.remove('items-center') 
-    //     bodyElement.classList.remove('min-h-screen') 
-    //     bodyElement.classList.remove('px-6') 
-    //     bodyElement.classList.remove('md:px-20') 
-    //     bodyElement.classList.add('bg-gradient-to-b from-[#0E0E0E] to-[#1A1A1A]')
-
-    // }
-    const app = document.getElementById('login-app');
-    if(app)
-    {
-        app.innerHTML = `<div id="nav-bar"></div>
-                        <div id="layout" class="flex flex-row  h-[calc(100vh-4rem)]" >
-                        <div id="side-bar" ></div>
-                        <div id="chat-content" class="flex justify-center items-center w-full gap-6 h-[93vh] gap-y-3"></div>
-                        </div>` 
-    }
-
-    const nav = document.getElementById("nav-bar");
-    const sidebar = document.getElementById("side-bar");
-    const chatContent = document.getElementById("chat-content");
-
-    if (nav) nav.innerHTML = renderNavBar();
-    if (sidebar) sidebar.innerHTML = renderSidebar();
+    const chatContent = document.getElementById("dashboard-content");
 
     let sendButton: HTMLButtonElement;
     let chatZone: HTMLDivElement;
     let inputMsgZone: HTMLInputElement;
     let dmZone: HTMLElement | null;
 
-    
-
     function fetchListOfFriends(): Promise<any> {
         return new Promise((resolve) => {
             socket.once("friends_list", (friends) => {
                 resolve(friends);
             });
-            socket.emit("get_friends", myId);
+            socket.emit("get_friends");
         });
     }
 
     if (chatContent) {
+        chatContent.classList.add("flex","w-full", "gap-6", "gap-y-3")
+        chatContent.classList.remove("flex-grow")
         const friends = await fetchListOfFriends();
         chatContent.innerHTML = listOfMsg(friends.friends,friends.waitingMsg,myId);
         chatContent.innerHTML += DM();
 
-        //get all of list friends
+    //     //get all of list friends
         const friendsEvent = document.querySelectorAll(".friend-msg-zone");
         friendsEvent.forEach((friend) => {
             friend.addEventListener("click", (event) => {
-            /******************************************get msg on scroll*******************************/
+    //         /******************************************get msg on scroll*******************************/
             let firestOne:boolean = false 
             let isFetching = false;
             function onScroll()
@@ -290,7 +239,7 @@ export async function showMainUI(myId:string) {
                     })
                 }
             }
-                /**********************************************************************************************/
+    //             /**********************************************************************************************/
 
                 imInRoom = friend.dataset.roomname;
                 friendId = friend.dataset.id;
@@ -318,14 +267,12 @@ export async function showMainUI(myId:string) {
                     }
                     //*********************************************************************** */
                     dmZone = document.getElementById("DM");
-                    let contentChat = profileNav(
-                        friendFind.img,
-                        friendFind.name,
-                        friendFind.status
-                    );
+                    console.log("friendFind:",friendFind.status);
+                    let contentChat = profileNav(friendFind.avatar_url,friendFind.username,friendFind.status);
                     contentChat += chatZones();
-                    if (dmZone) dmZone.innerHTML = contentChat;
-                    socket.emit("get_status", { myId, friendId });
+                    if (dmZone)
+                        dmZone.innerHTML = contentChat;
+                    socket.emit("get_status", friendId);
                     ////////////////////////////////////////////////////////////////////////////////
                     sendButton = document.getElementById(
                         "send-button"
@@ -421,11 +368,7 @@ export async function showMainUI(myId:string) {
 
                     //block behaver
                     blockValid.addEventListener("click", () => {
-                        socket.emit("status", {
-                            status: "blocked",
-                            user_id: myId,
-                            friend_id: friendId,
-                        });
+                        socket.emit("status", {status: "blocked",friendId});
                         blockOption.classList.add("hidden");
                         const popupOption = document.getElementById("popup-option");
                         if (popupOption) {
@@ -445,11 +388,7 @@ export async function showMainUI(myId:string) {
                     });
                     //unblock behaver
                     unblockValid.addEventListener("click", () => {
-                        socket.emit("status", {
-                            status: "accepted",
-                            user_id: myId,
-                            friend_id: friendId,
-                        });
+                        socket.emit("status", {status: "accepted",friendId});
                         unblockOption.classList.add("hidden");
                         const popupOption = document.getElementById("popup-option");
                         if (popupOption) {
@@ -475,27 +414,3 @@ export async function showMainUI(myId:string) {
     }
 }
 socketListener();
-
-// chatContent!.innerHTML = `
-//   <div id="user-choice" class="flex flex-col items-center justify-center h-full text-white">
-//     <p class="text-xl mb-3">ID</p>
-//     <input class="text-white" id="username-input" type="text" placeholder="Enter username"
-//       class="p-2 rounded mb-3 text-black w-[200px] text-center"/>
-//     <div class="flex gap-5">
-//       <button id="yes-btn" class="bg-green-600 px-4 py-2 rounded">ok</button>
-//     </div>
-//   </div>
-// `;
-
-// const yesBtn = document.getElementById("yes-btn")!;
-// const usernameInput = document.getElementById(
-//     "username-input"
-// ) as HTMLInputElement;
-// const userChoice = document.getElementById("user-choice");
-
-// yesBtn.addEventListener("click", () => {
-//     const name = usernameInput.value.trim();
-//     myId = name;
-//     if (userChoice) userChoice.remove();
-//     showMainUI();
-// });

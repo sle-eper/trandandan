@@ -46,11 +46,12 @@ export function unreadMsgNumber(nbr:number,friendId:string):string
 }
 
 
-function  friendCart(friend:{id:string,name: string; img: string;status:string ; msg:string; send:string ;recv:string;send_at:string},waitingMsg:object,myId:string):string //done 
+function  friendCart(friend:any,waitingMsg:object,myId:string):string //done 
 {
+        // console.log(friend)
         const roomName = [myId,friend.id].sort().join('_');
         const unreadMsg:number = waitingMsg.filter(m=> m.room === roomName).length
-        console.table(friend.msg_status)
+        // console.table(friend.msg_status)
         let status:string;
         if(friend.recv==myId && friend.msg_status && friend.msg_status === 'waiting')//TODO add this object msg_status
             status = 'recv'
@@ -63,13 +64,13 @@ function  friendCart(friend:{id:string,name: string; img: string;status:string ;
                     <div  class=" friend-msg-zone flex w-[95%] hover:cursor-pointer" data-id="${friend.id}" data-name = "${friend.name}" data-roomname = "${roomName}"  >
                         <div id="" class=" w-13 h-13  bg-cover bg-center rounded-full" 
                             style="
-                                background-image : url('${friend.img}');
+                                background-image : url('${friend.avatar_url}');
                                 aspect-ratio: 1/1;
                             ">
                         </div>
                     <div class="ml-4 w-full flex flex-col justify-center">
                         <div class="flex justify-between">
-                            <span class="font-semibold text-[#F5F5F5]">${friend.name}</span>
+                            <span class="font-semibold text-[#F5F5F5]">${friend.username}</span>
                             <span>${unreadMsgNumber(unreadMsg,friend.id)}</span>
                         </div>
                         <div class="flex justify-between items-center ">
@@ -84,9 +85,9 @@ function  friendCart(friend:{id:string,name: string; img: string;status:string ;
 }
 
 
-export function listOfMsg(friends: {id:string;name: string; img: string;msg:string; send:string ;recv:string;send_at:string}[],waitingMsg:object,myId:string): string //done
+export function listOfMsg(friends:any,waitingMsg:object,myId:string): string //done
 {
-    // console.log('ssss', waitingMsg);
+    // console.log(myId)
     const friendCards = friends.map(element => friendCart(element,waitingMsg,myId)).join('\n')
     return `
             <style>
@@ -101,7 +102,7 @@ export function listOfMsg(friends: {id:string;name: string; img: string;msg:stri
                     background-color: #181818;
                 }
             </style>
-        <div class="w-[25%] h-[90%] rounded-2xl bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A]  overflow-hidden" >
+        <div class="w-[25%] h-full rounded-2xl bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A]  overflow-hidden" >
             <div class="sticky top-0 z-10 bg-[#181818] p-6">
                 <h1 class="font-bold text-[#F5F5F5]">chat</h1>
             </div>
@@ -111,9 +112,9 @@ export function listOfMsg(friends: {id:string;name: string; img: string;msg:stri
         </div>`;
 }
 
-export function generateBlockButton(statis:string):string
+export function generateBlockButton(status:string):string
 {
-    if(statis === 'accepted'){
+    if(status === 'accepted'){
         return `<div id="block-button" class="block-button-class flex items-center justify-center w-[70%] rounded-xl  bg-[#E63946] mb-5 hover:cursor-pointer">
                         <p class="block-button-class">Block</p>
                         <span class="block-button-class material-symbols-outlined">block</span>
@@ -271,7 +272,7 @@ export function chatZones():string{
 
 export function DM():string{
     return`
-            <div id="DM" class="w-[55%] h-[90%] rounded-2xl p-4 flex flex-col bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A] " data-roomname="">
+            <div id="DM" class="w-[55%] h-full rounded-2xl p-4 flex flex-col bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A] " data-roomname="">
             ${choseFriend()}
             </div>`;
 }

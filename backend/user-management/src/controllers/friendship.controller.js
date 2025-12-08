@@ -88,6 +88,7 @@ class FriendsController {
         const userId = request.params.userId;
         const { friendId, status } = request.body;
         const result = await this.friendshipModel.changeFriendStatus(userId, friendId, status);
+        console.log("changeFriendStatus result:", result);
         return result;
       } catch (error) {
         return reply.code(500).send({ error: error.message });

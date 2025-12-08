@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { db } from './db/database';
+import { log } from 'console';
 // Configuration
 const USER_MANAGEMENT_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://user-management:3000';
 
@@ -35,6 +36,7 @@ async function getFriendsOfUser(userId: string) {
     });
     
     const friends = response.data.friends;
+    console.log("friends fetched:", friends);
     if (friends.length === 0) {
         return [];
     }
@@ -97,16 +99,15 @@ async function getFriendsOfUser(userId: string) {
 
 async function getStatusOfTowFriends(userId:string,friendId:string):Promise<object> {
   try {
-    const response = await axios.get(`${USER_MANAGEMENT_SERVICE_URL}/friendship/status/${userId}/${friendId}`, {
+    const res = await axios.get(`${USER_MANAGEMENT_SERVICE_URL}/friendship/status/${userId}/${friendId}`, {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-     
       timeout: 5000 
     });
-    
-    return response.data;
+
+    return res.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.error(`Failed to fetch friendship status: ${error.message}`);
@@ -128,8 +129,9 @@ async function changeStatusOfFriends(status:string,userId:string,friendId:string
       },
       timeout: 5000 
     });
-    
-    return response.data;
+    console.log("froom",response.data)
+    // return response.data;
+    return getStatusOfTowFriends(userId,friendId)
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.error(`Failed to change friendship status: ${error.message}`);

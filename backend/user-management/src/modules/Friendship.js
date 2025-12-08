@@ -18,6 +18,10 @@ class Friendship {
         'INSERT INTO friendships (user_id, friend_id, status) VALUES (?, ?, ?)',
         [userId, friendId, 'pending']
       );
+      await this.db.run(
+         'INSERT INTO friendships (user_id, friend_id, status) VALUES (?, ?, ?)',
+        [friendId, userId, 'pending']
+      );
       
       return { success: true, message: 'Friend request sent' };
     }
@@ -29,6 +33,12 @@ class Friendship {
          SET status = 'accepted', accepted_at = CURRENT_TIMESTAMP 
          WHERE user_id = ? AND friend_id = ? AND status = 'pending'`,
         [userId,friendId]
+      );
+      await this.db.run(
+        `UPDATE friendships 
+         SET status = 'accepted', accepted_at = CURRENT_TIMESTAMP 
+         WHERE user_id = ? AND friend_id = ? AND status = 'pending'`,
+        [friendId,userId]
       );
       
       return { success: true, message: 'Friend request accepted' };
@@ -51,15 +61,13 @@ class Friendship {
       `SELECT 
         u.id, u.username, u.display_name, u.avatar_url, 
         u.online_status, u.last_seen,
-        f.accepted_at
+        f.accepted_at, f.status
       FROM friendships f
-      JOIN users u ON (
-        (f.user_id = ? AND u.id = f.friend_id) OR
-        (f.friend_id = ? AND u.id = f.user_id)
-      )
-      WHERE f.status = 'pending' OR f.status = 'accepted'
+      JOIN users u ON 
+        f.user_id = ? AND u.id = f.friend_id
+      WHERE  f.status = 'accepted' OR f.status = 'blocked'
       ORDER BY u.online_status DESC, u.display_name ASC`,
-      [userId, userId]
+      [userId]
     );
   }
   
@@ -85,8 +93,8 @@ class Friendship {
      const result = await this.db.run(
         `UPDATE friendships 
          SET status = ? 
-         WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)`,
-        [status, userId, friendId, friendId, userId]
+         WHERE (user_id = ? AND friend_id = ?)`,
+        [status, userId, friendId]
       );
   
       if (result.changes === 0) {
