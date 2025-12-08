@@ -267,6 +267,7 @@ export async function showMainUI(myId:string) {
                     }
                     //*********************************************************************** */
                     dmZone = document.getElementById("DM");
+                    console.log("friendFind:",friendFind.status);
                     let contentChat = profileNav(friendFind.avatar_url,friendFind.username,friendFind.status);
                     contentChat += chatZones();
                     if (dmZone)

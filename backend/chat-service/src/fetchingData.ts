@@ -36,6 +36,7 @@ async function getFriendsOfUser(userId: string) {
     });
     
     const friends = response.data.friends;
+    console.log("friends fetched:", friends);
     if (friends.length === 0) {
         return [];
     }
@@ -98,21 +99,15 @@ async function getFriendsOfUser(userId: string) {
 
 async function getStatusOfTowFriends(userId:string,friendId:string):Promise<object> {
   try {
-    const res1 = await axios.get(`${USER_MANAGEMENT_SERVICE_URL}/friendship/status/${userId}/${friendId}`, {
+    const res = await axios.get(`${USER_MANAGEMENT_SERVICE_URL}/friendship/status/${userId}/${friendId}`, {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
       timeout: 5000 
     });
-    const res2 = await axios.get(`${USER_MANAGEMENT_SERVICE_URL}/friendship/status/${friendId}/${userId}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      timeout: 5000 
-    });
-    return {status1:res1.data.status1?.status,status2:res2.data.status2?.status};
+
+    return res.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.error(`Failed to fetch friendship status: ${error.message}`);

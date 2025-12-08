@@ -280,7 +280,8 @@ server.ready().then(() => {
     socket.on("get_friends", async() => {
       try{
         const id = socket.data.userId
-        const friends = await getFriendsOfUser(id);// get friends from user-management service
+        const friends = await getFriendsOfUser(id);
+        console.table(friends);
         const waitingMsg = await getWaitingMsg(id);
         socket.emit("friends_list", { friends, waitingMsg });
       }catch(err)
@@ -295,13 +296,17 @@ server.ready().then(() => {
         if(!statusOfTowFriend.has(roomName))
         {
           const status: object = await getStatusOfTowFriends(id,friendId);
+          
           statusOfTowFriend.set(roomName,status);
         }
         const status:any = statusOfTowFriend.get(roomName);
+    
         if(status)
         {
-          const status1: string = status.status1;
-          const status2: string = status.status2;
+          const status1: string = status.status1.status;
+          const status2: string = status.status2.status;
+          console.log("status fetched:", status1,status2);
+
 
           let allow: Boolean = false;
           if (status1 === "accepted" &&status2 === "accepted")
@@ -328,14 +333,15 @@ server.ready().then(() => {
         else(!statusOfTowFriend.has(roomName))
         {
           const status: object = await getStatusOfTowFriends(id,data.friendId);
+          console.log("status fetched:", status);
           statusOfTowFriend.set(roomName,status);
         }
 
         const status:any = statusOfTowFriend.get(roomName);
         if(status)
         {
-          const status1: string = status.status1;
-          const status2: string = status.status2;
+          const status1: string = status.status1.status;
+          const status2: string = status.status2.status;
           let statusGlobal: string = "blocked";
           if (status1 === "accepted" && status2 === "accepted")
             statusGlobal = "accepted";

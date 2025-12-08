@@ -27,7 +27,7 @@ export function loadChat() {
   //   <h1 class="text-3xl font-bold">Chat</h1>
   //   <p class="text-gray-400 mt-2">Your messages appear here.</p>
   // `);
-    showMainUI(13);
+    showMainUI(14);
 }
 
 export function loadProfile() {

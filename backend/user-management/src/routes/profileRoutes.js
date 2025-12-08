@@ -56,14 +56,14 @@ async function profileRoutes(fastify, options) {
     },
   }, profileController.getUserProfile.bind(profileController));
 
-  fastify.put('/profile', {
+  fastify.put('/profile/:id/update', {
     schema: {
       body: {
         type: 'object',
         properties: {
           displayName: { type: 'string', minLength: 2, maxLength: 50 },
           bio: { type: 'string', maxLength: 500 },
-          avatarUrl: { type: 'string', maxLength: 500 },
+          avatarUrl: { type: 'string' },
           email: { 
             type: 'string', 
             format: 'email',

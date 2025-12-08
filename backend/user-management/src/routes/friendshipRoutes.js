@@ -70,7 +70,6 @@ fastify.get('/friendship/status/:userId/:friendId', {
     //     }
     //   }
     // },
-    
   }, friendsController.getStatusOfFriends.bind(friendsController));
 
   fastify.put('/friends/:userId/status', {
