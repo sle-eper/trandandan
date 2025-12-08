@@ -4,6 +4,19 @@ import { loginUser } from "./api";
 import { navigate } from "../app";
 // import { showDashboard } from "../dashboard/dashboard";
 // import { showMainUI } from "../../src/ts/script.ts";
+function showError(msg: string) {
+  const errorBox = document.getElementById("login-error");
+  if (!errorBox) return;
+  errorBox.textContent = msg;
+  errorBox.classList.add("opacity-100");
+}
+
+function clearError() {
+  const errorBox = document.getElementById("login-error");
+  if (!errorBox) return;
+  errorBox.textContent = "";
+  errorBox.classList.remove("opacity-100");
+}
 
 export function showLoginPage(containerId = "login-app") {
   const app = document.getElementById(containerId);
@@ -30,35 +43,51 @@ export function attachLoginHandlers() {
   if (signup) signup.addEventListener("click", () => navigate("signup"));
   if (forgot) forgot.addEventListener("click", () => navigate("forgot"));
 
+  const togglePassword = document.getElementById("toggle-password");
+  const passwordInput = document.getElementById("login-password") as HTMLInputElement;
+
+  if (togglePassword && passwordInput) {
+    togglePassword.addEventListener("click", () => {
+      if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        togglePassword.textContent = "visibility_off";
+      } else {
+        passwordInput.type = "password";
+        togglePassword.textContent = "visibility";
+      }
+    });
+  }
+
+
   if (!btn) return;
 
   btn.addEventListener("click", async () => {
-    const username = (document.getElementById("login-username") as HTMLInputElement).value.trim();
-    const password = (document.getElementById("login-password") as HTMLInputElement).value.trim();
+  clearError();
 
-    if (!username || !password) {
-      alert("Please fill all fields.");
-      return;
+  const username = (document.getElementById("login-username") as HTMLInputElement).value.trim();
+  const password = (document.getElementById("login-password") as HTMLInputElement).value.trim();
+
+  if (!username || !password) {
+    showError("Please fill all fields.");
+    return;
+  }
+
+  try {
+    const { response, body } = await loginUser(username, password);
+
+    if (body.success) {
+      currentUserId = response?.headers.get("x-user-id") || null;
+      navigate("dashboard");
+    } else {
+      showError(body.message || "Invalid username or password.");
     }
 
-    try {
-      const { response, body } = await loginUser(username, password);
+  } catch (err) {
+    console.error(err);
+    showError("Server error. Try again later.");
+  }
+});
 
-      if (body.success) {
-        // ✅ Read user_id from headers if backend sends it
-        currentUserId = response?.headers.get("x-user-id") || null;
-
-        console.log("Login success:", body, "User ID:", currentUserId);
-
-        navigate("dashboard");
-      } else {
-        alert(body.message || "Invalid username or password");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Login failed. Please try again.");
-    }
-  });
 
   if (googleBtn) {
     googleBtn.addEventListener("click", () => {
