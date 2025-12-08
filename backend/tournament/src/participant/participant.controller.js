@@ -11,8 +11,8 @@ export async function countParticipants_get(request, reply) {
 }
 
 export default async function (fastify) {
-    fastify.post('/add', addParticipant_post);
-    fastify.post('/remove', removeParticipant_post);
+    fastify.post('/add', addParticipant_post);//userowner
+    fastify.post('/remove', removeParticipant_post);//userowner
     fastify.get('/list', listParticipants_get);
     fastify.get('/count', countParticipants_get);
 }

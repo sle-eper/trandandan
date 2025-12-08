@@ -12,8 +12,7 @@ export async function joinTournament_post(request, reply) {
 }
 
 export async function leaveTournament_get(request, reply) {
-    const { userId, tournamentId } = request.query;
-    await service.leaveTournament(userId, tournamentId);
+    await service.leaveTournament(request.query);
     return reply.send({ message: 'Left tournament' });
 }
 

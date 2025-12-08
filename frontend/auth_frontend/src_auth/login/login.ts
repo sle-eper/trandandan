@@ -55,6 +55,7 @@ function attachLoginHandlers() {
         credentials: "include"
       });
       const bd = await res.json();
+      // const socket = io("https://localhost:8080/", { withCredentials: true });
       showMainUI(bd.id);
     } else {
       alert("Invalid username or password");

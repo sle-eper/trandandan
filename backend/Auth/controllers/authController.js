@@ -139,10 +139,9 @@ export async function login_post(request, reply) {
 export async function verifyUser_get(request, reply) {
   const token = request.cookies.token;
   const origin = request.headers.origin;
-  if (origin != "http://localhost:5173")
-  {
-    return reply.code(403).send("Forbidden");
-  }
+  // if (origin != "http://localhost:5173") {
+  //   return reply.code(403).send("Forbidden");
+  // }
   if (!token) {
     return reply.code(401).send("Not Authorized")
   }
@@ -150,6 +149,8 @@ export async function verifyUser_get(request, reply) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     reply
       .code(200)
+      .headers({ 'x-user': decoded.username })
+      .headers({ 'x-user-id': decoded.id })
       .send({
         authorization: true,
         message: "You are authenticated to access this resource.",

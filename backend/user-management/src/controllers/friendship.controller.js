@@ -8,7 +8,7 @@ class FriendsController {
     // GET /friends - Get friends list
     async getFriends(request, reply) {
       try {
-  
+        console.log("---------------", request);
         // const userId = request.headers['x-user-id'];
         const userId = request.params.id;
         const friends = await this.friendshipModel.getFriends(userId);
