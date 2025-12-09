@@ -36,7 +36,7 @@ async function getFriendsOfUser(userId: string) {
     });
     
     const friends = response.data.friends;
-    console.log("friends fetched:", friends);
+    // console.log("friends fetched:", friends);
     if (friends.length === 0) {
         return [];
     }
@@ -52,7 +52,7 @@ async function getFriendsOfUser(userId: string) {
             send,
             recv,
             status,
-            send_at
+            strftime('%H:%M',send_at) as send_at
         FROM msg
         WHERE id IN (
             SELECT MAX(id)

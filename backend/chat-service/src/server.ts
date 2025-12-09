@@ -266,6 +266,7 @@ server.ready().then(() => {
   io.on("connection", async (socket) => {
     socket.on('con',async (id)=>{
         socket.data.userId = id;
+        onlineUsers.set(id, socket.id);
         // const id_friend  = "1"; //TODO remove this hardcoded value
         // const userData = await fetchUserData(id);
         // console.log('User connected:', userData);
@@ -277,11 +278,66 @@ server.ready().then(() => {
         // console.log('Changed status:', changeStatus);
         
     })
+    socket.on("send_message", async (data) => {
+      try{
+        // console.log("in msg",data)
+          const id = socket.data.userId
+          const friendId: string = data.friendId; //
+          const msg: string = data.value; //
+          const roomName = [id, friendId].sort().join("_");
+          if(!statusOfTowFriend.has(roomName))
+          {
+            const status:object = await getStatusOfTowFriends(id, friendId);
+            statusOfTowFriend.set(roomName,status);
+          }
+          const status:any = statusOfTowFriend.get(roomName);
+          if(status){
+            const status1: string = status.status1.status; //
+            const status2: string = status.status2.status; //
+            if (status1 === "accepted" && status2 === "accepted")
+            {
+              const friendSocketId = onlineUsers.get(String(friendId));
+              const msgId:string =  await saveMsg(id, friendId, msg, roomName, "waiting");
+              const timeOfMsg:string = await getTimeOfMsg(msgId);
+              const UserData = await fetchUserData(friendId); // get data of user from user-management service
+              socket.to(roomName).emit("receive_message", msg, msgId ,id,timeOfMsg,UserData);
+              if(friendSocketId)socket.to(friendSocketId).emit("live", id, roomName, msg,timeOfMsg,UserData);
+            }
+          }
+      }catch(err){
+        console.error('Error :', err);
+      }
+    });
+    socket.on('get_messages', async (data) => {
+        const roomName = [data.myId, data.friendId].sort().join('_');
+        const limit = data.limit || 20;
+        const offset = data.offset || 0;
+        await changeAllToRecv(data.myId,roomName)
+        const messages = await getAllMsg(roomName, limit, offset);
+        const UserData = await fetchUserData(data.friendId); 
+        // console.log('---------get all--------');
+        // console.table(messages);
+        // console.log('------------------------');
+        socket.emit('messages_batch', messages.reverse(),UserData.img);
+    });
+    socket.on('get_old_messages', async (data) => {
+        const roomName = [data.myId, data.friendId].sort().join('_');
+        const limit = data.limit || 20;
+        const offset = data.offset || 0;
+        await changeAllToRecv(data.myId,roomName)
+        const messages = await getAllMsg(roomName, limit, offset);
+        const UserData = await fetchUserData(data.friendId); 
+
+        // console.table(messages);
+        // console.log('---------get old--------');
+        // console.table(data);
+        // console.log('------------------------');
+        socket.emit('messages_old_batch', messages,UserData.img);
+    });
     socket.on("get_friends", async() => {
       try{
         const id = socket.data.userId
         const friends = await getFriendsOfUser(id);
-        console.table(friends);
         const waitingMsg = await getWaitingMsg(id);
         socket.emit("friends_list", { friends, waitingMsg });
       }catch(err)
@@ -300,18 +356,13 @@ server.ready().then(() => {
           statusOfTowFriend.set(roomName,status);
         }
         const status:any = statusOfTowFriend.get(roomName);
-    
         if(status)
         {
           const status1: string = status.status1.status;
           const status2: string = status.status2.status;
-          console.log("status fetched:", status1,status2);
-
-
           let allow: Boolean = false;
           if (status1 === "accepted" &&status2 === "accepted")
                 allow = true;
-          console.log(allow)
           socket.emit("allowMsg", allow);
         }
       }catch(err)
@@ -323,9 +374,8 @@ server.ready().then(() => {
       try{
         const id = socket.data.userId
         const roomName = [id, data.friendId].sort().join("_");//room name 
-        // console.log("status data:", id,data);
         const newStatus:object = await changeStatusOfFriends(data.status, id, data.friendId);// update status in database blocked/accepted
-        console.log("newStatus",newStatus)
+        // console.log("newStatus",newStatus)
         if(statusOfTowFriend.has(roomName))
         {                    
           statusOfTowFriend.set(roomName,newStatus);
@@ -333,7 +383,7 @@ server.ready().then(() => {
         else(!statusOfTowFriend.has(roomName))
         {
           const status: object = await getStatusOfTowFriends(id,data.friendId);
-          console.log("status fetched:", status);
+          // console.log("status fetched:", status);
           statusOfTowFriend.set(roomName,status);
         }
 
@@ -346,7 +396,8 @@ server.ready().then(() => {
           if (status1 === "accepted" && status2 === "accepted")
             statusGlobal = "accepted";
           const userSocket = onlineUsers.get(id);
-          const friendSocket = onlineUsers.get(data.friendId); 
+          const friendSocket = onlineUsers.get(data.friendId);
+          // console.log(userSocket,friendSocket)
           if (userSocket) io.to(userSocket).emit("blockOrAccepted", roomName, statusGlobal);
           if (friendSocket) io.to(friendSocket).emit("blockOrAccepted", roomName, statusGlobal);
         }

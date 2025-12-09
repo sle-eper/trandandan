@@ -21,10 +21,10 @@ import {
     generateBlockButton,
 } from "../components/content";
 
-// let myId: string = "";
 let myImg: string = "";
 let imInRoom: string = "";
 let friendId: string = "";
+let userID: string = "";
 
 
 function moveUp(id: string) {
@@ -49,12 +49,8 @@ function setupPopupEvents() {
     const unblockButton = document.getElementById("unblock-button");
     const blockOption = document.getElementById("block-option");
     const unblockOption = document.getElementById("unblock-option");
-    const sendButton = document.getElementById(
-        "send-button"
-    ) as HTMLButtonElement;
-    const inputMsgZone = document.getElementById(
-        "input-msg-zone"
-    ) as HTMLInputElement;
+    const sendButton = document.getElementById("send-button") as HTMLButtonElement;
+    const inputMsgZone = document.getElementById("input-msg-zone") as HTMLInputElement;
 
     if (blockButton && blockOption) {
         blockButton.addEventListener("click", () =>
@@ -73,7 +69,6 @@ function setupPopupEvents() {
         const h:string = date.getHours().toString().padStart(2,'0');
         const m:string = date.getMinutes().toString().padStart(2,'0');
         return `${h}:${m}`
-
     }
     if (sendButton) {
         function send_message() {
@@ -83,13 +78,11 @@ function setupPopupEvents() {
                 const msgTime = document.getElementById(`time-of-msg-${friendId}`)
                 const time = getTime();
                 chatZone.innerHTML += sendMsg(value,time,myImg);
-
-                // const friendId:string = friendFind.id;
-                socket.emit("send_message", { value, myId, friendId });
+                // console.log("value",value);
+                // console.log("id",userID);
+                socket.emit("send_message", { value, userID, friendId });
                 moveUp(friendId);
-                const container = document.getElementById(
-                    `container-of-last-msg-of-${friendId}`
-                );
+                const container = document.getElementById(`container-of-last-msg-of-${friendId}`);
                 chatZone.scrollTop = chatZone.scrollHeight
                 if (container) container.innerHTML = lastMsg('send', value, friendId);
                 if(msgTime) msgTime.innerHTML = time
@@ -136,12 +129,10 @@ function socketListener() {
     socket.on("receive_message", (msg, msgId ,friendId,timeOfMsg,friendImg) => {
         const chatZone = document.getElementById("chat-zone") as HTMLDivElement;
         chatZone.insertAdjacentHTML("beforeend", receivedMsg(msg,timeOfMsg,friendImg));
-
         socket.emit('ack_message',msgId)
         const container = document.getElementById(
             `container-of-last-msg-of-${friendId}`
         );
-        // if (container) container.innerHTML = lastMsg('recv', msg, friendId);
     });
     socket.on("allowMsg", (allow: boolean) => {
         const msg = document.getElementById("x");
@@ -160,7 +151,7 @@ function socketListener() {
     socket.on('messages_batch',(messages,friendImg)=>{
         const chatZone = document.getElementById("chat-zone") as HTMLDivElement;
         for(const msg of messages){
-            if (msg.send == myId)
+            if (msg.send == userID)
                 chatZone.insertAdjacentHTML("beforeend", sendMsg(msg.msg,msg.time,myImg));
             else
                 chatZone.insertAdjacentHTML("beforeend", receivedMsg(msg.msg,msg.time,friendImg));
@@ -172,7 +163,7 @@ function socketListener() {
     socket.on('messages_old_batch',(messages,friendImg)=>{
         const chatZone = document.getElementById("chat-zone") as HTMLDivElement;
         for(const msg of messages){
-            if(msg.send == myId)
+            if(msg.send == userID)
                 chatZone.insertAdjacentHTML('afterbegin', sendMsg(msg.msg,msg.time,myImg)); 
             else
                 chatZone.insertAdjacentHTML("afterbegin", receivedMsg(msg.msg,msg.time,friendImg));
@@ -187,6 +178,7 @@ function socketListener() {
 
 export async function showMainUI(myId:string) {
     socket.emit("con", myId);
+    userID = myId
     const chatContent = document.getElementById("dashboard-content");
 
     let sendButton: HTMLButtonElement;
@@ -209,12 +201,12 @@ export async function showMainUI(myId:string) {
         const friends = await fetchListOfFriends();
         chatContent.innerHTML = listOfMsg(friends.friends,friends.waitingMsg,myId);
         chatContent.innerHTML += DM();
-
     //     //get all of list friends
         const friendsEvent = document.querySelectorAll(".friend-msg-zone");
         friendsEvent.forEach((friend) => {
             friend.addEventListener("click", (event) => {
     //         /******************************************get msg on scroll*******************************/
+    
             let firestOne:boolean = false 
             let isFetching = false;
             function onScroll()
@@ -239,18 +231,17 @@ export async function showMainUI(myId:string) {
                     })
                 }
             }
+    
     //             /**********************************************************************************************/
 
                 imInRoom = friend.dataset.roomname;
                 friendId = friend.dataset.id;
 
                 const friendFind = friends.friends.find(f => f.id == friendId);
-                // console.table(friendFind);
                 if (friendFind) {
                     const roomName: string = [myId, friendFind.id].sort().join("_");
                     const dm = document.getElementById("DM");
                     if (dm) dm.dataset.roomName = roomName;
-                    // socket.emit('get_messages',{myId,friendId,limit: 20, offset: 0})//TODO MAZL KHASEHA TFEHAM 
                     socket.emit("joinToRoom", roomName);
 
                     const counterElement: HTMLDivElement = document.getElementById(`counter-of-${friendId}`) as HTMLDivElement;
@@ -278,53 +269,29 @@ export async function showMainUI(myId:string) {
                         "send-button"
                     ) as HTMLButtonElement;
                     chatZone = document.getElementById("chat-zone") as HTMLDivElement;
-                    inputMsgZone = document.getElementById(
-                        "input-msg-zone"
-                    ) as HTMLInputElement;
+                    inputMsgZone = document.getElementById("input-msg-zone") as HTMLInputElement;
                     onScroll();
 
                     //****************************** start popup part *************************************//
-                    const option = document.getElementById(
-                        "more_vert"
-                    ) as HTMLSpanElement;
-                    const popupOption = document.getElementById(
-                        "popup-option"
-                    ) as HTMLDivElement;
-                    const blockButton = document.getElementById(
-                        "block-button"
-                    ) as HTMLDivElement;
-                    const blockOption = document.getElementById(
-                        "block-option"
-                    ) as HTMLButtonElement;
-                    const blockValid = document.getElementById(
-                        "blocked-valid"
-                    ) as HTMLButtonElement;
-                    const blockUnvalid = document.getElementById(
-                        "blocked-unvalid"
-                    ) as HTMLButtonElement;
-                    const unblockButton = document.getElementById(
-                        "unblock-button"
-                    ) as HTMLButtonElement;
-                    const unblockValid = document.getElementById(
-                        "unblocked-valid"
-                    ) as HTMLButtonElement;
-                    const unblockUnvalid = document.getElementById(
-                        "unblocked-unvalid"
-                    ) as HTMLButtonElement;
-                    const unblockOption = document.getElementById(
-                        "unblock-option"
-                    ) as HTMLDivElement;
+                    {
+                    const option = document.getElementById("more_vert") as HTMLSpanElement;
+                    const popupOption = document.getElementById("popup-option") as HTMLDivElement;
+                    const blockButton = document.getElementById("block-button") as HTMLDivElement;
+                    const blockOption = document.getElementById("block-option") as HTMLButtonElement;
+                    const blockValid = document.getElementById("blocked-valid") as HTMLButtonElement;
+                    const blockUnvalid = document.getElementById("blocked-unvalid") as HTMLButtonElement;
+                    const unblockButton = document.getElementById("unblock-button") as HTMLButtonElement;
+                    const unblockValid = document.getElementById("unblocked-valid") as HTMLButtonElement;
+                    const unblockUnvalid = document.getElementById("unblocked-unvalid") as HTMLButtonElement;
+                    const unblockOption = document.getElementById("unblock-option") as HTMLDivElement;
 
                     //When pressed 3 point
                     option.addEventListener("click", (event) => {
-                        contentChat = profileNav(
-                            friendFind.img,
-                            friendFind.name,
-                            friendFind.status
-                        );
+                        contentChat = profileNav(friendFind.img,friendFind.name,friendFind.status);
                         if (popupOption.classList.contains("hidden"))
                             popupOption.classList.remove("hidden");
-                        else popupOption.classList.add("hidden");
+                        else
+                            popupOption.classList.add("hidden");
                     });
                     // to close popup if click out of popup
                     window.addEventListener("click", (event) => {
@@ -406,6 +373,7 @@ export async function showMainUI(myId:string) {
                         unblockOption.classList.add("hidden");
                         popupOption.classList.remove("hidden");
                     });
+                    }
                     //
                     //****************************** end popup part *************************************//
                 }
