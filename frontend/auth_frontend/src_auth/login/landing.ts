@@ -46,15 +46,12 @@ export function showLandingPage(containerId = "login-app") {
 
         <!-- RIGHT IMAGE -->
         <div class="flex justify-center">
-<img
-  src="/src_auth/images/gogo1.jpg"
-  class="w-[450px] rounded-xl border-none outline-none
-  [mask-image:radial-gradient(circle,white_20%,transparent_100%)]
-  shadow-none"
-/>
-
-
-
+        <img
+          src="/src_auth/images/gogo1.jpg"
+          class="w-[450px] rounded-xl border-none outline-none
+          [mask-image:radial-gradient(circle,white_20%,transparent_100%)]
+          shadow-none"
+        />
         </div>
       </main>
     </div>
