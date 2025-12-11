@@ -36,10 +36,10 @@ export async function createTournament(data) {
 }
 
 export async function joinTournament(data) {
-    const { nickname, userid, name } = data;
+    const { nickname, userid, tournamentname } = data;
 
     const db = await getDatabase();
-    const tournament = await db.get('SELECT * FROM tournament WHERE name  = ?', [name]);
+    const tournament = await db.get('SELECT * FROM tournament WHERE name  = ?', [tournamentname]);
     if (!tournament) {
         console.log("Tournament Not Found");
         return { message: "Soumaya" };
@@ -86,16 +86,20 @@ export async function leaveTournament(data) {
                 "DELETE FROM participant WHERE userid = ?",
                 [userid]
             );
-            return {message:"the User is Deleted"}
+            return { message: "the User is Deleted" }
         }
     }
-    return {message :"Participant Not Found"}
+    return { message: "Participant Not Found" }
 }
 
-export async function checkTournament(tournamentId) {
-
-}
-
-export async function changeTournament(tournamentId, updates) {
+export async function checkTournament(data) {
+    const tournamentid = data.tournamentid;
+    const db = await getDatabase();
+    const tournament = await db.get('SELECT * FROM tournament WHERE id  = ?', [tournamentid]);
+    if (!tournament) {
+        console.log("Tournament Not Found");
+        return { message: "Tournament Not Found" };
+    }
+    return tournament
 
 }

@@ -49,7 +49,7 @@ export async function createTables() {
             CREATE TABLE IF NOT EXISTS tournament (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               name VARCHAR(100) NOT NULL,
-              ownerId INTEGER NOT NULL,
+              ownerid INTEGER NOT NULL,
               maxPlayers INTEGER NOT NULL,
               currentPlayers INTEGER DEFAULT 1,
               created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
