@@ -48,20 +48,20 @@ export function unreadMsgNumber(nbr:number,friendId:string):string
 
 function  friendCart(friend:any,waitingMsg:object,myId:string):string //done 
 {
-        // console.log(friend)
+        console.log(friend)
         const roomName = [myId,friend.id].sort().join('_');
         const unreadMsg:number = waitingMsg.filter(m=> m.room === roomName).length
         // console.table(friend.msg_status)
         let status:string;
-        if(friend.recv==myId && friend.msg_status && friend.msg_status === 'waiting')//TODO add this object msg_status
+        if(friend.recv==myId && friend.status && friend.status === 'waiting')//TODO add this object status
             status = 'recv'
-        else if(friend.recv==myId && friend.msg_status && friend.msg_status === 'send')
+        else if(friend.recv==myId && friend.status && friend.status === 'send')
             status = 'seen'
         else
             status = 'send'
 
         return `<div id='msg-zone' data-id="${friend.id}" class="flex justify-center  p-5 hover:bg-[#222222] transition-colors duration-300"">
-                    <div  class=" friend-msg-zone flex w-[95%] hover:cursor-pointer" data-id="${friend.id}" data-name = "${friend.name}" data-roomname = "${roomName}"  >
+                    <div  class=" friend-msg-zone flex w-[95%] hover:cursor-pointer" data-id="${friend.id}" data-name = "${friend.username}" data-roomname = "${roomName}"  >
                         <div id="" class=" w-13 h-13  bg-cover bg-center rounded-full" 
                             style="
                                 background-image : url('${friend.avatar_url}');
@@ -181,21 +181,22 @@ export function inputMsg(status:string):string //done
         return `
                 <style>
                     #input-msg-zone {
-                    scrollbar-width: none;
-                    -ms-overflow-style: none; 
+                        overflow-y: hidden;
                     }
                     #input-msg-zone::-webkit-scrollbar {
-                    display: none;
+                        display: none;
                     }
                 </style>
-                <div class="h-[100%] border-[#E63946] rounded-xl border-2 flex items-center mt-2">
+                <div class="h-full border-[#E63946] rounded-xl border-2 flex items-center mt-2">
                     <textarea
                         id="input-msg-zone"
                         placeholder="Message..."
                         autofocus
-                        class="h-[100%] w-[95%] text-[#F5F5F5] p-5 focus:outline-none "
+                        class="h-[100%] w-[95%] text-[#F5F5F5] p-5 focus:outline-none resize-none"
                     ></textarea>
-                    <button id="send-button" class="bg-gradient-to-br from-[#E63946] to-[#8A1C1C] hover:from-[#FF4D4D] hover:to-[#A02020] rounded-xl w-[5%] h-[80%] mr-2 ml-4 flex justify-center items-center">
+                    <button id="send-button"
+                        class="bg-gradient-to-br from-[#E63946] to-[#8A1C1C] hover:from-[#FF4D4D]
+                        hover:to-[#A02020] rounded-xl w-[5%] h-[80%] mr-2 ml-4 flex justify-center items-center">
                         <span class="material-symbols-outlined text-white">send</span>
                     </button>
                 </div>`
@@ -272,7 +273,7 @@ export function chatZones():string{
 
 export function DM():string{
     return`
-            <div id="DM" class="w-[55%] h-full rounded-2xl p-4 flex flex-col bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A] " data-roomname="">
+            <div id="DM" class="w-[60%] h-full rounded-2xl p-4 flex flex-col bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A] " data-roomname="">
             ${choseFriend()}
             </div>`;
 }

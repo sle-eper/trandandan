@@ -50,7 +50,7 @@ function setupPopupEvents() {
     const blockOption = document.getElementById("block-option");
     const unblockOption = document.getElementById("unblock-option");
     const sendButton = document.getElementById("send-button") as HTMLButtonElement;
-    const inputMsgZone = document.getElementById("input-msg-zone") as HTMLInputElement;
+    // const inputMsgZone = document.getElementById("input-msg-zone") as HTMLInputElement;
 
     if (blockButton && blockOption) {
         blockButton.addEventListener("click", () =>
@@ -70,16 +70,73 @@ function setupPopupEvents() {
         const m:string = date.getMinutes().toString().padStart(2,'0');
         return `${h}:${m}`
     }
+    const textarea = document.getElementById("input-msg-zone") as HTMLTextAreaElement;
+
+        textarea.addEventListener("input", () => {
+            if (textarea.value.trim() === "") {
+                textarea.style.overflow = "hidden";
+            } else {
+                
+                // textarea.style.padding = "10px"
+                textarea.style.overflow = "auto";
+            }
+        });
+
     if (sendButton) {
+        // function send_message() {
+            // const value = inputMsgZone.value;
+            // if (!value.trim()) return;
+// 
+            // const chatZone = document.getElementById("chat-zone")!;
+            // const time = getTime();
+            // const html = sendMsg(value, time, myImg, true);
+            // chatZone.insertAdjacentHTML('beforeend', html);
+// 
+// 
+            // const msgs = Array.from(chatZone.querySelectorAll(`.message-block[data-time="${time}"]`));
+            // msgs.forEach((msgEl, idx) => {
+                // const isLast = idx === msgs.length - 1;
+                // const img = msgEl.querySelector('.msg-img') as HTMLElement;
+                // const timeLabel = msgEl.querySelector('.msg-time');
+// 
+                // if (!isLast) {
+                    // if (img) img.style.visibility = "hidden";
+                    // if (timeLabel) timeLabel.remove();
+// 
+                    // msgEl.classList.remove('mt-5');
+                    // msgEl.classList.add('mt-1');
+                // } else {
+                    // msgEl.classList.remove('mt-1');
+                    // msgEl.classList.add('mt-5');
+                    // if (!timeLabel) {
+                        // const container = msgEl.querySelector('.max-w-[80%]') as HTMLElement;
+                        // if (container) container.insertAdjacentHTML('beforeend',
+                        // `<span class="msg-time text-xs text-[#888] mt-1 self-end">${time}</span>`
+                        // );
+                    // }
+                    // if (!img) {
+                    // msgEl.insertAdjacentHTML('beforeend',
+                        // `<img src="${myImg}" class="msg-img h-10 w-10 rounded-full mt-2 ml-2" alt="avatar">`
+                    // );
+                // }
+                // }
+            // });
+// 
+            // socket.emit("send_message", { value, userID, friendId });
+            // moveUp(friendId);
+            // chatZone.scrollTop = chatZone.scrollHeight;
+            // const container = document.getElementById(`container-of-last-msg-of-${friendId}`);
+            // if (container) container.innerHTML = lastMsg('send', value, friendId);
+            // inputMsgZone.value = '';
+            // (inputMsgZone as HTMLTextAreaElement).style.height = 'auto';
+        // }
         function send_message() {
-            const value: string = inputMsgZone.value;
+            const value: string = textarea.value;
             if (value.trim()) {
                 const chatZone = document.getElementById("chat-zone") as HTMLDivElement;
                 const msgTime = document.getElementById(`time-of-msg-${friendId}`)
                 const time = getTime();
                 chatZone.innerHTML += sendMsg(value,time,myImg);
-                // console.log("value",value);
-                // console.log("id",userID);
                 socket.emit("send_message", { value, userID, friendId });
                 moveUp(friendId);
                 const container = document.getElementById(`container-of-last-msg-of-${friendId}`);
@@ -87,14 +144,19 @@ function setupPopupEvents() {
                 if (container) container.innerHTML = lastMsg('send', value, friendId);
                 if(msgTime) msgTime.innerHTML = time
             }
-            inputMsgZone.value = '';
-            inputMsgZone.style.height = 'auto';//TODO nsayeb dak input 
+            textarea.value = '';
+            textarea.style.overflow = "hidden";
+            // textarea.style.height = 'auto';
+            textarea.focus();
         }
         sendButton.addEventListener("click", () => {
             send_message();
         });
-        inputMsgZone.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") send_message();
+        textarea.addEventListener("keypress", (e) => {
+            if (e.key === "Enter"){
+                e.preventDefault();
+                send_message();
+            }
         });
     }
 }
