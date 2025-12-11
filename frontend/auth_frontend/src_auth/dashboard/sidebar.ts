@@ -5,7 +5,7 @@
 export function renderSidebar(): string {
   return `
     <div id="layout" class="hidden md:flex justify-center items-center h-[calc(90vh-3rem)] w-30">
-      <aside id="sidebar" class="bg-gradient-to-t from-[#711F21] via-[#E63946] to-[#711F21] h-[65%] w-[50%] rounded-3xl">
+      <aside id="sidebar" class="bg-red-600 h-[65%] w-[50%] rounded-3xl">
         <nav class="flex flex-col justify-around h-full items-center">
 
           <a href="/home" data-route>
@@ -80,7 +80,7 @@ export function renderSidebar(): string {
 
 
     <div id="layout" class="flex md:hidden fixed bottom-0 left-0 right-0 justify-around h-15 mb-5 items-center">
-      <aside id="sidebar" class="bg-gradient-to-t from-[#711F21] via-[#E63946] to-[#711F21] h-full w-[90%] rounded-3xl">
+      <aside id="sidebar" class="bg-red-600 h-full w-[90%] rounded-3xl">
         <nav class="flex  justify-around h-full items-center">
 
           <a href="/home" data-route>
@@ -137,6 +137,7 @@ export function renderSidebar(): string {
               account_circle
             </span>
           </a>
+
         </nav>
       </aside>
     </div>

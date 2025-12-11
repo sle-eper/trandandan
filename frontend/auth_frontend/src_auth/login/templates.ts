@@ -8,15 +8,27 @@ export const loginTemplate = () => `
       <div class="space-y-4">
         <input id="login-username" type="text" placeholder="Username"
           class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
-        <input id="login-password" type="password" placeholder="Password"
-          class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
+        <div class="relative">
+          <input id="login-password" type="password" placeholder="Password"
+            class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249] pr-10" />
+
+        <!-- 👁 Show/hide password button -->
+          <span id="toggle-password" class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 
+            cursor-pointer text-gray-400 hover:text-white">
+            visibility
+          </span>
+        </div>
+
+        <!-- ❗ Error message area -->
+        <div id="login-error"
+          class="text-red-500 text-sm h-5 opacity-0 transition-opacity duration-300"></div>
       </div>
       <div class="flex items-center mt-3">
         <input id="login-remember" type="checkbox" class="mr-2 accent-[#E64249]" />
         <label for="login-remember" class="text-gray-300 text-sm">Remember me</label>
       </div>
       <button id="login-btn"
-        class="w-full bg-gradient-to-r from-[#9E3234] via-[#D8585E] to-[#E64249] text-white py-2 rounded-md mt-4 hover:opacity-90 transition">
+        class="w-full bg-red-600 text-white py-2 rounded-md mt-4 hover:opacity-90 transition">
         Login
       </button>
       <p id="login-forgot" class="text-center text-gray-400 text-sm mt-3 cursor-pointer hover:text-white">
@@ -60,7 +72,7 @@ export const signupTemplate = () => `
         <input id="signup-password" type="password" placeholder="Password" class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
         <input id="signup-confirm" type="password" placeholder="Confirm Password" class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
       </div>
-      <button id="signup-btn" class="w-full bg-gradient-to-r from-[#9E3234] via-[#D8585E] to-[#E64249] text-white py-2 rounded-md mt-6 hover:opacity-90 transition">
+      <button id="signup-btn" class="w-full bg-red-600 to-[#E64249] text-white py-2 rounded-md mt-6 hover:opacity-90 transition">
         Sign Up
       </button>
     </div>
@@ -79,7 +91,7 @@ export const forgotTemplate = () => `
       <div class="space-y-4 mt-6">
         <input id="forgot-email" type="email" placeholder="Email" class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
       </div>
-      <button id="forgot-btn" class="w-full bg-gradient-to-r from-[#9E3234] via-[#D8585E] to-[#E64249] text-white py-2 rounded-md mt-6 hover:opacity-90 transition">
+      <button id="forgot-btn" class="w-full bg-red-600 text-white py-2 rounded-md mt-6 hover:opacity-90 transition">
         Reset Password
       </button>
     </div>
@@ -105,7 +117,7 @@ export const ChangePass = () => `
         </div>
 
         <button id="change-btn" 
-        class="w-full bg-gradient-to-r from-[#9E3234] via-[#D8585E] to-[#E64249] 
+        class="w-full bg-red-600 
         text-white py-2 rounded-md mt-6 hover:opacity-90 transition">
           Change Password
         </button>

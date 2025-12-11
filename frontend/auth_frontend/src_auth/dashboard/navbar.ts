@@ -8,7 +8,7 @@ export function renderNavBar(): string {
       <!-- Logo -->
       <div class="flex items-center gap-3">
         <div class="rounded-xl p-1 bg-white/10 shadow-inner backdrop-blur-md">
-          <img src="./src/img/canvas.png" alt="logo" class="w-12 h-12 rounded-lg"/>
+          <img src="/src_auth/images/pingponglogo.jpg" alt="logo" class="w-12 h-12 rounded-lg"/>
         </div>
         <span class="text-xl font-bold tracking-wide drop-shadow-sm">
           PingPong
@@ -17,13 +17,13 @@ export function renderNavBar(): string {
 
       <div class="flex items-center gap-4 relative">
 
-        <button
+        <button id="notification-btn"
           class="w-10 h-10 flex items-center justify-center rounded-full
                  border border-white/20 bg-white/10 backdrop-blur-lg
-                 hover:bg-[#E63946]/20 hover:border-[#FD1D1D]
-                 hover:shadow-[0_0_12px_#FD1D1D]
-                 transition-all duration-300">
-          <span class="material-symbols-outlined text-white text-[22px]">
+                 transition-all duration-300 hover:scale-110
+                 hover:bg-[#FD1D1D]/20 hover:border-[#FD1D1D]
+                 hover:shadow-[0_0_12px_#FD1D1D,0_0_22px_#711F21]">
+          <span class="material-symbols-outlined text-white text-[24px]">
             notifications
           </span>
         </button>
@@ -60,7 +60,7 @@ export function renderNavBar(): string {
         </div>
 
         <!-- Profile -->
-        <button
+        <button id = "profile"
           class="w-10 h-10 flex items-center justify-center rounded-full
                  border border-white/20 bg-white/10 backdrop-blur-lg
                  transition-all duration-300 hover:scale-110
@@ -81,6 +81,7 @@ export function navBarLogic() {
   const btn = document.getElementById("settings-btn");
   const menu = document.getElementById("settings-menu");
   const signOutBtn = document.getElementById("sign-out");
+  const profile = document.getElementById("profile");
 
   // Toggle settings menu
   btn?.addEventListener("click", () => {
@@ -131,5 +132,10 @@ export function navBarLogic() {
     // Navigate to login page
     navigate("login");
   });
+  profile?.addEventListener("click", async () =>
+  {
+    navigate("profile");
+  });
 }
+
 

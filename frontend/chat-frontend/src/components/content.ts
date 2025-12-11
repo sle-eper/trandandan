@@ -13,6 +13,7 @@
 
 export function lastMsg(status:string,msg:string,friendId:string):string
 {
+    console.log("in",status)
     if(!msg)
         return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#888]" > new friend </span>`
     const shortMsg = msg.length > 20 ? msg.slice(0,20) + '...' : msg
@@ -48,10 +49,9 @@ export function unreadMsgNumber(nbr:number,friendId:string):string
 
 function  friendCart(friend:any,waitingMsg:object,myId:string):string //done 
 {
-        console.log(friend)
+        // console.log(friend)
         const roomName = [myId,friend.id].sort().join('_');
         const unreadMsg:number = waitingMsg.filter(m=> m.room === roomName).length
-        // console.table(friend.msg_status)
         let status:string;
         if(friend.recv==myId && friend.status && friend.status === 'waiting')//TODO add this object status
             status = 'recv'
@@ -60,24 +60,28 @@ function  friendCart(friend:any,waitingMsg:object,myId:string):string //done
         else
             status = 'send'
 
-        return `<div id='msg-zone' data-id="${friend.id}" class="flex justify-center  p-5 hover:bg-[#222222] transition-colors duration-300"">
+        return `<div id='msg-zone' data-id="${friend.id}" class="flex justify-center py-4 px-2 hover:bg-[#222222] transition-colors duration-300 sm:py-4 sm:px-4 md:py-5">
                     <div  class=" friend-msg-zone flex w-[95%] hover:cursor-pointer" data-id="${friend.id}" data-name = "${friend.username}" data-roomname = "${roomName}"  >
-                        <div id="" class=" w-13 h-13  bg-cover bg-center rounded-full" 
+                        <div class=" w-12 h-12 
+                                sm:w-14 sm:h-14 
+                                md:w-16 md:h-16"
+                                bg-cover bg-center rounded-full" 
                             style="
                                 background-image : url('${friend.avatar_url}');
                                 aspect-ratio: 1/1;
                             ">
                         </div>
-                    <div class="ml-4 w-full flex flex-col justify-center">
+                    <div class="ml-3 sm:ml-4 w-full flex flex-col justify-center">
                         <div class="flex justify-between">
-                            <span class="font-semibold text-[#F5F5F5]">${friend.username}</span>
+                            <span class="font-semibold text-[#F5F5F5] text-sm sm:text-base md:text-lg">${friend.username}</span>
                             <span>${unreadMsgNumber(unreadMsg,friend.id)}</span>
                         </div>
                         <div class="flex justify-between items-center ">
-                            <div id='container-of-last-msg-of-${friend.id}'>
+                            <div id='container-of-last-msg-of-${friend.id}'
+                                class="text-xs sm:text-sm md:text-base text-gray-300">
                                 ${lastMsg(status,friend.msg,friend.id)} 
                             </div>
-                            <span id='time-of-msg-${friend.id}' class="text-sm text-[#888] text-right ">${ msgTime(friend.send_at)}</span>
+                            <span id='time-of-msg-${friend.id}' class="text-[10px] sm:text-xs md:text-sm text-[#888]">${ msgTime(friend.send_at)}</span>
                         </div>
                         </div>
                     </div>
@@ -102,7 +106,7 @@ export function listOfMsg(friends:any,waitingMsg:object,myId:string): string //d
                     background-color: #181818;
                 }
             </style>
-        <div class="w-[25%] h-full rounded-2xl bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A]  overflow-hidden" >
+        <div id="list-of-msg-container" class="w-full md:w-[25%] h-full md:block block rounded-2xl bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A]  overflow-hidden" >
             <div class="sticky top-0 z-10 bg-[#181818] p-6">
                 <h1 class="font-bold text-[#F5F5F5]">chat</h1>
             </div>
@@ -133,6 +137,10 @@ export function profileNav(img:string,userAccount:string,status:string):string{
     return`
         <div id="profile-nav" class="flex h-[10%] items-center p-5 justify-between relative ">
             <div class="flex items-center gap-6">
+                <div id="back-btn" class="flex justify-center items-center md:hidden p-2 text-[#E63946]   hover:cursor-pointer hover:bg-[#222222]  rounded-full">
+                    <span class="material-symbols-outlined ">arrow_back_ios</span>
+                </div>
+
                 <div class="h-10 w-10  bg-cover bg-center rounded-full" 
                     style="
                         background-image : url('${img}');
@@ -273,7 +281,7 @@ export function chatZones():string{
 
 export function DM():string{
     return`
-            <div id="DM" class="w-[60%] h-full rounded-2xl p-4 flex flex-col bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A] " data-roomname="">
+            <div id="DM" class="hidden md:w-[60%] h-full w-full flex rounded-2xl p-4 md:flex flex-col bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A] " data-roomname="">
             ${choseFriend()}
             </div>`;
 }

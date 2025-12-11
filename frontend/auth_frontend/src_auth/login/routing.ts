@@ -23,11 +23,7 @@ export function loadHome() {
 }
 
 export function loadChat() {
-  // updateContent(`
-  //   <h1 class="text-3xl font-bold">Chat</h1>
-  //   <p class="text-gray-400 mt-2">Your messages appear here.</p>
-  // `);
-    showMainUI(14);
+    showMainUI();
 }
 
 export function loadProfile() {
@@ -42,7 +38,7 @@ export function loadGame()
     <h1 class="text-3xl font-bold">game</h1>
     <p class="text-gray-400 mt-2">Your account settings.</p>
   `);
-  
+
 }
 export function loadtournament()
 {
