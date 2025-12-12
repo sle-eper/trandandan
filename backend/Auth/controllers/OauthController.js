@@ -58,7 +58,6 @@ export async function googleAuthCallback_get(request, reply) {
 
         }
         else {
-            console.log('-----------------------------------------------------', name, '===', email, '===', id_token);
             const response = await axios.post('http://user-management:3000/profile/create', {
                 username: name,
                 email,

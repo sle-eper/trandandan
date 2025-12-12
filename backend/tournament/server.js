@@ -6,7 +6,7 @@
   import { initializeDatabase, getDatabase, closeDatabase } from './config/database.js'
   const fastify = Fastify({ logger: true });
   await fastify.register(cors, {
-    origin: "*", 
+    origin: "http://localhost:5173", 
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type"],
   });

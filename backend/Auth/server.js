@@ -14,7 +14,7 @@ dotenv.config();
 
 const fastify = Fastify({ logger: true });
 await fastify.register(cors, {
-  origin: "http://localhost", 
+  origin: "http://localhost:5173", 
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type"],
   credentials: true

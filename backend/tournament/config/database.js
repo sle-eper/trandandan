@@ -66,6 +66,7 @@ export async function createTables() {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (tournamentid) REFERENCES tournament(id) ON DELETE CASCADE
+
 )
 
           `);
