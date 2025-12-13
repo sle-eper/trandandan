@@ -125,6 +125,15 @@ export async function checkTournament_get(request, reply) {
         reply.code(404)
             .send("Tournament Not Found")
     }
+    if (Number(tournament.currentPlayers) === Number(tournament.maxPlayers))
+    {
+        await db.run(
+                "UPDATE tournament SET status = ? WHERE id = ?",
+                ["started", tournament.id]
+            );
+            console.log("the tournament will start now")
+    }
+    const res = await db.get('SELECT * FROM tournament WHERE id  = ?', [tournamentid]);
     reply.code(200)
-        .send(tournament)
+        .send(res)
 }

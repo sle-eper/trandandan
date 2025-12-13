@@ -4,5 +4,4 @@ export default async function (fastify) {
     fastify.post('/add', service.addParticipant_post);//userowner
     fastify.post('/remove', service.removeParticipant_post);//userowner
     fastify.get('/list', service.listParticipants_get);
-    fastify.get('/count', service.countParticipants_get);
 }
