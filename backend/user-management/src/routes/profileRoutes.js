@@ -75,7 +75,7 @@ async function profileRoutes(fastify, options) {
     },
   }, profileController.updateProfile.bind(profileController));
 
-  fastify.post('/profile/avatar', {
+  fastify.post('/profile/:id/avatar', {
   }, profileController.uploadAvatar.bind(profileController));
 
   fastify.get('/profile/search', {

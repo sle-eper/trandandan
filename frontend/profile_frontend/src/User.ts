@@ -8,11 +8,12 @@
 }
 
 import axios from "axios";
+
 export class User {
     static async fetchUserProfile(): Promise<UserProfile | null> {
 
         try {
-            const response = await axios.get('http://localhost:3001/user/13', {
+            const response = await axios.get('http://localhost:3001/user/14', {
                 // credentials: 'include',
                 //  withCredentials: true,
                 headers: {
@@ -43,7 +44,7 @@ export class User {
 
     static async saveUserProfile(profile: UserProfile): Promise<boolean> {
         try {
-        const response = await axios.put('http://localhost:3001/profile/13/update', profile, {
+        const response = await axios.put('http://localhost:3001/profile/14/update', profile, {
            
             headers: {
             'Content-Type': 'application/json',
@@ -55,6 +56,28 @@ export class User {
       return false;
     }
   }
+  static async updateAvatar(formData: FormData): Promise<string | null> {
+        try {
+            const response =  await axios.post('http://localhost:3001/profile/14/avatar', formData, {
+            headers: {
+            'Content-Type': 'multipart/form-data',
+            },
+            // headers: {
+            //   'Authorization': `Bearer ${yourToken}`
+            // }
+        });
+        console.log('Avatar upload response:', response);
+        if (response.status === 200 && response.data.avatarUrl) {
+            console.log('Avatar URL:', response.data.avatarUrl);
+            return response.data.avatarUrl; // Returns: /uploads/avatars/avatar_1_12345.jpg
+        }
+
+        return null;
+        } catch (error) {
+             console.error('Avatar upload failed:', error);
+        return null;
+        }
+    }
 }
 export default User;
 export type { UserProfile };

@@ -163,48 +163,100 @@ class ProfileController {
   }
   
     // POST /profile/avatar - Upload avatar
-    async uploadAvatar(request, reply) {
-      try {
-        
-        const userId = request.headers['x-user-id'];
-        const data = await request.file();
-        
-        if (!data) {
-          return reply.code(400).send({ error: 'No file uploaded' });
-        }
-        
-        // Validate file type add size limit later !!!
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-        if (!allowedTypes.includes(data.mimetype)) {
-          return reply.code(400).send({ 
-            error: 'Invalid file type. Only JPEG, PNG, and GIF allowed' 
-          });
-        }
-        
-        const uploadDir = path.join(process.cwd(), 'public', 'avatars');
-        await fs.promises.mkdir(uploadDir, { recursive: true });
-
-        const filename = `${userId}-${Date.now()}.${data.mimetype.split('/')[1]}`;
-        const filePath = path.join(uploadDir, filename);
-
-        
-        const buffer = await data.toBuffer();
-        await fs.promises.writeFile(filePath, buffer);
-
-       
-        const avatarUrl = `/avatars/${filename}`;
-        await this.userModel.updateProfile(userId, { avatarUrl });
-        
-        return { 
-          success: true, 
-          message: 'Avatar uploaded successfully',
-          avatarUrl 
-        };
-      } catch (error) {
-        return reply.code(500).send({ error: error.message });
-      }
+   async uploadAvatar(request, reply) {
+  try {
+    const { id: userId } = request.params;
+    
+    // Configuration
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    
+    console.log('Uploading avatar for user ID:', userId);
+    
+    // Get file data
+    const data = await request.file();
+    
+    if (!data) {
+      return reply.code(400).send({ 
+        success: false,
+        error: 'No file uploaded' 
+      });
     }
-  
+    
+    // Validate file type
+    if (!ALLOWED_TYPES.includes(data.mimetype)) {
+      return reply.code(400).send({ 
+        success: false,
+        error: 'Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed' 
+      });
+    }
+    
+    // Convert to buffer and check size
+    const buffer = await data.toBuffer();
+    
+    if (buffer.length > MAX_FILE_SIZE) {
+      return reply.code(413).send({ 
+        success: false,
+        error: `File size exceeds maximum limit of ${MAX_FILE_SIZE / (1024 * 1024)}MB`,
+        maxSize: MAX_FILE_SIZE
+      });
+    }
+    
+    // Prepare upload directory
+    const uploadDir = path.join(process.cwd(), 'public', 'avatars');
+    await fs.promises.mkdir(uploadDir, { recursive: true });
+    
+    // Delete old avatar if exists (optional cleanup)
+    try {
+      const oldAvatars = await fs.promises.readdir(uploadDir);
+      const userAvatars = oldAvatars.filter(file => file.startsWith(`${userId}-`));
+      
+      for (const oldAvatar of userAvatars) {
+        await fs.promises.unlink(path.join(uploadDir, oldAvatar));
+        console.log('Deleted old avatar:', oldAvatar);
+      }
+    } catch (cleanupError) {
+      console.warn('Could not clean up old avatars:', cleanupError.message);
+    }
+    
+    // Generate filename and save
+    const extension = data.mimetype.split('/')[1];
+    const filename = `${userId}-${Date.now()}.${extension}`;
+    const filePath = path.join(uploadDir, filename);
+    
+    await fs.promises.writeFile(filePath, buffer);
+    console.log('Avatar saved successfully:', filePath);
+    
+    // Verify file was written
+    const stats = await fs.promises.stat(filePath);
+    console.log('File size on disk:', stats.size, 'bytes');
+    
+    return reply.code(200).send({
+      success: true,
+      message: 'Avatar uploaded successfully',
+      avatarUrl: filename,
+      fileSize: buffer.length
+    });
+    
+  } catch (error) {
+    console.error('Avatar upload error:', error);
+    
+    // Handle specific errors
+    if (error.code === 'ENOSPC') {
+      return reply.code(507).send({ 
+        success: false,
+        error: 'Server storage full' 
+      });
+    }
+    
+    return reply.code(500).send({ 
+      success: false,
+      error: 'Failed to upload avatar',
+      // details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+}  
     // GET /users/search?q=John - Search users 
     async searchUsers(request, reply) {
       try {

@@ -14,20 +14,24 @@ const __dirname = path.dirname(__filename);
 const fastify = Fastify({
     logger: true
 });
-fastify.register(multipart);
+fastify.register(multipart,{
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5 MB limit
+    }
+});
 
-// Enable CORS for frontend-backend communication
+
 fastify.register(fastifyCors, {
     origin: ['*'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true
 });
 
-// Serve static files (HTML, CSS, JS)
 fastify.register(fastifyStatic, {
-    root: path.join(__dirname, '../public'),
-    prefix: '/' // Serve files at root URL
+  root: '/usr/src/app/public/avatars',  
+  prefix: '/uploads/',
 });
+
 
 // This returns JSON for API testing
 fastify.get('/api', (req, reply) => {
