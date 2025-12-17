@@ -74,7 +74,7 @@ function setupPopupEvents() {
     "input-msg-zone"
   ) as HTMLTextAreaElement;
 
-  textarea.addEventListener("input", () => {
+  textarea?.addEventListener("input", () => {
     if (textarea.value.trim() === "") {
       textarea.style.overflow = "hidden";
     } else {
@@ -149,7 +149,6 @@ function setupPopupEvents() {
       }
       textarea.value = "";
       textarea.style.overflow = "hidden";
-      // textarea.style.height = 'auto';
       textarea.focus();
     }
     sendButton.addEventListener("click", () => {
@@ -175,7 +174,6 @@ function socketListener() {
       const counterElement: HTMLDivElement = document.getElementById(
         `counter-of-${id}`
       ) as HTMLDivElement;
-      // console.log(timeOfMsgSpan)
       if (counterElement?.classList.contains("hidden"))
         counterElement?.classList.remove("hidden");
 
@@ -261,7 +259,6 @@ export async function showMainUI() {
   let myId: string;
   const responseJson = await response.json()
   myId =  responseJson.id
-  console.log("myId:",myId)
   socket.emit("con", myId);
   userID = myId;
   const chatContent = document.getElementById("dashboard-content");
@@ -281,8 +278,8 @@ export async function showMainUI() {
   }
 
   if (chatContent) {
-    chatContent.classList.add("flex", "w-full", "gap-6", "gap-y-3");
-    chatContent.classList.remove("flex-grow");
+    chatContent.classList.add("gap-6", "gap-y-3");
+    // chatContent.classList.remove("flex-grow");
     const friends = await fetchListOfFriends();
     chatContent.innerHTML = listOfMsg(friends.friends,friends.waitingMsg,myId);
     chatContent.innerHTML += DM();
@@ -364,11 +361,7 @@ export async function showMainUI() {
           //*********************************************************************** */
           dmZone = document.getElementById("DM");
           console.log("friendFind:", friendFind.status);
-          let contentChat = profileNav(
-            friendFind.avatar_url,
-            friendFind.username,
-            friendFind.status
-          );
+          let contentChat = profileNav(friendFind.avatar_url,friendFind.username,friendFind.status);
           contentChat += chatZones();
           if (dmZone) dmZone.innerHTML = contentChat;
           socket.emit("get_status", friendId);
@@ -390,6 +383,22 @@ export async function showMainUI() {
             const popupOption = document.getElementById(
               "popup-option"
             ) as HTMLDivElement;
+            //When pressed 3 point
+            option.addEventListener("click", async (event) => {
+              socket.emit("get_status",friendId)
+              const btn1 = await new Promise<string>((resolve) => {
+                  socket.once("blockBtn", (btn) => {
+                      console.log("btn", btn); 
+                      resolve(btn);
+                  });
+              });
+              if(!document.getElementById("block-button") && !document.getElementById("unblock-button"))
+                  document.getElementById("popup-option")!.innerHTML += generateBlockButton(btn1)
+              if (popupOption.classList.contains("hidden"))
+                popupOption.classList.remove("hidden");
+              else 
+                popupOption.classList.add("hidden");
+
             const blockButton = document.getElementById(
               "block-button"
             ) as HTMLDivElement;
@@ -415,17 +424,6 @@ export async function showMainUI() {
               "unblock-option"
             ) as HTMLDivElement;
 
-            //When pressed 3 point
-            option.addEventListener("click", (event) => {
-              contentChat = profileNav(
-                friendFind.img,
-                friendFind.name,
-                friendFind.status
-              );
-              if (popupOption.classList.contains("hidden"))
-                popupOption.classList.remove("hidden");
-              else popupOption.classList.add("hidden");
-            });
             // to close popup if click out of popup
             window.addEventListener("click", (event) => {
               const target = event.target as HTMLElement;
@@ -505,6 +503,7 @@ export async function showMainUI() {
             unblockUnvalid.addEventListener("click", () => {
               unblockOption.classList.add("hidden");
               popupOption.classList.remove("hidden");
+            });
             });
           }
           //

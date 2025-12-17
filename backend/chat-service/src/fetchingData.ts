@@ -81,7 +81,7 @@ async function getFriendsOfUser(userId: string) {
       msg: msg?.msg || null,
       send: msg?.send || null,
       recv: msg?.recv || null,
-      msg_status: msg?.msg_status || null,
+      msg_status: msg?.status || null,
       send_at: msg?.send_at || null
     };
   });
@@ -178,7 +178,7 @@ async function getStatusOfTowFriends(userId:string,friendId:string):Promise<obje
       },
       timeout: 5000 
     });
-
+    // console.log(res)
     return res.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {

@@ -30,7 +30,6 @@ server.ready().then(() => {
   io.on("connection", async (socket) => {
     socket.on('con',async (id)=>{
         socket.data.userId = String(id);
-        console.log("con",id,socket.id)
         onlineUsers.set(String(id), socket.id);;
     })
     socket.on("send_message", async (data) => {
@@ -97,6 +96,7 @@ server.ready().then(() => {
       try{
         const id = socket.data.userId
         const friends = await getFriendsOfUser(id);
+        // console.log(friends)
         const waitingMsg = await getWaitingMsg(id);
         socket.emit("friends_list", { friends, waitingMsg });
       }catch(err)
@@ -110,19 +110,21 @@ server.ready().then(() => {
         const roomName = [id, friendId].sort().join("_");
         if(!statusOfTowFriend.has(roomName))
         {
-          const status: object = await getStatusOfTowFriends(id,friendId);
+          const status: object = await getStatusOfTowFriends(id,friendId);//TODO id of user and status
           
           statusOfTowFriend.set(roomName,status);
         }
         const status:any = statusOfTowFriend.get(roomName);
         if(status)
         {
-          const status1: string = status.status1.status;
-          const status2: string = status.status2.status;
+          const status1: string = status?.status1?.status;
+          const status2: string = status?.status2?.status;
           let allow: Boolean = false;
           if (status1 === "accepted" &&status2 === "accepted")
                 allow = true;
           socket.emit("allowMsg", allow);
+          const userSocket = onlineUsers.get(id);
+          if (userSocket) io.to(userSocket).emit("blockBtn",status1);
         }
       }catch(err)
       {
@@ -149,14 +151,13 @@ server.ready().then(() => {
         const status:any = statusOfTowFriend.get(roomName);
         if(status)
         {
-          const status1: string = status.status1.status;
-          const status2: string = status.status2.status;
+          const status1: string = status?.status1?.status;
+          const status2: string = status?.status2?.status;
           let statusGlobal: string = "blocked";
           if (status1 === "accepted" && status2 === "accepted")
             statusGlobal = "accepted";
           const userSocket = onlineUsers.get(id);
           const friendSocket = onlineUsers.get(data.friendId);
-          // console.log(userSocket,friendSocket)
           if (userSocket) io.to(userSocket).emit("blockOrAccepted", roomName, statusGlobal);
           if (friendSocket) io.to(friendSocket).emit("blockOrAccepted", roomName, statusGlobal);
         }

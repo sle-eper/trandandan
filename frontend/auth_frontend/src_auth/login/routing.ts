@@ -1,4 +1,5 @@
 import { showMainUI } from "../../src/ts/script.ts"
+import { spyUi } from "../../src_spy/app.ts"
 // import { currentUserId }? from "./login.ts"
 export function updateContent(html: string) {
     const content = document.getElementById("dashboard-content");
@@ -34,10 +35,11 @@ export function loadProfile() {
 }
 export function loadGame()
 {
-    updateContent(`
-    <h1 class="text-3xl font-bold">game</h1>
-    <p class="text-gray-400 mt-2">Your account settings.</p>
-  `);
+    spyUi()
+  //   updateContent(`
+  //   <h1 class="text-3xl font-bold">game</h1>
+  //   <p class="text-gray-400 mt-2">Your account settings.</p>
+  // `);
 
 }
 export function loadtournament()

@@ -41,6 +41,7 @@ services:
       - ./frontend/chat-frontend/src:/app/src
       - ./frontend/auth_frontend/src_auth:/app/src_auth
       - ./frontend/profile_frontend/src:/app/profile_frontend/src
+      - ./frontend/spy_frontend/src_spy:/app/src_spy
       - /app/node_modules
     depends_on:
       - user-management

@@ -1,22 +1,9 @@
 
-// export function lastMsg(recv:number,msg:string,friendId:string,status?:string):string//TODO ba3ed lmerat kayetla3 msg ma m9erich wakha howa m9eri f lbedaya 
-// {
-//     if(!msg)
-//         return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#888]" > new friend </span>`
-//     const shortMsg = msg.length > 20 ? msg.slice(0,20) + '...' : msg
-//     if(recv == 1)
-//         return `<span id='last-msg-${friendId}' class=" font-semibold flex-grow  truncate  text-[#F5F5F5]" > ${shortMsg} </span>`
-//     if(recv == 2)
-//         return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#F5F5F5]" > ${shortMsg} </span>`
-//     return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#888]" > You: ${shortMsg} </span>`
-// }
-
 export function lastMsg(status:string,msg:string,friendId:string):string
 {
-    console.log("in",status)
     if(!msg)
         return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#888]" > new friend </span>`
-    const shortMsg = msg.length > 20 ? msg.slice(0,20) + '...' : msg
+    const shortMsg = msg.length > 10 ? msg.slice(0,10) + '...' : msg
     if(status === 'recv')
         return `<span id='last-msg-${friendId}' class=" font-semibold flex-grow  truncate  text-[#F5F5F5]" > ${shortMsg} </span>`
     if(status === 'seen')
@@ -49,13 +36,12 @@ export function unreadMsgNumber(nbr:number,friendId:string):string
 
 function  friendCart(friend:any,waitingMsg:object,myId:string):string //done 
 {
-        // console.log(friend)
         const roomName = [myId,friend.id].sort().join('_');
         const unreadMsg:number = waitingMsg.filter(m=> m.room === roomName).length
         let status:string;
-        if(friend.recv==myId && friend.status && friend.status === 'waiting')//TODO add this object status
+        if(friend.recv==myId && friend.msg_status && friend.msg_status === 'waiting')//TODO add this object status
             status = 'recv'
-        else if(friend.recv==myId && friend.status && friend.status === 'send')
+        else if(friend.recv==myId && friend.msg_status && friend.msg_status === 'send')
             status = 'seen'
         else
             status = 'send'
@@ -106,7 +92,7 @@ export function listOfMsg(friends:any,waitingMsg:object,myId:string): string //d
                     background-color: #181818;
                 }
             </style>
-        <div id="list-of-msg-container" class="w-full md:w-[25%] h-full md:block block rounded-2xl bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A]  overflow-hidden" >
+        <div id="list-of-msg-container" class="w-full md:w-[27%]  md:min-w-[270px] h-full md:block block rounded-2xl bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A]  overflow-hidden" >
             <div class="sticky top-0 z-10 bg-[#181818] p-6">
                 <h1 class="font-bold text-[#F5F5F5]">chat</h1>
             </div>
@@ -132,7 +118,6 @@ export function generateBlockButton(status:string):string
 
 }
 /* ****************************************************************************************************************************************************************** */
-
 export function profileNav(img:string,userAccount:string,status:string):string{
     return`
         <div id="profile-nav" class="flex h-[10%] items-center p-5 justify-between relative ">
@@ -157,7 +142,6 @@ export function profileNav(img:string,userAccount:string,status:string):string{
                     <p>Challenge</p>
                     <span class="material-symbols-outlined">swords</span>
                 </div>
-                ${generateBlockButton(status)}
             </div>
 
             <div id="block-option" class="hidden text-white text-sm flex flex-col items-center  w-50 bg-[#181818] absolute right-6 top-12 rounded-xl border border-[#E63946] shadow-[0_0_25px_rgba(0,0,0,0.6)]">
@@ -281,7 +265,7 @@ export function chatZones():string{
 
 export function DM():string{
     return`
-            <div id="DM" class="hidden md:w-[60%] h-full w-full flex rounded-2xl p-4 md:flex flex-col bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A] " data-roomname="">
+            <div id="DM" class="hidden  h-full w-full flex rounded-2xl p-4 md:flex flex-col bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A] " data-roomname="">
             ${choseFriend()}
             </div>`;
 }

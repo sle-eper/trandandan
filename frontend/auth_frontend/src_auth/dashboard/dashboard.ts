@@ -23,7 +23,7 @@ export function showDashboard() {
           <div id="sidebar"></div>
 
           <div id="dashboard-content"
-            class="p-6 rounded-3xl bg-gradient-to-br from-[#1a1a1d] to-[#0f0f11]
+            class="flex items-center justify-center p-6 rounded-3xl bg-gradient-to-br from-[#1a1a1d] to-[#0f0f11]
                   shadow-xl border border-[#2c2c2f] mx-6 mt-4 mb-6 overflow-hidden h-[78vh] w-full md:h-200">
 
             <div class="h-full flex flex-col justify-center items-center text-center">
