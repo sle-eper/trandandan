@@ -68,7 +68,7 @@ export async function signup_post(request, reply) {
     // ✅ Generate JWT.
     const id = response.data.profile.id;
     const token = jwt.sign({ id, username }, process.env.JWT_SECRET, {
-      expiresIn: "1min",
+      expiresIn: "10000h",
     });
     // ✅ Send JWT in cookie
     reply
@@ -118,7 +118,7 @@ export async function login_post(request, reply) {
   const token = jwt.sign(
     { id: row.data.id, username },
     process.env.JWT_SECRET,
-    { expiresIn: "1h" }
+    { expiresIn: "10000h" }
   );
   // ✅ Send JWT in cookie
   reply
