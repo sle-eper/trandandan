@@ -34,60 +34,68 @@ export function showLoginPage(containerId = "login-app") {
 let currentUserId: string | null = null; // store user_id globally
 
 export function attachLoginHandlers() {
+  const form = document.getElementById("login-form") as HTMLFormElement | null;
   const btn = document.getElementById("login-btn") as HTMLButtonElement | null;
   const signup = document.getElementById("login-signup");
   const forgot = document.getElementById("login-forgot");
   const googleBtn = document.getElementById("login-google");
   const githubBtn = document.getElementById("login-github");
 
+  const usernameInput = document.getElementById("login-username") as HTMLInputElement | null;
+  const passwordInput = document.getElementById("login-password") as HTMLInputElement | null;
+
+  if (!form || !btn || !usernameInput || !passwordInput) return;
+
   if (signup) signup.addEventListener("click", () => navigate("signup"));
   if (forgot) forgot.addEventListener("click", () => navigate("forgot"));
 
   const togglePassword = document.getElementById("toggle-password");
-  const passwordInput = document.getElementById("login-password") as HTMLInputElement;
-
-  if (togglePassword && passwordInput) {
+  if (togglePassword) {
     togglePassword.addEventListener("click", () => {
-      if (passwordInput.type === "password") {
-        passwordInput.type = "text";
-        togglePassword.textContent = "visibility_off";
-      } else {
-        passwordInput.type = "password";
-        togglePassword.textContent = "visibility";
-      }
+      passwordInput.type =
+        passwordInput.type === "password" ? "text" : "password";
+      togglePassword.textContent =
+        passwordInput.type === "password" ? "visibility" : "visibility_off";
     });
   }
 
+  const submitLogin = async () => {
+    clearError();
 
-  if (!btn) return;
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value.trim();
 
-  btn.addEventListener("click", async () => {
-  clearError();
-
-  const username = (document.getElementById("login-username") as HTMLInputElement).value.trim();
-  const password = (document.getElementById("login-password") as HTMLInputElement).value.trim();
-
-  if (!username || !password) {
-    showError("Please fill all fields.");
-    return;
-  }
-
-  try {
-    const { response, body } = await loginUser(username, password);
-
-    if (body.success) {
-      currentUserId = response?.headers.get("x-user-id") || null;
-      navigate("dashboard");
-    } else {
-      showError(body.message || "Invalid username or password.");
+    if (!username || !password) {
+      showError("Please fill all fields.");
+      return;
     }
 
-  } catch (err) {
-    console.error(err);
-    showError("Server error. Try again later.");
-  }
-});
+    try {
+      const { response, body } = await loginUser(username, password);
 
+      if (body.success) {
+        currentUserId = response?.headers.get("x-user-id") || null;
+        navigate("dashboard");
+      } else {
+        showError(body.message || "Invalid username or password.");
+      }
+    } catch (err) {
+      console.error(err);
+      showError("Server error. Try again later.");
+    }
+  };
+
+  // ✅ ENTER KEY (form submit)
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    submitLogin();
+  });
+
+  // ✅ Button click
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    submitLogin();
+  });
 
   if (googleBtn) {
     googleBtn.addEventListener("click", () => {

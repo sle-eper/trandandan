@@ -118,7 +118,7 @@ export function navBarLogic() {
     // Optional: clear cookies/localStorage here
     // For example, if you had a token in localStorage:
     // localStorage.removeItem("token");
-
+    document.body.classList.add("flex", "items-center", "justify-center", "px-6", "md:px-20");
     // Call backend logout route if exists (optional)
     // try {
     //   await fetch("/api/auth/logout", {
