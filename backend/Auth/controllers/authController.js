@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { validatePassword } from "../Password.js";
+import { validatePassword } from "../MyConfig.js";
 import jwt from "jsonwebtoken";
 import axios from "axios";
 
@@ -50,8 +50,24 @@ export async function signup_post(request, reply) {
         .code(400)
         .send({ success: false, message: "Weak password.", errors });
     }
+
     const hashed = await bcrypt.hash(password, 10);
-    console.log("Hashed password:", hashed);
+    
+  } catch (err) {
+    console.error("Error during registration:", err);
+    return reply.code(500).send({ success: false, message: "Internal server error" });
+  }
+  // return { accessToken: token };
+}
+
+// #########################################################
+//                     mail post
+// #########################################################
+export async function mail_post(request, reply)
+{
+  const verificationCode = request.body;
+
+  console.log("Hashed password:", verificationCode);
     const response = await axios.post(
       "http://user-management:3000/profile/create",
       {
@@ -71,7 +87,7 @@ export async function signup_post(request, reply) {
       expiresIn: "1min",
     });
     // ✅ Send JWT in cookie
-    reply
+    return reply
       .setCookie("token", token, {
         path: "/",
         httpOnly: true,
@@ -82,17 +98,11 @@ export async function signup_post(request, reply) {
         success: true,
         message: "Registration successful",
       });
-  } catch (err) {
-    console.error("Error during registration:", err);
-    reply.code(500).send({ success: false, message: "Internal server error" });
-  }
-  // return { accessToken: token };
+  
 }
-
 // #########################################################
 //                     login post
 // #########################################################
-
 export async function login_post(request, reply) {
   const { username, password } = request.body;
   console.log("🔍 Login attempt:", username, password);

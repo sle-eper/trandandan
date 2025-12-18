@@ -77,7 +77,6 @@ services:
     depends_on:
       - user-management
       - authentication
-  
 
 networks:
   app-network:
