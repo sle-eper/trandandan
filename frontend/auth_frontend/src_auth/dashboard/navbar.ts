@@ -1,4 +1,5 @@
 import { navigate } from "../app";
+
 export function renderNavBar(): string {
   return `
     <nav id="nav-bar"
@@ -51,6 +52,12 @@ export function renderNavBar(): string {
             Change Account
           </button>
 
+          <button id="enable-2fa"
+            class="w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
+                   transition rounded-lg">
+            Enable 2FA
+          </button>
+
           <button id="sign-out"
             class="w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
                    transition rounded-lg">
@@ -60,7 +67,7 @@ export function renderNavBar(): string {
         </div>
 
         <!-- Profile -->
-        <button id = "profile"
+        <button id="profile"
           class="w-10 h-10 flex items-center justify-center rounded-full
                  border border-white/20 bg-white/10 backdrop-blur-lg
                  transition-all duration-300 hover:scale-110
@@ -82,6 +89,8 @@ export function navBarLogic() {
   const menu = document.getElementById("settings-menu");
   const signOutBtn = document.getElementById("sign-out");
   const profile = document.getElementById("profile");
+  const changeAccountBtn = document.getElementById("change-account");
+  const enable2FABtn = document.getElementById("enable-2fa");
 
   // Toggle settings menu
   btn?.addEventListener("click", () => {
@@ -115,27 +124,23 @@ export function navBarLogic() {
 
   // ✅ SIGN OUT BUTTON
   signOutBtn?.addEventListener("click", async () => {
-    // Optional: clear cookies/localStorage here
-    // For example, if you had a token in localStorage:
-    // localStorage.removeItem("token");
     document.body.classList.add("flex", "items-center", "justify-center", "px-6", "md:px-20");
-    // Call backend logout route if exists (optional)
-    // try {
-    //   await fetch("/api/auth/logout", {
-    //     method: "POST",
-    //     credentials: "include", // send cookie to invalidate on backend
-    //   });
-    // } catch (err) {
-    //   console.warn("Logout request failed", err);
-    // }
-
-    // Navigate to login page
     navigate("login");
   });
-  profile?.addEventListener("click", async () =>
-  {
+
+  // ✅ PROFILE NAV
+  profile?.addEventListener("click", async () => {
     navigate("profile");
   });
+
+  // ✅ CHANGE ACCOUNT
+  changeAccountBtn?.addEventListener("click", () => {
+    document.body.classList.add("flex", "items-center", "justify-center", "px-6", "md:px-20");
+    navigate("login");
+  });
+
+  // ✅ ENABLE 2FA
+  enable2FABtn?.addEventListener("click", () => {
+    navigate("/2FA"); // assuming you have a 2FA page
+  });
 }
-
-

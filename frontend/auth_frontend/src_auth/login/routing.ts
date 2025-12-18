@@ -1,5 +1,6 @@
 import { showMainUI } from "../../src/ts/script.ts"
 import { spyUi } from "../../src_spy/app.ts"
+import { show2FAPage } from "./2FA.ts"
 // import { currentUserId }? from "./login.ts"
 export function updateContent(html: string) {
     const content = document.getElementById("dashboard-content");
@@ -48,6 +49,14 @@ export function loadtournament()
     <h1 class="text-3xl font-bold">tournament</h1>
     <p class="text-gray-400 mt-2">Your account settings.</p>
   `);
+}
+export function load2FA()
+{
+  // updateContent(`
+  //   <h1 class="text-3xl font-bold">2FA</h1>
+  //   <p class="text-gray-400 mt-2">Your account settings.</p>
+  // `);
+  show2FAPage();
 }
 
 

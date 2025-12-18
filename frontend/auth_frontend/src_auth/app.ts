@@ -19,7 +19,9 @@ import { showDashboard } from "./dashboard/dashboard";
 import { showchangePassPage } from "./login/change_pass";
 import { handleOAuthSuccess } from "./login/auth_success";
 import { showNotFound } from "./login/not_found";
-import { loadHome, loadGame, loadtournament, loadProfile, loadChat } from "./login/routing";
+import { loadHome, loadGame, loadtournament, loadProfile, loadChat , load2FA } from "./login/routing";
+import { showverifyPage } from "./login/verify";
+
 
 
 // Register all routes
@@ -32,6 +34,7 @@ addRoute("/dashboard", () => showDashboard());
 addRoute("/change", () => showchangePassPage());
 addRoute("/auth/success", () => handleOAuthSuccess());
 addRoute("/dashboard", () => showDashboard());
+addRoute("/verify", () => showverifyPage());
 
 // Dashboard sub-pages
 addRoute("/home", () => {
@@ -56,11 +59,15 @@ addRoute("/profile", () => {
     showDashboard();
     loadProfile();
 });
-
+addRoute("/2FA" , () => {
+    showDashboard();
+    load2FA();
+});
 // Start router
 window.addEventListener("DOMContentLoaded", () => {
   initRouter(() => showNotFound());
 });
+
 
 export { navigate };
 

@@ -73,24 +73,57 @@ export const loginTemplate = () => `
 export const signupTemplate = () => `
   <div id="signup-page" class="bg-black/40 backdrop-blur-md rounded-2xl shadow-lg border border-gray-700
     px-8 py-8 md:px-10 md:py-10 w-full max-w-sm md:w-[320px] flex flex-col justify-between mb-10 md:mb-0">
+
     <div>
       <h2 class="text-2xl md:text-3xl font-bold mb-4">Sign Up</h2>
+
       <div class="space-y-4">
-        <input id="signup-username" type="text" placeholder="Username" class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
-        <input id="signup-email" type="email" placeholder="Email" class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
-        <input id="signup-password" type="password" placeholder="Password" class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
-        <input id="signup-confirm" type="password" placeholder="Confirm Password" class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
+        <input id="signup-username" type="text" placeholder="Username"
+          class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
+
+        <input id="signup-email" type="email" placeholder="Email"
+          class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
+
+        <!-- PASSWORD -->
+        <div class="relative">
+          <input id="signup-password" type="password" placeholder="Password"
+            class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249] pr-10" />
+          <span id="toggle-signup-password"
+            class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2
+            cursor-pointer text-gray-400 hover:text-white">
+            visibility
+          </span>
+        </div>
+
+        <!-- CONFIRM PASSWORD -->
+        <div class="relative">
+          <input id="signup-confirm" type="password" placeholder="Confirm Password"
+            class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249] pr-10" />
+          <span id="toggle-signup-confirm"
+            class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2
+            cursor-pointer text-gray-400 hover:text-white">
+            visibility
+          </span>
+        </div>
       </div>
-      <button id="signup-btn" class="w-full bg-red-600 to-[#E64249] text-white py-2 rounded-md mt-6 hover:opacity-90 transition">
+        <div id="signup-error"
+        class="text-red-500 text-sm h-5 opacity-0 transition-opacity duration-300 mt-2">
+      </div>
+
+
+      <button id="signup-btn"
+        class="w-full bg-red-600 text-white py-2 rounded-md mt-6 hover:opacity-90 transition">
         Sign Up
       </button>
     </div>
+
     <p class="text-center text-gray-400 text-sm mt-6">
       Already have an account?
       <span id="signup-login" class="text-[#E64249] cursor-pointer hover:underline">Login</span>
     </p>
   </div>
 `;
+
 
 export const forgotTemplate = () => `
   <div id="forgot-page" class="bg-black/40 backdrop-blur-md rounded-2xl shadow-lg border border-gray-700
@@ -136,6 +169,56 @@ export const ChangePass = () => `
         Back to Login
       </p>
     </div>
+`;
+export const verifyTemplate = () => `
+  <div id="verify-page"
+    class="bg-black/40 backdrop-blur-md rounded-2xl shadow-lg border border-gray-700
+    px-8 py-8 md:px-10 md:py-10 w-full max-w-sm mx-auto flex flex-col justify-between">
+
+    <div>
+      <h2 class="text-2xl md:text-3xl font-bold mb-2 text-center">
+        Verify Email
+      </h2>
+
+      <p class="text-gray-400 mb-6 text-sm md:text-base text-center">
+        We sent a 6-digit code to your email
+      </p>
+
+      <!-- CODE INPUTS -->
+      <div class="flex justify-between gap-2 mb-4">
+        ${Array.from({ length: 6 })
+          .map(
+            (_, i) => `
+          <input
+            type="text"
+            inputmode="numeric"
+            maxlength="1"
+            class="verify-input w-10 h-12 text-center text-xl bg-transparent rounded-lg
+            border border-gray-700 focus:border-[#E64249] outline-none"
+          />
+        `
+          )
+          .join("")}
+      </div>
+
+      <!-- ERROR MESSAGE -->
+      <div id="verify-error"
+        class="text-red-500 text-sm h-5 opacity-0 transition-opacity duration-300 mb-2 text-center">
+      </div>
+
+      <button id="verify-btn"
+        class="w-full bg-red-600 text-white py-2 rounded-md mt-4 hover:opacity-90 transition">
+        Verify
+      </button>
+
+      <p class="text-center text-gray-400 text-sm mt-4">
+        Didn’t receive the code?
+        <span class="text-[#E64249] cursor-pointer hover:underline">
+          Resend
+        </span>
+      </p>
+    </div>
+  </div>
 `;
 
 // src/login/templates.ts

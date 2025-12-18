@@ -4,7 +4,7 @@ export function showLandingPage(containerId = "login-app") {
   if (!app) return;
 
   app.innerHTML = `
-<div class="h-screen w-screen overflow-hidden bg-gradient-to-br from-black to-neutral-900 text-white flex flex-col">
+  <div class="h-screen w-screen overflow-hidden bg-gradient-to-br from-black to-neutral-900 text-white flex flex-col">
 
   <!-- NAVBAR -->
   <nav class="flex-shrink-0 w-full flex justify-between items-center px-8 py-5 border-b border-white/10">
@@ -37,9 +37,7 @@ export function showLandingPage(containerId = "login-app") {
       </p>
 
       <button id="play"
-        class="mt-8 bg-red-600 hover:bg-red-700 transition px-6 py-3 rounded-xl font-semibold">
-        ⚡ Play Now
-      </button>
+        class="mt-8 bg-red-600 hover:bg-red-700 transition px-6 py-3 rounded-xl font-semibold"> Play Now </button>
     </div>
 
     <!-- RIGHT -->
