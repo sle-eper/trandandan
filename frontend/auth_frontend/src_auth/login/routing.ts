@@ -1,6 +1,7 @@
 import { showMainUI } from "../../src/ts/script.ts"
 import { spyUi } from "../../src_spy/app.ts"
 import { show2FAPage } from "./2FA.ts"
+import { showHome } from "./home.ts";
 // import { currentUserId }? from "./login.ts"
 export function updateContent(html: string) {
     const content = document.getElementById("dashboard-content");
@@ -18,10 +19,11 @@ export function updateContent(html: string) {
   }, 250); // must match your CSS transition time
 }
 export function loadHome() {
-  updateContent(`
-    <h1 class="text-3xl font-bold">Home</h1>
-    <p class="text-gray-400 mt-2">Welcome to your dashboard.</p>
-  `);
+  // updateContent(`
+  //   <h1 class="text-3xl font-bold">Home</h1>
+  //   <p class="text-gray-400 mt-2">Welcome to your dashboard.</p>
+  // `);
+  showHome();
 }
 
 export function loadChat() {
