@@ -42,13 +42,7 @@ export function spyUi()
     
     if(main)
     {
-        // main.classList.add("flex", "w-full");
-        // main.classList.remove("flex-grow");
-        // main.classList.remove("gap-6", "gap-y-3");
-
-
-
-        //show game mode
+       //show game mode
         main.innerHTML = renderLocalMode() + renderSection() + PlayerAndSpaySelection("players",3) + PlayerAndSpaySelection("spays",1) 
         const game = document.getElementById("dashboard-content")
         const data = {

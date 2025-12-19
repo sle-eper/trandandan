@@ -34,17 +34,17 @@ server.ready().then(() => {
     })
     socket.on("send_message", async (data) => {
       try{
-        // console.log("in msg",data)
           const id = socket.data.userId
           const friendId: string = data.friendId; //
           const msg: string = data.value; //
           const roomName = [id, friendId].sort().join("_");
-          if(!statusOfTowFriend.has(roomName))
-          {
-            const status:object = await getStatusOfTowFriends(id, friendId);
-            statusOfTowFriend.set(roomName,status);
-          }
-          const status:any = statusOfTowFriend.get(roomName);
+          // if(!statusOfTowFriend.has(roomName))
+          // {
+          //   const status:object = await getStatusOfTowFriends(id, friendId);
+          //   console.log(status)
+          //   statusOfTowFriend.set(roomName,status);
+          // }
+          const status:any = await getStatusOfTowFriends(id, friendId);
           if(status){
             const status1: string = status.status1.status; //
             const status2: string = status.status2.status; //
@@ -54,7 +54,6 @@ server.ready().then(() => {
               console.log("content",onlineUsers)
               console.log("id",friendId)
               console.log("target",onlineUsers.get(friendId))
-              // console.log("live",friendSocketId)
               const msgId:string =  await saveMsg(id, friendId, msg, roomName, "waiting");
               const timeOfMsg:string = await getTimeOfMsg(msgId);
               const UserData = await fetchUserData(friendId); // get data of user from user-management service
