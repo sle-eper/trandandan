@@ -1,5 +1,3 @@
-import { renderNavBar } from "../components/navbar";
-import { renderSidebar } from "../components/sidebar";
 import { io } from "socket.io-client";
 const socket = io("http://localhost:3000"); //TODO hadi ra hebla o khedama
 // const socket = io("http://localhost:8080/api/chat", {
@@ -282,7 +280,8 @@ export async function showMainUI() {
     // chatContent.classList.remove("flex-grow");
     const friends = await fetchListOfFriends();
     chatContent.innerHTML = listOfMsg(friends.friends,friends.waitingMsg,myId);
-    chatContent.innerHTML += DM();
+    if(friends.friends)
+      chatContent.innerHTML += DM();
     //     //get all of list friends
     const friendsEvent = document.querySelectorAll(".friend-msg-zone");
     friendsEvent.forEach((friend) => {

@@ -1,11 +1,21 @@
-FROM node:20-alpine
+FROM node:20
 
 WORKDIR /app
 
+# 🔑 Install build tools for native modules
+RUN apt-get update && apt-get install -y \
+  python3 \
+  make \
+  g++ \
+  && rm -rf /var/lib/apt/lists/*
+
+# Let node-gyp know python path (important)
+ENV PYTHON=/usr/bin/python3
+
 COPY package*.json ./
+
 RUN npm install
 
-COPY tsconfig.json ./
-COPY src ./src
+COPY . .
 
 CMD ["npm", "run", "dev"]
