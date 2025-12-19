@@ -132,6 +132,13 @@ function setupPopupEvents() {
     function send_message() {
       const value: string = textarea.value;
       if (value.trim()) {
+        if(value.length > 100)//TODO handel 100
+        {
+          textarea.value = ''
+          
+
+        }
+
         const chatZone = document.getElementById("chat-zone") as HTMLDivElement;
         const msgTime = document.getElementById(`time-of-msg-${friendId}`);
         const time = getTime();
