@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { db } from './db/database';
+import { log } from 'console';
 // Configuration
 const USER_MANAGEMENT_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://user-management:3000';
 
@@ -35,6 +36,7 @@ async function getFriendsOfUser(userId: string) {
     });
     
     const friends = response.data.friends;
+    // console.log("friends fetched:", friends);
     if (friends.length === 0) {
         return [];
     }
@@ -50,7 +52,7 @@ async function getFriendsOfUser(userId: string) {
             send,
             recv,
             status,
-            send_at
+            strftime('%H:%M', send_at) AS send_at
         FROM msg
         WHERE id IN (
             SELECT MAX(id)
@@ -66,7 +68,6 @@ async function getFriendsOfUser(userId: string) {
                 END
         )
     `).all(userId, userId, ...friendIds, userId, ...friendIds, userId);
-   
     const messageMap = new Map();
     latestMessages.forEach((m: { friend_id: string | number; }) => {
     messageMap.set(m.friend_id, m);
@@ -80,7 +81,7 @@ async function getFriendsOfUser(userId: string) {
       msg: msg?.msg || null,
       send: msg?.send || null,
       recv: msg?.recv || null,
-      msg_status: msg?.msg_status || null,
+      msg_status: msg?.status || null,
       send_at: msg?.send_at || null
     };
   });
@@ -95,18 +96,90 @@ async function getFriendsOfUser(userId: string) {
   }
 }
 
+// async function getFriendsOfUser(userId: string) {
+//   try {
+//     const response = await axios.get(`${USER_MANAGEMENT_SERVICE_URL}/${userId}/friends`, {
+//       headers: {
+//         'Content-Type': 'application/json',
+//         'Accept': 'application/json'
+//       },
+//       timeout: 5000 
+//     });
+    
+//     const friends = response.data.friends;
+//     if (friends.length === 0) return [];
+
+//     const friendIds = friends.map((f: any) => f.id);
+//     const placeholders = friendIds.map(() => '?').join(',');
+
+//     const latestMessages = db.prepare(`
+//         SELECT 
+//             CASE 
+//                 WHEN send = ? THEN recv
+//                 ELSE send
+//             END AS friend_id,
+//             msg,
+//             send,
+//             recv,
+//             status,
+//             strftime('%H:%M', send_at) AS send_at
+//         FROM msg
+//         WHERE id IN (
+//             SELECT MAX(id)
+//             FROM msg
+//             WHERE 
+//                 (send = ? AND recv IN (${placeholders}))
+//                 OR 
+//                 (recv = ? AND send IN (${placeholders}))
+//             GROUP BY 
+//                 CASE 
+//                     WHEN send = ? THEN recv
+//                     ELSE send
+//                 END
+//         )
+//     `).all(
+//         userId,          // CASE WHEN send = ? THEN recv
+//         userId,          // send = ?
+//         ...friendIds,    // recv IN (...)
+//         userId,          // recv = ?
+//         ...friendIds,    // send IN (...)
+//         userId           // CASE WHEN send = ? THEN recv
+//     );
+//     // console.log(merged)
+//     // 1. Create map friend_id → message
+//     const messageMap = new Map();
+//     latestMessages.forEach((m: any) => messageMap.set(String(m.friend_id), m));
+
+//     // 2. Combine friends + last message in one array
+//     const merged = friends.map((friend: any) => ({
+//       ...friend,
+//       lastMessage: messageMap.get(String(friend.id)) || null,
+//       sortTime: messageMap.get(String(friend.id))?.real_time || 0
+//     }));
+
+//     // 3. Sort by latest message time desc
+//     merged.sort((a, b) => (b.sortTime > a.sortTime ? 1 : -1));
+//     // console.log(merged)
+//     return merged;
+
+//   } catch (error) {
+//     console.error(error);
+//     return [];
+//   }
+// }
+
+
 async function getStatusOfTowFriends(userId:string,friendId:string):Promise<object> {
   try {
-    const response = await axios.get(`${USER_MANAGEMENT_SERVICE_URL}/friendship/status/${userId}/${friendId}`, {
+    const res = await axios.get(`${USER_MANAGEMENT_SERVICE_URL}/friendship/status/${userId}/${friendId}`, {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-     
       timeout: 5000 
     });
-    
-    return response.data;
+    // console.log(res)
+    return res.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.error(`Failed to fetch friendship status: ${error.message}`);
@@ -128,8 +201,9 @@ async function changeStatusOfFriends(status:string,userId:string,friendId:string
       },
       timeout: 5000 
     });
-    
-    return response.data;
+    console.log("froom",response.data)
+    // return response.data;
+    return getStatusOfTowFriends(userId,friendId)
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.error(`Failed to change friendship status: ${error.message}`);

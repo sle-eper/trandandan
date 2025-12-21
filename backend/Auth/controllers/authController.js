@@ -50,15 +50,45 @@ export async function signup_post(request, reply) {
         .code(400)
         .send({ success: false, message: "Weak password.", errors });
     }
-
     const hashed = await bcrypt.hash(password, 10);
-    
+    console.log("Hashed password:", hashed);
+    const response = await axios.post(
+      "http://user-management:3000/profile/create",
+      {
+        username,
+        email,
+        displayName: username,
+        password: hashed,
+      }
+    );
+    // reply
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET is missing");
+    }
+    // ✅ Generate JWT.
+    const id = response.data.profile.id;
+    const token = jwt.sign({ id, username }, process.env.JWT_SECRET, {
+      expiresIn: "10000h",
+    });
+    // ✅ Send JWT in cookie
+    return reply
+      .setCookie("token", token, {
+        path: "/",
+        httpOnly: true,
+        sameSite: "none",
+        secure: true,
+      })
+      .code(200).send({
+        success: true,
+        message: "Registration successful",
+      });
   } catch (err) {
     console.error("Error during registration:", err);
     return reply.code(500).send({ success: false, message: "Internal server error" });
   }
   // return { accessToken: token };
 }
+
 
 // #########################################################
 //                     mail post
@@ -84,7 +114,7 @@ export async function mail_post(request, reply)
     // ✅ Generate JWT.
     const id = response.data.profile.id;
     const token = jwt.sign({ id, username }, process.env.JWT_SECRET, {
-      expiresIn: "1min",
+      expiresIn: "10000h",
     });
     // ✅ Send JWT in cookie
     return reply
@@ -116,6 +146,11 @@ export async function login_post(request, reply) {
   if (!row) {
     return reply.code(400).send({ success: false, message: "User not found" });
   }
+  if (row.data.two_factor_enabled === true)
+  {
+    console.log("🔍 2FA is enabled for this user.");
+    console.log("🔍 Redirecting to 2FA verification.");
+  }
   console.log("🔍 Comparing passwords");
   console.log(row.data.password_hash);
   console.log(password);
@@ -128,7 +163,7 @@ export async function login_post(request, reply) {
   const token = jwt.sign(
     { id: row.data.id, username },
     process.env.JWT_SECRET,
-    { expiresIn: "1h" }
+    { expiresIn: "10000h" }
   );
   // ✅ Send JWT in cookie
   reply
@@ -172,3 +207,21 @@ export async function verifyUser_get(request, reply) {
   }
   return { accessToken: token };
 }
+
+// #########################################################
+//                Two Factor Function()
+// #########################################################
+
+
+// export async function twofactor_post(request, reply) {
+//   const { username } = request.body;
+//   console.log("🔍 2FA verification attempt for user:", username);
+
+//   try {
+// }
+// catch(err)
+// {
+
+// }
+// }
+

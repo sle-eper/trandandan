@@ -3,6 +3,7 @@ import type { UserProfile } from '../User.ts';
 
 export class ProfileForm {
     //  private formData: UserProfile;
+    private oldProfileData: UserProfile | null = null;
     private userData: UserProfile | null = null;
     private avatarPreview: string = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default';
     private isOnline: boolean = true;
@@ -12,8 +13,9 @@ export class ProfileForm {
     try {
    
       this.userData = await User.fetchUserProfile();
-
+  
       if (this.userData) {
+        this.oldProfileData = JSON.parse(JSON.stringify(this.userData));
         this.avatarPreview = this.userData.avatarUrl || this.avatarPreview;
         this.isOnline = this.userData.onlineStatus || this.isOnline;
       } else {
@@ -30,8 +32,9 @@ export class ProfileForm {
         const email = this.userData?.email || '';
         const displayName = this.userData?.displayName || '';
         const bio = this.userData?.bio || '';
+
         return ` 
-        <div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
+        <div class="min-h-screen bg-gradient-to-br from-black-900 via-black-800 to-black-900 flex items-center justify-center p-4">
             <div class="w-full max-w-2xl">
             <!-- Header -->
             <div class="text-center mb-8">
@@ -51,7 +54,7 @@ export class ProfileForm {
         
 
           <!-- Main Card -->
-          <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700/50 overflow-hidden">
+          <div class="bg-black/40 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700/50 overflow-hidden">
             <div class="p-8">
               <!-- Avatar Section -->
               <div class="flex flex-col items-center mb-8">
@@ -282,13 +285,30 @@ export class ProfileForm {
     }
   }
 
+  private hasChanges(oldData: UserProfile | null, newData: UserProfile): UserProfile | null {
+    if (!oldData) {
+      return newData;
+    }
+
+    const changed: Partial<UserProfile> = {};
+
+    for (const key in newData) {
+      const k = key as keyof UserProfile;
+      if (newData[k] !== oldData[k]) {
+        changed[k] = newData[k];
+      }
+    }
+
+  return Object.keys(changed).length > 0 ? changed : null;
+  }
+
   private async handleSave(): Promise<void> {
     const saveBtn = document.getElementById('save-btn');
     if (saveBtn) {
       saveBtn.textContent = 'Saving...';
       saveBtn.setAttribute('disabled', 'true');
     }
-
+   
     const formData: UserProfile = {
       username: (document.getElementById('username') as HTMLInputElement).value,
       email: (document.getElementById('email') as HTMLInputElement).value,
@@ -297,16 +317,25 @@ export class ProfileForm {
       avatarUrl: this.avatarPreview,
       onlineStatus: this.isOnline
     };
+    console.log('Form Data to Save:', formData);
+    if(this.hasChanges(this.oldProfileData, formData)){
 
-    // Save the profile
-    const success = await User.saveUserProfile(formData);
-
-    if (success) {
-      this.userData = formData; // Update local state
-      alert('Profile updated successfully!');
-    } else {
-      alert('Failed to save profile. Please try again.');
+      const changedData = this.hasChanges(this.oldProfileData, formData);
+      console.log('Changed Data:', changedData?.avatarUrl);
+      const success = await User.saveUserProfile(changedData || formData);
+      if (success) {
+        this.userData = formData; // Update local state
+        alert('Profile updated successfully!');
+      } else {
+        alert('Failed to save profile. Please try again.');
+      }
     }
+    else{
+      alert('No changes detected to save.');
+    }
+    // Save the profile
+
+    
 
     if (saveBtn) {
       saveBtn.textContent = 'Save Changes';
@@ -332,11 +361,11 @@ export class ProfileForm {
     }
 
     // Fetch user data
-   const userData = await this.loadUserData();
-    console.log('User data loaded:', userData);
+    await this.loadUserData();
+    
     // Render with actual data
-    // container.innerHTML = this.render();
-    // this.attachEventListeners();
+    container.innerHTML = this.render();
+    this.attachEventListeners();
   }
 
    }

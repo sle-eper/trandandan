@@ -1,44 +1,65 @@
 // templates.ts
 export const loginTemplate = () => `
-  <div id="login-page" class="bg-black/40 backdrop-blur-md rounded-2xl shadow-lg border border-gray-700
+  <form id="login-form"
+    class="bg-black/40 backdrop-blur-md rounded-2xl shadow-lg border border-gray-700
     px-8 py-8 md:px-10 md:py-10 w-full max-w-sm md:w-[320px] flex flex-col justify-between mb-10 md:mb-0">
+
     <div>
       <h2 class="text-2xl md:text-3xl font-bold mb-2">Login</h2>
       <p class="text-gray-400 mb-6 text-sm md:text-base">Glad you're back!</p>
+
       <div class="space-y-4">
         <input id="login-username" type="text" placeholder="Username"
           class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
-        <input id="login-password" type="password" placeholder="Password"
-          class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
+
+        <div class="relative">
+          <input id="login-password" type="password" placeholder="Password"
+            class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249] pr-10" />
+
+          <span id="toggle-password"
+            class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 
+            cursor-pointer text-gray-400 hover:text-white">
+            visibility
+          </span>
+        </div>
+
+        <div id="login-error"
+          class="text-red-500 text-sm h-5 opacity-0 transition-opacity duration-300"></div>
       </div>
+
       <div class="flex items-center mt-3">
         <input id="login-remember" type="checkbox" class="mr-2 accent-[#E64249]" />
         <label for="login-remember" class="text-gray-300 text-sm">Remember me</label>
       </div>
-      <button id="login-btn"
-        class="w-full bg-gradient-to-r from-[#9E3234] via-[#D8585E] to-[#E64249] text-white py-2 rounded-md mt-4 hover:opacity-90 transition">
+
+      <!-- 🔑 type="submit" -->
+      <button id="login-btn" type="submit"
+        class="w-full bg-red-600 text-white py-2 rounded-md mt-4 hover:opacity-90 transition">
         Login
       </button>
+
       <p id="login-forgot" class="text-center text-gray-400 text-sm mt-3 cursor-pointer hover:text-white">
         Forgot password?
       </p>
+
       <div class="flex items-center my-6">
         <hr class="flex-grow border-gray-700" />
         <span class="text-gray-500 text-sm mx-3">or</span>
         <hr class="flex-grow border-gray-700" />
       </div>
+
       <div class="flex items-center justify-center gap-6">
-        <button id="login-google" class="w-9 h-9 bg-black/40 rounded-full flex items-center justify-center cursor-pointer">
-        <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" 
-          alt="Google" class="w-9 h-9" />
-        </button>
-        
-        <button id="login-github" 
-          class="w-9 h-9 bg-gray-800 rounded-full flex items-center justify-center cursor-pointer">
-          <img src="https://cdn-icons-png.flaticon.com/512/25/25231.png" 
-              alt="GitHub" class="w-9 h-9 invert" />
+        <button type="button" id="login-google"
+          class="w-9 h-9 bg-black/40 rounded-full flex items-center justify-center cursor-pointer">
+          <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+            alt="Google" class="w-9 h-9" />
         </button>
 
+        <button type="button" id="login-github"
+          class="w-9 h-9 bg-gray-800 rounded-full flex items-center justify-center cursor-pointer">
+          <img src="https://cdn-icons-png.flaticon.com/512/25/25231.png"
+            alt="GitHub" class="w-9 h-9 invert" />
+        </button>
       </div>
     </div>
 
@@ -46,30 +67,63 @@ export const loginTemplate = () => `
       Don't have an account?
       <span id="login-signup" class="text-[#E64249] cursor-pointer hover:underline">Sign up</span>
     </p>
-  </div>
+  </form>
 `;
 
 export const signupTemplate = () => `
   <div id="signup-page" class="bg-black/40 backdrop-blur-md rounded-2xl shadow-lg border border-gray-700
     px-8 py-8 md:px-10 md:py-10 w-full max-w-sm md:w-[320px] flex flex-col justify-between mb-10 md:mb-0">
+
     <div>
       <h2 class="text-2xl md:text-3xl font-bold mb-4">Sign Up</h2>
+
       <div class="space-y-4">
-        <input id="signup-username" type="text" placeholder="Username" class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
-        <input id="signup-email" type="email" placeholder="Email" class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
-        <input id="signup-password" type="password" placeholder="Password" class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
-        <input id="signup-confirm" type="password" placeholder="Confirm Password" class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
+        <input id="signup-username" type="text" placeholder="Username"
+          class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
+
+        <input id="signup-email" type="email" placeholder="Email"
+          class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
+
+        <!-- PASSWORD -->
+        <div class="relative">
+          <input id="signup-password" type="password" placeholder="Password"
+            class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249] pr-10" />
+          <span id="toggle-signup-password"
+            class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2
+            cursor-pointer text-gray-400 hover:text-white">
+            visibility
+          </span>
+        </div>
+
+        <!-- CONFIRM PASSWORD -->
+        <div class="relative">
+          <input id="signup-confirm" type="password" placeholder="Confirm Password"
+            class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249] pr-10" />
+          <span id="toggle-signup-confirm"
+            class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2
+            cursor-pointer text-gray-400 hover:text-white">
+            visibility
+          </span>
+        </div>
       </div>
-      <button id="signup-btn" class="w-full bg-gradient-to-r from-[#9E3234] via-[#D8585E] to-[#E64249] text-white py-2 rounded-md mt-6 hover:opacity-90 transition">
+        <div id="signup-error"
+        class="text-red-500 text-sm h-5 opacity-0 transition-opacity duration-300 mt-2">
+      </div>
+
+
+      <button id="signup-btn"
+        class="w-full bg-red-600 text-white py-2 rounded-md mt-6 hover:opacity-90 transition">
         Sign Up
       </button>
     </div>
+
     <p class="text-center text-gray-400 text-sm mt-6">
       Already have an account?
       <span id="signup-login" class="text-[#E64249] cursor-pointer hover:underline">Login</span>
     </p>
   </div>
 `;
+
 
 export const forgotTemplate = () => `
   <div id="forgot-page" class="bg-black/40 backdrop-blur-md rounded-2xl shadow-lg border border-gray-700
@@ -79,7 +133,7 @@ export const forgotTemplate = () => `
       <div class="space-y-4 mt-6">
         <input id="forgot-email" type="email" placeholder="Email" class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
       </div>
-      <button id="forgot-btn" class="w-full bg-gradient-to-r from-[#9E3234] via-[#D8585E] to-[#E64249] text-white py-2 rounded-md mt-6 hover:opacity-90 transition">
+      <button id="forgot-btn" class="w-full bg-red-600 text-white py-2 rounded-md mt-6 hover:opacity-90 transition">
         Reset Password
       </button>
     </div>
@@ -105,7 +159,7 @@ export const ChangePass = () => `
         </div>
 
         <button id="change-btn" 
-        class="w-full bg-gradient-to-r from-[#9E3234] via-[#D8585E] to-[#E64249] 
+        class="w-full bg-red-600 
         text-white py-2 rounded-md mt-6 hover:opacity-90 transition">
           Change Password
         </button>
@@ -115,6 +169,56 @@ export const ChangePass = () => `
         Back to Login
       </p>
     </div>
+`;
+export const verifyTemplate = () => `
+  <div id="verify-page"
+    class="bg-black/40 backdrop-blur-md rounded-2xl shadow-lg border border-gray-700
+    px-8 py-8 md:px-10 md:py-10 w-full max-w-sm mx-auto flex flex-col justify-between">
+
+    <div>
+      <h2 class="text-2xl md:text-3xl font-bold mb-2 text-center">
+        Verify Email
+      </h2>
+
+      <p class="text-gray-400 mb-6 text-sm md:text-base text-center">
+        We sent a 6-digit code to your email
+      </p>
+
+      <!-- CODE INPUTS -->
+      <div class="flex justify-between gap-2 mb-4">
+        ${Array.from({ length: 6 })
+          .map(
+            (_, i) => `
+          <input
+            type="text"
+            inputmode="numeric"
+            maxlength="1"
+            class="verify-input w-10 h-12 text-center text-xl bg-transparent rounded-lg
+            border border-gray-700 focus:border-[#E64249] outline-none"
+          />
+        `
+          )
+          .join("")}
+      </div>
+
+      <!-- ERROR MESSAGE -->
+      <div id="verify-error"
+        class="text-red-500 text-sm h-5 opacity-0 transition-opacity duration-300 mb-2 text-center">
+      </div>
+
+      <button id="verify-btn"
+        class="w-full bg-red-600 text-white py-2 rounded-md mt-4 hover:opacity-90 transition">
+        Verify
+      </button>
+
+      <p class="text-center text-gray-400 text-sm mt-4">
+        Didn’t receive the code?
+        <span class="text-[#E64249] cursor-pointer hover:underline">
+          Resend
+        </span>
+      </p>
+    </div>
+  </div>
 `;
 
 // src/login/templates.ts
