@@ -26,6 +26,7 @@ export async function signupUser(
     const response = await fetch("http://localhost:8080/api/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include", // VERY IMPORTANT FOR Cookies
       body: JSON.stringify({ username, email, password, confirm }),
     });
     console.log("success");

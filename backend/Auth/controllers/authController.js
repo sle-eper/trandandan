@@ -3,6 +3,7 @@ import { validatePassword } from "../MyConfig.js";
 import jwt from "jsonwebtoken";
 import axios from "axios";
 import crypto from "crypto";
+import QRCode from "qrcode";
 
 
 // #########################################################
@@ -148,7 +149,6 @@ export async function login_post(request, reply) {
     return reply.code(400).send({ success: false, message: "User not found" });
   }
   if (String(row.data.two_factor_enabled) === "true") {
-    const secretkey = "758492"; // This should be fetched from the database
     console.log("🔍 2FA is enabled for this user.");
     console.log("🔍 Redirecting to 2FA verification.");
   }
@@ -176,6 +176,24 @@ export async function login_post(request, reply) {
     })
     .code(200).send({ success: true, message: "You are Authourised" });
   return { accessToken: token };
+}
+// #########################################################
+//                     logout post
+// #########################################################
+
+export async function logout_post(request, reply) {
+  const token = request.cookies.token;
+  if (!token) {
+    return reply.code(400).send({ success: false, message: "No token found" });
+  }
+  return reply
+    .clearCookie("token", {
+      path: "/",
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+    })
+    .code(200).send({ success: true, message: "You are logged out" });
 }
 
 // #########################################################
@@ -210,17 +228,52 @@ export async function verifyUser_get(request, reply) {
 }
 
 // #########################################################
-//                Two Factor Function()
+//                Forget Password Controllers()
+// #########################################################
+
+export async function forgertPassword_post(request, reply) {
+
+}
+// #########################################################
+//                Two Factor Controllers()
 // #########################################################
 
 
 export async function twofactor_post(request, reply) {
-
+  //check if 2fa is already enabled for user
+  const username = request.headers['x-user'];
+  const row = await axios.get("http://user-management:3000/profile/User", {
+    params: {
+      username,
+    },
+  });
+  console.log("🔍 User fetched from user-management:", row.data);
+  if (!row) {
+    return reply.code(400).send({ success: false, message: "User not found" });
+  }
+  console.log("2FA status:", row.data.two_factor_enabled);
+  if (String(row.data.two_factor_enabled) === "true") {
+    return reply.code(400).send({ success: false, message: "2FA is already enabled for this user" });
+  }
+  //generate secret 
   const secret = crypto.randomBytes(20).toString("hex");
   console.log("generated secret:", secret);
+  //put it in DB 
+  //generate QR code for user to scan 
+  const qrImage = await QRCode.toDataURL(secret);
+  //send the QR code to frontend 
+  return reply.code(200)
+    .send({ qrImage })
+
+
 }
 
 
 export async function verify2fa_post(request, reply) {
+  //get code from DB 
+  //compare the code with the user input 
+  //if matched check if enabled or not if not enabled enable it
+
+  //verify the code sent by user with the secret in DB
 
 }
