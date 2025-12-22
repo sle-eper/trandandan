@@ -201,6 +201,8 @@ export function inputMsg(status:string):string //done
                         display: none;
                     }
                 </style>
+
+
                 <div class="h-full border-[#E63946] rounded-xl border-2 flex items-center mt-2">
                     <textarea
                         id="input-msg-zone"
@@ -287,7 +289,7 @@ export function chatZones():string{
 
 export function DM():string{
     return`
-            <div id="DM" class="hidden  h-full w-full flex rounded-2xl p-4 md:flex flex-col bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A] " data-roomname="">
+            <div id="DM" class="hidden  h-full w-full flex  rounded-2xl p-4 md:flex flex-col bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A] " data-roomname="">
             ${choseFriend()}
             </div>`;
 }

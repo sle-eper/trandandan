@@ -53,7 +53,8 @@ export function roleDistribution(playersData:any,numberOfPlayer:number,spays:num
         if(spaysId.includes(p.id))
         {
             p.spay = true
-            p.card = `<div class = "card  cursor-pointer transition-transform duration-200 
+            p.card = `
+                    <div class = "card  cursor-pointer transition-transform duration-200 
                         hover:scale-105" >
                         <img src="${spayCard}" alt="Spy Config Card" class="w-full h-auto object-contain ">
                     </div>`

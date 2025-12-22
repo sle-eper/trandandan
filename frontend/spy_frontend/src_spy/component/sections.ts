@@ -1,5 +1,5 @@
 import spaySections from "../sectionsData/sectionsData"
-import sectionName from "../img/sectionName.png"
+// import sectionName from "../img/sectionName.png"
 
 let sectionBound:boolean = false;
 
@@ -39,20 +39,8 @@ export function selectSection(selected: string[] )
 export function renderSection():string
 {
     let content = `<div id="sections-selection" class="hidden grid grid-cols-2  md:grid-cols-3 gap-8">`
-    // content +=  spaySections.map(s=>{
-    //     return`
-    //         <div class = "section-card relative card cursor-pointer transition-transform duration-200 
-    //                     hover:scale-105  border-2 border-transparent rounded-[4px]"
-    //                     data-id="${s.id}">
-    //             <img src='${sectionName}' class="h-60 w-60 ">
-    //             <div class="absolute bottom-[45%] left-0 right-0 flex justify-center items-center z-10
-    //                     text-xl font-bold uppercase text-[#ff4d4d] tracking-wide font-['Share_Tech_Mono'] [text-shadow:0_0_5px_#ff0000,0_0_15px_#ff0000]
-    //                     ">
-    //                         ${s.sectionName}
-    //             </div>
-    //         </div>
-    //     `
-    // }).join("\n")
+    content += `<div class="col-span-2 md:col-span-3  flex justify-center mb-10 text-4xl font-bold uppercase text-[#ff4d4d] tracking-wide font-['Share_Tech_Mono']
+                [text-shadow:0_0_5px_#ff0000,0_0_15px_#ff0000] select-none">SECTIONS</div>`
     content +=  spaySections.map(s=>{
         return`
             <div class = "section-card flex justify-center items-center text-center h-20 w-30  cursor-pointer transition-transform duration-200 
@@ -62,7 +50,6 @@ export function renderSection():string
             </div>
         `
     }).join("\n")
-    //TODO hadi khasni nfham dakchi deyalha 
     content += `
         <div class="col-span-2 md:col-span-3 w-full flex justify-center mt-10">
             <button id="confirm-sections"

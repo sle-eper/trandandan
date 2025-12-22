@@ -1,4 +1,3 @@
-import { get } from "http";
 import {
   getAllMsg,
   changeToRecv,
@@ -21,8 +20,6 @@ server.register(fastifyIO, {
   }
 });
 
-//TODO convert all ids to string
-// const onlineUsers = new Map<string, string>(); //TODO handel multiple tab
 const onlineUsers = new Map<string, Set<string>>();
 
 const statusOfTowFriend = new Map<string,object>();//TODO cash on time
@@ -44,7 +41,7 @@ server.ready().then(() => {
           const id = socket.data.userId
           const friendId: string = data.friendId; //
           const msg: string = data.value; //
-          if (!msg || msg.length > 100) return;
+          if (!msg || msg.length > 1000) return;
           const roomName = [id, friendId].sort().join("_");
           // if(!statusOfTowFriend.has(roomName))
           // {
@@ -106,7 +103,7 @@ server.ready().then(() => {
       try{
         const id = socket.data.userId
         const friends = await getFriendsOfUser(id);
-        // console.log(friends)
+        console.log(friends)
         const waitingMsg = await getWaitingMsg(id);
         socket.emit("friends_list", { friends, waitingMsg });
       }catch(err)
@@ -222,7 +219,7 @@ server.ready().then(() => {
 async function startServer() {
   await server.listen({ port: 3000, host: '0.0.0.0' });
   
-  console.log("Server running on 0.0.0.0:3000");
+  console.log("chat Server running on 0.0.0.0:3000");
 }
 
 startServer();

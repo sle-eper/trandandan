@@ -11,7 +11,7 @@ export function showDashboard() {
 
   document.body.classList.remove("flex", "items-center", "justify-center", "px-6", "md:px-20");
   // document.body.classList.add("bg-gray-900", "min-h-screen");
-
+  //TODO hadi ba9i dak tol fih mochekil 
   app.innerHTML = `
     <div class="flex flex-col h-screen bg-[#111] text-white">
         
@@ -21,10 +21,12 @@ export function showDashboard() {
         <div class="flex flex-row flex-grow">
           <!-- Sidebar -->
           <div id="sidebar"></div>
-
-          <div id="dashboard-content"
-            class="flex items-center justify-center p-6 rounded-3xl bg-gradient-to-br from-[#1a1a1d] to-[#0f0f11]
-                  shadow-xl border border-[#2c2c2f] mx-6 mt-4 mb-6 overflow-hidden h-[78vh] w-full md:h-200">
+        <div id="dashboard-content"
+          class="flex items-center justify-center p-6 rounded-3xl
+                bg-gradient-to-br from-[#1a1a1d] to-[#0f0f11]
+                shadow-xl border border-[#2c2c2f]
+                mx-6 mt-4 mb-6 overflow-hidden
+                max-h-[80vh] md:max-h-[87vh] w-full">
 
             <div class="h-full flex flex-col justify-center items-center text-center">
               <h1 class="text-4xl font-extrabold bg-gradient-to-r from-[#E63946] to-[#711F21]

@@ -46,6 +46,17 @@ services:
     depends_on:
       - user-management
       - authentication
+
+  spy-service:
+    build: ./backend/spy-service
+    container_name: spy-service
+    ports:
+      - "3003:3003"
+    networks:
+      - app-network
+    # volumes:
+      # - ./backend/spy-service/src_spy_service:/app:src_spy_service 
+
   tournament:
     build: ./backend/tournament
     container_name: tournament
