@@ -2,6 +2,8 @@ import bcrypt from "bcrypt";
 import { validatePassword } from "../MyConfig.js";
 import jwt from "jsonwebtoken";
 import axios from "axios";
+import crypto from "crypto";
+
 
 // #########################################################
 //                     signup post
@@ -93,42 +95,41 @@ export async function signup_post(request, reply) {
 // #########################################################
 //                     mail post
 // #########################################################
-export async function mail_post(request, reply)
-{
+export async function mail_post(request, reply) {
   const verificationCode = request.body;
 
   console.log("Hashed password:", verificationCode);
-    const response = await axios.post(
-      "http://user-management:3000/profile/create",
-      {
-        username,
-        email,
-        displayName: username,
-        password: hashed,
-      }
-    );
-    // reply
-    if (!process.env.JWT_SECRET) {
-      throw new Error("JWT_SECRET is missing");
+  const response = await axios.post(
+    "http://user-management:3000/profile/create",
+    {
+      username,
+      email,
+      displayName: username,
+      password: hashed,
     }
-    // ✅ Generate JWT.
-    const id = response.data.profile.id;
-    const token = jwt.sign({ id, username }, process.env.JWT_SECRET, {
-      expiresIn: "10000h",
+  );
+  // reply
+  if (!process.env.JWT_SECRET) {
+    throw new Error("JWT_SECRET is missing");
+  }
+  // ✅ Generate JWT.
+  const id = response.data.profile.id;
+  const token = jwt.sign({ id, username }, process.env.JWT_SECRET, {
+    expiresIn: "10000h",
+  });
+  // ✅ Send JWT in cookie
+  return reply
+    .setCookie("token", token, {
+      path: "/",
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+    })
+    .code(200).send({
+      success: true,
+      message: "Registration successful",
     });
-    // ✅ Send JWT in cookie
-    return reply
-      .setCookie("token", token, {
-        path: "/",
-        httpOnly: true,
-        sameSite: "none",
-        secure: true,
-      })
-      .code(200).send({
-        success: true,
-        message: "Registration successful",
-      });
-  
+
 }
 // #########################################################
 //                     login post
@@ -146,8 +147,8 @@ export async function login_post(request, reply) {
   if (!row) {
     return reply.code(400).send({ success: false, message: "User not found" });
   }
-  if (row.data.two_factor_enabled === true)
-  {
+  if (String(row.data.two_factor_enabled) === "true") {
+    const secretkey = "758492"; // This should be fetched from the database
     console.log("🔍 2FA is enabled for this user.");
     console.log("🔍 Redirecting to 2FA verification.");
   }
@@ -213,15 +214,13 @@ export async function verifyUser_get(request, reply) {
 // #########################################################
 
 
-// export async function twofactor_post(request, reply) {
-//   const { username } = request.body;
-//   console.log("🔍 2FA verification attempt for user:", username);
+export async function twofactor_post(request, reply) {
 
-//   try {
-// }
-// catch(err)
-// {
+  const secret = crypto.randomBytes(20).toString("hex");
+  console.log("generated secret:", secret);
+}
 
-// }
-// }
 
+export async function verify2fa_post(request, reply) {
+
+}

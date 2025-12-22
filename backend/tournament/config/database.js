@@ -50,7 +50,7 @@ export async function createTables() {
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               name VARCHAR(100) NOT NULL,
               status TEXT DEFAULT 'waiting',
-              ownerid INTEGER NOT NULL FOREIGN KEY (userid) REFERENCES profile(id) ON DELETE CASCADE,
+              ownerid INTEGER NOT NULL ,
               maxPlayers INTEGER NOT NULL,
               currentPlayers INTEGER DEFAULT 1,
               created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -62,11 +62,11 @@ export async function createTables() {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nickname VARCHAR(50) NOT NULL,
             tournamentid INTEGER NOT NULL,
-            userid INTEGER NOT NULL FOREIGN KEY (userid) REFERENCES profile(id) ON DELETE CASCADE,
+            userid INTEGER NOT NULL,
             score INTEGER DEFAULT 0,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (tournamentid) REFERENCES tournament(id) ON DELETE CASCADE
+            FOREIGN KEY (tournamentid) REFERENCES tournament(id) ON DELETE CASCADE)
 
           `);
   } catch (error) {

@@ -9,6 +9,7 @@ import dotenv from 'dotenv'
 import fastifyCookie from '@fastify/cookie';
 import * as authController from './controllers/authController.js';
 import cors from "@fastify/cors";
+import twofRoutes from './Routes/2fRoutes.js';
 
 dotenv.config();
 
@@ -36,6 +37,8 @@ fastify.decorate('verifyInternal', async (request, reply) => {
 });
 fastify.get('/auth/verify', authController.verifyUser_get);
 await fastify.register(authRoutes, { prefix: '/api/auth' });
+await fastify.register(twofRoutes, { prefix: '/2f/' });
+
 const start = async () => {
   try {
     const PORT = process.env.PORT || 5000;
