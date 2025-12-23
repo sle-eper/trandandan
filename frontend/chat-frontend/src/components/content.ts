@@ -1,21 +1,9 @@
 
-// export function lastMsg(recv:number,msg:string,friendId:string,status?:string):string//TODO ba3ed lmerat kayetla3 msg ma m9erich wakha howa m9eri f lbedaya 
-// {
-//     if(!msg)
-//         return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#888]" > new friend </span>`
-//     const shortMsg = msg.length > 20 ? msg.slice(0,20) + '...' : msg
-//     if(recv == 1)
-//         return `<span id='last-msg-${friendId}' class=" font-semibold flex-grow  truncate  text-[#F5F5F5]" > ${shortMsg} </span>`
-//     if(recv == 2)
-//         return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#F5F5F5]" > ${shortMsg} </span>`
-//     return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#888]" > You: ${shortMsg} </span>`
-// }
-
 export function lastMsg(status:string,msg:string,friendId:string):string
 {
     if(!msg)
         return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#888]" > new friend </span>`
-    const shortMsg = msg.length > 20 ? msg.slice(0,20) + '...' : msg
+    const shortMsg = msg.length > 10 ? msg.slice(0,10) + '...' : msg
     if(status === 'recv')
         return `<span id='last-msg-${friendId}' class=" font-semibold flex-grow  truncate  text-[#F5F5F5]" > ${shortMsg} </span>`
     if(status === 'seen')
@@ -48,36 +36,38 @@ export function unreadMsgNumber(nbr:number,friendId:string):string
 
 function  friendCart(friend:any,waitingMsg:object,myId:string):string //done 
 {
-        // console.log(friend)
         const roomName = [myId,friend.id].sort().join('_');
         const unreadMsg:number = waitingMsg.filter(m=> m.room === roomName).length
-        // console.table(friend.msg_status)
         let status:string;
-        if(friend.recv==myId && friend.msg_status && friend.msg_status === 'waiting')//TODO add this object msg_status
+        if(friend.recv==myId && friend.msg_status && friend.msg_status === 'waiting')//TODO add this object status
             status = 'recv'
         else if(friend.recv==myId && friend.msg_status && friend.msg_status === 'send')
             status = 'seen'
         else
             status = 'send'
 
-        return `<div id='msg-zone' data-id="${friend.id}" class="flex justify-center  p-5 hover:bg-[#222222] transition-colors duration-300"">
-                    <div  class=" friend-msg-zone flex w-[95%] hover:cursor-pointer" data-id="${friend.id}" data-name = "${friend.name}" data-roomname = "${roomName}"  >
-                        <div id="" class=" w-13 h-13  bg-cover bg-center rounded-full" 
+        return `<div id='msg-zone' data-id="${friend.id}" class="flex justify-center py-4 px-2 hover:bg-[#222222] transition-colors duration-300 sm:py-4 sm:px-4 md:py-5">
+                    <div  class=" friend-msg-zone flex w-[95%] hover:cursor-pointer" data-id="${friend.id}" data-name = "${friend.username}" data-roomname = "${roomName}"  >
+                        <div class=" w-12 h-12 
+                                sm:w-14 sm:h-14 
+                                md:w-16 md:h-16"
+                                bg-cover bg-center rounded-full" 
                             style="
                                 background-image : url('${friend.avatar_url}');
                                 aspect-ratio: 1/1;
                             ">
                         </div>
-                    <div class="ml-4 w-full flex flex-col justify-center">
+                    <div class="ml-3 sm:ml-4 w-full flex flex-col justify-center">
                         <div class="flex justify-between">
-                            <span class="font-semibold text-[#F5F5F5]">${friend.username}</span>
+                            <span class="font-semibold text-[#F5F5F5] text-sm sm:text-base md:text-lg">${friend.username}</span>
                             <span>${unreadMsgNumber(unreadMsg,friend.id)}</span>
                         </div>
                         <div class="flex justify-between items-center ">
-                            <div id='container-of-last-msg-of-${friend.id}'>
+                            <div id='container-of-last-msg-of-${friend.id}'
+                                class="text-xs sm:text-sm md:text-base text-gray-300">
                                 ${lastMsg(status,friend.msg,friend.id)} 
                             </div>
-                            <span id='time-of-msg-${friend.id}' class="text-sm text-[#888] text-right ">${ msgTime(friend.send_at)}</span>
+                            <span id='time-of-msg-${friend.id}' class="text-[10px] sm:text-xs md:text-sm text-[#888]">${ msgTime(friend.send_at)}</span>
                         </div>
                         </div>
                     </div>
@@ -102,7 +92,7 @@ export function listOfMsg(friends:any,waitingMsg:object,myId:string): string //d
                     background-color: #181818;
                 }
             </style>
-        <div class="w-[25%] h-full rounded-2xl bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A]  overflow-hidden" >
+        <div id="list-of-msg-container" class="w-full md:w-[27%]  md:min-w-[270px] h-full md:block block rounded-2xl bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A]  overflow-hidden" >
             <div class="sticky top-0 z-10 bg-[#181818] p-6">
                 <h1 class="font-bold text-[#F5F5F5]">chat</h1>
             </div>
@@ -128,11 +118,14 @@ export function generateBlockButton(status:string):string
 
 }
 /* ****************************************************************************************************************************************************************** */
-
 export function profileNav(img:string,userAccount:string,status:string):string{
     return`
         <div id="profile-nav" class="flex h-[10%] items-center p-5 justify-between relative ">
             <div class="flex items-center gap-6">
+                <div id="back-btn" class="flex justify-center items-center md:hidden p-2 text-[#E63946]   hover:cursor-pointer hover:bg-[#222222]  rounded-full">
+                    <span class="material-symbols-outlined ">arrow_back_ios</span>
+                </div>
+
                 <div class="h-10 w-10  bg-cover bg-center rounded-full" 
                     style="
                         background-image : url('${img}');
@@ -149,7 +142,6 @@ export function profileNav(img:string,userAccount:string,status:string):string{
                     <p>Challenge</p>
                     <span class="material-symbols-outlined">swords</span>
                 </div>
-                ${generateBlockButton(status)}
             </div>
 
             <div id="block-option" class="hidden text-white text-sm flex flex-col items-center  w-50 bg-[#181818] absolute right-6 top-12 rounded-xl border border-[#E63946] shadow-[0_0_25px_rgba(0,0,0,0.6)]">
@@ -181,21 +173,22 @@ export function inputMsg(status:string):string //done
         return `
                 <style>
                     #input-msg-zone {
-                    scrollbar-width: none;
-                    -ms-overflow-style: none; 
+                        overflow-y: hidden;
                     }
                     #input-msg-zone::-webkit-scrollbar {
-                    display: none;
+                        display: none;
                     }
                 </style>
-                <div class="h-[100%] border-[#E63946] rounded-xl border-2 flex items-center mt-2">
+                <div class="h-full border-[#E63946] rounded-xl border-2 flex items-center mt-2">
                     <textarea
                         id="input-msg-zone"
                         placeholder="Message..."
                         autofocus
-                        class="h-[100%] w-[95%] text-[#F5F5F5] p-5 focus:outline-none "
+                        class="h-[100%] w-[95%] text-[#F5F5F5] p-5 focus:outline-none resize-none"
                     ></textarea>
-                    <button id="send-button" class="bg-gradient-to-br from-[#E63946] to-[#8A1C1C] hover:from-[#FF4D4D] hover:to-[#A02020] rounded-xl w-[5%] h-[80%] mr-2 ml-4 flex justify-center items-center">
+                    <button id="send-button"
+                        class="bg-gradient-to-br from-[#E63946] to-[#8A1C1C] hover:from-[#FF4D4D]
+                        hover:to-[#A02020] rounded-xl w-[5%] h-[80%] mr-2 ml-4 flex justify-center items-center">
                         <span class="material-symbols-outlined text-white">send</span>
                     </button>
                 </div>`
@@ -272,7 +265,7 @@ export function chatZones():string{
 
 export function DM():string{
     return`
-            <div id="DM" class="w-[55%] h-full rounded-2xl p-4 flex flex-col bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A] " data-roomname="">
+            <div id="DM" class="hidden  h-full w-full flex rounded-2xl p-4 md:flex flex-col bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A] " data-roomname="">
             ${choseFriend()}
             </div>`;
 }

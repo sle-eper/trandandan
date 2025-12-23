@@ -14,9 +14,11 @@ class ProfileController {
 
     async getById(request, reply) { 
       try {
-        const { id } = request.params;
+        // console.log('Getting user by ID from headers:', request.headers);
+        const id = request.headers['x-user-id'];
+
         const user = await this.userModel.findById(id);
-        
+        console.log('Fetched user by ID:', user , 'for ID:', id);
         if (!user) {
           return reply.code(404).send({ error: 'User not found' });
         }
@@ -120,8 +122,7 @@ class ProfileController {
   async updateProfile(request, reply) {
     try {
     
-      // const userId = request.headers['x-user-id'];
-      const { id: userId } = request.params;
+      const userId = request.headers['x-user-id'];
       const updates = request.body;
       console.log('Update request received for user ID:', updates);
       console.log('User is updating:', Object.keys(updates));
@@ -165,16 +166,16 @@ class ProfileController {
     // POST /profile/avatar - Upload avatar
    async uploadAvatar(request, reply) {
   try {
-    const { id: userId } = request.params;
+    const userId = request.headers['x-user-id'];
     
-    // Configuration
+  
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
     
     console.log('Uploading avatar for user ID:', userId);
     
-    // Get file data
+    
     const data = await request.file();
     
     if (!data) {
@@ -184,7 +185,7 @@ class ProfileController {
       });
     }
     
-    // Validate file type
+    
     if (!ALLOWED_TYPES.includes(data.mimetype)) {
       return reply.code(400).send({ 
         success: false,
@@ -192,7 +193,7 @@ class ProfileController {
       });
     }
     
-    // Convert to buffer and check size
+   
     const buffer = await data.toBuffer();
     
     if (buffer.length > MAX_FILE_SIZE) {
@@ -207,7 +208,7 @@ class ProfileController {
     const uploadDir = path.join(process.cwd(), 'public', 'avatars');
     await fs.promises.mkdir(uploadDir, { recursive: true });
     
-    // Delete old avatar if exists (optional cleanup)
+    
     try {
       const oldAvatars = await fs.promises.readdir(uploadDir);
       const userAvatars = oldAvatars.filter(file => file.startsWith(`${userId}-`));
@@ -229,8 +230,8 @@ class ProfileController {
     console.log('Avatar saved successfully:', filePath);
     
     // Verify file was written
-    const stats = await fs.promises.stat(filePath);
-    console.log('File size on disk:', stats.size, 'bytes');
+    // const stats = await fs.promises.stat(filePath);
+    // console.log('File size on disk:', stats.size, 'bytes');
     
     return reply.code(200).send({
       success: true,
@@ -242,7 +243,7 @@ class ProfileController {
   } catch (error) {
     console.error('Avatar upload error:', error);
     
-    // Handle specific errors
+    
     if (error.code === 'ENOSPC') {
       return reply.code(507).send({ 
         success: false,
@@ -272,6 +273,54 @@ class ProfileController {
         
         return { success: true, users };
       } catch (error) {
+        return reply.code(500).send({ error: error.message });
+      }
+    }
+
+    async changePassword(request, reply) {
+      try {
+        const userId = request.headers['x-user-id'];
+        const { currentPassword, newPassword } = request.body;
+        if (!currentPassword || !newPassword) {
+          return reply.code(400).send({ 
+            error: 'Current password and new password are required' 
+       });
+      }
+
+      if (newPassword.length < 8) {
+        return reply.code(400).send({ 
+          error: 'New password must be at least 8 characters' 
+        });
+      }
+        const passwordHash = await this.userModel.getPasswordHashById(userId);
+        
+        if (!passwordHash) {
+          return reply.code(404).send({ error: 'User not found' });
+        }
+        
+        const passwordMatch = await bcrypt.compare(currentPassword, passwordHash);
+        
+        if (!passwordMatch) {
+          return reply.code(401).send({ error: 'Current password is incorrect' });
+        }
+        
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        
+        await this.userModel.updatePassword(userId, hashedPassword);
+        
+        return { success: true, message: 'Password changed successfully' };
+      } catch (error) {
+        console.error('Change password error:', error);
+        return reply.code(500).send({ error: error.message });
+      }
+    }
+    async getAllUsers(request, reply) {
+      try {
+        const users = await this.userModel.getAllUsers();
+        
+        return reply.code(200).send({ success: true, users });
+      } catch (error) {
+        console.error('Get all users error:', error);
         return reply.code(500).send({ error: error.message });
       }
     }

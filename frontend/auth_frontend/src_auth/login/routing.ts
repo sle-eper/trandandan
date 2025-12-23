@@ -1,6 +1,7 @@
 import { showMainUI } from "../../src/ts/script.ts"
 import { ProfileApp } from "../../profile_frontend/src/main.ts";
 import{ ProfileForm } from "../../profile_frontend/src/components/ProfileForm.ts"
+import { spyUi } from "../../src_spy/app.ts"
 // import { currentUserId }? from "./login.ts"
 export function updateContent(html: string) {
     const content = document.getElementById("dashboard-content");
@@ -25,11 +26,7 @@ export function loadHome() {
 }
 
 export function loadChat() {
-  // updateContent(`
-  //   <h1 class="text-3xl font-bold">Chat</h1>
-  //   <p class="text-gray-400 mt-2">Your messages appear here.</p>
-  // `);
-    showMainUI(14);
+    showMainUI();
 }
 
 export function loadProfile() {
@@ -43,10 +40,12 @@ export function loadProfile() {
 }
 export function loadGame()
 {
-    updateContent(`
-    <h1 class="text-3xl font-bold">game</h1>
-    <p class="text-gray-400 mt-2">Your account settings.</p>
-  `);
+    spyUi()
+  //   updateContent(`
+  //   <h1 class="text-3xl font-bold">game</h1>
+  //   <p class="text-gray-400 mt-2">Your account settings.</p>
+  // `);
+
 }
 export function loadtournament()
 {

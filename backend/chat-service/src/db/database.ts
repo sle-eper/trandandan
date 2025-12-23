@@ -8,49 +8,50 @@ const db = new Database('./src/db/database.db');
 // db.prepare(`DROP TABLE users `).run();
 // db.prepare(`DROP TABLE msg `).run();
 
+// db.prepare(`
+//     CREATE TABLE IF NOT EXISTS users (
+//     id INTEGER PRIMARY KEY AUTOINCREMENT,
+//     name TEXT NOT NULL,
+//     img TEXT)`).run();
+
+
+// db.prepare(`CREATE TABLE IF NOT EXISTS friendships (
+//     id INTEGER PRIMARY KEY AUTOINCREMENT,
+//     user_id INTEGER NOT NULL,
+//     friend_id INTEGER NOT NULL,
+//     status TEXT NOT NULL DEFAULT 'accepted',
+//     FOREIGN KEY (user_id) REFERENCES users(id),
+//     FOREIGN KEY (friend_id) REFERENCES users(id))`).run();
+
+
 db.prepare(`
-    CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    img TEXT)`).run();
-
-
-db.prepare(`CREATE TABLE IF NOT EXISTS friendships (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    friend_id INTEGER NOT NULL,
-    status TEXT NOT NULL DEFAULT 'accepted',
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (friend_id) REFERENCES users(id))`).run();
-
-
-db.prepare(`CREATE TABLE IF NOT EXISTS msg (
+    CREATE TABLE IF NOT EXISTS msg (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     send INTEGER NOT NULL,
     recv INTEGER NOT NULL,
     msg TEXT NOT NULL,
     room TEXT NOT NULL,
     status TEXT NOT NULL,
-    send_at DATETIME DEFAULT (datetime('now', 'localtime')),
-    FOREIGN KEY (send) REFERENCES users(id),
-    FOREIGN KEY (recv) REFERENCES users(id))`).run();
-const insertUsers = db.prepare(`INSERT INTO users (name,img) VALUES (?,?)`)
+    send_at DATETIME DEFAULT (datetime('now', 'localtime'))
+    )
+    `).run();
+// const insertUsers = db.prepare(`INSERT INTO users (name,img) VALUES (?,?)`)
 
-const users = [
-    { name: 'Ayoub', img: 'https://randomuser.me/api/portraits/men/32.jpg' },
-    { name: 'Sara', img: 'https://randomuser.me/api/portraits/women/45.jpg' },
-    { name: 'Omar', img: 'https://randomuser.me/api/portraits/men/67.jpg' },
-    { name: 'jamila', img: 'https://randomuser.me/api/portraits/women/88.jpg' },
-    { name: 'Youssef', img: 'https://randomuser.me/api/portraits/men/12.jpg' },
-];
+// const users = [
+//     { name: 'Ayoub', img: 'https://randomuser.me/api/portraits/men/32.jpg' },
+//     { name: 'Sara', img: 'https://randomuser.me/api/portraits/women/45.jpg' },
+//     { name: 'Omar', img: 'https://randomuser.me/api/portraits/men/67.jpg' },
+//     { name: 'jamila', img: 'https://randomuser.me/api/portraits/women/88.jpg' },
+//     { name: 'Youssef', img: 'https://randomuser.me/api/portraits/men/12.jpg' },
+// ];
 
 // users.forEach((user)=>{
 //         insertUsers.run(user.name,user.img);
 //     })
     
-const user:any =  db.prepare(`SELECT id FROM users WHERE id = ?`).get('2');
-const friends:any = db.prepare(`SELECT id FROM users WHERE id != ?`).all('2')
-const insertFriend = db.prepare(`INSERT INTO friendships (user_id,friend_id) VALUES (?,?)`);
+// const user:any =  db.prepare(`SELECT id FROM users WHERE id = ?`).get('2');
+// const friends:any = db.prepare(`SELECT id FROM users WHERE id != ?`).all('2')
+// const insertFriend = db.prepare(`INSERT INTO friendships (user_id,friend_id) VALUES (?,?)`);
 // const update = db.prepare(`UPDATE friendships SET status = ? WHERE user_id = ? AND friend_id = ?`);
 // const matchFriends = db.prepare(`SELECT users.id,users.name,users.img FROM users INNER JOIN friendships ON users.id = friendships.friend_id WHERE friendships.user_id = ? `).all(user.id);
     
@@ -111,13 +112,13 @@ export function saveMsg(send:string,recv:string,msg:string,room:string,status:st
 {
     const msgData = db.prepare(`INSERT INTO msg(send,recv,msg,room,status) VALUES (?,?,?,?,?)`).run(send,recv,msg,room,status)
     const msgId = String(msgData.lastInsertRowid)
+    console.log(msgId)
     return msgId
 }
 export function getTimeOfMsg(msgId:string):string
 {
     const time:any = db.prepare(`SELECT strftime('%H:%M', send_at) AS time FROM msg WHERE id = ?`).get(msgId)
-    const msgTime = String(time.time)
-    return msgTime
+    return String(time.time)
 }
 export function getWaitingMsg(recv:string)
 {

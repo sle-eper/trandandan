@@ -8,7 +8,7 @@ class UserModule{
 
     async findById(id) {
         return this.db.get(
-            'SELECT id, email, username, avatar_url ,display_name,bio FROM users WHERE id = ?',
+            'SELECT id, email, username, avatar_url ,display_name ,bio ,online_status FROM users WHERE id = ?',
             id
         );
     }
@@ -29,6 +29,20 @@ class UserModule{
         return await this.db.get(
           'SELECT * FROM users WHERE display_name = ?',
           [displayName]
+        );
+    }
+    async getPasswordHashById(id) {
+        const row = await this.db.get(
+            'SELECT password_hash FROM users WHERE id = ?',
+            [id]
+        );
+        return row ? row.password_hash : null;
+    }
+
+    async updatePassword(userId, newPasswordHash) {
+        await this.db.run(
+            'UPDATE users SET password_hash = ? WHERE id = ?',
+            [newPasswordHash, userId]
         );
     }
 
@@ -139,7 +153,12 @@ class UserModule{
           [searchPattern]
         );
       }
-      
+    
+    async getAllUsers() {
+        return await this.db.all(
+          'SELECT id, username, display_name, email, online_status FROM users'
+        );
+    }
 }
 
 export default UserModule ;

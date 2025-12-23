@@ -4,6 +4,19 @@ import { loginUser } from "./api";
 import { navigate } from "../app";
 // import { showDashboard } from "../dashboard/dashboard";
 // import { showMainUI } from "../../src/ts/script.ts";
+function showError(msg: string) {
+  const errorBox = document.getElementById("login-error");
+  if (!errorBox) return;
+  errorBox.textContent = msg;
+  errorBox.classList.add("opacity-100");
+}
+
+function clearError() {
+  const errorBox = document.getElementById("login-error");
+  if (!errorBox) return;
+  errorBox.textContent = "";
+  errorBox.classList.remove("opacity-100");
+}
 
 export function showLoginPage(containerId = "login-app") {
   const app = document.getElementById(containerId);
@@ -21,23 +34,39 @@ export function showLoginPage(containerId = "login-app") {
 let currentUserId: string | null = null; // store user_id globally
 
 export function attachLoginHandlers() {
+  const form = document.getElementById("login-form") as HTMLFormElement | null;
   const btn = document.getElementById("login-btn") as HTMLButtonElement | null;
   const signup = document.getElementById("login-signup");
   const forgot = document.getElementById("login-forgot");
   const googleBtn = document.getElementById("login-google");
   const githubBtn = document.getElementById("login-github");
 
+  const usernameInput = document.getElementById("login-username") as HTMLInputElement | null;
+  const passwordInput = document.getElementById("login-password") as HTMLInputElement | null;
+
+  if (!form || !btn || !usernameInput || !passwordInput) return;
+
   if (signup) signup.addEventListener("click", () => navigate("signup"));
   if (forgot) forgot.addEventListener("click", () => navigate("forgot"));
 
-  if (!btn) return;
+  const togglePassword = document.getElementById("toggle-password");
+  if (togglePassword) {
+    togglePassword.addEventListener("click", () => {
+      passwordInput.type =
+        passwordInput.type === "password" ? "text" : "password";
+      togglePassword.textContent =
+        passwordInput.type === "password" ? "visibility" : "visibility_off";
+    });
+  }
 
-  btn.addEventListener("click", async () => {
-    const username = (document.getElementById("login-username") as HTMLInputElement).value.trim();
-    const password = (document.getElementById("login-password") as HTMLInputElement).value.trim();
+  const submitLogin = async () => {
+    clearError();
+
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value.trim();
 
     if (!username || !password) {
-      alert("Please fill all fields.");
+      showError("Please fill all fields.");
       return;
     }
 
@@ -45,19 +74,27 @@ export function attachLoginHandlers() {
       const { response, body } = await loginUser(username, password);
 
       if (body.success) {
-        // ✅ Read user_id from headers if backend sends it
         currentUserId = response?.headers.get("x-user-id") || null;
-
-        console.log("Login success:", body, "User ID:", currentUserId);
-
         navigate("dashboard");
       } else {
-        alert(body.message || "Invalid username or password");
+        showError(body.message || "Invalid username or password.");
       }
     } catch (err) {
       console.error(err);
-      alert("Login failed. Please try again.");
+      showError("Server error. Try again later.");
     }
+  };
+
+  // ✅ ENTER KEY (form submit)
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    submitLogin();
+  });
+
+  // ✅ Button click
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    submitLogin();
   });
 
   if (googleBtn) {

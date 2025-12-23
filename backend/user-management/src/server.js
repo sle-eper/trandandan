@@ -22,7 +22,7 @@ fastify.register(multipart,{
 
 
 fastify.register(fastifyCors, {
-    origin: ['*'],
+    origin: ['http://localhost:5173', 'http://localhost:3000'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true
 });
@@ -34,16 +34,16 @@ fastify.register(fastifyStatic, {
 
 
 // This returns JSON for API testing
-fastify.get('/api', (req, reply) => {
-    return {
-        message: 'API is running',
-        version: '1.0.0',
-        endpoints: {
-            users: '/api/users',
-            frontend: '/'
-        }
-    };
-});
+// fastify.get('/api', (req, reply) => {
+//     return {
+//         message: 'API is running',
+//         version: '1.0.0',
+//         endpoints: {
+//             users: '/api/users',
+//             frontend: '/'
+//         }
+//     };
+// });
 
 async function start() {
     try {
@@ -59,9 +59,9 @@ async function start() {
         
         // Register API routes
       
-        fastify.register(profileRoutes, { 
-             prefix: '/'
-        });
+        fastify.register(profileRoutes
+        , { prefix: '/' }
+        );
         fastify.register(friendshipRoutes, { 
             prefix: '/' 
         });

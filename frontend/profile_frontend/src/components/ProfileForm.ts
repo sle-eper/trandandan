@@ -1,6 +1,7 @@
 import { User } from './../User.ts';
 import type { UserProfile } from '../User.ts';
 import axios from 'axios';
+import { ChangePasswordModal } from './ChangePassword.ts';
 
 export class ProfileForm {
     //  private formData: UserProfile;
@@ -14,11 +15,15 @@ export class ProfileForm {
     try {
    
       this.userData = await User.fetchUserProfile();
-      console.log('Loaded user data:', `http://localhost:8080/uploads/default.png`, this.userData)
+      // console.log('Loaded user data:', `http://localhost:8080/uploads/default.png`, this.userData)
       if (this.userData) {
         this.oldProfileData = JSON.parse(JSON.stringify(this.userData));
         this.avatarPreview = this.userData.avatarUrl || this.avatarPreview;
-        this.isOnline = this.userData.onlineStatus || this.isOnline;
+        if (this.userData.onlineStatus !== 'offline') {
+          this.isOnline = true;
+        } else {
+          this.isOnline = false;
+        }
         console.log('User profile loaded:', this.userData.avatarUrl);
       } else {
         console.log('No existing profile found, using defaults');
@@ -36,7 +41,7 @@ export class ProfileForm {
         const bio = this.userData?.bio || '';
 
         return ` 
-            <div class="w-full max-w-2xl">
+            <div class="w-full max-w-4xl mx-auto h-full p-6">
             <!-- Header -->
             <div class="text-center mb-8">
                 <h1 class="text-4xl font-bold text-white mb-2 flex items-center justify-center gap-3">
@@ -214,7 +219,7 @@ export class ProfileForm {
               <!-- Change Password Link -->
               <div class="mt-6 text-center">
                 <button 
-                  id="change-password-btn"
+                  id="change-password-btn"   
                   class="text-sm text-gray-400 hover:text-red-500 transition-colors underline"
                 >
                   Change Password
@@ -237,6 +242,14 @@ export class ProfileForm {
     const onlineToggle = document.getElementById('online-toggle') as HTMLInputElement;
     const saveBtn = document.getElementById('save-btn');
     const cancelBtn = document.getElementById('cancel-btn');
+    const changePasswordBtn = document.getElementById('change-password-btn');
+
+    if (changePasswordBtn) {
+      changePasswordBtn.addEventListener('click', () => {
+        const modal = new ChangePasswordModal();
+        modal.show();
+      });
+    }
 
     if (avatarInput) {
       avatarInput.addEventListener('change', this.handleAvatarChange.bind(this));
@@ -251,62 +264,13 @@ export class ProfileForm {
       cancelBtn.addEventListener('click', this.handleCancel.bind(this));
     }
   }
-  private async compressImage(file: File, maxWidth = 800, quality = 0.85): Promise<Blob> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      
-      reader.onload = (e) => {
-        const img = new Image();
-        
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          
-          if (!ctx) {
-            reject(new Error('Failed to get canvas context'));
-            return;
-          }
-          
-          let width = img.width;
-          let height = img.height;
-          
-          if (width > maxWidth) {
-            height = (height * maxWidth) / width;
-            width = maxWidth;
-          }
-          
-          canvas.width = width;
-          canvas.height = height;
-          ctx.drawImage(img, 0, 0, width, height);
-          
-          canvas.toBlob(
-            (blob) => {
-              if (blob) {
-                resolve(blob);
-              } else {
-                reject(new Error('Failed to compress image'));
-              }
-            },
-            'image/jpeg',
-            quality
-          );
-        };
-        
-        img.onerror = () => reject(new Error('Failed to load image'));
-        img.src = e.target?.result as string;
-      };
-      
-      reader.onerror = () => reject(new Error('Failed to read file'));
-      reader.readAsDataURL(file);
-    });
-  }
+ 
  private handleAvatarChange(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     
     if (!file) return;
 
-    // Validate file type
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
       alert('Please select a valid image file (JPEG, PNG, GIF, or WebP)');
@@ -314,7 +278,6 @@ export class ProfileForm {
       return;
     }
 
-  
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
       alert('Image size must be less than 5MB');
@@ -322,10 +285,8 @@ export class ProfileForm {
       return;
     }
 
-    // Store the file for upload later
     this.selectedAvatarFile = file;
 
-    // Create preview
     const reader = new FileReader();
     reader.onloadend = () => {
       this.avatarPreview = reader.result as string;
@@ -355,7 +316,7 @@ export class ProfileForm {
     }
   }
 
-  private hasChanges(oldData: UserProfile | null, newData: UserProfile): UserProfile | null {
+  private hasChanges(oldData: UserProfile | null, newData: UserProfile): Partial<UserProfile> | null {
     if (!oldData) {
       return newData;
     }
@@ -374,29 +335,10 @@ export class ProfileForm {
 
   private async uploadAvatar(file: File): Promise<string | null> {
   try {
-    const MAX_FILE_SIZE = 5 * 1024 * 1024; 
-    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    
-  
-    if (file.size > MAX_FILE_SIZE) {
-      console.error(`File size (${(file.size / (1024 * 1024)).toFixed(2)}MB) exceeds maximum limit of ${MAX_FILE_SIZE / (1024 * 1024)}MB`);
-      alert(`File is too large. Maximum size is ${MAX_FILE_SIZE / (1024 * 1024)}MB`);
-      return null;
-    }
-    
-    // Validate file type on frontend
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      console.error('Invalid file type:', file.type);
-      alert('Please upload a valid image file (JPEG, PNG, GIF, or WebP)');
-      return null;
-    }
-    
-    console.log(`Uploading file: ${file.name}, Size: ${(file.size / 1024).toFixed(2)}KB, Type: ${file.type}`);
     
     const formData = new FormData();
     formData.append('file', file);
-    
-    // Upload to backend via nginx proxy
+   
     const response = await User.updateAvatar(formData);
     
     if (response) {
@@ -408,8 +350,7 @@ export class ProfileForm {
     
   } catch (error: any) {
     console.error('Avatar upload failed:', error);
-    
-    // Handle specific error responses
+  
     if (error.response?.status === 413) {
       alert('File is too large. Please choose a smaller image.');
     } else if (error.response?.status === 400) {
@@ -427,61 +368,73 @@ export class ProfileForm {
       saveBtn.textContent = 'Saving...';
       saveBtn.setAttribute('disabled', 'true');
     }
-   
-    const formData: UserProfile = {
+   try {
+    
+      const formData: UserProfile = {
       username: (document.getElementById('username') as HTMLInputElement).value,
       email: (document.getElementById('email') as HTMLInputElement).value,
       displayName: (document.getElementById('displayName') as HTMLInputElement).value,
       bio: (document.getElementById('bio') as HTMLTextAreaElement).value,
       avatarUrl: this.avatarPreview,
-      onlineStatus: this.isOnline
+      onlineStatus: this.isOnline ? 'online' : 'offline'
     };
    
-    const changedData = this.hasChanges(this.oldProfileData, formData);
-    if (changedData) {
-      let uploadedAvatarPath: string | null = null;
-      
-      if (this.selectedAvatarFile) {
-        console.log('Uploading new avatar...');
-        uploadedAvatarPath = await this.uploadAvatar(this.selectedAvatarFile);
-        
-        if (!uploadedAvatarPath) {
-          alert('Failed to upload avatar. Please try again.');
-          return;
-        }
+     let changedData = this.hasChanges(this.oldProfileData, formData);
+    if (!changedData && !this.selectedAvatarFile) {
+      alert('No changes detected to save.');
+      return;
+    }
 
-        console.log('Avatar uploaded successfully:', uploadedAvatarPath);
-        formData.avatarUrl = uploadedAvatarPath;
-        if (changedData) {
-          changedData.avatarUrl = uploadedAvatarPath;
-        }
+    if (this.selectedAvatarFile) {
+      console.log('Uploading new avatar...');
+      const uploadedAvatarPath = await this.uploadAvatar(this.selectedAvatarFile);
+      
+      if (!uploadedAvatarPath) {
+        alert('Failed to upload avatar. Profile not saved.');
+        return;
       }
-      console.log('Saving profile with changes:', changedData?.avatarUrl);
+
+      console.log('Avatar uploaded successfully:', uploadedAvatarPath);
+      formData.avatarUrl = uploadedAvatarPath;
+      
+      if (changedData) {
+        changedData.avatarUrl = uploadedAvatarPath;
+      } else {
+        changedData = { avatarUrl: uploadedAvatarPath };
+      }
+    }
+    if (changedData) {
+      console.log('Saving profile with changes:', changedData);
       const success = await User.saveUserProfile(changedData);
+      
       if (success) {
-        this.userData = formData;// Update local state
-        this.selectedAvatarFile = null;
+        this.userData = formData;
         this.oldProfileData = { ...formData };
+        this.selectedAvatarFile = null;
+        this.avatarPreview = formData.avatarUrl || '';
+        
         alert('Profile updated successfully!');
       } else {
         alert('Failed to save profile. Please try again.');
       }
-    } else {
-      alert('No changes detected to save.');
     }
-    // Save the profile
 
-    
-
+  } catch (error) {
+    console.error('Save error:', error);
+    alert('An error occurred while saving. Please try again.');
+  } finally {
+  
     if (saveBtn) {
       saveBtn.textContent = 'Save Changes';
       saveBtn.removeAttribute('disabled');
     }
   }
+  
+   
+  }
 
   private handleCancel(): void {
     if (confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
-      // Re-render with original data
       const container = document.getElementById('app');
       if (container) {
         this.mount('app');

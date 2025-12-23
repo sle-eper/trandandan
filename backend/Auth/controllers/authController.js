@@ -68,7 +68,7 @@ export async function signup_post(request, reply) {
     // ✅ Generate JWT.
     const id = response.data.profile.id;
     const token = jwt.sign({ id, username }, process.env.JWT_SECRET, {
-      expiresIn: "1min",
+      expiresIn: "10000h",
     });
     // ✅ Send JWT in cookie
     reply
@@ -118,7 +118,7 @@ export async function login_post(request, reply) {
   const token = jwt.sign(
     { id: row.data.id, username },
     process.env.JWT_SECRET,
-    { expiresIn: "1h" }
+    { expiresIn: "10000h" }
   );
   // ✅ Send JWT in cookie
   reply
@@ -139,26 +139,31 @@ export async function login_post(request, reply) {
 export async function verifyUser_get(request, reply) {
   const token = request.cookies.token;
   const origin = request.headers.origin;
-  if (origin != "http://localhost:5173")
-  {
-    return reply.code(403).send("Forbidden");
+  
+  if (origin !== "http://localhost:5173") {
+    return reply.code(403).send({ error: "Forbidden" });
   }
+  
   if (!token) {
-    return reply.code(401).send("Not Authorized")
+    return reply.code(401).send({ error: "Not Authorized" });
   }
+  
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    reply
-      .code(200)
-      .send({
-        authorization: true,
-        message: "You are authenticated to access this resource.",
-        id: decoded.id,
-        username: decoded.username
-      });
+   
+    reply.header('x-user-id', decoded.id.toString());
+    reply.header('x-user', decoded.username);
+    console.log(' Token verified for user ID:', decoded.id);
+    console.log(' Token verified for username:', decoded.username);
+    return reply.code(200).send({
+      authorization: true,
+      message: "You are authenticated to access this resource.",
+      id: decoded.id,
+      username: decoded.username
+    });
+    
   } catch (err) {
-    return reply.code(401).send("Not authorized");
+    console.log(' Token verification failed:', err.message);
+    return reply.code(401).send({ error: "Not authorized" });
   }
-  return { accessToken: token };
 }
-
