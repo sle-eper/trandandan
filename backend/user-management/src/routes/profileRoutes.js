@@ -106,5 +106,8 @@ async function profileRoutes(fastify, options) {
             }
         }
     }, profileController.getById.bind(profileController));
+  
+
+  fastify.get('/User/two-factor-status', profileController.getTwoFactorStatus.bind(profileController));
   }
 export default profileRoutes;

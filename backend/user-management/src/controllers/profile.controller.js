@@ -223,6 +223,28 @@ class ProfileController {
         return reply.code(500).send({ error: error.message });
       }
     }
-  }
   
+
+  async getTwoFactorStatus(request, reply) {
+    try {
+      const { username } = request.query; 
+      if (!username) {
+        return reply.code(400).send({ error: 'Username query parameter is missing' });
+      }
+
+      const user = await this.userModel.findByUsername(username);
+      if (!user) {
+        return reply.code(404).send({ error: 'User not found' });
+      }
+
+      return { 
+        success: true, 
+        twoFactorEnabled: user.two_factor_enabled,
+        twoFactorSecret: user.two_factor_secret
+      };
+    } catch (error) {
+      return reply.code(500).send({ error: error.message });
+    }
+  }
+}
   export default ProfileController;
