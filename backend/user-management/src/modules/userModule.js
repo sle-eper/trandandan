@@ -141,6 +141,13 @@ class UserModule{
         );
       }
       
+      async setTwoFactorSecret(userId, secret) {
+        await this.db.run(
+          `UPDATE users 
+           SET two_factor_secret = ? WHERE id = ?`,
+          [secret, userId]
+        );
+      }
 }
 
 export default UserModule ;

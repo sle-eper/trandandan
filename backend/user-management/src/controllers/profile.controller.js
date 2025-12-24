@@ -239,12 +239,35 @@ class ProfileController {
 
       return { 
         success: true, 
-        twoFactorEnabled: user.two_factor_enabled,
-        twoFactorSecret: user.two_factor_secret
+        twoFactorEnabled: user.two_factor_enabled 
+        
       };
     } catch (error) {
       return reply.code(500).send({ error: error.message });
     }
   }
+  async enableTwoFactor(request, reply) {
+    try {
+      const { username } = request.query;
+      const {secret } = request.body; 
+      if (!username || !secret) {
+        return reply.code(400).send({ error: 'Username and secret are required' });
+      }
+
+      const user = await this.userModel.findByUsername(username);
+      if (!user) {
+        return reply.code(404).send({ error: 'User not found' });
+      }
+
+      await this.userModel.setTwoFactorSecret(user.id, secret);
+
+      return { 
+        success: true, 
+        message: 'Two-factor authentication enabled successfully' 
+      };
+    } catch (error) {
+      return reply.code(500).send({ error: error.message });
+    } 
+}
 }
   export default ProfileController;

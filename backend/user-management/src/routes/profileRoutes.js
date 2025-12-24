@@ -109,5 +109,7 @@ async function profileRoutes(fastify, options) {
   
 
   fastify.get('/User/two-factor-status', profileController.getTwoFactorStatus.bind(profileController));
+
+  fastify.put('/User/enable-two-factor', profileController.enableTwoFactor.bind(profileController));
   }
 export default profileRoutes;
