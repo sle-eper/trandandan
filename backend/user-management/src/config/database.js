@@ -51,7 +51,7 @@ export async  function createTables(){
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               username VARCHAR(50) UNIQUE NOT NULL,
               email VARCHAR(100) UNIQUE NOT NULL,
-              password_hash VARCHAR(255),
+              password_hash VARCHAR(255) DEFAULT NULL,
               display_name VARCHAR(100) UNIQUE NOT NULL,
               avatar_url VARCHAR(500) DEFAULT '/default_avatar.jpg',
               bio TEXT,

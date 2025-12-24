@@ -67,18 +67,25 @@ class UserModule{
 
 
     async create(user) {
-        const result = await this.db.run(
-            'INSERT INTO users (email, username, password_hash, display_name) VALUES (?, ?, ?, ?)',
-            [user.email, user.username, user.password, user.display_name || user.username]
-        );
+    const result = await this.db.run(
+        'INSERT INTO users (email, username, password_hash, display_name) VALUES (?, ?, ?, ?)',
+        [
+        user.email,
+        user.username,
+        user.password_hash,   // ✅ FIX
+        user.display_name || user.username
+        ]
+    );
 
-        await this.db.run(
-            'INSERT INTO user_stats (user_id) VALUES (?)',
-            [result.lastID]
-        );
-        return result.lastID;
+    await this.db.run(
+        'INSERT INTO user_stats (user_id) VALUES (?)',
+        [result.lastID]
+    );
+
+    return result.lastID;
     }
-    
+
+
     async updateProfile(userId, updates) {
         const { displayName, bio, avatarUrl,email,username } = updates;
         

@@ -30,33 +30,68 @@ class ProfileController {
     }
 
 
-  async setUser(request, reply) {
-    try {
-      const { username, email, displayName, password, id_token } = request.body;
-      if (!username || !email || !displayName ||  !id_token) {
-        return reply.code(400).send({ error: 'All fields are required' });
-      }
-      
-      const userId = await this.userModel.create({
-        username,
-        email,
-        password,
-        display_name: displayName
-      });
+ async setUser(request, reply) {
+  try {
+    let { username, email, displayName, password, id_token } = request.body;
 
-      const profile = await this.userModel.findById(userId);
-      console.log('Created user profile:', profile);
-      
-      return reply.code(201).send({
-        success: true,
-        message: 'User created successfully',
-        profile
+    // Required fields for all users
+    if (!email || !displayName) {
+      return reply.code(400).send({
+        error: 'email and displayName are required',
       });
-    } catch (error) {
-      console.error(error);
-      return reply.code(500).send({ error: error.message });
     }
+
+    // If no username provided (OAuth), generate a safe one
+    if (!username) {
+      username = displayName.replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase();
+    } else {
+      // Sanitize username to match pattern
+      username = username.replace(/[^a-zA-Z0-9_]/g, '_');
+    }
+
+    // Must be classic signup OR OAuth
+    if (!password && !id_token) {
+      return reply.code(400).send({
+        error: 'password or id_token is required',
+      });
+    }
+
+    // Hash password if provided
+    let password_hash = null;
+    if (password) {
+      password_hash = await bcrypt.hash(password, 10);
+    }
+
+    // Build user data
+    const userData = {
+    username,
+    email,
+    display_name: displayName,
+    id_token: id_token || null,
+    password_hash: password ? await bcrypt.hash(password, 10) : null
+  };
+
+    // Create user in DB
+    const userId = await this.userModel.create(userData);
+    const profile = await this.userModel.findById(userId);
+
+    console.log('Created user profile:', profile);
+
+    return reply.code(201).send({
+      success: true,
+      message: 'User created successfully',
+      profile,
+    });
+  } catch (error) {
+    console.error(error);
+    return reply.code(500).send({
+      error: error.message || 'Internal server error',
+    });
   }
+}
+
+
+
   async getUserBYemailorUsername(request, reply) {
 
     try {

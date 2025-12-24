@@ -77,7 +77,29 @@ function  friendCart(friend:any,waitingMsg:object,myId:string):string //done
 
 export function listOfMsg(friends:any,waitingMsg:object,myId:string): string //done
 {
-    // console.log(myId)
+    if(!friends)
+    {
+        return `<div class="flex flex-col items-center justify-center h-full text-center gap-4 px-6">
+
+                        
+                        <div class="border-1 rounded-full h-17 w-17 flex justify-center items-center">
+                            <span class="material-symbols-outlined ">chat_add_on</span>
+                        </div>
+
+                        
+                        <h1 class="text-2xl font-bold text-[#F5F5F5]">
+                            No chats yet
+                        </h1>
+
+                        
+                        <p class="text-[#888] max-w-sm leading-relaxed">
+                            You don’t have any conversations yet.  
+                            Add friends to start chatting and stay connected.
+                        </p>
+
+</div>
+`
+    }
     const friendCards = friends.map(element => friendCart(element,waitingMsg,myId)).join('\n')
     return `
             <style>
@@ -188,7 +210,7 @@ export function inputMsg(status:string):string //done
                     ></textarea>
                     <button id="send-button"
                         class="bg-gradient-to-br from-[#E63946] to-[#8A1C1C] hover:from-[#FF4D4D]
-                        hover:to-[#A02020] rounded-xl w-[5%] h-[80%] mr-2 ml-4 flex justify-center items-center">
+                        hover:to-[#A02020] rounded-xl w-[8vw] md:w-[3vw] h-[80%] mr-2 ml-4 flex justify-center items-center">
                         <span class="material-symbols-outlined text-white">send</span>
                     </button>
                 </div>`
@@ -203,8 +225,8 @@ function escapeHTML(str: string): string {
 }
 
 export function sendMsg(msg:string,time:string,img:string):string{
-    return `<div id="received-msg" class="flex mt-5 h-auto w-[65%]  justify-end ml-auto pr-5 ">
-    <div id="content-received" class="max-w-[80%] flex flex-col ">
+    return `<div id="received-msg" class="flex mt-5  md:w-[30vw] w-[60vw]  justify-end ml-auto pr-5 ">
+    <div id="content-received" class="flex flex-col ">
         <div class=" bg-[#E63946] rounded-xl p-3 ">
         <span class="text-[#F5F5F5]  break-all">
             ${escapeHTML(msg)}
@@ -212,15 +234,15 @@ export function sendMsg(msg:string,time:string,img:string):string{
         </div> 
         <span id="text-received-time " class="text-xs text-[#888] mt-1 self-end">${time}</span>
     </div>
-    <img src="${img}" alt="" class="h-10 w-10 rounded-full mt-2 ml-2">
     </div>`
+    // <img src="${img}" alt="" class="h-10 w-10 rounded-full mt-2 ml-2">
             
 }
 
 
 export function receivedMsg(msg:string,time:string,img:string):string{
 
-    return `<div id="sent-msg" class="flex mt-5 h-auto w-[65%] justify-start pl-5 ">
+    return `<div id="sent-msg" class="flex mt-5 md:w-[30vw] w-[80vw]  justify-start pl-5 ">
                 <img src="${img}" alt="" class="h-10 w-10 rounded-full mt-2 mr-2">
                 <div id="content-sent" class="max-w-[80%] flex flex-col">
                     <div  class="border-2 border-[#E63946] rounded-xl p-3  ">
