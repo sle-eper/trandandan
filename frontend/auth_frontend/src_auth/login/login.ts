@@ -75,7 +75,7 @@ export function attachLoginHandlers() {
 
       if (body.success) {
         currentUserId = response?.headers.get("x-user-id") || null;
-        navigate("dashboard");
+        navigate("/home");
       } else {
         showError(body.message || "Invalid username or password.");
       }

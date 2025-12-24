@@ -72,7 +72,7 @@ class UserModule{
         [
         user.email,
         user.username,
-        user.password_hash,   // ✅ FIX
+        user.password,   // ✅ FIX
         user.display_name || user.username
         ]
     );
