@@ -8,9 +8,7 @@ export function renderNavBar(): string {
 
       <!-- Logo -->
       <div class="flex items-center gap-3">
-        <div class="rounded-xl p-1 bg-white/10 shadow-inner backdrop-blur-md">
           <img src="/src_auth/images/pingponglogo.jpg" alt="logo" class="w-12 h-12 rounded-lg"/>
-        </div>
         <span class="text-xl font-bold tracking-wide drop-shadow-sm">
           PingPong
         </span>

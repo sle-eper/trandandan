@@ -4,12 +4,14 @@ export function showLandingPage(containerId = "login-app") {
   if (!app) return;
 
   app.innerHTML = `
-  <div class="h-screen w-screen overflow-hidden bg-gradient-to-br from-black to-neutral-900 text-white flex flex-col">
+  <div class="h-screen w-screen overflow-hidden bg-black text-white flex flex-col">
 
   <!-- NAVBAR -->
   <nav class="flex-shrink-0 w-full flex justify-between items-center px-8 py-5 border-b border-white/10">
     <div class="flex items-center gap-2">
-      <div class="px-2 py-1 rounded-lg">🏓</div>
+      <div class="px-2 py-1 rounded-lg">
+      <img src="/src_auth/images/pingponglogo.jpg" alt="logo" class="w-12 h-12 rounded-lg"/>
+      </div>
       <span class="text-xl font-bold">Ping Pong</span>
     </div>
 
@@ -26,7 +28,7 @@ export function showLandingPage(containerId = "login-app") {
     <div class="max-w-xl">
       <h1 class="text-6xl lg:text-7xl font-extrabold leading-tight">
         The Ultimate <br />
-        <span class="text-red-600">Pong</span> <br />
+        <span class="text-red-600">Pong</span> <br/>
         Experience
       </h1>
 
@@ -42,11 +44,14 @@ export function showLandingPage(containerId = "login-app") {
 
     <!-- RIGHT -->
     <div class="flex items-center justify-center">
-      <img
-        src="/src_auth/images/gogo1.jpg"
-        class="max-h-[80vh] w-auto object-contain
-        [mask-image:radial-gradient(circle,white_25%,transparent_100%)]"
-      />
+      <video src="src_auth/images/vedio14.mp4"
+      autoplay
+      muted
+      loop
+      playsinline
+      class="h-[90vh] max-w-[55vw] object-contain
+            [mask-image:radial-gradient(circle,white_30%,transparent_100%)]"
+    ></video>
     </div>
 
   </main>

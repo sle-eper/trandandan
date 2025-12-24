@@ -12,6 +12,6 @@ export function handleOAuthSuccess() {
   localStorage.setItem("token", token);
 
   // Load dashboard
-  navigate("dashboard");
+  navigate("/home");
 }
 

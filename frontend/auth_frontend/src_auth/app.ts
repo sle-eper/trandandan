@@ -30,10 +30,8 @@ addRoute("/landing", () => showLandingPage());
 addRoute("/login", () => showLoginPage());
 addRoute("/signup", () => showSignupPage());
 addRoute("/forgot", () => showForgotPage());
-addRoute("/dashboard", () => showDashboard());
 addRoute("/change", () => showchangePassPage());
 addRoute("/auth/success", () => handleOAuthSuccess());
-addRoute("/dashboard", () => showDashboard());
 addRoute("/verify", () => showverifyPage());
 
 // Dashboard sub-pages
