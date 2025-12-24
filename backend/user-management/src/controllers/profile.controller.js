@@ -32,44 +32,32 @@ class ProfileController {
   try {
     let { username, email, displayName, password, id_token } = request.body;
 
-    // Required fields for all users
     if (!email || !displayName) {
-      return reply.code(400).send({
-        error: 'email and displayName are required',
-      });
+      return reply.code(400).send({ error: 'email and displayName are required' });
     }
 
-    // If no username provided (OAuth), generate a safe one
+    // Generate username if not provided
     if (!username) {
       username = displayName.replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase();
     } else {
-      // Sanitize username to match pattern
       username = username.replace(/[^a-zA-Z0-9_]/g, '_');
     }
 
-    // Must be classic signup OR OAuth
     if (!password && !id_token) {
-      return reply.code(400).send({
-        error: 'password or id_token is required',
-      });
+      return reply.code(400).send({ error: 'password or id_token is required' });
     }
 
-    // Hash password if provided
-    let password_hash = null;
-    if (password) {
-      password_hash = await bcrypt.hash(password, 10);
-    }
-
-    // Build user data
+    // // Hash password if provided
+    // let password_hash = null;
+    console.log(password);
     const userData = {
-    username,
-    email,
-    display_name: displayName,
-    id_token: id_token || null,
-    password_hash: password ? await bcrypt.hash(password, 10) : null
-  };
+      username,
+      email,
+      display_name: displayName,
+      id_token: id_token || null,
+      password
+    };
 
-    // Create user in DB
     const userId = await this.userModel.create(userData);
     const profile = await this.userModel.findById(userId);
 
@@ -78,16 +66,14 @@ class ProfileController {
     return reply.code(201).send({
       success: true,
       message: 'User created successfully',
-      profile,
+      profile
     });
+
   } catch (error) {
     console.error(error);
-    return reply.code(500).send({
-      error: error.message || 'Internal server error',
-    });
+    return reply.code(500).send({ error: error.message || 'Internal server error' });
   }
 }
-
 
 
   async getUserBYemailorUsername(request, reply) {
