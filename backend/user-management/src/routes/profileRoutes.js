@@ -12,7 +12,7 @@ async function profileRoutes(fastify, options) {
     schema: {
       body: {
         type: 'object',
-        required: ['username', 'email', 'displayName', 'password'],
+        required: ['username', 'email', 'displayName'],
         properties: {
           username: { 
             type: 'string', 

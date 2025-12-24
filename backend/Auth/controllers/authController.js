@@ -108,7 +108,7 @@ export async function login_post(request, reply) {
   }
   console.log("🔍 Comparing passwords");
   console.log(row.data.password_hash);
-  console.log(password);
+  
   const match = await bcrypt.compare(password, row.data.password_hash);
   if (!match) {
     return reply

@@ -33,7 +33,7 @@ class ProfileController {
   async setUser(request, reply) {
     try {
       const { username, email, displayName, password, id_token } = request.body;
-      if (!username || !email || !displayName || (!password && !id_token)) {
+      if (!username || !email || !displayName ||  !id_token) {
         return reply.code(400).send({ error: 'All fields are required' });
       }
       
