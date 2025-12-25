@@ -15,8 +15,8 @@ class ProfileController {
     async getById(request, reply) { 
       try {
         // console.log('Getting user by ID from headers:', request.headers);
-        const id = request.headers['x-user-id'];
-
+        // const id = request.headers['x-user-id'];
+        const id = request.params.id;
         const user = await this.userModel.findById(id);
         console.log('Fetched user by ID:', user , 'for ID:', id);
         if (!user) {

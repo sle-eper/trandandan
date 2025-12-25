@@ -35,12 +35,15 @@ async function getFriendsOfUser(userId: string) {
     });
     
     const friends = response.data.friends;
-   
+    
     if (friends.length === 0) {
         return [];
     }
+    
     const friendIds = friends.map((friend: any) => friend.id);
     const placeholders = friendIds.map(() => '?').join(',');
+    
+    // Modified query with ORDER BY send_at DESC
     const latestMessages = db.prepare(`
         SELECT 
             CASE 
@@ -51,6 +54,7 @@ async function getFriendsOfUser(userId: string) {
             send,
             recv,
             status,
+            send_at,
             strftime('%H:%M', send_at) AS send_at
         FROM msg
         WHERE id IN (
@@ -66,25 +70,37 @@ async function getFriendsOfUser(userId: string) {
                     ELSE send
                 END
         )
+        ORDER BY send_at DESC
     `).all(userId, userId, ...friendIds, userId, ...friendIds, userId);
+    
     const messageMap = new Map();
     latestMessages.forEach((m: { friend_id: string | number; }) => {
-    messageMap.set(m.friend_id, m);
+        messageMap.set(m.friend_id, m);
     });
 
-
+    // Map friends and sort by message timestamp
     const result = friends.map((friend: { id: any; }) => {
-    const msg = messageMap.get(friend.id);
-    return {
-      ...friend,  // All friend data (id, username, avatar_url, etc.)
-      msg: msg?.msg || null,
-      send: msg?.send || null,
-      recv: msg?.recv || null,
-      msg_status: msg?.status || null,
-      send_at: msg?.send_at || null
-    };
-  });
-  return result;
+        const msg = messageMap.get(friend.id);
+        return {
+            ...friend,  // All friend data (id, username, avatar_url, etc.)
+            msg: msg?.msg || null,
+            send: msg?.send || null,
+            recv: msg?.recv || null,
+            msg_status: msg?.status || null,
+            send_at: msg?.send_at || null,
+            send_at_formatted: msg?.send_at_formatted || null
+        };
+    });
+
+    // Sort by send_at (most recent first), friends without messages go to the end
+    result.sort((a, b) => {
+        if (!a.send_at && !b.send_at) return 0;
+        if (!a.send_at) return 1;
+        if (!b.send_at) return -1;
+        return new Date(b.send_at).getTime() - new Date(a.send_at).getTime();
+    });
+
+    return result;
 
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -94,7 +110,6 @@ async function getFriendsOfUser(userId: string) {
     throw error;
   }
 }
-
 
 async function getStatusOfTowFriends(userId:string,friendId:string):Promise<object> {
   try {

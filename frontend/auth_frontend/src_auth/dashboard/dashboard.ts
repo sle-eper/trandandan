@@ -11,7 +11,7 @@ export function showDashboard() {
 
   document.body.classList.remove("flex", "items-center", "justify-center", "px-6", "md:px-20");
   // document.body.classList.add("bg-gray-900", "min-h-screen");
-
+  //TODO hadi ba9i dak tol fih mochekil 
   app.innerHTML = `
     <div class="flex flex-col h-screen bg-[#111] text-white">
         

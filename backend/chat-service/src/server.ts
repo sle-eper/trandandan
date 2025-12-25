@@ -1,4 +1,3 @@
-import { get } from "http";
 import {
   getAllMsg,
   changeToRecv,
@@ -21,23 +20,28 @@ server.register(fastifyIO, {
   }
 });
 
- 
-//TODO convert all ids to string
-const onlineUsers = new Map<string, string>(); //TODO handel multiple tab
+const onlineUsers = new Map<string, Set<string>>();
+
 const statusOfTowFriend = new Map<string,object>();//TODO cash on time
 
 server.ready().then(() => {
   const io = (server as any).io;
   io.on("connection", async (socket) => {
     socket.on('con',async (id)=>{
-        socket.data.userId = String(id);
-        onlineUsers.set(String(id), socket.id);;
+        const stringId:string = String(id)
+        socket.data.userId = stringId;
+        if(!onlineUsers.has(stringId))
+        {
+          onlineUsers.set(String(id), new Set());;
+        }
+        onlineUsers.get(stringId).add(socket.id)
     })
     socket.on("send_message", async (data) => {
       try{
           const id = socket.data.userId
           const friendId: string = data.friendId; //
           const msg: string = data.value; //
+          if (!msg || msg.length > 1000) return;
           const roomName = [id, friendId].sort().join("_");
           // if(!statusOfTowFriend.has(roomName))
           // {
@@ -52,14 +56,17 @@ server.ready().then(() => {
             if (status1 === "accepted" && status2 === "accepted")
             {
               const friendSocketId = onlineUsers.get(friendId);
-              console.log("content",onlineUsers)
-              console.log("id",friendId)
-              console.log("target",onlineUsers.get(friendId))
+              // console.log("content",onlineUsers)
+              // console.log("id",friendId)
+              // console.log("target",onlineUsers.get(friendId))
               const msgId:string =  await saveMsg(id, friendId, msg, roomName, "waiting");
               const timeOfMsg:string = await getTimeOfMsg(msgId);
               const UserData = await fetchUserData(friendId); // get data of user from user-management service
               socket.to(roomName).emit("receive_message", msg, msgId ,id,timeOfMsg,UserData);
-              if(friendSocketId)socket.to(friendSocketId).emit("live", id, roomName, msg,timeOfMsg,UserData);
+              for(const ids of friendSocketId)
+              {
+                socket.to(ids).emit("live", id, roomName, msg,timeOfMsg,UserData);
+              }
             }
           }
       }catch(err){
@@ -96,7 +103,7 @@ server.ready().then(() => {
       try{
         const id = socket.data.userId
         const friends = await getFriendsOfUser(id);
-        // console.log(friends)
+        console.log(friends)
         const waitingMsg = await getWaitingMsg(id);
         socket.emit("friends_list", { friends, waitingMsg });
       }catch(err)
@@ -110,7 +117,7 @@ server.ready().then(() => {
         const roomName = [id, friendId].sort().join("_");
         if(!statusOfTowFriend.has(roomName))
         {
-          const status: object = await getStatusOfTowFriends(id,friendId);//TODO id of user and status
+          const status: object = await getStatusOfTowFriends(id,friendId);
           
           statusOfTowFriend.set(roomName,status);
         }
@@ -124,7 +131,10 @@ server.ready().then(() => {
                 allow = true;
           socket.emit("allowMsg", allow);
           const userSocket = onlineUsers.get(id);
-          if (userSocket) io.to(userSocket).emit("blockBtn",status1);
+          for(const ids of userSocket)
+          {
+            io.to(ids).emit("blockBtn",status1);
+          }
         }
       }catch(err)
       {
@@ -158,8 +168,14 @@ server.ready().then(() => {
             statusGlobal = "accepted";
           const userSocket = onlineUsers.get(id);
           const friendSocket = onlineUsers.get(data.friendId);
-          if (userSocket) io.to(userSocket).emit("blockOrAccepted", roomName, statusGlobal);
-          if (friendSocket) io.to(friendSocket).emit("blockOrAccepted", roomName, statusGlobal);
+          for(const ids of userSocket)
+          {
+            io.to(ids).emit("blockOrAccepted", roomName, statusGlobal);
+          }
+          for(const isd of friendSocket)
+          {
+            io.to(isd).emit("blockOrAccepted", roomName, statusGlobal);
+          }
         }
       }catch(err)
       {
@@ -184,9 +200,15 @@ server.ready().then(() => {
     socket.on("disconnect", () => {
       try{
         const id = socket.data.userId;
-        if (id && onlineUsers.get(id) === socket.id)
-          onlineUsers.delete(id);
-      }catch(err)
+        if (id && onlineUsers.has(id))
+        {
+          onlineUsers.get(id)!.delete(socket.id);
+          if (onlineUsers.get(id)!.size === 0) {
+              onlineUsers.delete(id);
+          }
+        }
+      }
+      catch(err)
       {
         console.error('Error in sendMsg:', err);
       }
@@ -197,7 +219,7 @@ server.ready().then(() => {
 async function startServer() {
   await server.listen({ port: 3000, host: '0.0.0.0' });
   
-  console.log("Server running on 0.0.0.0:3000");
+  console.log("chat Server running on 0.0.0.0:3000");
 }
 
 startServer();

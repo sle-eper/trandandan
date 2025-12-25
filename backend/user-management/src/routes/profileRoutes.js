@@ -94,7 +94,7 @@ async function profileRoutes(fastify, options) {
     },
   }, profileController.searchUsers.bind(profileController));
 
-
+    fastify.get('/user/:id', profileController.getById.bind(profileController));
     fastify.get('/User', profileController.getById.bind(profileController));
     fastify.post('/User/changePassword', profileController.changePassword.bind(profileController));
     fastify.get('/getAllUsers', profileController.getAllUsers.bind(profileController));
