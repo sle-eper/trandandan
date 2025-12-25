@@ -4,20 +4,21 @@
     displayName: string;
     bio: string;
     avatarUrl: string;
-    onlineStatus: boolean;
+    onlineStatus: string;
 }
 
 import axios from "axios";
+
 export class User {
     static async fetchUserProfile(): Promise<UserProfile | null> {
 
         try {
-            const response = await axios.get('http://localhost:3001/user/13', {
-                // credentials: 'include',
-                //  withCredentials: true,
+            const response = await axios.get('http://localhost:8080/api/users/User', {
+    
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                withCredentials: true,
             });
             if (response && response.data) {
                 console.log('User profile fetched successfully', response);
@@ -41,20 +42,41 @@ export class User {
             return null;
         }
 
-    static async saveUserProfile(profile: UserProfile): Promise<boolean> {
+    static async saveUserProfile(profile: Partial<UserProfile>): Promise<boolean> {
         try {
-        const response = await axios.put('http://localhost:3001/profile/13/update', profile, {
+        const response = await axios.put('http://localhost:8080/api/users/profile/update', profile, {
            
             headers: {
             'Content-Type': 'application/json',
             }
+            ,withCredentials: true
         });
         return response.status === 200;
-    } catch (error) {
-      console.error('Failed to save profile:', error);
-      return false;
+        } catch (error) {
+        console.error('Failed to save profile:', error);
+        return false;
+        }
     }
-  }
+  static async updateAvatar(formData: FormData): Promise<string | null> {
+        try {
+            const response =  await axios.post('http://localhost:8080/api/users/profile/avatar', formData, {
+            headers: {
+            'Content-Type': 'multipart/form-data',
+            },
+            withCredentials: true
+        });
+        console.log('Avatar upload response:', response);
+        if (response.status === 200 && response.data.avatarUrl) {
+            console.log('Avatar URL:', response.data.avatarUrl);
+            return response.data.avatarUrl; // Return the new avatar URL
+        }
+
+        return null;
+        } catch (error) {
+             console.error('Avatar upload failed:', error);
+        return null;
+        }
+    }
 }
 export default User;
 export type { UserProfile };

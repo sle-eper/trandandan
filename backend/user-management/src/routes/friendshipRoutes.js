@@ -14,10 +14,9 @@ async function friendshipRoutes(fastify, options) {
     schema: {
       body: {
         type: 'object',
-        required: ['friendId', 'userId'],
+        required: ['friendId'],
         properties: {
           friendId: { type: 'integer', minimum: 1 },
-          userId: { type: 'integer', minimum: 1 }
         },
         additionalProperties: false
       }
@@ -30,10 +29,9 @@ async function friendshipRoutes(fastify, options) {
     schema: {
       body: {
         type: 'object',
-        required: ['friendId','userId'],
+        required: ['friendId'],
         properties: {
-          friendId: { type: 'integer', minimum: 1 },
-          userId: { type: 'integer', minimum: 1 }
+          friendId: { type: 'integer', minimum: 1 }
         },
         additionalProperties: false
       }

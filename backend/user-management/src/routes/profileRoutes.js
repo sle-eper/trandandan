@@ -9,37 +9,37 @@ async function profileRoutes(fastify, options) {
   
   fastify.post('/profile/create',
   {
-    schema: {
-      body: {
-        type: 'object',
-        required: ['username', 'email', 'displayName', 'password'],
-        properties: {
-          username: { 
-            type: 'string', 
-            minLength: 3, 
-            maxLength: 50,
-            pattern: '^[a-zA-Z0-9_]+$'
-          },
-          email: { 
-            type: 'string', 
-            format: 'email',
-            maxLength: 100
-          },
-          displayName: { 
-            type: 'string', 
-            minLength: 2, 
-            maxLength: 50
-          },
-          password: { 
-            type: 'string', 
-            minLength: 8,
-            maxLength: 128
-          }
+      schema: {
+    body: {
+      type: 'object',
+      required: ['username', 'email', 'displayName'],
+      properties: {
+        username: {
+          type: 'string',
+          minLength: 3,
+          maxLength: 50,
+          pattern: '^[a-zA-Z0-9_ ]+$'
+        },
+        email: {
+          type: 'string',
+          format: 'email',
+          maxLength: 100
+        },
+        displayName: {
+          type: 'string',
+          minLength: 2,
+          maxLength: 50
+        },
+        password: {
+          type: 'string',
+          minLength: 8,
+          maxLength: 128
         }
       }
     }
   }
-  , profileController.setUser.bind(profileController));
+}
+, profileController.setUser.bind(profileController));
 
   // Protected routes (require authentication)
   fastify.get('/profile', profileController.getMyProfile.bind(profileController));
@@ -56,7 +56,7 @@ async function profileRoutes(fastify, options) {
     },
   }, profileController.getUserProfile.bind(profileController));
 
-  fastify.put('/profile/:id/update', {
+  fastify.put('/profile/update', {
     schema: {
       body: {
         type: 'object',
@@ -95,16 +95,8 @@ async function profileRoutes(fastify, options) {
   }, profileController.searchUsers.bind(profileController));
 
 
-    fastify.get('/user/:id', {
-        schema: {
-            params: {
-                type: 'object',
-                required: ['id'],
-                properties: {
-                    id: { type: 'integer', minimum: 1 }
-                }
-            }
-        }
-    }, profileController.getById.bind(profileController));
+    fastify.get('/User', profileController.getById.bind(profileController));
+    fastify.post('/User/changePassword', profileController.changePassword.bind(profileController));
+    fastify.get('/getAllUsers', profileController.getAllUsers.bind(profileController));
   }
 export default profileRoutes;

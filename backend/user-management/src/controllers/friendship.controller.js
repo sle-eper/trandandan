@@ -22,14 +22,14 @@ class FriendsController {
     async sendRequest(request, reply) {
       try {
       
-        // const userId = request.user.userId;
+        const userId = request.headers['x-user-id'];
         const { friendId } = request.body;
-        const { userId } = request.body;
         if (userId === friendId) {
           return reply.code(400).send({ 
             error: 'Cannot send friend request to yourself' 
           });
         }
+        
         
         const result = await this.friendshipModel.sendRequest(userId, friendId);
         
@@ -44,7 +44,9 @@ class FriendsController {
       try {
        
         // const userId = request.user.userId;
-        const { friendId ,userId} = request.body;
+        const userId = request.headers['x-user-id'];
+        
+        const { friendId } = request.body;
         
         const result = await this.friendshipModel.acceptRequest( userId,friendId);
         

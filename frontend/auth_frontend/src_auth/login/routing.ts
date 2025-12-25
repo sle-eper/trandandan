@@ -1,5 +1,9 @@
 import { showMainUI } from "../../src/ts/script.ts"
+import { ProfileApp } from "../../profile_frontend/src/main.ts";
+import{ ProfileForm } from "../../profile_frontend/src/components/ProfileForm.ts"
 import { spyUi } from "../../src_spy/app.ts"
+import { show2FAPage } from "./2FA.ts"
+import { showHome } from "./home.ts";
 // import { currentUserId }? from "./login.ts"
 export function updateContent(html: string) {
     const content = document.getElementById("dashboard-content");
@@ -17,10 +21,11 @@ export function updateContent(html: string) {
   }, 250); // must match your CSS transition time
 }
 export function loadHome() {
-  updateContent(`
-    <h1 class="text-3xl font-bold">Home</h1>
-    <p class="text-gray-400 mt-2">Welcome to your dashboard.</p>
-  `);
+  // updateContent(`
+  //   <h1 class="text-3xl font-bold">Home</h1>
+  //   <p class="text-gray-400 mt-2">Welcome to your dashboard.</p>
+  // `);
+  showHome();
 }
 
 export function loadChat() {
@@ -28,10 +33,13 @@ export function loadChat() {
 }
 
 export function loadProfile() {
-  updateContent(`
-    <h1 class="text-3xl font-bold">Profile</h1>
-    <p class="text-gray-400 mt-2">Your account settings.</p>
-  `);
+  // updateContent(`
+  //   <h1 class="text-3xl font-bold">Profile</h1>
+  //   <p class="text-gray-400 mt-2">Your account settings.</p>
+  // `);
+  const profileForm = new ProfileForm();
+  profileForm.mount('dashboard-content');
+
 }
 export function loadGame()
 {
@@ -48,6 +56,14 @@ export function loadtournament()
     <h1 class="text-3xl font-bold">tournament</h1>
     <p class="text-gray-400 mt-2">Your account settings.</p>
   `);
+}
+export function load2FA()
+{
+  // updateContent(`
+  //   <h1 class="text-3xl font-bold">2FA</h1>
+  //   <p class="text-gray-400 mt-2">Your account settings.</p>
+  // `);
+  show2FAPage();
 }
 
 

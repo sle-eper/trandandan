@@ -1,5 +1,7 @@
 import { User } from './../User.ts';
 import type { UserProfile } from '../User.ts';
+import axios from 'axios';
+import { ChangePasswordModal } from './ChangePassword.ts';
 
 export class ProfileForm {
     //  private formData: UserProfile;
@@ -7,17 +9,22 @@ export class ProfileForm {
     private userData: UserProfile | null = null;
     private avatarPreview: string = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default';
     private isOnline: boolean = true;
-  
+    private selectedAvatarFile: File | null = null;
 
     private async loadUserData(): Promise<void> {
     try {
    
       this.userData = await User.fetchUserProfile();
-  
+      // console.log('Loaded user data:', `http://localhost:8080/uploads/default.png`, this.userData)
       if (this.userData) {
         this.oldProfileData = JSON.parse(JSON.stringify(this.userData));
         this.avatarPreview = this.userData.avatarUrl || this.avatarPreview;
-        this.isOnline = this.userData.onlineStatus || this.isOnline;
+        if (this.userData.onlineStatus !== 'offline') {
+          this.isOnline = true;
+        } else {
+          this.isOnline = false;
+        }
+        console.log('User profile loaded:', this.userData.avatarUrl);
       } else {
         console.log('No existing profile found, using defaults');
       }
@@ -34,8 +41,7 @@ export class ProfileForm {
         const bio = this.userData?.bio || '';
 
         return ` 
-        <div class="min-h-screen bg-gradient-to-br from-black-900 via-black-800 to-black-900 flex items-center justify-center p-4">
-            <div class="w-full max-w-2xl">
+            <div class="w-full max-w-4xl mx-auto h-full p-6">
             <!-- Header -->
             <div class="text-center mb-8">
                 <h1 class="text-4xl font-bold text-white mb-2 flex items-center justify-center gap-3">
@@ -62,7 +68,7 @@ export class ProfileForm {
                   <div class="relative">
                     <img 
                       id="avatar-img"
-                      src="${this.avatarPreview}" 
+                      src="http://localhost:8080/uploads/${this.userData?.avatarUrl || 'default.png'}" 
                       alt="Avatar" 
                       class="w-32 h-32 rounded-full border-4 border-red-500 shadow-lg shadow-red-500/50 object-cover"
                     />
@@ -213,7 +219,7 @@ export class ProfileForm {
               <!-- Change Password Link -->
               <div class="mt-6 text-center">
                 <button 
-                  id="change-password-btn"
+                  id="change-password-btn"   
                   class="text-sm text-gray-400 hover:text-red-500 transition-colors underline"
                 >
                   Change Password
@@ -227,7 +233,7 @@ export class ProfileForm {
             <p>Profile changes are saved automatically</p>
           </div>
         </div>
-      </div>
+      
     `;
   } 
 
@@ -236,6 +242,14 @@ export class ProfileForm {
     const onlineToggle = document.getElementById('online-toggle') as HTMLInputElement;
     const saveBtn = document.getElementById('save-btn');
     const cancelBtn = document.getElementById('cancel-btn');
+    const changePasswordBtn = document.getElementById('change-password-btn');
+
+    if (changePasswordBtn) {
+      changePasswordBtn.addEventListener('click', () => {
+        const modal = new ChangePasswordModal();
+        modal.show();
+      });
+    }
 
     if (avatarInput) {
       avatarInput.addEventListener('change', this.handleAvatarChange.bind(this));
@@ -250,21 +264,38 @@ export class ProfileForm {
       cancelBtn.addEventListener('click', this.handleCancel.bind(this));
     }
   }
-  private handleAvatarChange(event: Event): void {
+ 
+ private handleAvatarChange(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        this.avatarPreview = reader.result as string;
-        const avatarImg = document.getElementById('avatar-img') as HTMLImageElement;
-        if (avatarImg) {
-          avatarImg.src = this.avatarPreview;
-        }
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Please select a valid image file (JPEG, PNG, GIF, or WebP)');
+      input.value = '';
+      return;
     }
+
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      alert('Image size must be less than 5MB');
+      input.value = '';
+      return;
+    }
+
+    this.selectedAvatarFile = file;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      this.avatarPreview = reader.result as string;
+      const avatarImg = document.getElementById('avatar-img') as HTMLImageElement;
+      if (avatarImg) {
+        avatarImg.src = this.avatarPreview;
+      }
+    };
+    reader.readAsDataURL(file);
   }
 
   private handleStatusToggle(event: Event): void {
@@ -285,7 +316,7 @@ export class ProfileForm {
     }
   }
 
-  private hasChanges(oldData: UserProfile | null, newData: UserProfile): UserProfile | null {
+  private hasChanges(oldData: UserProfile | null, newData: UserProfile): Partial<UserProfile> | null {
     if (!oldData) {
       return newData;
     }
@@ -302,50 +333,108 @@ export class ProfileForm {
   return Object.keys(changed).length > 0 ? changed : null;
   }
 
+  private async uploadAvatar(file: File): Promise<string | null> {
+  try {
+    
+    const formData = new FormData();
+    formData.append('file', file);
+   
+    const response = await User.updateAvatar(formData);
+    
+    if (response) {
+      console.log('Avatar uploaded successfully:', response);
+      return response;
+    }
+    
+    return null;
+    
+  } catch (error: any) {
+    console.error('Avatar upload failed:', error);
+  
+    if (error.response?.status === 413) {
+      alert('File is too large. Please choose a smaller image.');
+    } else if (error.response?.status === 400) {
+      alert(error.response.data?.error || 'Invalid file. Please try again.');
+    } else {
+      alert('Failed to upload avatar. Please try again.');
+    }
+    
+    return null;
+  }
+}
   private async handleSave(): Promise<void> {
     const saveBtn = document.getElementById('save-btn');
     if (saveBtn) {
       saveBtn.textContent = 'Saving...';
       saveBtn.setAttribute('disabled', 'true');
     }
-   
-    const formData: UserProfile = {
+   try {
+    
+      const formData: UserProfile = {
       username: (document.getElementById('username') as HTMLInputElement).value,
       email: (document.getElementById('email') as HTMLInputElement).value,
       displayName: (document.getElementById('displayName') as HTMLInputElement).value,
       bio: (document.getElementById('bio') as HTMLTextAreaElement).value,
       avatarUrl: this.avatarPreview,
-      onlineStatus: this.isOnline
+      onlineStatus: this.isOnline ? 'online' : 'offline'
     };
-    console.log('Form Data to Save:', formData);
-    if(this.hasChanges(this.oldProfileData, formData)){
+   
+     let changedData = this.hasChanges(this.oldProfileData, formData);
+    if (!changedData && !this.selectedAvatarFile) {
+      alert('No changes detected to save.');
+      return;
+    }
 
-      const changedData = this.hasChanges(this.oldProfileData, formData);
-      console.log('Changed Data:', changedData?.avatarUrl);
-      const success = await User.saveUserProfile(changedData || formData);
+    if (this.selectedAvatarFile) {
+      console.log('Uploading new avatar...');
+      const uploadedAvatarPath = await this.uploadAvatar(this.selectedAvatarFile);
+      
+      if (!uploadedAvatarPath) {
+        alert('Failed to upload avatar. Profile not saved.');
+        return;
+      }
+
+      console.log('Avatar uploaded successfully:', uploadedAvatarPath);
+      formData.avatarUrl = uploadedAvatarPath;
+      
+      if (changedData) {
+        changedData.avatarUrl = uploadedAvatarPath;
+      } else {
+        changedData = { avatarUrl: uploadedAvatarPath };
+      }
+    }
+    if (changedData) {
+      console.log('Saving profile with changes:', changedData);
+      const success = await User.saveUserProfile(changedData);
+      
       if (success) {
-        this.userData = formData; // Update local state
+        this.userData = formData;
+        this.oldProfileData = { ...formData };
+        this.selectedAvatarFile = null;
+        this.avatarPreview = formData.avatarUrl || '';
+        
         alert('Profile updated successfully!');
       } else {
         alert('Failed to save profile. Please try again.');
       }
     }
-    else{
-      alert('No changes detected to save.');
-    }
-    // Save the profile
 
-    
-
+  } catch (error) {
+    console.error('Save error:', error);
+    alert('An error occurred while saving. Please try again.');
+  } finally {
+  
     if (saveBtn) {
       saveBtn.textContent = 'Save Changes';
       saveBtn.removeAttribute('disabled');
     }
   }
+  
+   
+  }
 
   private handleCancel(): void {
     if (confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
-      // Re-render with original data
       const container = document.getElementById('app');
       if (container) {
         this.mount('app');

@@ -73,24 +73,57 @@ export const loginTemplate = () => `
 export const signupTemplate = () => `
   <div id="signup-page" class="bg-black/40 backdrop-blur-md rounded-2xl shadow-lg border border-gray-700
     px-8 py-8 md:px-10 md:py-10 w-full max-w-sm md:w-[320px] flex flex-col justify-between mb-10 md:mb-0">
+
     <div>
       <h2 class="text-2xl md:text-3xl font-bold mb-4">Sign Up</h2>
+
       <div class="space-y-4">
-        <input id="signup-username" type="text" placeholder="Username" class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
-        <input id="signup-email" type="email" placeholder="Email" class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
-        <input id="signup-password" type="password" placeholder="Password" class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
-        <input id="signup-confirm" type="password" placeholder="Confirm Password" class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
+        <input id="signup-username" type="text" placeholder="Username"
+          class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
+
+        <input id="signup-email" type="email" placeholder="Email"
+          class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
+
+        <!-- PASSWORD -->
+        <div class="relative">
+          <input id="signup-password" type="password" placeholder="Password"
+            class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249] pr-10" />
+          <span id="toggle-signup-password"
+            class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2
+            cursor-pointer text-gray-400 hover:text-white">
+            visibility
+          </span>
+        </div>
+
+        <!-- CONFIRM PASSWORD -->
+        <div class="relative">
+          <input id="signup-confirm" type="password" placeholder="Confirm Password"
+            class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249] pr-10" />
+          <span id="toggle-signup-confirm"
+            class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2
+            cursor-pointer text-gray-400 hover:text-white">
+            visibility
+          </span>
+        </div>
       </div>
-      <button id="signup-btn" class="w-full bg-red-600 to-[#E64249] text-white py-2 rounded-md mt-6 hover:opacity-90 transition">
+        <div id="signup-error"
+        class="text-red-500 text-sm h-5 opacity-0 transition-opacity duration-300 mt-2">
+      </div>
+
+
+      <button id="signup-btn"
+        class="w-full bg-red-600 text-white py-2 rounded-md mt-6 hover:opacity-90 transition">
         Sign Up
       </button>
     </div>
+
     <p class="text-center text-gray-400 text-sm mt-6">
       Already have an account?
       <span id="signup-login" class="text-[#E64249] cursor-pointer hover:underline">Login</span>
     </p>
   </div>
 `;
+
 
 export const forgotTemplate = () => `
   <div id="forgot-page" class="bg-black/40 backdrop-blur-md rounded-2xl shadow-lg border border-gray-700
@@ -137,6 +170,194 @@ export const ChangePass = () => `
       </p>
     </div>
 `;
+export const verifyTemplate = () => `
+  <div id="verify-page"
+    class="bg-black/40 backdrop-blur-md rounded-2xl shadow-lg border border-gray-700
+    px-8 py-8 md:px-10 md:py-10 w-full max-w-sm mx-auto flex flex-col justify-between">
+
+    <div>
+      <h2 class="text-2xl md:text-3xl font-bold mb-2 text-center">
+        Verify Email
+      </h2>
+
+      <p class="text-gray-400 mb-6 text-sm md:text-base text-center">
+        We sent a 6-digit code to your email
+      </p>
+
+      <!-- CODE INPUTS -->
+      <div class="flex justify-between gap-2 mb-4">
+        ${Array.from({ length: 6 })
+          .map(
+            (_, i) => `
+          <input
+            type="text"
+            inputmode="numeric"
+            maxlength="1"
+            class="verify-input w-10 h-12 text-center text-xl bg-transparent rounded-lg
+            border border-gray-700 focus:border-[#E64249] outline-none"
+          />
+        `
+          )
+          .join("")}
+      </div>
+
+      <!-- ERROR MESSAGE -->
+      <div id="verify-error"
+        class="text-red-500 text-sm h-5 opacity-0 transition-opacity duration-300 mb-2 text-center">
+      </div>
+
+      <button id="verify-btn"
+        class="w-full bg-red-600 text-white py-2 rounded-md mt-4 hover:opacity-90 transition">
+        Verify
+      </button>
+
+      <p class="text-center text-gray-400 text-sm mt-4">
+        Didn’t receive the code?
+        <span class="text-[#E64249] cursor-pointer hover:underline">
+          Resend
+        </span>
+      </p>
+    </div>
+  </div>
+`;
+function statCard(title: string, value: string) {
+  return `
+    <div class="bg-black/40 rounded-xl border border-white/10 p-5">
+      <p class="text-gray-400 text-sm">${title}</p>
+      <p class="text-3xl font-bold mt-2">${value}</p>
+    </div>
+  `;
+}
+
+function matchRow(name: string, score: string, time: string, win: boolean) {
+  return `
+    <div class="flex items-center justify-between p-3 rounded-lg bg-black/30">
+      <div class="flex items-center gap-3">
+        <span class="w-2 h-2 rounded-full ${win ? "bg-green-500" : "bg-red-500"}"></span>
+        <span>${name}</span>
+      </div>
+      <div class="text-right text-sm text-gray-400">
+        <p>${score}</p>
+        <p>${time}</p>
+      </div>
+    </div>
+  `;
+}
+
+function friendRow(name: string, status: string) {
+  return `
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="font-medium">${name}</p>
+        <p class="text-gray-400 text-sm">${status}</p>
+      </div>
+      <button class="text-sm px-3 py-1 rounded-md border border-white/20 hover:bg-white/10">
+        Invite
+      </button>
+    </div>
+  `;
+}
+
+export function homeTemplate(): string {
+  return `
+  <div class="w-full h-full flex flex-col gap-6">
+
+    <!-- HEADER -->
+    <div>
+      <h1 class="text-3xl font-bold">Dashboard</h1>
+      <p class="text-gray-400 mt-1">Welcome back, Champion!</p>
+    </div>
+
+    <!-- STATS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+
+      ${statCard("Total Matches", "142")}
+      ${statCard("Wins", "98")}
+      ${statCard("Win Rate", "69%")}
+      ${statCard("Ranking", "#24")}
+
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 flex-grow">
+
+      <!-- QUICK PLAY -->
+      <div class="bg-black/40 rounded-2xl border border-white/10 p-6 flex flex-col gap-5">
+  <h2 class="text-xl font-semibold">Quick Play</h2>
+
+    <!-- NORMAL PLAY -->
+    <div class="flex flex-col gap-3">
+      <button
+        class="bg-red-600 hover:bg-red-700 py-3 rounded-lg font-semibold transition">
+      Find Match
+      </button>
+
+      <button
+        class="border border-white/20 py-3 rounded-lg hover:bg-white/5 transition">
+       Challenge Friend
+      </button>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="relative my-2">
+      <div class="border-t border-white/10"></div>
+      <span
+        class="absolute left-1/2 -translate-x-1/2 -top-3
+              bg-[#111] px-3 text-xs text-gray-400">
+        Competitive
+      </span>
+    </div>
+
+    <!-- TOURNAMENT BLOCK -->
+    <div
+      class="bg-black/50 border border-[#E63946]/40 rounded-xl p-4
+            hover:border-[#E63946] transition">
+      <h3 class="text-lg font-semibold mb-1 flex items-center gap-2">
+       Tournament Mode
+      </h3>
+
+      <p class="text-sm text-gray-400 mb-3">
+        Enter ranked tournaments and prove your skills against top players.
+      </p>
+
+      <button
+        class="w-full bg-gradient-to-r from-[#E63946] to-[#711F21]
+              hover:opacity-90 py-3 rounded-lg font-semibold transition">
+        Play Tournament
+      </button>
+    </div>
+  </div>
+
+
+
+      <!-- RECENT MATCHES -->
+      <div class="bg-black/40 rounded-2xl border border-white/10 p-6">
+        <h2 class="text-xl font-semibold mb-4">Recent Matches</h2>
+
+        <div class="space-y-3">
+          ${matchRow("Player42", "11 - 7", "2h ago", true)}
+          ${matchRow("PongMaster", "9 - 11", "5h ago", false)}
+          ${matchRow("NeoPlayer", "11 - 3", "1d ago", true)}
+          ${matchRow("SpeedDemon", "11 - 9", "2d ago", true)}
+        </div>
+      </div>
+
+      <!-- FRIENDS -->
+      <div class="bg-black/40 rounded-2xl border border-white/10 p-6">
+        <h2 class="text-xl font-semibold mb-4">Online Friends</h2>
+
+        <div class="space-y-4">
+          ${friendRow("Alex", "Online")}
+          ${friendRow("Jordan", "In-Game")}
+          ${friendRow("Sam", "Online")}
+        </div>
+      </div>
+
+    </div>
+  </div>
+  `;
+}
+
 
 // src/login/templates.ts
 export const images: Record<string, string> = {
@@ -154,8 +375,3 @@ export const sharedImage = (pageId: string) => `
       class="w-[80%] md:w-[500px] object-contain rounded-xl hidden sm:block"/>
   </div>
 `;
-
-/* --- the existing templates follow --- */
-// export const loginTemplate = () => `...`
-// export const signupTemplate = () => `...`
-// export const forgotTemplate = () => `...`

@@ -29,14 +29,6 @@ export function showDashboard() {
                 max-h-[80vh] md:max-h-[87vh] w-full">
 
             <div class="h-full flex flex-col justify-center items-center text-center">
-              <h1 class="text-4xl font-extrabold bg-gradient-to-r from-[#E63946] to-[#711F21]
-                text-transparent bg-clip-text drop-shadow-lg">
-                Welcome!
-              </h1>
-
-              <p class="text-gray-400 mt-3 text-lg max-w-[70%]">
-                Select an option from the sidebar to begin.
-              </p>
             </div>
 
           </div>
