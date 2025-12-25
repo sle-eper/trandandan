@@ -95,8 +95,21 @@ async function profileRoutes(fastify, options) {
   }, profileController.searchUsers.bind(profileController));
 
 
-    fastify.get('/User', profileController.getById.bind(profileController));
-    fastify.post('/User/changePassword', profileController.changePassword.bind(profileController));
-    fastify.get('/getAllUsers', profileController.getAllUsers.bind(profileController));
+    fastify.get('/user/:id', {
+        schema: {
+            params: {
+                type: 'object',
+                required: ['id'],
+                properties: {
+                    id: { type: 'integer', minimum: 1 }
+                }
+            }
+        }
+    }, profileController.getById.bind(profileController));
+  
+
+  fastify.get('/User/two-factor-status', profileController.getTwoFactorStatus.bind(profileController));
+
+  fastify.put('/User/enable-two-factor', profileController.enableTwoFactor.bind(profileController));
   }
 export default profileRoutes;

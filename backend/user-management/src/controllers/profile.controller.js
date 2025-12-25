@@ -297,54 +297,51 @@ class ProfileController {
         return reply.code(500).send({ error: error.message });
       }
     }
+  
 
-    async changePassword(request, reply) {
-      try {
-        const userId = request.headers['x-user-id'];
-        const { currentPassword, newPassword } = request.body;
-        if (!currentPassword || !newPassword) {
-          return reply.code(400).send({ 
-            error: 'Current password and new password are required' 
-       });
+  async getTwoFactorStatus(request, reply) {
+    try {
+      const { username } = request.query; 
+      if (!username) {
+        return reply.code(400).send({ error: 'Username query parameter is missing' });
       }
 
-      if (newPassword.length < 8) {
-        return reply.code(400).send({ 
-          error: 'New password must be at least 8 characters' 
-        });
+      const user = await this.userModel.findByUsername(username);
+      if (!user) {
+        return reply.code(404).send({ error: 'User not found' });
       }
-        const passwordHash = await this.userModel.getPasswordHashById(userId);
+
+      return { 
+        success: true, 
+        twoFactorEnabled: user.two_factor_enabled 
         
-        if (!passwordHash) {
-          return reply.code(404).send({ error: 'User not found' });
-        }
-        
-        const passwordMatch = await bcrypt.compare(currentPassword, passwordHash);
-        
-        if (!passwordMatch) {
-          return reply.code(401).send({ error: 'Current password is incorrect' });
-        }
-        
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-        
-        await this.userModel.updatePassword(userId, hashedPassword);
-        
-        return { success: true, message: 'Password changed successfully' };
-      } catch (error) {
-        console.error('Change password error:', error);
-        return reply.code(500).send({ error: error.message });
-      }
-    }
-    async getAllUsers(request, reply) {
-      try {
-        const users = await this.userModel.getAllUsers();
-        
-        return reply.code(200).send({ success: true, users });
-      } catch (error) {
-        console.error('Get all users error:', error);
-        return reply.code(500).send({ error: error.message });
-      }
+      };
+    } catch (error) {
+      return reply.code(500).send({ error: error.message });
     }
   }
-  
+  async enableTwoFactor(request, reply) {
+    try {
+      const { username } = request.query;
+      const {secret } = request.body; 
+      if (!username || !secret) {
+        return reply.code(400).send({ error: 'Username and secret are required' });
+      }
+
+      const user = await this.userModel.findByUsername(username);
+      if (!user) {
+        return reply.code(404).send({ error: 'User not found' });
+      }
+
+      await this.userModel.setTwoFactorSecret(user.id, secret);
+
+      return { 
+        success: true, 
+        message: 'Two-factor authentication enabled successfully' 
+      };
+    } catch (error) {
+      return reply.code(500).send({ error: error.message });
+    } 
+}
+}
   export default ProfileController;
