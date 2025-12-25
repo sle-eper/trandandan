@@ -4,6 +4,8 @@ import jwt from "jsonwebtoken";
 import axios from "axios";
 import crypto from "crypto";
 import QRCode from "qrcode";
+import nodemailer from "nodemailer";
+import speakeasy from "speakeasy";
 
 
 // #########################################################
@@ -93,45 +95,6 @@ export async function signup_post(request, reply) {
 }
 
 
-// #########################################################
-//                     mail post
-// #########################################################
-export async function mail_post(request, reply) {
-  const verificationCode = request.body;
-
-  console.log("Hashed password:", verificationCode);
-  const response = await axios.post(
-    "http://user-management:3000/profile/create",
-    {
-      username,
-      email,
-      displayName: username,
-      password: hashed,
-    }
-  );
-  // reply
-  if (!process.env.JWT_SECRET) {
-    throw new Error("JWT_SECRET is missing");
-  }
-  // ✅ Generate JWT.
-  const id = response.data.profile.id;
-  const token = jwt.sign({ id, username }, process.env.JWT_SECRET, {
-    expiresIn: "10000h",
-  });
-  // ✅ Send JWT in cookie
-  return reply
-    .setCookie("token", token, {
-      path: "/",
-      httpOnly: true,
-      sameSite: "none",
-      secure: true,
-    })
-    .code(200).send({
-      success: true,
-      message: "Registration successful",
-    });
-
-}
 // #########################################################
 //                     login post
 // #########################################################
@@ -231,8 +194,38 @@ export async function verifyUser_get(request, reply) {
 //                Forget Password Controllers()
 // #########################################################
 
-export async function forgertPassword_post(request, reply) {
-
+export async function forgetPassword_post(request, reply) {
+  const { email } = request.body;
+  console.log("Password reset requested for email:", email);
+  //check if email exists in DB 
+  const row = await axios.get("http://user-management:3000/profile/User", {
+    params: {
+      email,
+    },
+  });
+  console.log("🔍 User fetched from user-management:", row.data);
+  if (!row) {
+    return reply.code(400).send({ success: false, message: "User not found" });
+  }
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: { user: "soumayaaitammi2023@gmail.com", pass: "SoumayaAmmi2023@" },
+  });
+  try {
+    const info = await transporter.sendMail({
+      from: '"My App" <soumayaaitammi2023@gmail.com>',
+      to: email,
+      subject: "soumayyyyyyyyyyyya",
+      text: " aAit Ammi",
+    });
+    await transporter.verify();
+    console.log("SMTP config is valid!");
+    return { message: "Email sent", messageId: info.messageId };
+  } catch (err) {
+    reply.code(500);
+    return { error: "Failed to send email", details: err.message };
+  }
+  //send mail with reset link 
 }
 // #########################################################
 //                Two Factor Controllers()
@@ -259,21 +252,49 @@ export async function twofactor_post(request, reply) {
   const secret = crypto.randomBytes(20).toString("hex");
   console.log("generated secret:", secret);
   //put it in DB 
+  await axios.put("http://user-management:3000/User/two-factor-secret", {
+    username,
+    two_factor_secret: secret,
+  });
   //generate QR code for user to scan 
   const qrImage = await QRCode.toDataURL(secret);
   //send the QR code to frontend 
   return reply.code(200)
     .send({ qrImage })
 
-
 }
 
 
 export async function verify2fa_post(request, reply) {
   //get code from DB 
+  const { code } = request.body;
+  const username = request.headers['x-user'];
+  const row = await axios.get("http://user-management:3000/profile/User", {
+    params: {
+      username,
+    },
+  });
+  console.log("🔍 User fetched from user-management:", row.data);
+  if (!row) {
+    return reply.code(400).send({ success: false, message: "User not found" });
+  }
+  const secret = row.data.two_factor_secret;
+  console.log("Fetched secret from DB:", secret);
   //compare the code with the user input 
+  const isValid = speakeasy.totp.verify({
+    secret: secret,
+    encoding: 'base32',
+    token: code
+  });
+  if (!isValid) {
+    return reply.code(400).send({ success: false, message: "Invalid 2FA code" });
+  }
   //if matched check if enabled or not if not enabled enable it
-
+  if (String(row.data.two_factor_enabled) === "false") {
+    await axios.put("http://user-management:3000/User/enable-two-factor", {
+      username,
+    });
+  }
+  return reply.code(200).send({ success: true, message: "2FA verified successfully" });
   //verify the code sent by user with the secret in DB
-
 }

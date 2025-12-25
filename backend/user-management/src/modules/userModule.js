@@ -140,12 +140,27 @@ class UserModule{
           [searchPattern]
         );
       }
-      
+      // add this methods for 2FA
       async setTwoFactorSecret(userId, secret) {
+        console.log("Setting 2FA secret in DB for userId:", userId);
         await this.db.run(
           `UPDATE users 
            SET two_factor_secret = ? WHERE id = ?`,
           [secret, userId]
+        );
+      }
+      async getTwoFactorSecret(userId) {
+        const row = await this.db.get(
+          `SELECT two_factor_secret FROM users WHERE id = ?`,
+          [userId]
+        );
+        return row ? row.two_factor_secret : null;
+      }
+      async setTwoFactorFlag(userId) {
+        await this.db.run(
+          `UPDATE users 
+           SET two_factor_enabled = 1 WHERE id = ?`,
+          [userId]
         );
       }
 }
