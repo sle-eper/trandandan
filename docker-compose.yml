@@ -50,6 +50,9 @@ services:
   tournament:
     build: ./backend/tournament
     container_name: tournament
+    depends_on :
+      - authentication
+      - user-management
     volumes:
       - ./backend/tournament/data:/tournament/data 
     ports:
@@ -79,7 +82,6 @@ services:
     depends_on:
       - user-management
       - authentication
-  
 
 networks:
   app-network:

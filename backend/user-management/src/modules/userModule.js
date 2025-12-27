@@ -14,13 +14,14 @@ class UserModule{
     }
     async findByUsername(username) {
         return this.db.get(
-            'SELECT id, email, username,avatar_url ,display_name ,password_hash FROM users WHERE username = ?',
+            'SELECT id, email, username,avatar_url ,display_name ,password_hash,two_factor_enabled,two_factor_secret FROM users WHERE username = ?',
             [username]
         );
     }
+
     async findByEmail(email) {
         return this.db.get(
-            'SELECT id, email, username ,display_name ,password_hash FROM users WHERE email = ?',
+            'SELECT id, email, username ,avatar_url ,display_name ,password_hash,two_factor_enabled,two_factor_secret FROM users WHERE email = ?',
             [email]  
         );
     }
@@ -160,12 +161,29 @@ class UserModule{
           [searchPattern]
         );
       }
-    
-    async getAllUsers() {
-        return await this.db.all(
-          'SELECT id, username, display_name, email, online_status FROM users'
+      // add this methods for 2FA
+      async setTwoFactorSecret(userId, secret) {
+        console.log("Setting 2FA secret in DB for userId:", userId);
+        await this.db.run(
+          `UPDATE users 
+           SET two_factor_secret = ? WHERE id = ?`,
+          [secret, userId]
         );
-    }
+      }
+      async getTwoFactorSecret(userId) {
+        const row = await this.db.get(
+          `SELECT two_factor_secret FROM users WHERE id = ?`,
+          [userId]
+        );
+        return row ? row.two_factor_secret : null;
+      }
+      async setTwoFactorFlag(userId) {
+        await this.db.run(
+          `UPDATE users 
+           SET two_factor_enabled = 1 WHERE id = ?`,
+          [userId]
+        );
+      }
 }
 
 export default UserModule ;

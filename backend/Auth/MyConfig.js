@@ -39,3 +39,4 @@ function validatePassword(password, {
 }
 
 export { validatePassword };
+
