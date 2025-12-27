@@ -35,7 +35,7 @@ async function getFriendsOfUser(userId: string) {
     });
     
     const friends = response.data.friends;
-   
+    
     if (friends.length === 0) {
         return [];
     }

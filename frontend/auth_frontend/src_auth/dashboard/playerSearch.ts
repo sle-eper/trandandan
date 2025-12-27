@@ -1,6 +1,7 @@
 
 import axios from "axios";
-import { showPlayerProfile } from "../../profile_frontend/src/components/FriendRequest";
+// import { showPlayerProfile } from "../../profile_frontend/src/components/FriendRequest";
+import { showPlayerProfile } from "../../../profile_frontend/src/components/FriendRequest";
 interface Player {
     id: number;
     name: string;
