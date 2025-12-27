@@ -19,7 +19,7 @@ export function saveMsg(send:string,recv:string,msg:string,room:string,status:st
 {
     const msgData = db.prepare(`INSERT INTO msg(send,recv,msg,room,status) VALUES (?,?,?,?,?)`).run(send,recv,msg,room,status)
     const msgId = String(msgData.lastInsertRowid)
-    console.log(msgId)
+    // console.log(msgId)
     return msgId
 }
 export function getTimeOfMsg(msgId:string):string

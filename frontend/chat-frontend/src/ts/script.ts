@@ -258,7 +258,7 @@ export async function showMainUI() {
     // chatContent.classList.remove("flex-grow");
     const friends = await fetchListOfFriends();
     chatContent.innerHTML = listOfMsg(friends.friends,friends.waitingMsg,myId);
-    if(friends.length < 0)
+    if(friends && friends.friends.length > 0)
       chatContent.innerHTML += DM();
     //     //get all of list friends
     const friendsEvent = document.querySelectorAll(".friend-msg-zone");

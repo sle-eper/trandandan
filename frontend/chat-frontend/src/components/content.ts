@@ -151,7 +151,7 @@ export function profileNav(img:string,userAccount:string,status:string):string{
 
                 <div class="h-10 w-10  bg-cover bg-center rounded-full" 
                     style="
-                        background-image : url('${img}');
+                        background-image : url('http://localhost:8080/uploads/${img}');
                         aspect-ratio: 1/1;
                     ">
                 </div>
