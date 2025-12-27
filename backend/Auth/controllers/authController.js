@@ -261,7 +261,6 @@ export async function twofactor_post(request, reply) {
   //send the QR code to frontend 
   return reply.code(200)
     .send({ qrImage })
-
 }
 
 
