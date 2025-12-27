@@ -110,6 +110,51 @@ class FriendsController {
         return reply.code(500).send({ error: error.message });
       }
     }
+
+  async checkFriendshipStatus(request, reply) {
+  try {
+    const userId = request.headers['x-user-id'];
+    const friendId = request.query.friendId;
+    
+    console.log("Checking friendship status between userId:", userId, "and friendId:", friendId);
+    
+    const result = await this.friendshipModel.getStatusOfTwoFriends(userId, friendId);
+    
+    
+    if (!result) {
+      console.log("No friendship record found");
+      return reply.code(200).send({ areFriends: false });
+    }
+    
+    
+    const areFriends = result.status1.status === 'accepted' && result.status2.status === 'accepted';
+    
+    console.log("areFriends:", areFriends);
+    
+    return reply.code(200).send({ areFriends });
+    
+  } catch (error) {
+    console.error("Error checking friendship status:", error);
+    return reply.code(500).send({ error: error.message });
+  }
+}
+    async checkPendingRequest(request, reply) {
+      try {
+        const userId = request.headers['x-user-id'];
+        const friendId = request.query.friendId;
+        
+        const result = await this.friendshipModel.checkpendingRequest(userId, friendId);
+        if (!result) {
+          return { isPending: false };
+        }
+        console.log("checkPendingRequest result:", result);
+        const isPending = result && result.status === 'pending';
+         console.log("isPending:", isPending);
+        return { isPending };
+      } catch (error) {
+        return reply.code(500).send({ error: error.message });
+      }
+    }
   }
 
   export default FriendsController;

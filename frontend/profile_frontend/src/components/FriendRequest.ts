@@ -1,265 +1,478 @@
 import axios from "axios";
-
-// types.ts
-interface Player {
-  id: number;
-  name: string;
-  email: string;
-  display_name: string;
-  online_status: boolean;
-  avatar?: string;
-  bio?: string;
-  matches_played?: number;
-  wins?: number;
-  losses?: number;
-  ranking?: number;
-  joined_date?: string;
+import { PlayerFriendship} from '../Player.ts';
+import type { Player } from '../Player.ts';
+import { ProfileForm}  from './ProfileForm.ts';
+import  { User } from '../User.ts';
+// Types
+interface FriendshipStatus {
+  isFriend: boolean;
+  isPending: boolean;
+  isCurrentUser: boolean;
 }
 
-// playerProfile.ts
-const showPlayerProfile = (player: Player): void => {
-  const mainContent = document.getElementById('dashboard-content'); 
-  if (!mainContent) return;
+// Player Profile Manager Class
+export class PlayerProfileManager {
+  private currentUserId: number | null = null;
+  private showEditProfileCallback: ProfileForm | null = null;
 
-  const profileHTML = `
-    <div class="w-full max-w-4xl mx-auto h-full p-6">
+  constructor() {
+    this.showEditProfileCallback = new ProfileForm();
+  }
+
+  // Initialize with current user ID
+  async initialize(): Promise<void> {
+    const currentUser = await User.fetchUserProfile();
+    console.log('Current user profile in PlayerProfileManager:', currentUser);
+    if (currentUser) {
+      this.currentUserId = currentUser.id;
+    }
+  }
+
+  
+
+  // Check friendship status
+  private async checkFriendshipStatus(playerId: number): Promise<FriendshipStatus> {
+   
+    if (!this.currentUserId) {
+      console.log('Initializing current user ID for friendship status check...');
+      await this.initialize();
+    }
+
+    if (playerId === this.currentUserId) {
+      return {
+        isFriend: false,
+        isPending: false,
+        isCurrentUser: true
+      };
+    }
+
+    try {
+  
+      const isFriend = await PlayerFriendship.checkFriendshipStatus(playerId);
       
-      <!-- Profile Header -->
-      <div class="bg-[#1a1a1a] rounded-2xl border border-white/10 p-8 mb-6 shadow-xl">
-        <div class="flex items-start gap-8">
-          
-          <!-- Avatar -->
-          <div class="relative flex-shrink-0">
-            <div class="w-32 h-32 rounded-2xl bg-gradient-to-br from-[#FD1D1D] to-[#711F21] 
-                        flex items-center justify-center text-5xl font-bold text-white
-                        shadow-lg">
-              ${player.avatar ? 
-                `<img src="${player.avatar}" alt="${player.display_name}" class="w-full h-full rounded-2xl object-cover"/>` :
-                escapeHtml(player.display_name.charAt(0).toUpperCase())
-              }
-            </div>
-            <div class="absolute -bottom-2 -right-2 w-8 h-8 rounded-full border-4 border-[#1a1a1a]
-                        ${player.online_status ? 'bg-green-500' : 'bg-gray-500'}"></div>
-          </div>
-          
-          <!-- Basic Info -->
-          <div class="flex-1">
-            <h1 class="text-4xl font-bold text-white mb-2">${escapeHtml(player.display_name)}</h1>
-            <p class="text-xl text-white/50 mb-4">@${escapeHtml(player.name)}</p>
-            
-            <div class="flex items-center gap-3 mb-6">
-              <span class="px-4 py-2 rounded-full bg-white/5 text-white/70 border border-white/10 text-sm">
-                ${player.online_status ? '🟢 Online' : '⚫ Offline'}
-              </span>
-              ${player.ranking ? 
-                `<span class="px-4 py-2 rounded-full bg-[#FD1D1D]/20 text-[#FD1D1D] border border-[#FD1D1D]/30 text-sm font-semibold">
-                  #${player.ranking} Rank
-                </span>` : ''
-              }
-            </div>
+      if (isFriend) {
+        return {
+          isFriend: true,
+          isPending: false,
+          isCurrentUser: false
+        };
+      }
 
-            <!-- Action Buttons -->
-            <div class="flex gap-3">
-              <button id="send-friend-request-${player.id}"
-                      class="px-6 py-3 rounded-xl bg-gradient-to-r from-[#FD1D1D] to-[#711F21]
-                             text-white font-semibold
-                             hover:shadow-[0_0_20px_#FD1D1D]
-                             transition-all duration-300 flex items-center gap-2
-                             disabled:opacity-50 disabled:cursor-not-allowed">
-                <span class="material-symbols-outlined">person_add</span>
-                <span>Send Friend Request</span>
-              </button>
+      const isPending = await PlayerFriendship.checkPendingRequest(playerId);
+      
+      return {
+        isFriend: false,
+        isPending,
+        isCurrentUser: false
+      };
+    } catch (error) {
+      console.error('Error checking friendship status:', error);
+      return {
+        isFriend: false,
+        isPending: false,
+        isCurrentUser: false
+      };
+    }
+  }
+
+  // Get action buttons HTML based on friendship status
+  private getActionButtonsHTML(player: Player, status: FriendshipStatus): string {
+    if (status.isCurrentUser) {
+      return `
+        <button id="edit-profile"
+                class="px-6 py-3 rounded-xl bg-gradient-to-r from-[#FD1D1D] to-[#711F21]
+                       text-white font-semibold
+                       hover:shadow-[0_0_20px_#FD1D1D]
+                       transition-all duration-300 flex items-center gap-2">
+          <span class="material-symbols-outlined">edit</span>
+          <span>Edit Profile</span>
+        </button>
+      `;
+    }
+
+    if (status.isFriend) {
+      return `
+        <button id="send-message-${player.id}"
+                class="px-6 py-3 rounded-xl bg-gradient-to-r from-[#FD1D1D] to-[#711F21]
+                       text-white font-semibold
+                       hover:shadow-[0_0_20px_#FD1D1D]
+                       transition-all duration-300 flex items-center gap-2">
+          <span class="material-symbols-outlined">chat</span>
+          <span>Message</span>
+        </button>
+        
+        <button id="unfriend-${player.id}"
+                class="px-6 py-3 rounded-xl bg-white/5 border border-white/10
+                       text-white font-semibold
+                       hover:bg-red-500/20 hover:border-red-500 transition-all duration-300 flex items-center gap-2">
+          <span class="material-symbols-outlined">person_remove</span>
+          <span>Unfriend</span>
+        </button>
+      `;
+    }
+
+    if (status.isPending) {
+      return `
+        <button id="pending-request-${player.id}"
+                class="px-6 py-3 rounded-xl bg-yellow-500/20 border border-yellow-500/50
+                       text-yellow-400 font-semibold
+                       cursor-not-allowed
+                       flex items-center gap-2"
+                disabled>
+          <span class="material-symbols-outlined">schedule</span>
+          <span>Request Pending</span>
+        </button>
+        
+        <button id="cancel-request-${player.id}"
+                class="px-6 py-3 rounded-xl bg-white/5 border border-white/10
+                       text-white font-semibold
+                       hover:bg-red-500/20 hover:border-red-500 transition-all duration-300 flex items-center gap-2">
+          <span class="material-symbols-outlined">close</span>
+          <span>Cancel Request</span>
+        </button>
+      `;
+    }
+
+    // Not friends, no pending request
+    return `
+      <button id="send-friend-request-${player.id}"
+              class="px-6 py-3 rounded-xl bg-gradient-to-r from-[#FD1D1D] to-[#711F21]
+                     text-white font-semibold
+                     hover:shadow-[0_0_20px_#FD1D1D]
+                     transition-all duration-300 flex items-center gap-2
+                     disabled:opacity-50 disabled:cursor-not-allowed">
+        <span class="material-symbols-outlined">person_add</span>
+        <span>Send Friend Request</span>
+      </button>
+      
+      <button id="send-message-${player.id}"
+              class="px-6 py-3 rounded-xl bg-white/5 border border-white/10
+                     text-white font-semibold
+                     hover:bg-white/10 transition-all duration-300 flex items-center gap-2">
+        <span class="material-symbols-outlined">chat</span>
+        <span>Message</span>
+      </button>
+    `;
+  }
+
+  // Main function to show player profile
+  async showPlayerProfile(playerId: number): Promise<void> {
+    const mainContent = document.getElementById('dashboard-content');
+    if (!mainContent) return;
+
+    // Show loading state
+    mainContent.innerHTML = `
+      <div class="flex items-center justify-center h-full">
+        <div class="text-white/50 flex flex-col items-center gap-4">
+          <span class="material-symbols-outlined animate-spin text-5xl">progress_activity</span>
+          <span>Loading profile...</span>
+        </div>
+      </div>
+    `;
+
+    // Initialize current user ID if not set
+    if (!this.currentUserId) {
+      console.log('Initializing current user ID...');
+      await this.initialize();
+    }
+
+    // Fetch player data and friendship status
+    const [player, status] = await Promise.all([
+      this.currentUserId ? 
+      PlayerFriendship.fetchPlayerProfile(this.currentUserId) :
+      PlayerFriendship.fetchPlayerProfile(playerId),
+      this.checkFriendshipStatus(playerId)
+    ]);
+
+    if (!player) {
+      mainContent.innerHTML = `
+        <div class="flex items-center justify-center h-full">
+          <div class="text-white/50">Failed to load profile</div>
+        </div>
+      `;
+      return;
+    }
+
+    // If it's the current user and edit component is provided
+    // if (status.isCurrentUser && this.showEditProfileCallback) {
+    //   console.log('Rendering edit profile component for current user...');
+    //   // this.showEditProfileCallback.render();
+
+    //   return;
+    // }
+
+    const profileHTML = `
+      <div class="w-full max-w-4xl mx-auto h-full p-6">
+        
+        <!-- Profile Header -->
+        <div class="bg-[#1a1a1a] rounded-2xl border border-white/10 p-8 mb-6 shadow-xl">
+          <div class="flex items-start gap-8">
+            
+            <!-- Avatar -->
+            <div class="relative flex-shrink-0">
+              <div class="w-32 h-32 rounded-2xl bg-gradient-to-br from-[#FD1D1D] to-[#711F21] 
+                          flex items-center justify-center text-5xl font-bold text-white
+                          shadow-lg">
+                ${player.avatar ? 
+                  `<img src="http://localhost:8080/avatars/${player.avatar}" alt="${player.display_name}" class="w-full h-full rounded-2xl object-cover"/>` :
+                  this.escapeHtml(player.display_name.charAt(0).toUpperCase())
+                }
+              </div>
+              <div class="absolute -bottom-2 -right-2 w-8 h-8 rounded-full border-4 border-[#1a1a1a]
+                          ${player.online_status ? 'bg-green-500' : 'bg-gray-500'}"></div>
+            </div>
+            
+            <!-- Basic Info -->
+            <div class="flex-1">
+              <h1 class="text-4xl font-bold text-white mb-2">${this.escapeHtml(player.display_name)}</h1>
+              <p class="text-xl text-white/50 mb-4">@${this.escapeHtml(player.name)}</p>
               
-              <button id="send-message-${player.id}"
-                      class="px-6 py-3 rounded-xl bg-white/5 border border-white/10
-                             text-white font-semibold
-                             hover:bg-white/10 transition-all duration-300 flex items-center gap-2">
-                <span class="material-symbols-outlined">chat</span>
-                <span>Message</span>
-              </button>
+              <div class="flex items-center gap-3 mb-6">
+                <span class="px-4 py-2 rounded-full bg-white/5 text-white/70 border border-white/10 text-sm">
+                  ${player.online_status ? '🟢 Online' : '⚫ Offline'}
+                </span>
+                ${player.best_score ? 
+                  `<span class="px-4 py-2 rounded-full bg-[#FD1D1D]/20 text-[#FD1D1D] border border-[#FD1D1D]/30 text-sm font-semibold">
+                    ⭐ ${player.best_score} Best Score
+                  </span>` : ''
+                }
+                ${status.isFriend ? 
+                  `<span class="px-4 py-2 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 text-sm font-semibold flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]">check_circle</span> Friends
+                  </span>` : ''
+                }
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="flex gap-3">
+                ${this.getActionButtonsHTML(player, status)}
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Two Column Layout -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        <!-- Left Column -->
-        <div class="lg:col-span-1 space-y-6">
+        <!-- Two Column Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
-          <!-- About Section -->
-          ${player.bio ? `
-            <div class="bg-[#1a1a1a] rounded-2xl border border-white/10 p-6 shadow-xl">
-              <h3 class="text-sm font-semibold text-white/50 uppercase tracking-wide mb-3 flex items-center gap-2">
-                <span class="material-symbols-outlined text-[18px]">info</span>
-                About
-              </h3>
-              <p class="text-white/80 leading-relaxed">${escapeHtml(player.bio)}</p>
-            </div>
-          ` : ''}
-
-          <!-- Contact Info -->
-          <div class="bg-[#1a1a1a] rounded-2xl border border-white/10 p-6 shadow-xl">
-            <h3 class="text-sm font-semibold text-white/50 uppercase tracking-wide mb-4 flex items-center gap-2">
-              <span class="material-symbols-outlined text-[18px]">contact_mail</span>
-              Contact Info
-            </h3>
-            <div class="space-y-3">
-              <div class="flex items-center gap-3 text-white/70">
-                <span class="material-symbols-outlined text-white/50">mail</span>
-                <span class="text-sm break-all">${escapeHtml(player.email)}</span>
+          <!-- Left Column -->
+          <div class="lg:col-span-1 space-y-6">
+            
+            <!-- About Section -->
+            ${player.bio ? `
+              <div class="bg-[#1a1a1a] rounded-2xl border border-white/10 p-6 shadow-xl">
+                <h3 class="text-sm font-semibold text-white/50 uppercase tracking-wide mb-3 flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[18px]">info</span>
+                  About
+                </h3>
+                <p class="text-white/80 leading-relaxed">${this.escapeHtml(player.bio)}</p>
               </div>
-              ${player.joined_date ? `
-                <div class="flex items-center gap-3 text-white/70">
-                  <span class="material-symbols-outlined text-white/50">calendar_today</span>
-                  <span class="text-sm">Joined ${new Date(player.joined_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
+            ` : ''}
+
+            <!-- Contact Info -->
+            <div class="bg-[#1a1a1a] rounded-2xl border border-white/10 p-6 shadow-xl">
+              <h3 class="text-sm font-semibold text-white/50 uppercase tracking-wide mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">contact_mail</span>
+                Contact Info
+              </h3>
+              <div class="space-y-3">
+                ${status.isFriend || status.isCurrentUser ? `
+                  <div class="flex items-center gap-3 text-white/70">
+                    <span class="material-symbols-outlined text-white/50">mail</span>
+                    <span class="text-sm break-all">${this.escapeHtml(player.email)}</span>
+                  </div>
+                ` : `
+                  <div class="flex items-center gap-3 text-white/50">
+                    <span class="material-symbols-outlined">lock</span>
+                    <span class="text-sm">Email hidden (not friends)</span>
+                  </div>
+                `}
+                ${player.joined_date ? `
+                  <div class="flex items-center gap-3 text-white/70">
+                    <span class="material-symbols-outlined text-white/50">calendar_today</span>
+                    <span class="text-sm">Joined ${new Date(player.joined_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Statistics -->
+            <div class="bg-[#1a1a1a] rounded-2xl border border-white/10 p-6 shadow-xl">
+              <h3 class="text-sm font-semibold text-white/50 uppercase tracking-wide mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">bar_chart</span>
+                Statistics
+              </h3>
+              
+              <div class="grid grid-cols-3 gap-4 mb-6">
+                <div class="bg-white/5 rounded-xl p-6 border border-white/10 text-center">
+                  <div class="text-3xl font-bold text-white mb-2">${player.matches_played || 0}</div>
+                  <div class="text-xs text-white/50 uppercase tracking-wide">Matches</div>
+                </div>
+                <div class="bg-white/5 rounded-xl p-6 border border-white/10 text-center">
+                  <div class="text-3xl font-bold text-green-400 mb-2">${player.wins || 0}</div>
+                  <div class="text-xs text-white/50 uppercase tracking-wide">Wins</div>
+                </div>
+                <div class="bg-white/5 rounded-xl p-6 border border-white/10 text-center">
+                  <div class="text-3xl font-bold text-red-400 mb-2">${player.losses || 0}</div>
+                  <div class="text-xs text-white/50 uppercase tracking-wide">Losses</div>
+                </div>
+              </div>
+              
+              <!-- Win Rate -->
+              ${player.wins !== undefined && player.losses !== undefined && (player.wins + player.losses) > 0 ? `
+                <div class="bg-white/5 rounded-xl p-6 border border-white/10">
+                  <div class="flex items-center justify-between mb-3">
+                    <span class="text-sm text-white/70">Win Rate</span>
+                    <span class="text-lg font-semibold text-white">
+                      ${Math.round((player.wins / (player.wins + player.losses)) * 100)}%
+                    </span>
+                  </div>
+                  <div class="w-full bg-white/10 rounded-full h-3 overflow-hidden">
+                    <div class="bg-gradient-to-r from-green-500 to-green-400 h-full rounded-full transition-all duration-500"
+                         style="width: ${(player.wins / (player.wins + player.losses)) * 100}%"></div>
+                  </div>
                 </div>
               ` : ''}
             </div>
           </div>
         </div>
-
-        <!-- Right Column -->
-        <div class="lg:col-span-2 space-y-6">
-          
-          <!-- Statistics -->
-          <div class="bg-[#1a1a1a] rounded-2xl border border-white/10 p-6 shadow-xl">
-            <h3 class="text-sm font-semibold text-white/50 uppercase tracking-wide mb-4 flex items-center gap-2">
-              <span class="material-symbols-outlined text-[18px]">bar_chart</span>
-              Statistics
-            </h3>
-            
-            <div class="grid grid-cols-3 gap-4 mb-6">
-              <div class="bg-white/5 rounded-xl p-6 border border-white/10 text-center">
-                <div class="text-3xl font-bold text-white mb-2">${player.matches_played || 0}</div>
-                <div class="text-xs text-white/50 uppercase tracking-wide">Matches</div>
-              </div>
-              <div class="bg-white/5 rounded-xl p-6 border border-white/10 text-center">
-                <div class="text-3xl font-bold text-green-400 mb-2">${player.wins || 0}</div>
-                <div class="text-xs text-white/50 uppercase tracking-wide">Wins</div>
-              </div>
-              <div class="bg-white/5 rounded-xl p-6 border border-white/10 text-center">
-                <div class="text-3xl font-bold text-red-400 mb-2">${player.losses || 0}</div>
-                <div class="text-xs text-white/50 uppercase tracking-wide">Losses</div>
-              </div>
-            </div>
-            
-            <!-- Win Rate -->
-            ${player.wins !== undefined && player.losses !== undefined && (player.wins + player.losses) > 0 ? `
-              <div class="bg-white/5 rounded-xl p-6 border border-white/10">
-                <div class="flex items-center justify-between mb-3">
-                  <span class="text-sm text-white/70">Win Rate</span>
-                  <span class="text-lg font-semibold text-white">
-                    ${Math.round((player.wins / (player.wins + player.losses)) * 100)}%
-                  </span>
-                </div>
-                <div class="w-full bg-white/10 rounded-full h-3 overflow-hidden">
-                  <div class="bg-gradient-to-r from-green-500 to-green-400 h-full rounded-full transition-all duration-500"
-                       style="width: ${(player.wins / (player.wins + player.losses)) * 100}%"></div>
-                </div>
-              </div>
-            ` : ''}
-          </div>
-
-          <!-- Recent Matches -->
-          
-            </div>
-          </div>
-        </div>
       </div>
-    </div>
-  `;
+    `;
 
-  mainContent.innerHTML = profileHTML;
+    mainContent.innerHTML = profileHTML;
 
-  
-  const friendRequestBtn = document.getElementById(`send-friend-request-${player.id}`) as HTMLButtonElement;
-  const messageBtn = document.getElementById(`send-message-${player.id}`);
-  const viewMatchesBtn = document.getElementById(`view-all-matches-${player.id}`);
+    // Add event listeners based on status
+    this.attachEventListeners(player, status);
+  }
 
-  
-  friendRequestBtn?.addEventListener('click', async () => {
+  // Attach event listeners
+  private attachEventListeners(player: Player, status: FriendshipStatus): void {
+    if (status.isCurrentUser) {
+
+      const editBtn = document.getElementById('edit-profile');
+      editBtn?.addEventListener('click', () => {
+        if (this.showEditProfileCallback) this.showEditProfileCallback.render();
+      });
+    } else if (status.isFriend) {
+      const messageBtn = document.getElementById(`send-message-${player.id}`);
+      const unfriendBtn = document.getElementById(`unfriend-${player.id}`);
+
+      messageBtn?.addEventListener('click', () => {
+        console.log('Send message to player:', player.id);
+        // Add messaging logic
+      });
+
+      unfriendBtn?.addEventListener('click', async () => {
+        if (confirm(`Are you sure you want to unfriend ${player.display_name}?`)) {
+          await this.unfriendUser(player.id);
+          // Refresh the profile
+          this.showPlayerProfile(player.id);
+        }
+      });
+    } else if (status.isPending) {
+      const cancelBtn = document.getElementById(`cancel-request-${player.id}`);
+
+      cancelBtn?.addEventListener('click', async () => {
+        await this.cancelFriendRequest(player.id);
+        // Refresh the profile
+        this.showPlayerProfile(player.id);
+      });
+    } else {
+      const friendRequestBtn = document.getElementById(`send-friend-request-${player.id}`) as HTMLButtonElement;
+      const messageBtn = document.getElementById(`send-message-${player.id}`);
+
+      friendRequestBtn?.addEventListener('click', async () => {
+        try {
+          friendRequestBtn.disabled = true;
+          friendRequestBtn.innerHTML = `
+            <span class="material-symbols-outlined animate-spin">progress_activity</span>
+            <span>Sending...</span>
+          `;
+          
+          await this.sendFriendRequest(player.id);
+          
+          // Refresh the profile to show pending state
+          this.showPlayerProfile(player.id);
+        } catch (error) {
+          console.error('Error sending friend request:', error);
+          friendRequestBtn.disabled = false;
+          friendRequestBtn.innerHTML = `
+            <span class="material-symbols-outlined">person_add</span>
+            <span>Send Friend Request</span>
+          `;
+        }
+      });
+
+      messageBtn?.addEventListener('click', () => {
+        console.log('Send message to player:', player.id);
+      });
+    }
+  }
+
+  // API Methods
+  private async sendFriendRequest(receiverId: number): Promise<void> {
     try {
-      friendRequestBtn.disabled = true;
-      friendRequestBtn.innerHTML = `
-        <span class="material-symbols-outlined animate-spin">progress_activity</span>
-        <span>Sending...</span>
-      `;
+      const response = await axios.post('http://localhost:8080/api/users/friends/request', {
+        friendId: receiverId,
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        withCredentials: true,
+      });
       
-      await sendFriendRequest(player.id);
+      if (!response.status || response.status !== 201) {
+        throw new Error('Failed to send friend request');
+      }
       
-      friendRequestBtn.innerHTML = `
-        <span class="material-symbols-outlined">check_circle</span>
-        <span>Request Sent!</span>
-      `;
-      friendRequestBtn.classList.remove('from-[#FD1D1D]', 'to-[#711F21]');
-      friendRequestBtn.classList.add('bg-green-500');
-      
+      console.log('Friend request sent:', response.data);
     } catch (error) {
       console.error('Error sending friend request:', error);
-      friendRequestBtn.disabled = false;
-    //   friendRequestBtn.innerHTML = `
-    //     <span class="material-symbols-outlined"> </span>
-    //     <span>Failed - Try Again</span>
-    //   `;
-    //   friendRequestBtn.classList.add('bg-red-500');
-      
-      setTimeout(() => {
-        friendRequestBtn.innerHTML = `
-          <span class="material-symbols-outlined">person_add</span>
-          <span>Send Friend Request</span>
-        `;
-        friendRequestBtn.classList.remove('bg-red-500');
-        friendRequestBtn.classList.add('from-[#FD1D1D]', 'to-[#711F21]');
-      }, 1000);
+      throw error;
     }
-  });
-
-  // Send message
-  messageBtn?.addEventListener('click', () => {
-    console.log('Send message to player:', player.id);
-   
-  });
-
-  // View all matches
-  viewMatchesBtn?.addEventListener('click', () => {
-    console.log('View all matches for player:', player.id);
-   
-  });
-};
-
-
-const sendFriendRequest = async (receiverId: number): Promise<void> => {
-  try {
-    const response = await axios.post('http://localhost:8080/api/users/friends/request', {
-      friendId: receiverId,
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-        withCredentials: true,
-    });
-        
-    
-    if (!response.status || response.status !== 201) {
-      throw new Error('Failed to send friend request');
-    }
-    
-    const data = response.data;
-    console.log('Friend request sent:', data);
-  } catch (error) {
-    console.error('Error sending friend request:', error);
-    throw error;
   }
-};
 
-const escapeHtml = (text: string): string => {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-};
+  private async cancelFriendRequest(receiverId: number): Promise<void> {
+    try {
+      const response = await axios.delete(`http://localhost:8080/api/users/friends/request/${receiverId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        withCredentials: true,
+      });
+      
+      console.log('Friend request cancelled:', response.data);
+    } catch (error) {
+      console.error('Error cancelling friend request:', error);
+      throw error;
+    }
+  }
 
+  private async unfriendUser(friendId: number): Promise<void> {
+    try {
+      const response = await axios.delete(`http://localhost:8080/api/users/friends/${friendId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        withCredentials: true,
+      });
+      
+      console.log('Unfriended user:', response.data);
+    } catch (error) {
+      console.error('Error unfriending user:', error);
+      throw error;
+    }
+  }
 
-export { showPlayerProfile, sendFriendRequest };
-export type { Player };
+  private escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+}
+
+// Export for easy usage
+export { FriendshipStatus };

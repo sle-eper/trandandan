@@ -1,6 +1,6 @@
 
 import axios from "axios";
-import { showPlayerProfile } from "../../profile_frontend/src/components/FriendRequest";
+import { PlayerProfileManager } from "../../profile_frontend/src/components/FriendRequest";
 interface Player {
     id: number;
     name: string;
@@ -44,6 +44,7 @@ class PlayerSearch {
   private searchInput: HTMLInputElement;
   private searchResults: HTMLDivElement;
   private players: Player[] = [];
+  private profileManager: PlayerProfileManager;
 
   constructor(searchInput: HTMLInputElement, searchResults: HTMLDivElement) {
     this.searchInput = searchInput;
@@ -51,7 +52,7 @@ class PlayerSearch {
     
     // Sample player data - replace with your actual data source or API call
     
-
+    this.profileManager = new PlayerProfileManager();
     this.initializeEventListeners();
   }
 
@@ -146,12 +147,13 @@ class PlayerSearch {
     this.searchResults.classList.add('hidden');
   }
 
-  private selectPlayer(playerId: number): void {
+  private async selectPlayer(playerId: number): Promise<void> {
     console.log('Selected player:', playerId);
   const selectedPlayer = this.players.find(p => p.id === playerId);
   
   if (selectedPlayer) {
-    showPlayerProfile(selectedPlayer);
+    console.log('Selected player details:', selectedPlayer);
+    await this.profileManager.showPlayerProfile(selectedPlayer.id);
   }
   
   this.searchResults.classList.add('hidden');

@@ -12,11 +12,25 @@ class ProfileController {
       this.statsModel = new UserStats(database);
     }
 
+    async getUser(request, reply) { 
+      try {
+        const id = request.params.id;
+        const user = await this.userModel.findById(id);
+        console.log('Fetched user by ID:', user , 'for ID:', id);
+        if (!user) {
+          return reply.code(404).send({ error: 'User not found' });
+        }
+        
+        return { success: true, user };
+      } catch (error) {
+        return reply.code(500).send({ error: error.message });
+      }
+    }
+
     async getById(request, reply) { 
       try {
         // console.log('Getting user by ID from headers:', request.headers);
-        // const id = request.headers['x-user-id'];
-        const id = request.params.id;
+        const id = request.headers['x-user-id'];
         const user = await this.userModel.findById(id);
         console.log('Fetched user by ID:', user , 'for ID:', id);
         if (!user) {
@@ -103,7 +117,10 @@ class ProfileController {
     // GET /profile - Get current user profile(user information and stats) will be used in dashboard
     async getMyProfile(request, reply) {
       try {
-        const userId = request.headers['x-user-id'];
+        // const userId = request.headers['x-user-id'];
+
+        const userId = request.query.id;
+        console.log('Fetching profile for user ID:', userId);
         const profile = await this.userModel.getProfile(userId);
         
         if (!profile) {
@@ -126,18 +143,11 @@ class ProfileController {
           return reply.code(404).send({ error: 'User not found' });
         }
         
-        //Check if they're friends
-        // const areFriends = await this.friendshipModel.areFriends(
-        //   request.user.userId, 
-        //   id
-        // );
-        
         return { success: true, profile };
       } catch (error) {
         return reply.code(500).send({ error: error.message });
       }
     }
-  
 
   // PUT /profile/update - Update profile
   async updateProfile(request, reply) {
