@@ -116,19 +116,15 @@ class Friendship {
       );
       return { status1, status2 };
     } 
+    async checkpendingRequest(userId, friendId) {
+      const request = await this.db.get(
+        `SELECT status FROM friendships 
+         WHERE user_id = ? AND friend_id = ? `,
+        [friendId, userId]
+      );
+      return request;
+    }
 
-
-    // Check if users are friends
-    // async areFriends(userId, friendId) {
-    //   const friendship = await this.db.get(
-    //     `SELECT * FROM friendships 
-    //      WHERE ((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?))
-    //      AND status = 'accepted'`,
-    //     [userId, friendId, friendId, userId]
-    //   );
-      
-    //   return !!friendship;
-    // }
   }
 
 export default Friendship;

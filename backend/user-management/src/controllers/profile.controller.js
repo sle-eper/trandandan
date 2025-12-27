@@ -12,11 +12,25 @@ class ProfileController {
       this.statsModel = new UserStats(database);
     }
 
+    async getUser(request, reply) { 
+      try {
+        const id = request.params.id;
+        const user = await this.userModel.findById(id);
+        console.log('Fetched user by ID:', user , 'for ID:', id);
+        if (!user) {
+          return reply.code(404).send({ error: 'User not found' });
+        }
+        
+        return { success: true, user };
+      } catch (error) {
+        return reply.code(500).send({ error: error.message });
+      }
+    }
+
     async getById(request, reply) { 
       try {
         // console.log('Getting user by ID from headers:', request.headers);
-        // const id = request.headers['x-user-id'];
-        const id = request.params.id;
+        const id = request.headers['x-user-id'];
         const user = await this.userModel.findById(id);
         console.log('Fetched user by ID:', user , 'for ID:', id);
         if (!user) {
@@ -103,7 +117,10 @@ class ProfileController {
     // GET /profile - Get current user profile(user information and stats) will be used in dashboard
     async getMyProfile(request, reply) {
       try {
-        const userId = request.headers['x-user-id'];
+        // const userId = request.headers['x-user-id'];
+
+        const userId = request.query.id;
+        console.log('Fetching profile for user ID:', userId);
         const profile = await this.userModel.getProfile(userId);
         
         if (!profile) {
@@ -126,18 +143,11 @@ class ProfileController {
           return reply.code(404).send({ error: 'User not found' });
         }
         
-        //Check if they're friends
-        // const areFriends = await this.friendshipModel.areFriends(
-        //   request.user.userId, 
-        //   id
-        // );
-        
         return { success: true, profile };
       } catch (error) {
         return reply.code(500).send({ error: error.message });
       }
     }
-  
 
   // PUT /profile/update - Update profile
   async updateProfile(request, reply) {
@@ -189,7 +199,7 @@ class ProfileController {
   try {
     const userId = request.headers['x-user-id'];
     
-  
+    console.log('Starting avatar upload for user ID:', userId);
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
@@ -294,6 +304,55 @@ class ProfileController {
         
         return { success: true, users };
       } catch (error) {
+        return reply.code(500).send({ error: error.message });
+      }
+    }
+  
+  
+  async changePassword(request, reply) {
+      try {
+        const userId = request.headers['x-user-id'];
+        const { currentPassword, newPassword } = request.body;
+        if (!currentPassword || !newPassword) {
+          return reply.code(400).send({ 
+            error: 'Current password and new password are required' 
+       });
+      }
+
+      if (newPassword.length < 8) {
+        return reply.code(400).send({ 
+          error: 'New password must be at least 8 characters' 
+        });
+      }
+        const passwordHash = await this.userModel.getPasswordHashById(userId);
+        
+        if (!passwordHash) {
+          return reply.code(404).send({ error: 'User not found' });
+        }
+        
+        const passwordMatch = await bcrypt.compare(currentPassword, passwordHash);
+        
+        if (!passwordMatch) {
+          return reply.code(401).send({ error: 'Current password is incorrect' });
+        }
+        
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        
+        await this.userModel.updatePassword(userId, hashedPassword);
+        
+        return { success: true, message: 'Password changed successfully' };
+      } catch (error) {
+        console.error('Change password error:', error);
+        return reply.code(500).send({ error: error.message });
+      }
+    }
+    async getAllUsers(request, reply) {
+      try {
+        const users = await this.userModel.getAllUsers();
+        
+        return reply.code(200).send({ success: true, users });
+      } catch (error) {
+        console.error('Get all users error:', error);
         return reply.code(500).send({ error: error.message });
       }
     }

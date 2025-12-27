@@ -55,7 +55,7 @@ class UserModule{
         return await this.db.get(
           `SELECT 
             u.id, u.username, u.display_name, u.email, u.avatar_url, u.bio,
-            u.online_status, u.last_seen, u.created_at,
+            u.online_status, u.created_at,
             s.total_games, s.wins, s.losses, s.win_rate,
             s.tournaments_played, s.tournaments_won, 
             s.best_score, s.ranking
@@ -169,6 +169,12 @@ class UserModule{
           [secret, userId]
         );
       }
+
+      async getAllUsers() {
+        return await this.db.all(
+          'SELECT id, username, display_name, email, online_status FROM users'
+        );
+    }
 }
 
 export default UserModule ;
