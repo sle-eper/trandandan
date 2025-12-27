@@ -73,6 +73,8 @@ async function getFriendsOfUser(userId: string) {
         ORDER BY send_at DESC
     `).all(userId, userId, ...friendIds, userId, ...friendIds, userId);
     
+
+    
     const messageMap = new Map();
     latestMessages.forEach((m: { friend_id: string | number; }) => {
         messageMap.set(m.friend_id, m);
