@@ -177,12 +177,14 @@ export class PlayerProfileManager {
     }
 
     // Fetch player data and friendship status
-    const [player, status] = await Promise.all([
-      this.currentUserId ? 
-      PlayerFriendship.fetchPlayerProfile(this.currentUserId) :
-      PlayerFriendship.fetchPlayerProfile(playerId),
-      this.checkFriendshipStatus(playerId)
-    ]);
+    let player: Player | null = null;
+    const status  = await this.checkFriendshipStatus(playerId)
+    if (status.isCurrentUser) {
+     player  = await PlayerFriendship.fetchPlayerProfile(this.currentUserId!);
+    }
+    else {
+      player = await PlayerFriendship.fetchPlayerProfile(playerId);
+    }
 
     if (!player) {
       mainContent.innerHTML = `
@@ -412,7 +414,7 @@ export class PlayerProfileManager {
     }
   }
 
-  // API Methods
+  
   private async sendFriendRequest(receiverId: number): Promise<void> {
     try {
       const response = await axios.post('http://localhost:8080/api/users/friends/request', {

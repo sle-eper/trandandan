@@ -24,6 +24,7 @@ class FriendsController {
       
         const userId = request.headers['x-user-id'];
         const { friendId } = request.body;
+        console.log("sendRequest called with userId:", userId, "friendId:", friendId);
         if (userId === friendId) {
           return reply.code(400).send({ 
             error: 'Cannot send friend request to yourself' 
