@@ -77,7 +77,8 @@ function  friendCart(friend:any,waitingMsg:object,myId:string):string //done
 
 export function listOfMsg(friends:any,waitingMsg:object,myId:string): string //done
 {
-    if(!friends)
+    console.log(friends);
+    if(!friends || friends.length === 0)
     {
         return `<div class="flex flex-col items-center justify-center h-full text-center gap-4 px-6">
 

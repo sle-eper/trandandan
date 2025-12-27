@@ -1,10 +1,12 @@
-import { io } from "socket.io-client";
-const socket = io("http://localhost:3000"); //TODO hadi ra hebla o khedama
+// import { io } from "socket.io-client";
+// const socket = io("http://localhost:3000");
 // const socket = io("http://localhost:8080/api/chat", {
 //     path: "/socket.io",
 //     withCredentials: true, // Send cookies for auth
 //     transports: ['websocket', 'polling']
 // });
+// import { socket } from "../../src_auth/login/login";
+import { socket } from "../../../auth_frontend/src_auth/login/login";
 
 import {
   lastMsg,
@@ -224,6 +226,7 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
 }
 
 export async function showMainUI() {
+  // console.log(";;;;;;;;;;;;;;;;;;;;;;;");
   const response = await fetch("http://localhost:8080/auth/verify", {
     method: "GET",
     headers: { "Content-Type": "application/json" },
@@ -232,8 +235,9 @@ export async function showMainUI() {
   let myId: string;
   const responseJson = await response.json()
   myId =  responseJson.id
-  socket.emit("con", myId);
+  // socket.emit("con", myId);
   userID = myId;
+  // console.log(userID);
   const chatContent = document.getElementById("dashboard-content");
 
   let sendButton: HTMLButtonElement;
@@ -255,7 +259,7 @@ export async function showMainUI() {
     // chatContent.classList.remove("flex-grow");
     const friends = await fetchListOfFriends();
     chatContent.innerHTML = listOfMsg(friends.friends,friends.waitingMsg,myId);
-    if(friends.friends)
+    if(friends.length < 0)
       chatContent.innerHTML += DM();
     //     //get all of list friends
     const friendsEvent = document.querySelectorAll(".friend-msg-zone");

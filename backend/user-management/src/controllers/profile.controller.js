@@ -199,7 +199,7 @@ class ProfileController {
   try {
     const userId = request.headers['x-user-id'];
     
-  
+    console.log('Starting avatar upload for user ID:', userId);
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
@@ -307,8 +307,9 @@ class ProfileController {
         return reply.code(500).send({ error: error.message });
       }
     }
-
-    async changePassword(request, reply) {
+  
+  
+  async changePassword(request, reply) {
       try {
         const userId = request.headers['x-user-id'];
         const { currentPassword, newPassword } = request.body;
@@ -355,6 +356,51 @@ class ProfileController {
         return reply.code(500).send({ error: error.message });
       }
     }
-  }
   
+
+  async getTwoFactorStatus(request, reply) {
+    try {
+      const { username } = request.query; 
+      if (!username) {
+        return reply.code(400).send({ error: 'Username query parameter is missing' });
+      }
+
+      const user = await this.userModel.findByUsername(username);
+      if (!user) {
+        return reply.code(404).send({ error: 'User not found' });
+      }
+
+      return { 
+        success: true, 
+        twoFactorEnabled: user.two_factor_enabled 
+        
+      };
+    } catch (error) {
+      return reply.code(500).send({ error: error.message });
+    }
+  }
+  async enableTwoFactor(request, reply) {
+    try {
+      const { username } = request.query;
+      const {secret } = request.body; 
+      if (!username || !secret) {
+        return reply.code(400).send({ error: 'Username and secret are required' });
+      }
+
+      const user = await this.userModel.findByUsername(username);
+      if (!user) {
+        return reply.code(404).send({ error: 'User not found' });
+      }
+
+      await this.userModel.setTwoFactorSecret(user.id, secret);
+
+      return { 
+        success: true, 
+        message: 'Two-factor authentication enabled successfully' 
+      };
+    } catch (error) {
+      return reply.code(500).send({ error: error.message });
+    } 
+}
+}
   export default ProfileController;

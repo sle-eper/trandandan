@@ -49,7 +49,8 @@ export async function createTables() {
             CREATE TABLE IF NOT EXISTS tournament (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               name VARCHAR(100) NOT NULL,
-              ownerId INTEGER NOT NULL,
+              status TEXT DEFAULT 'waiting',
+              ownerid INTEGER NOT NULL ,
               maxPlayers INTEGER NOT NULL,
               currentPlayers INTEGER DEFAULT 1,
               created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -65,8 +66,7 @@ export async function createTables() {
             score INTEGER DEFAULT 0,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (tournamentid) REFERENCES tournament(id) ON DELETE CASCADE
-)
+            FOREIGN KEY (tournamentid) REFERENCES tournament(id) ON DELETE CASCADE)
 
           `);
   } catch (error) {

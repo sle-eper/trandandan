@@ -8,7 +8,7 @@ class FriendsController {
     // GET /friends - Get friends list
     async getFriends(request, reply) {
       try {
-  
+        console.log("---------------", request);
         // const userId = request.headers['x-user-id'];
         const userId = request.params.id;
         const friends = await this.friendshipModel.getFriends(userId);
@@ -122,12 +122,12 @@ class FriendsController {
     const result = await this.friendshipModel.getStatusOfTwoFriends(userId, friendId);
     
     
-    if (!result) {
+    if (!result || !result.status1 || !result.status2) {
       console.log("No friendship record found");
       return reply.code(200).send({ areFriends: false });
     }
     
-    
+    console.log("Friendship statuses:", result);
     const areFriends = result.status1.status === 'accepted' && result.status2.status === 'accepted';
     
     console.log("areFriends:", areFriends);

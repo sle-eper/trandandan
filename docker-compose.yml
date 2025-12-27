@@ -39,11 +39,12 @@ services:
     networks:
       - app-network
     volumes:
-      - ./frontend/chat-frontend/src:/app/src
-      - ./frontend/auth_frontend/src_auth:/app/src_auth
+      - ./frontend/chat-frontend/src:/app/chat-frontend/src
+      - ./frontend/auth_frontend/src_auth:/app/auth_frontend/src_auth
       - ./frontend/profile_frontend/src:/app/profile_frontend/src
-      - ./frontend/spy_frontend/src_spy:/app/src_spy
+      - ./frontend/spy_frontend/src_spy:/app/spy_frontend/src_spy
       - /app/node_modules
+
     depends_on:
       - user-management
       - authentication
@@ -61,6 +62,9 @@ services:
   tournament:
     build: ./backend/tournament
     container_name: tournament
+    depends_on :
+      - authentication
+      - user-management
     volumes:
       - ./backend/tournament/data:/tournament/data 
     ports:
@@ -90,7 +94,6 @@ services:
     depends_on:
       - user-management
       - authentication
-  
 
 networks:
   app-network:

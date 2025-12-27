@@ -14,13 +14,14 @@ class UserModule{
     }
     async findByUsername(username) {
         return this.db.get(
-            'SELECT id, email, username,avatar_url ,display_name ,password_hash FROM users WHERE username = ?',
+            'SELECT id, email, username,avatar_url ,display_name ,password_hash,two_factor_enabled,two_factor_secret FROM users WHERE username = ?',
             [username]
         );
     }
+
     async findByEmail(email) {
         return this.db.get(
-            'SELECT id, email, username ,display_name ,password_hash FROM users WHERE email = ?',
+            'SELECT id, email, username ,avatar_url ,display_name ,password_hash,two_factor_enabled,two_factor_secret FROM users WHERE email = ?',
             [email]  
         );
     }
@@ -160,8 +161,16 @@ class UserModule{
           [searchPattern]
         );
       }
-    
-    async getAllUsers() {
+      
+      async setTwoFactorSecret(userId, secret) {
+        await this.db.run(
+          `UPDATE users 
+           SET two_factor_secret = ? WHERE id = ?`,
+          [secret, userId]
+        );
+      }
+
+      async getAllUsers() {
         return await this.db.all(
           'SELECT id, username, display_name, email, online_status FROM users'
         );

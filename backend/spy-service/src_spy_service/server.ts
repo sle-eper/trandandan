@@ -46,7 +46,7 @@ server.post('/history',async(req,res)=>{
     return res.code(200).send({ message: 'History added successfully' });
   }catch(err)
   {
-    return res.code(500).send({ error: `Server error : ${err}`  });
+    return res.code(500).send({error: `Server error : ${err}`});
   }
 })
 

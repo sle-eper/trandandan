@@ -21,11 +21,13 @@ export function showDashboard() {
         <div class="flex flex-row flex-grow">
           <!-- Sidebar -->
           <div id="sidebar"></div>
+        <div id="dashboard-content"
+          class="flex items-center justify-center p-6 rounded-3xl
+                bg-gradient-to-br from-[#1a1a1d] to-[#0f0f11]
+                shadow-xl border border-[#2c2c2f]
+                mx-6 mt-4 mb-6 overflow-auto
+                max-h-[80vh] md:max-h-[87vh] w-full">
 
-         <div id="dashboard-content"
-          class = "flex items-center justify-center p-6 rounded-3xl bg-gradient-to-br from-[#1a1a1d] to-[#0f0f11]
-                  shadow-xl border border-[#2c2c2f] mx-6 mt-4 mb-6 overflow-y-auto h-[78vh] w-full">
-  
             <div class="h-full flex flex-col justify-center items-center text-center">
             </div>
 

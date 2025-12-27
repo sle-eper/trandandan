@@ -1,5 +1,5 @@
  interface UserProfile  {
-    id : number;
+    id?: number;
     username: string;
     email: string;
     displayName: string;

@@ -216,7 +216,7 @@ export class PlayerProfileManager {
                           flex items-center justify-center text-5xl font-bold text-white
                           shadow-lg">
                 ${player.avatar ? 
-                  `<img src="http://localhost:8080/avatars/${player.avatar}" alt="${player.display_name}" class="w-full h-full rounded-2xl object-cover"/>` :
+                  `<img src="http://localhost:8080/uploads/${player.avatar}" alt="${player.display_name}" class="w-full h-full rounded-2xl object-cover"/>` :
                   this.escapeHtml(player.display_name.charAt(0).toUpperCase())
                 }
               </div>
@@ -477,4 +477,3 @@ export class PlayerProfileManager {
 }
 
 // Export for easy usage
-export { FriendshipStatus };

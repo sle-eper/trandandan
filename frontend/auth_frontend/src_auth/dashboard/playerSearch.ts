@@ -1,6 +1,6 @@
 
 import axios from "axios";
-import { PlayerProfileManager } from "../../profile_frontend/src/components/FriendRequest";
+import { PlayerProfileManager } from "../../../profile_frontend/src/components/FriendRequest";
 interface Player {
     id: number;
     name: string;
@@ -18,7 +18,7 @@ async function fetchAllUsers(): Promise<Player[]| undefined> {
       withCredentials: true,
     });
     const usersData = response.data.users;
-   
+   console.log('Fetched users data:', usersData);
     const players: Player[] = [];
     
     
