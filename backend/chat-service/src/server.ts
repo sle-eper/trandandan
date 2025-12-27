@@ -40,7 +40,8 @@ server.ready().then(() => {
           onlineUsers.set(String(id), new Set());;
         }
         onlineUsers.get(stringId)?.add(socket.id)
-        // console.log(id ,"is connected");
+        console.log(id ,"is connected");
+        console.log(onlineUsers.size ,"size of online");
     })
     socket.on("send_message", async (data) => {
       try{
@@ -115,10 +116,13 @@ server.ready().then(() => {
     });
     socket.on("get_friends", async() => {
       try{
+        console.log("im her1");
         const id = socket.data.userId
+        console.log(id);
         if (!id) return;
+        console.log("im her2");
         const friends = await getFriendsOfUser(id);
-        // console.log(friends)
+        console.log(friends)
         const waitingMsg = await getWaitingMsg(id);
         socket.emit("friends_list", { friends, waitingMsg });
       }catch(err)

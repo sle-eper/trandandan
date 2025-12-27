@@ -83,21 +83,21 @@ function setupPopupEvents() {
   });
 
   if (sendButton) {
-    function showToast(message: string, duration = 3000) {
-      const toast = document.getElementById("toast");
-      if (!toast) return;
+    // function showToast(message: string, duration = 3000) {
+    //   const toast = document.getElementById("toast");
+    //   if (!toast) return;
 
-      toast.textContent = message;
-      toast.classList.remove("hidden");
-      toast.classList.add("show");
+    //   toast.textContent = message;
+    //   toast.classList.remove("hidden");
+    //   toast.classList.add("show");
 
-      setTimeout(() => {
-        toast.classList.remove("show");
-        setTimeout(() => {
-          toast.classList.add("hidden");
-        }, 300);
-      }, duration);
-    }
+    //   setTimeout(() => {
+    //     toast.classList.remove("show");
+    //     setTimeout(() => {
+    //       toast.classList.add("hidden");
+    //     }, 300);
+    //   }, duration);
+    // }
 
     function send_message() {
       const value: string = textarea.value;
@@ -105,7 +105,7 @@ function setupPopupEvents() {
         if(value.length > 1000)//TODO handel 100
         {
           // textarea.value = ''
-          showToast("bezzzzzzf")
+          // showToast("bezzzzzzf")
           return
         }
 
@@ -226,7 +226,6 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
 }
 
 export async function showMainUI() {
-  // console.log(";;;;;;;;;;;;;;;;;;;;;;;");
   const response = await fetch("http://localhost:8080/auth/verify", {
     method: "GET",
     headers: { "Content-Type": "application/json" },
@@ -235,7 +234,7 @@ export async function showMainUI() {
   let myId: string;
   const responseJson = await response.json()
   myId =  responseJson.id
-  // socket.emit("con", myId);
+  socket.emit("con", myId);
   userID = myId;
   // console.log(userID);
   const chatContent = document.getElementById("dashboard-content");

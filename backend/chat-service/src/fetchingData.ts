@@ -25,6 +25,7 @@ async function fetchUserData(userId: string) {
 }
 
 async function getFriendsOfUser(userId: string) {
+  console.log("sss");
   try {
     const response = await axios.get(`${USER_MANAGEMENT_SERVICE_URL}/${userId}/friends`, {
       headers: {
