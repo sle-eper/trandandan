@@ -223,10 +223,12 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
     myImg = img;
   });
   socket.on("request_to_play", (from,friendId) => {
+      const notification = document.getElementById("notification-menu");
       const container = document.getElementById("play-notification-container");
       if (!container) return;
 
       if (document.getElementById("play-notification")) return;
+      container.innerHTML = "";
 
       const notif = document.createElement("div");
       notif.id = "play-notification";
@@ -267,12 +269,26 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
         notif.remove();
       };
 
+    const msgNotif = document.createElement("div");
+    msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
+                  transition rounded-lg`
+    msgNotif.innerHTML = `
+      <span class="block max-w-70 truncate">
+        🎮 <strong>${from}</strong> wants to play
+      </span>
+    `;
+    notification?.prepend(msgNotif);
+
+
       setTimeout(() => {
         notif.remove();
       }, 10000);
-    });
+  });
   socket.on("not_agree", (from ) => {
     const container = document.getElementById("play-notification-container");
+    const notification = document.getElementById("notification-menu");
+
+    
     if (!container) return;
 
     container.innerHTML = "";
@@ -294,11 +310,78 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
     `;
 
     container.appendChild(notif);
+    const challenge  = document.getElementById(
+      "challenge-option"
+    )
+    const textEl = challenge?.querySelector("p");
+    const iconEl = challenge?.querySelector("span");
+    // const originalText = textEl?.textContent;
+    challenge?.classList.remove(
+      "opacity-50",
+      "cursor-not-allowed",
+      "pointer-events-none"
+    );
+
+
+    clearInterval(challenge.dataset.intervalId);
+    textEl.textContent = 'Challenge';
+    iconEl?.classList.remove("opacity-0");
+
+    const msgNotif = document.createElement("div");
+    msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
+                  transition rounded-lg`
+    msgNotif.innerHTML = `
+      <span class="block max-w-70 truncate">
+        ❌ <strong>${from}</strong> rejected your play request
+      </span>
+    `;
+    notification?.prepend(msgNotif);
 
     setTimeout(() => {
       notif.remove();
-    }, 10000);
+    }, 3000);
   });
+  socket.on('msg_notification',(from , msg)=>{
+    const container = document.getElementById("play-notification-container");
+    const notification = document.getElementById("notification-menu");
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    const notif = document.createElement("div");
+    notif.className = `
+      flex items-center justify-between gap-3
+      w-full px-4 py-2 rounded-2xl
+      bg-[#1a1a1a]/90 border border-[#FD1D1D]/40
+      shadow-lg backdrop-blur-lg
+      animate-slide-in
+    `;
+
+
+    notif.innerHTML = `
+      <span class="text-sm truncate">
+        💬 <strong>${from}</strong>: ${msg}
+      </span>
+    `;
+    container.appendChild(notif);
+    setTimeout(() => {
+      notif.remove();
+    }, 5000);
+    const msgNotif = document.createElement("div");
+    msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
+                  transition rounded-lg`
+    msgNotif.innerHTML = `
+      <span class="block max-w-70 truncate">
+        💬 <strong>${from}</strong>: ${msg}
+      </span>
+    `;
+    notification?.prepend(msgNotif);
+    
+
+
+    // console.log(from,msg);
+
+  })
 
 
 }
@@ -505,12 +588,48 @@ export async function showMainUI() {
                 unblockOption.classList.add("hidden");
             });
 
-            if(challenge)
+            
+          if (challenge) {
+            const textEl = challenge.querySelector("p");
+            const iconEl = challenge.querySelector("span");
+            if(!challenge.dataset.click)
             {
-              challenge.addEventListener('click',()=>{
-                socket.emit('challenge',friendId);
-              })
+              challenge.addEventListener("click", () => {
+                challenge.classList.add(
+                  "opacity-50",
+                  "cursor-not-allowed",
+                  "pointer-events-none"
+                );
+  
+                let remaining = 10;
+                const originalText = textEl?.textContent;
+  
+                textEl.textContent = `Waiting ${remaining}s`;
+                iconEl.classList.add("opacity-0");
+  
+                socket.emit("challenge", friendId);
+  
+                challenge.dataset.intervalId = setInterval(() => {
+                  remaining--;
+                  textEl.textContent = `Waiting ${remaining}s`;
+  
+                  if (remaining <= 0) {
+                    clearInterval(challenge.dataset.intervalId);
+  
+                    challenge.classList.remove(
+                      "opacity-50",
+                      "cursor-not-allowed",
+                      "pointer-events-none"
+                    );
+  
+                    textEl.textContent = originalText;
+                    iconEl.classList.remove("opacity-0");
+                  }
+                }, 1000);
+              });
+              challenge.dataset.click = 'yes';
             }
+          }
 
             // if chose block button show popup of block option
             if (blockButton) {

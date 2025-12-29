@@ -92,7 +92,9 @@ server.ready().then(() => {
               {
                 for(const ids of friendSocketId)
                 {
+                  // msg_notification
                   socket.to(ids).emit("live", id, roomName, msg,timeOfMsg);
+                  socket.to(ids).emit("msg_notification", UserData.user.username,msg);
                 }
               }
             }
