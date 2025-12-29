@@ -67,7 +67,7 @@ function  friendCart(friend:any,waitingMsg:object,myId:string):string //done
                                 class="text-xs sm:text-sm md:text-base text-gray-300">
                                 ${lastMsg(status,friend.msg,friend.id)} 
                             </div>
-                            <span id='time-of-msg-${friend.id}' class="text-[10px] sm:text-xs md:text-sm text-[#888]">${ msgTime(friend.send_at)}</span>
+                            <span id='time-of-msg-${friend.id}' class="text-[10px] sm:text-xs md:text-sm text-[#888]">${ msgTime(friend.display_time)}</span>
                         </div>
                         </div>
                     </div>
@@ -77,7 +77,7 @@ function  friendCart(friend:any,waitingMsg:object,myId:string):string //done
 
 export function listOfMsg(friends:any,waitingMsg:object,myId:string): string //done
 {
-    console.log(friends);
+    // console.log(friends);
     if(!friends || friends.length === 0)
     {
         return `<div class="flex flex-col items-center justify-center h-full text-center gap-4 px-6">
@@ -161,7 +161,7 @@ export function profileNav(img:string,userAccount:string,status:string):string{
             <span id="more_vert" class="material-symbols-outlined text-[#E63946]  hover:cursor-pointer hover:bg-[#222222]  rounded-xl ">more_vert</span>
 
             <div id="popup-option" class="hidden text-white flex flex-col items-center  w-50 bg-[#181818] absolute right-6 top-12 rounded-xl border border-[#E63946] shadow-[0_0_25px_rgba(0,0,0,0.6)]">
-                <div class="flex items-center justify-center w-[70%] rounded-xl border border-[#E63946] mt-5 mb-2 hover:cursor-pointer">
+                <div id="challenge-option" class="flex items-center justify-center w-[70%] rounded-xl border border-[#E63946] mt-5 mb-2 hover:cursor-pointer">
                     <p>Challenge</p>
                     <span class="material-symbols-outlined">swords</span>
                 </div>
@@ -246,7 +246,7 @@ export function sendMsg(msg:string,time:string,img:string):string{
 export function receivedMsg(msg:string,time:string,img:string):string{
 
     return `<div id="sent-msg" class="flex mt-5 md:w-[30vw] w-[80vw]  justify-start pl-5 ">
-                <img src="${img}" alt="" class="h-10 w-10 rounded-full mt-2 mr-2">
+                <img src='http://localhost:8080/uploads/${img}' alt="" class="h-10 w-10 rounded-full mt-2 mr-2">
                 <div id="content-sent" class="max-w-[80%] flex flex-col">
                     <div  class="border-2 border-[#E63946] rounded-xl p-3  ">
                         <span class="text-[#F5F5F5]  break-all">

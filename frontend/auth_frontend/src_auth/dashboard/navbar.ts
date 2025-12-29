@@ -47,6 +47,11 @@ export function renderNavBar(): string {
         </div>
       </div>
 
+      <!-- Play Notification Container -->
+      <div id="play-notification-container"
+          class="flex items-center mx-4 max-w-md w-full">
+      </div>
+      
       <div class="flex items-center gap-4 relative">
 
         <button id="notification-btn"

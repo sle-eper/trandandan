@@ -351,7 +351,7 @@ export async function spyUi()
                     spays = roleDistribution(players,data.players,data.spays,selected)
                     console.log(spays)
                     player1 = spays[0];
-                    console.log("in paly " , player1)
+                    // console.log("in paly " , player1)
                     // carts kayt9elbo hena 
                     game.innerHTML = `<div id="cards-container"></div>`;
                     const backCard = renderBackCard()
@@ -546,7 +546,7 @@ export async function spyUi()
 
                     if(spaysNumberlit3arfo === spaysNumber)
                     {
-                        console.log("investigators won " , player1)
+                        // console.log("investigators won " , player1)
                         if(!player1.spay === true)
                         {
                             await fetch('http://localhost:3003/history',{
@@ -570,7 +570,7 @@ export async function spyUi()
                         game.innerHTML=findingSpy("The investigators won")
                         return
                     }
-                    else if(spays.length === 2)
+                    else if(spays.length === 2)//TODO handel ila kan spy m9adin m3a players //TODO ila dekhalt l history katkhesr game 
                     {
                         // const win = section.find((s) => {
                         //     return s.id === 1

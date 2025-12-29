@@ -21,6 +21,22 @@ server.register(fastifyIO, {
 });
 
 export const onlineUsers = new Map<string, Set<string>>();
+
+server.get('/online/:id',(req,res)=>{
+  const {id}  = req.params as {id:string}
+  if(onlineUsers.has(id))
+  {
+    res.code(200).send({
+      online: true,
+      socketIds :Array.from(onlineUsers.get(id))
+    });
+  }else
+    res.code(200).send({
+      online: false,
+      socketIds:[]
+    });
+
+})
 const getRoomName = (id1: string, id2: string): string => {
   return [id1, id2].sort().join("_");
 };
@@ -71,12 +87,12 @@ server.ready().then(() => {
               const msgId:string =  await saveMsg(id, friendId, msg, roomName, "waiting");//TODO had lheblat dyal hena khas ytsayebo
               const timeOfMsg:string = await getTimeOfMsg(msgId);
               const UserData = await fetchUserData(friendId); // get data of user from user-management service
-              socket.to(roomName).emit("receive_message", msg, msgId ,id,timeOfMsg,UserData);
+              socket.to(roomName).emit("receive_message", msg, msgId ,id,timeOfMsg,UserData.user.avatar_url);
               if(friendSocketId)
               {
                 for(const ids of friendSocketId)
                 {
-                  socket.to(ids).emit("live", id, roomName, msg,timeOfMsg,UserData);
+                  socket.to(ids).emit("live", id, roomName, msg,timeOfMsg);
                 }
               }
             }
@@ -93,8 +109,8 @@ server.ready().then(() => {
         const offset = data.offset || 0;
         await changeAllToRecv(data.myId,roomName)
         const messages = await getAllMsg(roomName, limit, offset);
-        const UserData = await fetchUserData(data.friendId); 
-        socket.emit('messages_batch', messages.reverse(),UserData?.img);
+        const UserData = await fetchUserData(data.friendId);
+        socket.emit('messages_batch', messages.reverse(),UserData?.user.avatar_url);
       }catch(err)
       {
         console.error('Error in get_messages:', err);
@@ -109,20 +125,20 @@ server.ready().then(() => {
         await changeAllToRecv(data.myId,roomName)
         const messages = await getAllMsg(roomName, limit, offset);
         const UserData = await fetchUserData(data.friendId); 
-        socket.emit('messages_old_batch', messages,UserData?.img);
+        socket.emit('messages_old_batch', messages,UserData?.avatar_url);
       }catch(err){
         console.error('Error in get_old_messages:', err);
       }
     });
     socket.on("get_friends", async() => {
       try{
-        console.log("im her1");
+        // console.log("im her1");
         const id = socket.data.userId
-        console.log(id);
+        // console.log(id);
         if (!id) return;
-        console.log("im her2");
+        // console.log("im her2");
         const friends = await getFriendsOfUser(id);
-        console.log(friends)
+        // console.log(friends)
         const waitingMsg = await getWaitingMsg(id);
         socket.emit("friends_list", { friends, waitingMsg });
       }catch(err)
@@ -234,6 +250,52 @@ server.ready().then(() => {
         console.error('Error in joinToRoom:', err);
       }
     });
+    socket.on('challenge',async(friendId)=>{
+      try{
+        if (!friendId) return;
+        const id = socket.data.userId;
+        if(!id) return;
+        const friendSocket = onlineUsers.get(friendId);
+        // console.log(friendSocket);
+        if(!friendSocket)return;
+        const UserData = await fetchUserData(id); 
+        if(!UserData)
+          return;
+        // console.log(UserData.user.username);
+        // const username;
+        // if(UserData)
+          
+        for(const isd of friendSocket)
+        {
+          io.to(isd).emit("request_to_play",UserData?.user?.username,id);
+        }
+        
+      }catch(err)
+      {
+        console.error('Error in challenge:', err);
+      }
+    })
+    socket.on('accept_play',async(id,friendId)=>{
+      console.log(id,friendId);
+    })
+    socket.on('reject_play',async(id,friendId)=>{
+      try{
+        if(!id || !friendId)return;
+        const Sockets = onlineUsers.get(friendId);
+        if(!Sockets)return;
+        const UserData = await fetchUserData(id); 
+        if(!UserData)return;
+        for(const isd of Sockets)
+        {
+          io.to(isd).emit("not_agree",UserData?.user?.username);
+        }
+
+      }catch(err)
+      {
+        console.error('Error in reject_play:', err);
+      }
+    })
+
     socket.on("disconnect", () => {
       try{
         const id = socket.data.userId;
