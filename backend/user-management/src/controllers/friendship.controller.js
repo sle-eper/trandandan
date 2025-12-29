@@ -24,6 +24,7 @@ class FriendsController {
       
         const userId = request.headers['x-user-id'];
         const { friendId } = request.body;
+        console.log("sendRequest called with userId:", userId, "friendId:", friendId);
         if (userId === friendId) {
           return reply.code(400).send({ 
             error: 'Cannot send friend request to yourself' 
@@ -106,6 +107,51 @@ class FriendsController {
         const result = await this.friendshipModel.getStatusOfTwoFriends(userId, friendId);
         
         return result;
+      } catch (error) {
+        return reply.code(500).send({ error: error.message });
+      }
+    }
+
+  async checkFriendshipStatus(request, reply) {
+  try {
+    const userId = request.headers['x-user-id'];
+    const friendId = request.query.friendId;
+    
+    console.log("Checking friendship status between userId:", userId, "and friendId:", friendId);
+    
+    const result = await this.friendshipModel.getStatusOfTwoFriends(userId, friendId);
+    
+    
+    if (!result || !result.status1 || !result.status2) {
+      console.log("No friendship record found");
+      return reply.code(200).send({ areFriends: false });
+    }
+    
+    console.log("Friendship statuses:", result);
+    const areFriends = result.status1.status === 'accepted' && result.status2.status === 'accepted';
+    
+    console.log("areFriends:", areFriends);
+    
+    return reply.code(200).send({ areFriends });
+    
+  } catch (error) {
+    console.error("Error checking friendship status:", error);
+    return reply.code(500).send({ error: error.message });
+  }
+}
+    async checkPendingRequest(request, reply) {
+      try {
+        const userId = request.headers['x-user-id'];
+        const friendId = request.query.friendId;
+        
+        const result = await this.friendshipModel.checkpendingRequest(userId, friendId);
+        if (!result) {
+          return { isPending: false };
+        }
+        console.log("checkPendingRequest result:", result);
+        const isPending = result && result.status === 'pending';
+         console.log("isPending:", isPending);
+        return { isPending };
       } catch (error) {
         return reply.code(500).send({ error: error.message });
       }

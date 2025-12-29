@@ -66,6 +66,7 @@ function attachSignupHandlers() {
       const result = await signupUser(username, email, password, confirm);
 
       if (result.success) {
+        console.log("-------------------------")
         navigate("/home"); // ✅ go to login on success
       } else {
         showSignupError(result.message || "Signup failed.");

@@ -189,6 +189,7 @@ export async function verifyUser_get(request, reply) {
     console.log(' Token verification failed:', err.message);
     return reply.code(401).send({ error: "Not authorized" });
   }
+  return { accessToken: token };
 }
 
 // #########################################################

@@ -1,7 +1,7 @@
 up:
 	@docker compose -f docker-compose.yml up --build 
 down:
-	@docker compose -f docker-compose.yml down -v
+	@docker compose -f docker-compose.yml down -v --remove-orphans
 restart:
 	@docker compose -f docker-compose.yml restart
 images_ls:

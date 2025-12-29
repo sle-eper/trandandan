@@ -48,12 +48,12 @@ function  friendCart(friend:any,waitingMsg:object,myId:string):string //done
 
         return `<div id='msg-zone' data-id="${friend.id}" class="flex justify-center py-4 px-2 hover:bg-[#222222] transition-colors duration-300 sm:py-4 sm:px-4 md:py-5">
                     <div  class=" friend-msg-zone flex w-[95%] hover:cursor-pointer" data-id="${friend.id}" data-name = "${friend.username}" data-roomname = "${roomName}"  >
-                        <div class=" w-12 h-12 
+                        <div class="border-4 border-green-500  w-12 h-12 
                                 sm:w-14 sm:h-14 
-                                md:w-16 md:h-16"
+                                md:w-16 md:h-16
                                 bg-cover bg-center rounded-full" 
                             style="
-                                background-image : url('${friend.avatar_url}');
+                                background-image : url('http://localhost:8080/uploads/${friend.avatar_url}');
                                 aspect-ratio: 1/1;
                             ">
                         </div>
@@ -77,7 +77,8 @@ function  friendCart(friend:any,waitingMsg:object,myId:string):string //done
 
 export function listOfMsg(friends:any,waitingMsg:object,myId:string): string //done
 {
-    if(!friends)
+    console.log(friends);
+    if(!friends || friends.length === 0)
     {
         return `<div class="flex flex-col items-center justify-center h-full text-center gap-4 px-6">
 
@@ -201,6 +202,8 @@ export function inputMsg(status:string):string //done
                         display: none;
                     }
                 </style>
+
+
                 <div class="h-full border-[#E63946] rounded-xl border-2 flex items-center mt-2">
                     <textarea
                         id="input-msg-zone"
@@ -287,7 +290,7 @@ export function chatZones():string{
 
 export function DM():string{
     return`
-            <div id="DM" class="hidden  h-full w-full flex rounded-2xl p-4 md:flex flex-col bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A] " data-roomname="">
+            <div id="DM" class="hidden  h-full w-full flex  rounded-2xl p-4 md:flex flex-col bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A] " data-roomname="">
             ${choseFriend()}
             </div>`;
 }
