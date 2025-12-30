@@ -365,6 +365,7 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
     `;
     container.appendChild(notif);
     setTimeout(() => {
+      
       notif.remove();
     }, 5000);
     const msgNotif = document.createElement("div");
