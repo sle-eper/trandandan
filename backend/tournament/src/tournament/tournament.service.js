@@ -43,7 +43,7 @@ export async function joinTournament_post(request, reply) {
             .send("Tournament Not Found")
     }
     if (Number(tournament.currentPlayers) >= Number(tournament.maxPlayers)) {
-        reply.code(400)
+        reply.code(409)
             .send("Tournament is full");
     }
     const participants = await db.all(
@@ -100,12 +100,11 @@ export async function leaveTournament_get(request, reply) {
                 [tournament.id]
             );
             const result = await db.get('SELECT * FROM tournament WHERE id  = ?', [tournamentid]);
-            if (Number(result.currentPlayers) === Number(0))
-            {
+            if (Number(result.currentPlayers) === Number(0)) {
                 await db.run(
-                "DELETE FROM tournament WHERE id = ?",
-                [result.id]
-            );
+                    "DELETE FROM tournament WHERE id = ?",
+                    [result.id]
+                );
             }
             return reply.code(200)
                 .send("User Deleted")
@@ -125,15 +124,52 @@ export async function checkTournament_get(request, reply) {
         reply.code(404)
             .send("Tournament Not Found")
     }
-    if (Number(tournament.currentPlayers) === Number(tournament.maxPlayers))
-    {
+    if (Number(tournament.currentPlayers) === Number(tournament.maxPlayers)) {
         await db.run(
-                "UPDATE tournament SET status = ? WHERE id = ?",
-                ["started", tournament.id]
-            );
-            console.log("the tournament will start now")
+            "UPDATE tournament SET status = ? WHERE id = ?",
+            ["started", tournament.id]
+        );
+        console.log("the tournament will start now")
     }
     const res = await db.get('SELECT * FROM tournament WHERE id  = ?', [tournamentid]);
     reply.code(200)
         .send(res)
+}
+
+
+export async function startTournament_post(request, reply) {
+    const ownerid = request.headers['x-user-id'];
+    const { tournamentname } = request.body;
+    const db = await getDatabase();
+
+    const tournament = await db.get('SELECT * FROM tournament WHERE name = ?', [tournamentname]);
+    if (!tournament) {
+        console.log("Tournament Not Found");
+        return reply.code(400).send("Tournament Not Found");
+    }
+    const participants = await db.all(
+        "SELECT * FROM participant WHERE tournamentId = ?",
+        [tournament.id]
+    );
+
+    const userIds = participants.map(p => p.userid);
+
+    try {
+        const res = await fetch("http://chat-service:3000/notify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                userIds,
+                type: "TOURNAMENT_START",
+                data: { tournamentId: tournament.id, tournamentName: tournament.name }
+            })
+        });
+
+        // Important: consume response to avoid hanging
+        const data = await res.text();
+        console.log("Notify response:", data);
+    } catch (err) {
+        console.error("Error notifying chat service:", err);
+    }
+    return reply.code(200).send({ message: "Tournament started" });
 }

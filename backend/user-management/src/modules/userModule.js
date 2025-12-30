@@ -8,7 +8,7 @@ class UserModule{
 
     async findById(id) {
         return this.db.get(
-            'SELECT id, email, username, avatar_url ,display_name,bio FROM users WHERE id = ?',
+            'SELECT id, email, username, avatar_url ,display_name ,bio ,online_status FROM users WHERE id = ?',
             id
         );
     }
@@ -30,6 +30,20 @@ class UserModule{
         return await this.db.get(
           'SELECT * FROM users WHERE display_name = ?',
           [displayName]
+        );
+    }
+    async getPasswordHashById(id) {
+        const row = await this.db.get(
+            'SELECT password_hash FROM users WHERE id = ?',
+            [id]
+        );
+        return row ? row.password_hash : null;
+    }
+
+    async updatePassword(userId, newPasswordHash) {
+        await this.db.run(
+            'UPDATE users SET password_hash = ? WHERE id = ?',
+            [newPasswordHash, userId]
         );
     }
 
@@ -54,18 +68,25 @@ class UserModule{
 
 
     async create(user) {
-        const result = await this.db.run(
-            'INSERT INTO users (email, username, password_hash, display_name) VALUES (?, ?, ?, ?)',
-            [user.email, user.username, user.password, user.display_name || user.username]
-        );
+    const result = await this.db.run(
+        'INSERT INTO users (email, username, password_hash, display_name) VALUES (?, ?, ?, ?)',
+        [
+        user.email,
+        user.username,
+        user.password,   // ✅ FIX
+        user.display_name || user.username
+        ]
+    );
 
-        await this.db.run(
-            'INSERT INTO user_stats (user_id) VALUES (?)',
-            [result.lastID]
-        );
-        return result.lastID;
+    await this.db.run(
+        'INSERT INTO user_stats (user_id) VALUES (?)',
+        [result.lastID]
+    );
+
+    return result.lastID;
     }
-    
+
+
     async updateProfile(userId, updates) {
         const { displayName, bio, avatarUrl,email,username } = updates;
         

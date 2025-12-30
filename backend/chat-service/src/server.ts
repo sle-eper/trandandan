@@ -12,7 +12,7 @@ import { fetchUserData, getStatusOfTowFriends,changeStatusOfFriends,getFriendsOf
 import fastify from "fastify";
 import fastifyIO from "fastify-socket.io";
 
-const server = fastify(/* { logger: true } */);
+const server = fastify({ logger: true });
 server.register(fastifyIO, {
   path: "/socket.io",
   cors: {
@@ -21,6 +21,7 @@ server.register(fastifyIO, {
   }
 });
 
+ 
 //TODO convert all ids to string
 const onlineUsers = new Map<string, string>(); //TODO handel multiple tab
 const statusOfTowFriend = new Map<string,object>();//TODO cash on time
@@ -34,17 +35,17 @@ server.ready().then(() => {
     })
     socket.on("send_message", async (data) => {
       try{
-        // console.log("in msg",data)
           const id = socket.data.userId
           const friendId: string = data.friendId; //
           const msg: string = data.value; //
           const roomName = [id, friendId].sort().join("_");
-          if(!statusOfTowFriend.has(roomName))
-          {
-            const status:object = await getStatusOfTowFriends(id, friendId);
-            statusOfTowFriend.set(roomName,status);
-          }
-          const status:any = statusOfTowFriend.get(roomName);
+          // if(!statusOfTowFriend.has(roomName))
+          // {
+          //   const status:object = await getStatusOfTowFriends(id, friendId);
+          //   console.log(status)
+          //   statusOfTowFriend.set(roomName,status);
+          // }
+          const status:any = await getStatusOfTowFriends(id, friendId);
           if(status){
             const status1: string = status.status1.status; //
             const status2: string = status.status2.status; //
@@ -54,7 +55,6 @@ server.ready().then(() => {
               console.log("content",onlineUsers)
               console.log("id",friendId)
               console.log("target",onlineUsers.get(friendId))
-              // console.log("live",friendSocketId)
               const msgId:string =  await saveMsg(id, friendId, msg, roomName, "waiting");
               const timeOfMsg:string = await getTimeOfMsg(msgId);
               const UserData = await fetchUserData(friendId); // get data of user from user-management service
@@ -192,6 +192,28 @@ server.ready().then(() => {
       }
     });
   })
+});
+// /################################################################################
+//                               Tournament notification
+// /################################################################################
+
+server.post('/notify', async (request, reply) => {
+
+  console.log("Notification received:", request.body);
+  const { userIds, type, data } = request.body as any;
+  const io = (server as any).io;
+  for (const userId of userIds || []) {
+    const sockets = onlineUsers.get(userId);
+    console.log("sockets for user ", userId, ":", sockets);
+    if (sockets) {
+      console.log("-----------------------------------------------------------", sockets);
+      for (const socketId of sockets) {
+        io.to(socketId).emit(type, data);
+      }
+    }
+  }
+
+  return reply.code(200).send({ message: 'Notification sent' });
 });
 
 async function startServer() {

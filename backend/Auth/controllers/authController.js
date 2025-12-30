@@ -117,7 +117,7 @@ export async function login_post(request, reply) {
   }
   console.log("🔍 Comparing passwords");
   console.log(row.data.password_hash);
-  console.log(password);
+  
   const match = await bcrypt.compare(password, row.data.password_hash);
   if (!match) {
     return reply
@@ -170,8 +170,9 @@ export async function verifyUser_get(request, reply) {
   //   return reply.code(403).send("Forbidden");
   // }
   if (!token) {
-    return reply.code(401).send("Not Authorized")
+    return reply.code(401).send({ error: "Not Authorized" });
   }
+  
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     reply
@@ -185,7 +186,8 @@ export async function verifyUser_get(request, reply) {
         username: decoded.username
       });
   } catch (err) {
-    return reply.code(401).send("Not authorized");
+    console.log(' Token verification failed:', err.message);
+    return reply.code(401).send({ error: "Not authorized" });
   }
   return { accessToken: token };
 }

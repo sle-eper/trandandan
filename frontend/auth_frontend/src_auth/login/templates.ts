@@ -220,6 +220,144 @@ export const verifyTemplate = () => `
     </div>
   </div>
 `;
+function statCard(title: string, value: string) {
+  return `
+    <div class="bg-black/40 rounded-xl border border-white/10 p-5">
+      <p class="text-gray-400 text-sm">${title}</p>
+      <p class="text-3xl font-bold mt-2">${value}</p>
+    </div>
+  `;
+}
+
+function matchRow(name: string, score: string, time: string, win: boolean) {
+  return `
+    <div class="flex items-center justify-between p-3 rounded-lg bg-black/30">
+      <div class="flex items-center gap-3">
+        <span class="w-2 h-2 rounded-full ${win ? "bg-green-500" : "bg-red-500"}"></span>
+        <span>${name}</span>
+      </div>
+      <div class="text-right text-sm text-gray-400">
+        <p>${score}</p>
+        <p>${time}</p>
+      </div>
+    </div>
+  `;
+}
+
+function friendRow(name: string, status: string) {
+  return `
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="font-medium">${name}</p>
+        <p class="text-gray-400 text-sm">${status}</p>
+      </div>
+      <button class="text-sm px-3 py-1 rounded-md border border-white/20 hover:bg-white/10">
+        Invite
+      </button>
+    </div>
+  `;
+}
+
+export function homeTemplate(): string {
+  return `
+  <div class="w-full h-full flex flex-col gap-6">
+
+    <!-- HEADER -->
+    <div>
+      <h1 class="text-3xl font-bold">Dashboard</h1>
+      <p class="text-gray-400 mt-1">Welcome back, Champion!</p>
+    </div>
+
+    <!-- STATS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+
+      ${statCard("Total Matches", "142")}
+      ${statCard("Wins", "98")}
+      ${statCard("Win Rate", "69%")}
+      ${statCard("Ranking", "#24")}
+
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 flex-grow">
+
+      <!-- QUICK PLAY -->
+      <div class="bg-black/40 rounded-2xl border border-white/10 p-6 flex flex-col gap-5">
+  <h2 class="text-xl font-semibold">Quick Play</h2>
+
+    <!-- NORMAL PLAY -->
+    <div class="flex flex-col gap-3">
+      <button
+        class="bg-red-600 hover:bg-red-700 py-3 rounded-lg font-semibold transition">
+      Find Match
+      </button>
+
+      <button
+        class="border border-white/20 py-3 rounded-lg hover:bg-white/5 transition">
+       Challenge Friend
+      </button>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="relative my-2">
+      <div class="border-t border-white/10"></div>
+      <span
+        class="absolute left-1/2 -translate-x-1/2 -top-3
+              bg-[#111] px-3 text-xs text-gray-400">
+        Competitive
+      </span>
+    </div>
+
+    <!-- TOURNAMENT BLOCK -->
+    <div
+      class="bg-black/50 border border-[#E63946]/40 rounded-xl p-4
+            hover:border-[#E63946] transition">
+      <h3 class="text-lg font-semibold mb-1 flex items-center gap-2">
+       Tournament Mode
+      </h3>
+
+      <p class="text-sm text-gray-400 mb-3">
+        Enter ranked tournaments and prove your skills against top players.
+      </p>
+
+      <button
+        class="w-full bg-gradient-to-r from-[#E63946] to-[#711F21]
+              hover:opacity-90 py-3 rounded-lg font-semibold transition">
+        Play Tournament
+      </button>
+    </div>
+  </div>
+
+
+
+      <!-- RECENT MATCHES -->
+      <div class="bg-black/40 rounded-2xl border border-white/10 p-6">
+        <h2 class="text-xl font-semibold mb-4">Recent Matches</h2>
+
+        <div class="space-y-3">
+          ${matchRow("Player42", "11 - 7", "2h ago", true)}
+          ${matchRow("PongMaster", "9 - 11", "5h ago", false)}
+          ${matchRow("NeoPlayer", "11 - 3", "1d ago", true)}
+          ${matchRow("SpeedDemon", "11 - 9", "2d ago", true)}
+        </div>
+      </div>
+
+      <!-- FRIENDS -->
+      <div class="bg-black/40 rounded-2xl border border-white/10 p-6">
+        <h2 class="text-xl font-semibold mb-4">Online Friends</h2>
+
+        <div class="space-y-4">
+          ${friendRow("Alex", "Online")}
+          ${friendRow("Jordan", "In-Game")}
+          ${friendRow("Sam", "Online")}
+        </div>
+      </div>
+
+    </div>
+  </div>
+  `;
+}
+
 
 // src/login/templates.ts
 export const images: Record<string, string> = {
@@ -237,8 +375,3 @@ export const sharedImage = (pageId: string) => `
       class="w-[80%] md:w-[500px] object-contain rounded-xl hidden sm:block"/>
   </div>
 `;
-
-/* --- the existing templates follow --- */
-// export const loginTemplate = () => `...`
-// export const signupTemplate = () => `...`
-// export const forgotTemplate = () => `...`

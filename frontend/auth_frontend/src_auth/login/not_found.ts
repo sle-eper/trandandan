@@ -7,7 +7,7 @@ export function showNotFound(containerId = "login-app") {
       <div>
         <h1 class="text-6xl font-bold">404</h1>
         <p class="mt-4 text-lg text-gray-300">Page not found</p>
-        <a href="/dashboard" data-route class="mt-6 inline-block underline">Go home</a>
+        <a href="/home" data-route class="mt-6 inline-block underline">Go home</a>
       </div>
     </div>
   `;

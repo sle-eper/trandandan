@@ -1,5 +1,3 @@
-import { renderNavBar } from "../components/navbar";
-import { renderSidebar } from "../components/sidebar";
 import { io } from "socket.io-client";
 const socket = io("http://localhost:3000"); //TODO hadi ra hebla o khedama
 // const socket = io("http://localhost:8080/api/chat", {
@@ -166,7 +164,7 @@ function setupPopupEvents() {
 function socketListener() {
   socket.on("live", (id, roomName, msg, timeOfMsg) => {
     moveUp(id);
-    console.log("id", id);
+    // console.log("id", id);
     const timeOfMsgSpan: HTMLSpanElement = document.getElementById(
       `time-of-msg-${id}`
     ) as HTMLSpanElement;
@@ -190,7 +188,7 @@ function socketListener() {
   });
   socket.on("receive_message", (msg, msgId, friendId, timeOfMsg, friendImg) => {
     const chatZone = document.getElementById("chat-zone") as HTMLDivElement;
-    console.log("recvMsg",chatZone)
+    // console.log("recvMsg",chatZone)
     chatZone?.insertAdjacentHTML("beforeend",receivedMsg(msg, timeOfMsg, friendImg));
     socket.emit("ack_message", msgId);
     const containerMsg = document.getElementById(`container-of-last-msg-of-${friendId}`);
@@ -245,9 +243,170 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
     }
   });
   socket.on("setIMg", (img) => {
-    // console.log("sasasasa",BACKEND_URL)
     myImg = img;
   });
+  socket.on("request_to_play", (from,friendId) => {
+      const notification = document.getElementById("notification-menu");
+      const container = document.getElementById("play-notification-container");
+      if (!container) return;
+
+      if (document.getElementById("play-notification")) return;
+      container.innerHTML = "";
+
+      const notif = document.createElement("div");
+      notif.id = "play-notification";
+      notif.className = `
+        flex items-center justify-between gap-3
+        w-full px-4 py-2 rounded-2xl
+        bg-[#1a1a1a]/90 border border-[#FD1D1D]/40
+        shadow-lg backdrop-blur-lg
+        animate-slide-in
+      `;
+
+      notif.innerHTML = `
+        <span class="text-sm text-white truncate">
+          🎮 <strong>${from}</strong> wants to play
+        </span>
+
+        <div class="flex gap-2 shrink-0">
+          <button class="accept px-3 py-1 text-xs font-bold rounded-lg
+                        bg-green-500/80 hover:bg-green-500 transition">
+            Accept
+          </button>
+          <button class="reject px-3 py-1 text-xs font-bold rounded-lg
+                        bg-red-500/80 hover:bg-red-500 transition">
+            Reject
+          </button>
+        </div>
+      `;
+
+      container.appendChild(notif);
+
+      notif.querySelector(".accept").onclick = () => {
+        socket.emit("accept_play", userID,friendId );
+        notif.remove();
+      };
+
+      notif.querySelector(".reject").onclick = () => {
+        socket.emit("reject_play", userID,friendId);
+        notif.remove();
+      };
+
+    const msgNotif = document.createElement("div");
+    msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
+                  transition rounded-lg`
+    msgNotif.innerHTML = `
+      <span class="block max-w-70 truncate">
+        🎮 <strong>${from}</strong> wants to play
+      </span>
+    `;
+    notification?.prepend(msgNotif);
+
+
+      setTimeout(() => {
+        notif.remove();
+      }, 10000);
+  });
+  socket.on("not_agree", (from ) => {
+    const container = document.getElementById("play-notification-container");
+    const notification = document.getElementById("notification-menu");
+
+    
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    const notif = document.createElement("div");
+    notif.className = `
+      flex items-center justify-between
+      w-full px-4 py-2 rounded-2xl
+      bg-[#1a1a1a]/90 border border-red-500/40
+      text-red-400
+      shadow-lg backdrop-blur-lg
+      animate-slide-in
+    `;
+
+    notif.innerHTML = `
+      <span class="text-sm truncate">
+        ❌ <strong>${from}</strong> rejected your play request
+      </span>
+    `;
+
+    container.appendChild(notif);
+    const challenge  = document.getElementById(
+      "challenge-option"
+    )
+    const textEl = challenge?.querySelector("p");
+    const iconEl = challenge?.querySelector("span");
+    // const originalText = textEl?.textContent;
+    challenge?.classList.remove(
+      "opacity-50",
+      "cursor-not-allowed",
+      "pointer-events-none"
+    );
+
+
+    clearInterval(challenge.dataset.intervalId);
+    textEl.textContent = 'Challenge';
+    iconEl?.classList.remove("opacity-0");
+
+    const msgNotif = document.createElement("div");
+    msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
+                  transition rounded-lg`
+    msgNotif.innerHTML = `
+      <span class="block max-w-70 truncate">
+        ❌ <strong>${from}</strong> rejected your play request
+      </span>
+    `;
+    notification?.prepend(msgNotif);
+
+    setTimeout(() => {
+      notif.remove();
+    }, 3000);
+  });
+  socket.on('msg_notification',(from , msg)=>{
+    const container = document.getElementById("play-notification-container");
+    const notification = document.getElementById("notification-menu");
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    const notif = document.createElement("div");
+    notif.className = `
+      flex items-center justify-between gap-3
+      w-full px-4 py-2 rounded-2xl
+      bg-[#1a1a1a]/90 border border-[#FD1D1D]/40
+      shadow-lg backdrop-blur-lg
+      animate-slide-in
+    `;
+
+
+    notif.innerHTML = `
+      <span class="text-sm truncate">
+        💬 <strong>${from}</strong>: ${msg}
+      </span>
+    `;
+    container.appendChild(notif);
+    setTimeout(() => {
+      notif.remove();
+    }, 5000);
+    const msgNotif = document.createElement("div");
+    msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
+                  transition rounded-lg`
+    msgNotif.innerHTML = `
+      <span class="block max-w-70 truncate">
+        💬 <strong>${from}</strong>: ${msg}
+      </span>
+    `;
+    notification?.prepend(msgNotif);
+    
+
+
+    // console.log(from,msg);
+
+  })
+
+
 }
 
 export async function showMainUI() {
@@ -281,14 +440,14 @@ export async function showMainUI() {
     chatContent.classList.add("gap-6", "gap-y-3");
     // chatContent.classList.remove("flex-grow");
     const friends = await fetchListOfFriends();
+    // console.table(friends.friends);
     chatContent.innerHTML = listOfMsg(friends.friends,friends.waitingMsg,myId);
-    chatContent.innerHTML += DM();
+    if(friends.friends)
+      chatContent.innerHTML += DM();
     //     //get all of list friends
     const friendsEvent = document.querySelectorAll(".friend-msg-zone");
     friendsEvent.forEach((friend) => {
       friend.addEventListener("click", (event) => {
-        // document.getElementById("DM")
-        // console.log("sdsadasd")
         //         /******************************************get msg on scroll*******************************/
 
         let firestOne: boolean = false;
@@ -360,7 +519,6 @@ export async function showMainUI() {
           }
           //*********************************************************************** */
           dmZone = document.getElementById("DM");
-          console.log("friendFind:", friendFind.status);
           let contentChat = profileNav(friendFind.avatar_url,friendFind.username,friendFind.status);
           contentChat += chatZones();
           if (dmZone) dmZone.innerHTML = contentChat;
@@ -388,7 +546,7 @@ export async function showMainUI() {
               socket.emit("get_status",friendId)
               const btn1 = await new Promise<string>((resolve) => {
                   socket.once("blockBtn", (btn) => {
-                      console.log("btn", btn); 
+                      // console.log("btn", btn); 
                       resolve(btn);
                   });
               });
@@ -423,6 +581,9 @@ export async function showMainUI() {
             const unblockOption = document.getElementById(
               "unblock-option"
             ) as HTMLDivElement;
+            const challenge  = document.getElementById(
+              "challenge-option"
+            )
 
             // to close popup if click out of popup
             window.addEventListener("click", (event) => {
@@ -448,6 +609,49 @@ export async function showMainUI() {
               )
                 unblockOption.classList.add("hidden");
             });
+
+            
+          if (challenge) {
+            const textEl = challenge.querySelector("p");
+            const iconEl = challenge.querySelector("span");
+            if(!challenge.dataset.click)
+            {
+              challenge.addEventListener("click", () => {
+                challenge.classList.add(
+                  "opacity-50",
+                  "cursor-not-allowed",
+                  "pointer-events-none"
+                );
+  
+                let remaining = 10;
+                const originalText = textEl?.textContent;
+  
+                textEl.textContent = `Waiting ${remaining}s`;
+                iconEl.classList.add("opacity-0");
+  
+                socket.emit("challenge", friendId);
+  
+                challenge.dataset.intervalId = setInterval(() => {
+                  remaining--;
+                  textEl.textContent = `Waiting ${remaining}s`;
+  
+                  if (remaining <= 0) {
+                    clearInterval(challenge.dataset.intervalId);
+  
+                    challenge.classList.remove(
+                      "opacity-50",
+                      "cursor-not-allowed",
+                      "pointer-events-none"
+                    );
+  
+                    textEl.textContent = originalText;
+                    iconEl.classList.remove("opacity-0");
+                  }
+                }, 1000);
+              });
+              challenge.dataset.click = 'yes';
+            }
+          }
 
             // if chose block button show popup of block option
             if (blockButton) {
