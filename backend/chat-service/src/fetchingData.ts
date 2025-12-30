@@ -124,12 +124,16 @@ async function getFriendsOfUser(userId: string) {
     });
     
     const friends = response.data.friends;
-   
+    
     if (friends.length === 0) {
         return [];
     }
+    
     const friendIds = friends.map((friend: any) => friend.id);
     const placeholders = friendIds.map(() => '?').join(',');
+    
+    const currentUserId = parseInt(userId); 
+
     const latestMessages = db.prepare(`
         SELECT 
             CASE 
@@ -140,7 +144,8 @@ async function getFriendsOfUser(userId: string) {
             send,
             recv,
             status,
-            strftime('%H:%M', send_at) AS send_at
+            send_at, 
+            strftime('%H:%M', send_at) AS send_at_formatted
         FROM msg
         WHERE id IN (
             SELECT MAX(id)
@@ -155,27 +160,39 @@ async function getFriendsOfUser(userId: string) {
                     ELSE send
                 END
         )
-    `).all(userId, userId, ...friendIds, userId, ...friendIds, userId);
+        ORDER BY send_at DESC
+    `).all(currentUserId, currentUserId, ...friendIds, currentUserId, ...friendIds, currentUserId);
+    
+
     const messageMap = new Map();
-    latestMessages.forEach((m: { friend_id: string | number; }) => {
-    messageMap.set(m.friend_id, m);
+    latestMessages.forEach((m: any) => {
+        messageMap.set(m.friend_id, m);
     });
 
+    const result = friends.map((friend: any) => {
+        const msg = messageMap.get(friend.id); 
+        return {
+            ...friend,
+            msg: msg?.msg || null,
+            send: msg?.send || null,
+            recv: msg?.recv || null,
+            msg_status: msg?.status || null,
+            last_message_time: msg?.send_at || null, 
+            display_time: msg?.send_at_formatted || null
+        };
+    });
 
-    const result = friends.map((friend: { id: any; }) => {
-    const msg = messageMap.get(friend.id);
-    return {
-      ...friend,  // All friend data (id, username, avatar_url, etc.)
-      msg: msg?.msg || null,
-      send: msg?.send || null,
-      recv: msg?.recv || null,
-      msg_status: msg?.status || null,
-      send_at: msg?.send_at || null
-    };
-  });
-  return result;
+    result.sort((a: any, b: any) => {
+        if (!a.last_message_time && !b.last_message_time) return 0;
+        if (!a.last_message_time) return 1;
+        if (!b.last_message_time) return -1;
+        
+        return new Date(b.last_message_time).getTime() - new Date(a.last_message_time).getTime();
+    });
 
-  } catch (error) {
+    return result;
+
+  } catch (error: any) {
     if (axios.isAxiosError(error)) {
       console.error(`Failed to fetch friends data: ${error.message}`);
       throw new Error(`User service unavailable: ${error.response?.status || 'unknown'}`);
@@ -183,8 +200,6 @@ async function getFriendsOfUser(userId: string) {
     throw error;
   }
 }
-
-
 async function getStatusOfTowFriends(userId:string,friendId:string):Promise<object> {
   try {
     const res = await axios.get(`${USER_MANAGEMENT_SERVICE_URL}/friendship/status/${userId}/${friendId}`, {

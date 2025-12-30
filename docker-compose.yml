@@ -39,14 +39,26 @@ services:
     networks:
       - app-network
     volumes:
-      - ./frontend/chat-frontend/src:/app/src
-      - ./frontend/auth_frontend/src_auth:/app/src_auth
+      - ./frontend/chat-frontend/src:/app/chat-frontend/src
+      - ./frontend/auth_frontend/src_auth:/app/auth_frontend/src_auth
       - ./frontend/profile_frontend/src:/app/profile_frontend/src
-      - ./frontend/spy_frontend/src_spy:/app/src_spy
+      - ./frontend/spy_frontend/src_spy:/app/spy_frontend/src_spy
       - /app/node_modules
+
     depends_on:
       - user-management
       - authentication
+
+  spy-service:
+    build: ./backend/spy-service
+    container_name: spy-service
+    ports:
+      - "3003:3003"
+    networks:
+      - app-network
+    # volumes:
+      # - ./backend/spy-service/src_spy_service:/app:src_spy_service 
+
   tournament:
     build: ./backend/tournament
     container_name: tournament

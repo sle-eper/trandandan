@@ -84,5 +84,10 @@ fastify.get('/friendship/status/:userId/:friendId', {
     },
     
   }, friendsController.changeFriendStatus.bind(friendsController));
+
+
+      fastify.get('/friend/check', friendsController.checkFriendshipStatus.bind(friendsController));
+      fastify.get('/friend/requestStatus', friendsController.checkPendingRequest.bind(friendsController));
+
 }
 export default friendshipRoutes;

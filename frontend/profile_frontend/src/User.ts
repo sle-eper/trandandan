@@ -1,4 +1,5 @@
  interface UserProfile  {
+    id?: number | null;
     username: string;
     email: string;
     displayName: string;
@@ -26,6 +27,7 @@ export class User {
 
         
                 return {
+                id: userObj.id,
                 username: userObj.username,
                 email: userObj.email,
                 displayName: userObj.display_name  || '',
@@ -78,5 +80,7 @@ export class User {
         }
     }
 }
+
+
 export default User;
 export type { UserProfile };

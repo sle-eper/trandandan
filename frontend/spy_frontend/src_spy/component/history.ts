@@ -1,0 +1,36 @@
+export async function history(id:string) {
+    try {
+        const response = await fetch(`http://localhost:3003/users/${id}/history`);
+
+        if (!response.ok) {
+            return `<p class="text-red-500">No history found</p>`;
+        }
+
+        const { data } = await response.json();
+        console.log(data)
+
+        return `
+        <div id='historySection' class="hidden flex flex-col items-center justify-center gap-4 py-12">
+            <div class="col-span-2 md:col-span-3  flex justify-center mb-10 text-4xl font-bold uppercase text-[#ff4d4d] tracking-wide font-['Share_Tech_Mono']
+                [text-shadow:0_0_5px_#ff0000,0_0_15px_#ff0000] select-none">HISTORY</div>
+
+            <p>Total matches: <b>${data.totalMatches ? data.totalMatches :0}</b></p>
+            <p>Spy: <b>${data.spyCount ? data.spyCount:0}</b></p>
+            <p>Investigator: <b>${data.investigatorCount ? data.investigatorCount:0}</b></p>
+            <p>Win: <b>${data.winCount ? data.winCount : 0}</b></p>
+            <p>Lose: <b>${data.loseCount ? data.loseCount: 0}</b></p>
+
+            <button id="confirm-btn"
+                    class="px-10 py-4 text-xl mt-10 font-bold rounded-lg 
+                        bg-[#ff4d4d] text-white shadow-lg
+                        hover:bg-[#e63939] hover:scale-105 
+                        transition-all duration-200 cursor-pointer
+                        font-['Share_Tech_Mono'] tracking-wider">
+                CONFIRM 
+            </button>
+        </div>
+        `;
+    } catch (err) {
+        return `<p class="text-red-500">Server unreachable</p>`;
+    }
+}
