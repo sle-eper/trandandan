@@ -5,6 +5,8 @@ import {
   saveMsg,
   changeAllToRecv,
   getTimeOfMsg,
+  saveNotif,
+  getNotif
 } from "./db/database";
 
 import { fetchUserData, getStatusOfTowFriends,changeStatusOfFriends,getFriendsOfUser } from "./fetchingData";
@@ -80,6 +82,7 @@ server.ready().then(() => {
             const status2: string = status?.status2?.status; //
             if (status1 === "accepted" && status2 === "accepted")
             {
+              await saveNotif(id,friendId,'msg',msg);
               const friendSocketId = onlineUsers.get(friendId);
               // console.log("content",onlineUsers)
               // console.log("id",friendId)
@@ -258,6 +261,8 @@ server.ready().then(() => {
         const id = socket.data.userId;
         if(!id) return;
         const friendSocket = onlineUsers.get(friendId);
+        await saveNotif(id,friendId,'challenge',null);
+        // console.log("sasaasasasa");
         // console.log(friendSocket);
         if(!friendSocket)return;
         const UserData = await fetchUserData(id); 
@@ -266,7 +271,8 @@ server.ready().then(() => {
         // console.log(UserData.user.username);
         // const username;
         // if(UserData)
-          
+        // await saveNotif(id,friendId,'challenge',null);
+        // console.log("sasaasasasa");
         for(const isd of friendSocket)
         {
           io.to(isd).emit("request_to_play",UserData?.user?.username,id);
@@ -283,6 +289,7 @@ server.ready().then(() => {
     socket.on('reject_play',async(id,friendId)=>{
       try{
         if(!id || !friendId)return;
+        await saveNotif(id,friendId,'reject',null);
         const Sockets = onlineUsers.get(friendId);
         if(!Sockets)return;
         const UserData = await fetchUserData(id); 
@@ -295,6 +302,17 @@ server.ready().then(() => {
       }catch(err)
       {
         console.error('Error in reject_play:', err);
+      }
+    })
+    socket.on('getNotif',async(id)=>{
+      try{
+        // const id = socket.data.userId;
+        // console.log("wa3333",id)
+        const data = await getNotif(id);
+        console.log("dakchi li kaytsift",data);
+        socket.emit("notif",data);
+      }catch(err){
+        console.error('Error in getNotif:', err);
       }
     })
 
