@@ -232,7 +232,7 @@ async function changeStatusOfFriends(status:string,userId:string,friendId:string
       },
       timeout: 5000 
     });
-    console.log("froom",response.data)
+    // console.log("froom",response.data)
     // return response.data;
     return getStatusOfTowFriends(userId,friendId)
   } catch (error) {

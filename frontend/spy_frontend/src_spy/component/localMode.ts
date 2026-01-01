@@ -157,7 +157,7 @@ export function renderLocalMode(player?:number,spy?:number,section?:number):stri
                 <div id="back-btn" class="btn-hidden flex justify-center items-center  p-2 text-[#E63946]   hover:cursor-pointer hover:bg-[#222222]  rounded-full select-none">
                     <span id="back-btn-logo" class="material-symbols-outlined select-none">arrow_back_ios</span>
                 </div>
-                ${card(players,"playersInput","playersCard",player || 3)}
+                ${card(players,"playersInput","playersCard",player || 7)}
                 ${card(spays,"spaysInput","spaysCard",spy || 1,)}
                 ${card(sections,"sectionInput","sectionsCard",section || 1)}
                 ${card(history,"historyInput","historyCard")}

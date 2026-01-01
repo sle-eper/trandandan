@@ -71,7 +71,7 @@ function getnotif(): Promise<any[]> {
     const notification = document.getElementById("notification-menu");
     if (!notification) return;
     // console.log("ssss",container,notification);
-    console.log("sssss",notif);
+    // console.log("sssss",notif);
     notif.forEach((el)=>{
       if(el.type == "challenge")
       {
