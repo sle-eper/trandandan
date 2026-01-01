@@ -165,7 +165,7 @@ export async function logout_post(request, reply) {
 
 export async function verifyUser_get(request, reply) {
   const token = request.cookies.token;
-  const origin = request.headers.origin;
+  // const origin = request.headers.origin;
   // if (origin != "http://localhost:5173") {
   //   return reply.code(403).send("Forbidden");
   // }
@@ -175,7 +175,7 @@ export async function verifyUser_get(request, reply) {
   
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    reply
+    return reply
       .code(200)
       .headers({ 'x-user': decoded.username })
       .headers({ 'x-user-id': decoded.id })
@@ -234,9 +234,17 @@ export async function forgetPassword_post(request, reply) {
 // #########################################################
 
 
-export async function twofactor_post(request, reply) {
+export async function twofactor_get(request, reply) {
   //check if 2fa is already enabled for user
-  const username = request.headers['x-user'];
+  console.log("-----------------------------------------------------------------")
+  // const username = request.headers['x-user'];
+  const token = request.cookies.token;
+
+  if (!token) {
+    return reply.code(401).send({ error: "Not Authorized" });
+  }
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const username = decoded.username;
   const row = await axios.get("http://user-management:3000/profile/User", {
     params: {
       username,

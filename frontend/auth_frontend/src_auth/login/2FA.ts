@@ -91,6 +91,7 @@ function attach2FAHandlers() {
     document.getElementById(`2fa-code-${i}`) as HTMLInputElement
   );
   const errorBox = document.getElementById("2fa-error");
+  
 
   if (!btn || inputs.some((i) => !i)) return;
 
@@ -118,8 +119,19 @@ function attach2FAHandlers() {
   });
 });
 
-
-  const submit2FA = () => {
+  const qrImage = document.getElementById("2fa-qr") as HTMLImageElement | null;
+  const submit2FA = async () => {
+    const res = await fetch("http://localhost:8080/api/auth/2f/setup", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // VERY IMPORTANT FOR Cookies
+  });
+  console.log("2FA setup response:", res);
+  const data = await res.json();
+  console.log("2FA setup data:", data.qrImage);
+  if (qrImage) {
+    qrImage.src = data.qrImage;
+  }
   const code = inputs.map((i) => i.value).join("");
 
   if (!/^\d{6}$/.test(code)) {
@@ -130,18 +142,19 @@ function attach2FAHandlers() {
     return;
   }
 
+
   console.log("Entered 2FA code:", code);
   navigate("dashboard");
 };
 
   btn.addEventListener("click", submit2FA);
 
+  submit2FA();
   // Enter key triggers verify
   inputs.forEach((input) =>
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
-        submit2FA();
       }
     })
   );

@@ -30,6 +30,7 @@ function attachForgotHandlers() {
     }
 
     // TODO: call reset API -> then navigate
+    //send request to backend 
     alert("If that email exists, a reset link was sent (stub).");
     navigate("change");
   });

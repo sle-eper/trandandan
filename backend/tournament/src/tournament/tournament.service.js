@@ -1,8 +1,27 @@
 import { getDatabase } from "../../config/database.js";
+import axios from "axios";
 
 export async function createTournament_post(request, reply) {
     const userid = request.headers['x-user-id'];
-    const { nickname, tournamentname, maxPlayers } = request.body;
+    const username = request.headers['x-user'];
+    try {
+    const existingUser = await axios.get(
+          "http://user-management:3000/profile/User",
+          {
+            params: {
+              username,
+            },
+          }
+        );
+    if (!existingUser.data) {
+        return reply.code(400).send({
+          success: false,
+          message: "User does not exist!",
+        });
+    }
+    const nickname = existingUser.data.display_name;
+    console.log("Creating tournament for user:",existingUser.data);
+    const {tournamentname, maxPlayers} = request.body;
     const db = getDatabase();
     console.log(nickname, userid, tournamentname, maxPlayers);
     const tournament = await db.get('SELECT * FROM tournament WHERE name  = ?', [tournamentname]);
@@ -11,7 +30,7 @@ export async function createTournament_post(request, reply) {
         return reply.code(400)
             .send("Tournament Already Existe")
     }
-    try {
+    
         const result = await db.run(
             `INSERT INTO tournament (name, ownerId, maxPlayers)
                 VALUES (?, ?, ?)`,
@@ -22,6 +41,11 @@ export async function createTournament_post(request, reply) {
                 VALUES(?, ?,?)`,
             [nickname, result.lastID, userid]
         );
+        await axios.post("http://chat-service:3000/tournamentCreate", {
+            userid,
+            type: "tournamentcreat",
+            data: { tournamentId: result.lastID, tournamentName: tournamentname }
+        });
     }
     catch (error) {
         console.log(error);
