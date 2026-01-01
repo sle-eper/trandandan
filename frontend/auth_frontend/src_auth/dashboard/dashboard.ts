@@ -4,8 +4,10 @@ import { renderNavBar } from "./navbar";
 import { renderSidebar } from "./sidebar";
 import { navBarLogic } from "./navbar";
 import { sidebarLogic } from "./sidebar";
+import { socket } from "../login/login";
 
-export function showDashboard() {
+
+export async function showDashboard() {
   const app = document.getElementById("login-app");
   if (!app) return;
 
@@ -36,10 +38,80 @@ export function showDashboard() {
     </div>
   `;
 
+function getnotif(): Promise<any[]> {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await fetch("http://localhost:8080/auth/verify", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+
+      const responseJson = await response.json();
+      const myId = responseJson.id;
+
+      socket.once("notif", (data) => {
+        resolve(data);
+      });
+
+      socket.emit("getNotif", myId);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
   // Render sidebar + navbar
   const nav = document.getElementById("navbar");
   const sidebar = document.getElementById("sidebar");
-  if (nav) nav.innerHTML = renderNavBar();
+  if (nav)
+  {
+    nav.innerHTML = renderNavBar();
+    let notif =  await getnotif()
+    const notification = document.getElementById("notification-menu");
+    if (!notification) return;
+    // console.log("ssss",container,notification);
+    // console.log("sssss",notif);
+    notif.forEach((el)=>{
+      if(el.type == "challenge")
+      {
+        const msgNotif = document.createElement("div");
+        msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
+                      transition rounded-lg`
+        msgNotif.innerHTML = `
+          <span class="block max-w-70 truncate">
+            🎮 <strong>${el.sender_name}</strong> wants to play
+          </span>
+        `;
+        notification?.prepend(msgNotif);
+      }else if(el.type == 'reject')
+      {
+        const msgNotif = document.createElement("div");
+        msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
+                      transition rounded-lg`
+        msgNotif.innerHTML = `
+          <span class="block max-w-70 truncate">
+            ❌ <strong>${el.sender_name}</strong> rejected your play request
+          </span>
+        `;
+        notification?.prepend(msgNotif);
+      }else if(el.type == 'msg')
+      {
+      const msgNotif = document.createElement("div");
+      msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
+                    transition rounded-lg`
+      msgNotif.innerHTML = `
+        <span class="block max-w-70 truncate">
+          💬 <strong>${el.sender_name}</strong>: ${el.content}
+        </span>
+      `;
+      notification?.prepend(msgNotif);
+      
+        }
+    })
+
+
+  }
   if (sidebar) sidebar.innerHTML = renderSidebar();
   navBarLogic();
   sidebarLogic();

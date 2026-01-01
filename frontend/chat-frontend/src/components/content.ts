@@ -2,16 +2,16 @@
 export function lastMsg(status:string,msg:string,friendId:string):string
 {
     if(!msg)
-        return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#888]" > new friend </span>`
+        return `<span id='last-msg-${friendId}' class=" font-thin flex-grow    text-[#888]" > new friend </span>`
     const shortMsg = msg.length > 10 ? msg.slice(0,10) + '...' : msg
     if(status === 'recv')
-        return `<span id='last-msg-${friendId}' class=" font-semibold flex-grow  truncate  text-[#F5F5F5]" > ${shortMsg} </span>`
+        return `<span id='last-msg-${friendId}' class=" font-semibold flex-grow    text-[#F5F5F5]" > ${shortMsg} </span>`
     if(status === 'seen')
     {
-        return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#888]" > ${shortMsg} </span>`
+        return `<span id='last-msg-${friendId}' class=" font-thin flex-grow    text-[#888]" > ${shortMsg} </span>`
     }
     if(status === 'send')
-        return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#888]" > You: ${shortMsg} </span>`
+        return `<span id='last-msg-${friendId}' class=" font-thin flex-grow    text-[#888]" > You: ${shortMsg} </span>`
     return ''
 }
 
@@ -34,12 +34,12 @@ export function unreadMsgNumber(nbr:number,friendId:string):string
 }
 
 
-function  friendCart(friend:any,waitingMsg:object,myId:string):string //done 
+function  friendCart(friend:any,waitingMsg:object,myId:string):string 
 {
         const roomName = [myId,friend.id].sort().join('_');
         const unreadMsg:number = waitingMsg.filter(m=> m.room === roomName).length
         let status:string;
-        if(friend.recv==myId && friend.msg_status && friend.msg_status === 'waiting')//TODO add this object status
+        if(friend.recv==myId && friend.msg_status && friend.msg_status === 'waiting')
             status = 'recv'
         else if(friend.recv==myId && friend.msg_status && friend.msg_status === 'send')
             status = 'seen'
@@ -67,7 +67,7 @@ function  friendCart(friend:any,waitingMsg:object,myId:string):string //done
                                 class="text-xs sm:text-sm md:text-base text-gray-300">
                                 ${lastMsg(status,friend.msg,friend.id)} 
                             </div>
-                            <span id='time-of-msg-${friend.id}' class="text-[10px] sm:text-xs md:text-sm text-[#888]">${ msgTime(friend.send_at)}</span>
+                            <span id='time-of-msg-${friend.id}' class="text-[10px] sm:text-xs md:text-sm text-[#888]">${ msgTime(friend.display_time)}</span>
                         </div>
                         </div>
                     </div>
@@ -77,7 +77,7 @@ function  friendCart(friend:any,waitingMsg:object,myId:string):string //done
 
 export function listOfMsg(friends:any,waitingMsg:object,myId:string): string //done
 {
-    console.log(friends);
+    // console.log(friends);
     if(!friends || friends.length === 0)
     {
         return `<div class="flex flex-col items-center justify-center h-full text-center gap-4 px-6">
@@ -161,7 +161,7 @@ export function profileNav(img:string,userAccount:string,status:string):string{
             <span id="more_vert" class="material-symbols-outlined text-[#E63946]  hover:cursor-pointer hover:bg-[#222222]  rounded-xl ">more_vert</span>
 
             <div id="popup-option" class="hidden text-white flex flex-col items-center  w-50 bg-[#181818] absolute right-6 top-12 rounded-xl border border-[#E63946] shadow-[0_0_25px_rgba(0,0,0,0.6)]">
-                <div class="flex items-center justify-center w-[70%] rounded-xl border border-[#E63946] mt-5 mb-2 hover:cursor-pointer">
+                <div id="challenge-option" class="flex items-center justify-center w-[70%] rounded-xl border border-[#E63946] mt-5 mb-2 hover:cursor-pointer">
                     <p>Challenge</p>
                     <span class="material-symbols-outlined">swords</span>
                 </div>
@@ -246,7 +246,7 @@ export function sendMsg(msg:string,time:string,img:string):string{
 export function receivedMsg(msg:string,time:string,img:string):string{
 
     return `<div id="sent-msg" class="flex mt-5 md:w-[30vw] w-[80vw]  justify-start pl-5 ">
-                <img src="${img}" alt="" class="h-10 w-10 rounded-full mt-2 mr-2">
+                <img src='http://localhost:8080/uploads/${img}' alt="" class="h-10 w-10 rounded-full mt-2 mr-2">
                 <div id="content-sent" class="max-w-[80%] flex flex-col">
                     <div  class="border-2 border-[#E63946] rounded-xl p-3  ">
                         <span class="text-[#F5F5F5]  break-all">
@@ -282,10 +282,10 @@ export function chatZones():string{
         }
     </style>
     
-    <div id="chat-zone" class="flex flex-col h-[100%] overflow-y-auto ">
-    </div>
-    <div id="x" class=" h-15">
-    </div>`
+    <div id="chat-zone" class="flex flex-col h-[100%] overflow-y-auto "></div>
+    <div id="err-display" class=mr-4
+                max-w-md w-[420px] flex items-center justify-center "></div>
+    <div id="x" class=" h-15"></div>`
 }
 
 export function DM():string{

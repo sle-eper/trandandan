@@ -28,7 +28,9 @@ let userID: string = "";
 
 function moveUp(id: string) {
   const container = document.getElementById("list-of-msg");
-  const target = Array.from(container!.children).find(
+  if(!container)
+    return;
+  const target = Array.from(container.children).find(
     (el) => el.dataset.id == id
   );
   if (target) container?.prepend(target);
@@ -83,29 +85,34 @@ function setupPopupEvents() {
   });
 
   if (sendButton) {
-    // function showToast(message: string, duration = 3000) {
-    //   const toast = document.getElementById("toast");
-    //   if (!toast) return;
+    function showToast(message: string, duration = 3000) {//TODO hadi khasha twli pro chewiya
+      const container = document.getElementById("err-display");
+      if(!container)return;
+      container.innerHTML = "";
+      const notif = document.createElement("div");
+      notif.id = "error-notification";
+      notif.className = `
+        gap-3
+        px-4 py-2 rounded-2xl text-center
+        bg-[#1a1a1a]/90 border border-[#FD1D1D]/40
+        shadow-lg backdrop-blur-lg
+        animate-slide-in
+      `;
 
-    //   toast.textContent = message;
-    //   toast.classList.remove("hidden");
-    //   toast.classList.add("show");
+      notif.innerText = `${message}`;
 
-    //   setTimeout(() => {
-    //     toast.classList.remove("show");
-    //     setTimeout(() => {
-    //       toast.classList.add("hidden");
-    //     }, 300);
-    //   }, duration);
-    // }
+      container.appendChild(notif);
+      setTimeout(()=>{
+        notif.remove()
+      },duration);
+    }
 
     function send_message() {
       const value: string = textarea.value;
       if (value.trim()) {
-        if(value.length > 1000)//TODO handel 100
+        if(value.length > 2000)
         {
-          // textarea.value = ''
-          // showToast("bezzzzzzf")
+          showToast("You cannot send more than 2000 characters");
           return
         }
 
@@ -141,7 +148,7 @@ function setupPopupEvents() {
 function socketListener() {
   socket.on("live", (id, roomName, msg, timeOfMsg) => {
     moveUp(id);
-    console.log("id", id);
+    // console.log("id", id);
     const timeOfMsgSpan: HTMLSpanElement = document.getElementById(
       `time-of-msg-${id}`
     ) as HTMLSpanElement;
@@ -165,7 +172,7 @@ function socketListener() {
   });
   socket.on("receive_message", (msg, msgId, friendId, timeOfMsg, friendImg) => {
     const chatZone = document.getElementById("chat-zone") as HTMLDivElement;
-    console.log("recvMsg",chatZone)
+    // console.log("recvMsg",chatZone)
     chatZone?.insertAdjacentHTML("beforeend",receivedMsg(msg, timeOfMsg, friendImg));
     socket.emit("ack_message", msgId);
     const containerMsg = document.getElementById(`container-of-last-msg-of-${friendId}`);
@@ -220,9 +227,171 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
     }
   });
   socket.on("setIMg", (img) => {
-    // console.log("sasasasa",BACKEND_URL)
     myImg = img;
   });
+  socket.on("request_to_play", (from,friendId) => {
+      const notification = document.getElementById("notification-menu");
+      const container = document.getElementById("play-notification-container");
+      if (!container) return;
+
+      if (document.getElementById("play-notification")) return;
+      container.innerHTML = "";
+
+      const notif = document.createElement("div");
+      notif.id = "play-notification";
+      notif.className = `
+        flex items-center justify-between gap-3
+        w-full px-4 py-2 rounded-2xl
+        bg-[#1a1a1a]/90 border border-[#FD1D1D]/40
+        shadow-lg backdrop-blur-lg
+        animate-slide-in
+      `;
+
+      notif.innerHTML = `
+        <span class="text-sm text-white truncate">
+          🎮 <strong>${from}</strong> wants to play
+        </span>
+
+        <div class="flex gap-2 shrink-0">
+          <button class="accept px-3 py-1 text-xs font-bold rounded-lg
+                        bg-green-500/80 hover:bg-green-500 transition">
+            Accept
+          </button>
+          <button class="reject px-3 py-1 text-xs font-bold rounded-lg
+                        bg-red-500/80 hover:bg-red-500 transition">
+            Reject
+          </button>
+        </div>
+      `;
+
+      container.appendChild(notif);
+
+      notif.querySelector(".accept").onclick = () => {
+        socket.emit("accept_play", userID,friendId );
+        notif.remove();
+      };
+
+      notif.querySelector(".reject").onclick = () => {
+        socket.emit("reject_play", userID,friendId);
+        notif.remove();
+      };
+
+    const msgNotif = document.createElement("div");
+    msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
+                  transition rounded-lg`
+    msgNotif.innerHTML = `
+      <span class="block max-w-70 truncate">
+        🎮 <strong>${from}</strong> wants to play
+      </span>
+    `;
+    notification?.prepend(msgNotif);
+
+
+      setTimeout(() => {
+        notif.remove();
+      }, 10000);
+  });
+  socket.on("not_agree", (from ) => {
+    const container = document.getElementById("play-notification-container");
+    const notification = document.getElementById("notification-menu");
+
+    
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    const notif = document.createElement("div");
+    notif.className = `
+      flex items-center justify-between
+      w-full px-4 py-2 rounded-2xl
+      bg-[#1a1a1a]/90 border border-red-500/40
+      text-red-400
+      shadow-lg backdrop-blur-lg
+      animate-slide-in
+    `;
+
+    notif.innerHTML = `
+      <span class="text-sm truncate">
+        ❌ <strong>${from}</strong> rejected your play request
+      </span>
+    `;
+
+    container.appendChild(notif);
+    const challenge  = document.getElementById(
+      "challenge-option"
+    )
+    const textEl = challenge?.querySelector("p");
+    const iconEl = challenge?.querySelector("span");
+    // const originalText = textEl?.textContent;
+    challenge?.classList.remove(
+      "opacity-50",
+      "cursor-not-allowed",
+      "pointer-events-none"
+    );
+
+
+    clearInterval(challenge.dataset.intervalId);
+    textEl.textContent = 'Challenge';
+    iconEl?.classList.remove("opacity-0");
+
+    const msgNotif = document.createElement("div");
+    msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
+                  transition rounded-lg`
+    msgNotif.innerHTML = `
+      <span class="block max-w-70 truncate">
+        ❌ <strong>${from}</strong> rejected your play request
+      </span>
+    `;
+    notification?.prepend(msgNotif);
+
+    setTimeout(() => {
+      notif.remove();
+    }, 3000);
+  });
+  socket.on('msg_notification',(from , msg)=>{
+    const container = document.getElementById("play-notification-container");
+    const notification = document.getElementById("notification-menu");
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    const notif = document.createElement("div");
+    notif.className = `
+      flex items-center justify-between gap-3
+      w-full px-4 py-2 rounded-2xl
+      bg-[#1a1a1a]/90 border border-[#FD1D1D]/40
+      shadow-lg backdrop-blur-lg
+      animate-slide-in
+    `;
+
+
+    notif.innerHTML = `
+      <span class="text-sm truncate">
+        💬 <strong>${from}</strong>: ${msg}
+      </span>
+    `;
+    container.appendChild(notif);
+    setTimeout(() => {
+      
+      notif.remove();
+    }, 5000);
+    const msgNotif = document.createElement("div");
+    msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
+                  transition rounded-lg`
+    msgNotif.innerHTML = `
+      <span class="block max-w-70 truncate">
+        💬 <strong>${from}</strong>: ${msg}
+      </span>
+    `;
+    notification?.prepend(msgNotif);
+    
+
+
+    // console.log(from,msg);
+
+  })
+
+
 }
 
 export async function showMainUI() {
@@ -257,6 +426,7 @@ export async function showMainUI() {
     chatContent.classList.add("gap-6", "gap-y-3");
     // chatContent.classList.remove("flex-grow");
     const friends = await fetchListOfFriends();
+    // console.table(friends.friends);
     chatContent.innerHTML = listOfMsg(friends.friends,friends.waitingMsg,myId);
     if(friends && friends.friends.length > 0)
       chatContent.innerHTML += DM();
@@ -264,8 +434,6 @@ export async function showMainUI() {
     const friendsEvent = document.querySelectorAll(".friend-msg-zone");
     friendsEvent.forEach((friend) => {
       friend.addEventListener("click", (event) => {
-        // document.getElementById("DM")
-        // console.log("sdsadasd")
         //         /******************************************get msg on scroll*******************************/
 
         let firestOne: boolean = false;
@@ -337,7 +505,6 @@ export async function showMainUI() {
           }
           //*********************************************************************** */
           dmZone = document.getElementById("DM");
-          console.log("friendFind:", friendFind.status);
           let contentChat = profileNav(friendFind.avatar_url,friendFind.username,friendFind.status);
           contentChat += chatZones();
           if (dmZone) dmZone.innerHTML = contentChat;
@@ -365,7 +532,7 @@ export async function showMainUI() {
               socket.emit("get_status",friendId)
               const btn1 = await new Promise<string>((resolve) => {
                   socket.once("blockBtn", (btn) => {
-                      console.log("btn", btn); 
+                      // console.log("btn", btn); 
                       resolve(btn);
                   });
               });
@@ -400,6 +567,9 @@ export async function showMainUI() {
             const unblockOption = document.getElementById(
               "unblock-option"
             ) as HTMLDivElement;
+            const challenge  = document.getElementById(
+              "challenge-option"
+            )
 
             // to close popup if click out of popup
             window.addEventListener("click", (event) => {
@@ -425,6 +595,49 @@ export async function showMainUI() {
               )
                 unblockOption.classList.add("hidden");
             });
+
+            
+          if (challenge) {
+            const textEl = challenge.querySelector("p");
+            const iconEl = challenge.querySelector("span");
+            if(!challenge.dataset.click)
+            {
+              challenge.addEventListener("click", () => {
+                challenge.classList.add(
+                  "opacity-50",
+                  "cursor-not-allowed",
+                  "pointer-events-none"
+                );
+  
+                let remaining = 10;
+                const originalText = textEl?.textContent;
+  
+                textEl.textContent = `Waiting ${remaining}s`;
+                iconEl.classList.add("opacity-0");
+  
+                socket.emit("challenge", friendId);
+  
+                challenge.dataset.intervalId = setInterval(() => {
+                  remaining--;
+                  textEl.textContent = `Waiting ${remaining}s`;
+  
+                  if (remaining <= 0) {
+                    clearInterval(challenge.dataset.intervalId);
+  
+                    challenge.classList.remove(
+                      "opacity-50",
+                      "cursor-not-allowed",
+                      "pointer-events-none"
+                    );
+  
+                    textEl.textContent = originalText;
+                    iconEl.classList.remove("opacity-0");
+                  }
+                }, 1000);
+              });
+              challenge.dataset.click = 'yes';
+            }
+          }
 
             // if chose block button show popup of block option
             if (blockButton) {
