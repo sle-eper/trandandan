@@ -1,4 +1,9 @@
 // templates.ts
+import image1 from "../images/pingpong1.jpg"
+import image2 from "../images/pingpong2.jpg"
+import image3 from "../images/pingpong3.jpg"
+
+
 export const loginTemplate = () => `
   <form id="login-form"
     class="bg-black/40 backdrop-blur-md rounded-2xl shadow-lg border border-gray-700
@@ -361,10 +366,10 @@ export function homeTemplate(): string {
 
 // src/login/templates.ts
 export const images: Record<string, string> = {
-  "login-page": "/src_auth/images/pingpong2.jpg",
-  "signup-page": "/src_auth/images/pingpong1.jpg",
-  "forgot-page": "/src_auth/images/pingpong3.jpg",
-  "change-page": "/src_auth/images/pingpong1.jpg",
+  "login-page": image1,
+  "signup-page": image2,
+  "forgot-page": image3,
+  "change-page": image1,
 };
 
 export const sharedImage = (pageId: string) => `

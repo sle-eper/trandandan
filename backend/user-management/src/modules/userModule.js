@@ -184,6 +184,11 @@ class UserModule{
           [userId]
         );
       }
+      async getAllUsers() {
+        return await this.db.all(
+          'SELECT id, username, display_name, email, online_status FROM users'
+        );
+    }
 }
 
 export default UserModule ;

@@ -170,12 +170,13 @@ export async function verifyUser_get(request, reply) {
   //   return reply.code(403).send("Forbidden");
   // }
   if (!token) {
+    console.log("--------------------soumaya not authirized       ")
     return reply.code(401).send({ error: "Not Authorized" });
   }
   
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    reply
+    return reply
       .code(200)
       .headers({ 'x-user': decoded.username })
       .headers({ 'x-user-id': decoded.id })
