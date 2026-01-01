@@ -84,7 +84,8 @@ server.ready().then(() => {
               const msgId:string =  await saveMsg(id, friendId, msg, roomName, "waiting");
               const timeOfMsg:string = await getTimeOfMsg(msgId);
               const UserData = await fetchUserData(friendId); // get data of user from user-management service
-              socket.to(roomName).emit("receive_message", msg, msgId ,id,timeOfMsg,UserData.user.avatar_url);
+              console.log(UserData.user);
+              socket.to(roomName).emit("receive_message", msg, msgId ,id,timeOfMsg,UserData?.user.avatar_url);
               if(friendSocketId)
               {
                 for(const ids of friendSocketId)
@@ -123,7 +124,7 @@ server.ready().then(() => {
         await changeAllToRecv(data.myId,roomName)
         const messages = await getAllMsg(roomName, limit, offset);
         const UserData = await fetchUserData(data.friendId); 
-        socket.emit('messages_old_batch', messages,UserData?.avatar_url);
+        socket.emit('messages_old_batch', messages,UserData?.user.avatar_url);
       }catch(err){
         console.error('Error in get_old_messages:', err);
       }
@@ -274,7 +275,23 @@ server.ready().then(() => {
         console.error('Error in getNotif:', err);
       }
     })
-
+    socket.on('friendRequestSent', async (myId: string, friendId: string) => {
+      if (!myId || !friendId) return;
+      // console.log('friendRequestSent event received:', myId, friendId);
+      // console.log('size of online users:', onlineUsers.size);
+      // console.log('onlineUsers map:', onlineUsers);
+      // console.log('type of friendId:', typeof friendId);
+      const userSocket = onlineUsers.get(String(friendId));
+      // console.log('userSocket:', userSocket);
+      if (!userSocket) return;
+      // console.log("lalallalla");
+      const UserData = await fetchUserData(myId);
+      if (!UserData) return;
+      for (const ids of userSocket) {
+        socket.to(ids).emit("friendRequestReceived", UserData.user.username);
+      }
+      // console.log('friendRequestSent event received:', myId, friendId);
+    });
     socket.on("disconnect", () => {
       try{
         const id = socket.data.userId;

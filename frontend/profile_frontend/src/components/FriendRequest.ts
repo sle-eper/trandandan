@@ -4,7 +4,88 @@ import type { Player } from '../Player.ts';
 import { ProfileForm}  from './ProfileForm.ts';
 import  { User } from '../User.ts';
 import { navigate } from "../../../auth_frontend/src_auth/app.ts";
+import { socket } from "../../../auth_frontend/src_auth/login/login.ts";
 // Types
+
+socket.on('friendRequestReceived', (from: string) => {
+  // console.log('ssssssssssssssssssss');
+  const notification = document.getElementById("notification-menu");
+      const container = document.getElementById("play-notification-container");
+      if (!container) return;
+
+      if (document.getElementById("play-notification")) return;
+      container.innerHTML = "";
+
+      const notif = document.createElement("div");
+      notif.id = "play-notification";
+      notif.className = `
+        flex items-center justify-between gap-3
+        w-full px-4 py-2 rounded-2xl
+        bg-[#1a1a1a]/90 border border-[#FD1D1D]/40
+        shadow-lg backdrop-blur-lg
+        animate-slide-in
+      `;
+
+      notif.innerHTML = `
+        <span class="text-sm text-white truncate">
+          🤌 <strong>${from}</strong> send you a request
+        </span>
+
+        <div class="flex gap-2 shrink-0">
+          <button class="accept px-3 py-1 text-xs font-bold rounded-lg
+                        bg-green-500/80 hover:bg-green-500 transition">
+            Accept
+          </button>
+          <button class="reject px-3 py-1 text-xs font-bold rounded-lg
+                        bg-red-500/80 hover:bg-red-500 transition">
+            Reject
+          </button>
+        </div>
+      `;
+
+      container.appendChild(notif);
+
+      // notif.querySelector(".accept").onclick = () => {
+      //   // socket.emit("accept_play", userID,friendId );
+        // notif.remove();
+      // };
+
+      // notif.querySelector(".reject").onclick = () => {
+      //   // socket.emit("reject_play", userID,friendId);
+      //   notif.remove();
+      // };
+
+      const msgNotif = document.createElement("div");
+      msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
+                    transition rounded-lg`
+      msgNotif.innerHTML = `
+        <p class="text-sm text-white truncate">
+          🤌 <strong>${from}</strong>
+        </p>
+
+        <div class="flex gap-2 shrink-0">
+          <button class="accept px-3 py-1 text-xs font-bold rounded-lg
+                        bg-green-500/80 hover:bg-green-500 transition">
+            Accept
+          </button>
+          <button class="reject px-3 py-1 text-xs font-bold rounded-lg
+                        bg-red-500/80 hover:bg-red-500 transition">
+            Reject
+          </button>
+        </div>
+      `;
+      notification?.prepend(msgNotif);
+  
+  
+        setTimeout(() => {
+          notif.remove();
+        }, 10000);
+  
+});
+
+
+
+
 interface FriendshipStatus {
   isFriend: boolean;
   isPending: boolean;
@@ -333,11 +414,11 @@ export class PlayerProfileManager {
     mainContent.innerHTML = profileHTML;
 
     // Add event listeners based on status
-    this.attachEventListeners(player, status);
+    this.attachEventListeners(player, status, this.currentUserId!);
   }
 
   // Attach event listeners
-  private attachEventListeners(player: Player, status: FriendshipStatus): void {
+  private attachEventListeners(player: Player, status: FriendshipStatus, currentUserId: number): void {
     if (status.isCurrentUser) {
 
       const editBtn = document.getElementById('edit-profile');
@@ -384,7 +465,8 @@ export class PlayerProfileManager {
           `;
           
           await this.sendFriendRequest(player.id);
-          
+          console.log('Emitting friendRequestSent event via socket...', String(currentUserId), String(player.id));
+          socket.emit('friendRequestSent', currentUserId, player.id);
           // Refresh the profile to show pending state
           this.showPlayerProfile(player.id);
         } catch (error) {
@@ -418,6 +500,7 @@ export class PlayerProfileManager {
       if (!response.status || response.status !== 201) {
         throw new Error('Failed to send friend request');
       }
+
       
       console.log('Friend request sent:', response.data);
     } catch (error) {

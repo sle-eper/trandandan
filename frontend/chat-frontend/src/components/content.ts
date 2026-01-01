@@ -227,7 +227,7 @@ function escapeHTML(str: string): string {
                 .replace(/'/g, "&#039;");
 }
 
-export function sendMsg(msg:string,time:string,img:string):string{
+export function sendMsg(msg:string,time:string):string{
     return `<div id="received-msg" class="flex mt-5  md:w-[30vw] w-[60vw]  justify-end ml-auto pr-5 ">
     <div id="content-received" class="flex flex-col ">
         <div class=" bg-[#E63946] rounded-xl p-3 ">
@@ -246,7 +246,7 @@ export function sendMsg(msg:string,time:string,img:string):string{
 export function receivedMsg(msg:string,time:string,img:string):string{
 
     return `<div id="sent-msg" class="flex mt-5 md:w-[30vw] w-[80vw]  justify-start pl-5 ">
-                <img src='http://localhost:8080/uploads/${img}' alt="" class="h-10 w-10 rounded-full mt-2 mr-2">
+                <img src='/api/uploads/${img}' alt="" class="h-10 w-10 rounded-full mt-2 mr-2">
                 <div id="content-sent" class="max-w-[80%] flex flex-col">
                     <div  class="border-2 border-[#E63946] rounded-xl p-3  ">
                         <span class="text-[#F5F5F5]  break-all">
