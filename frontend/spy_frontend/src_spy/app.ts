@@ -282,7 +282,6 @@ export async function spyUi()
                             // console.log(data.spays,data.players)
                             game.innerHTML = renderPlayers(data,userName) 
                         }
-    
                 }
                 function ask(spy:any):object
                 {
