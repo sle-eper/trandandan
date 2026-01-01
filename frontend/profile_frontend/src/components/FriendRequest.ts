@@ -3,6 +3,7 @@ import { PlayerFriendship} from '../Player.ts';
 import type { Player } from '../Player.ts';
 import { ProfileForm}  from './ProfileForm.ts';
 import  { User } from '../User.ts';
+import { navigate } from "../../../auth_frontend/src_auth/app.ts";
 // Types
 interface FriendshipStatus {
   isFriend: boolean;
@@ -24,7 +25,7 @@ export class PlayerProfileManager {
     const currentUser = await User.fetchUserProfile();
     console.log('Current user profile in PlayerProfileManager:', currentUser);
     if (currentUser) {
-      this.currentUserId = currentUser.id;
+      this.currentUserId = currentUser.id ?? null;
     }
   }
 
@@ -92,22 +93,7 @@ export class PlayerProfileManager {
 
     if (status.isFriend) {
       return `
-        <button id="send-message-${player.id}"
-                class="px-6 py-3 rounded-xl bg-gradient-to-r from-[#FD1D1D] to-[#711F21]
-                       text-white font-semibold
-                       hover:shadow-[0_0_20px_#FD1D1D]
-                       transition-all duration-300 flex items-center gap-2">
-          <span class="material-symbols-outlined">chat</span>
-          <span>Message</span>
-        </button>
-        
-        <button id="unfriend-${player.id}"
-                class="px-6 py-3 rounded-xl bg-white/5 border border-white/10
-                       text-white font-semibold
-                       hover:bg-red-500/20 hover:border-red-500 transition-all duration-300 flex items-center gap-2">
-          <span class="material-symbols-outlined">person_remove</span>
-          <span>Unfriend</span>
-        </button>
+       
       `;
     }
 
@@ -216,7 +202,7 @@ export class PlayerProfileManager {
                           flex items-center justify-center text-5xl font-bold text-white
                           shadow-lg">
                 ${player.avatar ? 
-                  `<img src="http://localhost:8080/uploads/${player.avatar}" alt="${player.display_name}" class="w-full h-full rounded-2xl object-cover"/>` :
+                  `<img src="/api/uploads/${player.avatar}" alt="${player.display_name}" class="w-full h-full rounded-2xl object-cover"/>` :
                   this.escapeHtml(player.display_name.charAt(0).toUpperCase())
                 }
               </div>
@@ -356,24 +342,27 @@ export class PlayerProfileManager {
 
       const editBtn = document.getElementById('edit-profile');
       editBtn?.addEventListener('click', () => {
-        if (this.showEditProfileCallback) this.showEditProfileCallback.render();
+        if (this.showEditProfileCallback) 
+
+          navigate('/profile');
       });
     } else if (status.isFriend) {
-      const messageBtn = document.getElementById(`send-message-${player.id}`);
-      const unfriendBtn = document.getElementById(`unfriend-${player.id}`);
+      //const messageBtn = document.getElementById(`send-message-${player.id}`);
+      // const unfriendBtn = document.getElementById(`unfriend-${player.id}`);
 
-      messageBtn?.addEventListener('click', () => {
-        console.log('Send message to player:', player.id);
-        // Add messaging logic
-      });
+      // messageBtn?.addEventListener('click', () => {
+      //   console.log('Send message to player:', player.id);
+      //   // Add messaging logic
+      // });
 
-      unfriendBtn?.addEventListener('click', async () => {
-        if (confirm(`Are you sure you want to unfriend ${player.display_name}?`)) {
-          await this.unfriendUser(player.id);
-          // Refresh the profile
-          this.showPlayerProfile(player.id);
-        }
-      });
+      // unfriendBtn?.addEventListener('click', async () => {
+      //   if (confirm(`Are you sure you want to unfriend ${player.display_name}?`)) {
+      //     await this.unfriendUser(player.id);
+      //     // Refresh the profile
+      //     this.showPlayerProfile(player.id);
+      //   }
+      // }
+   // );
     } else if (status.isPending) {
       const cancelBtn = document.getElementById(`cancel-request-${player.id}`);
 
@@ -417,7 +406,7 @@ export class PlayerProfileManager {
   
   private async sendFriendRequest(receiverId: number): Promise<void> {
     try {
-      const response = await axios.post('http://localhost:8080/api/users/friends/request', {
+      const response = await axios.post('/api/users/friends/request', {
         friendId: receiverId,
       }, {
         headers: {
@@ -439,11 +428,12 @@ export class PlayerProfileManager {
 
   private async cancelFriendRequest(receiverId: number): Promise<void> {
     try {
-      const response = await axios.delete(`http://localhost:8080/api/users/friends/request/${receiverId}`, {
+      const response = await axios.delete(`/api/users/friends/cancelRequest`, {
         headers: {
           'Content-Type': 'application/json',
         },
         withCredentials: true,
+        params: { friendId: receiverId }
       });
       
       console.log('Friend request cancelled:', response.data);
@@ -453,21 +443,21 @@ export class PlayerProfileManager {
     }
   }
 
-  private async unfriendUser(friendId: number): Promise<void> {
-    try {
-      const response = await axios.delete(`http://localhost:8080/api/users/friends/${friendId}`, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        withCredentials: true,
-      });
+  // private async unfriendUser(friendId: number): Promise<void> {
+  //   try {
+  //     const response = await axios.delete(`http://localhost:8080/api/users/friends/${friendId}`, {
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       withCredentials: true,
+  //     });
       
-      console.log('Unfriended user:', response.data);
-    } catch (error) {
-      console.error('Error unfriending user:', error);
-      throw error;
-    }
-  }
+  //     console.log('Unfriended user:', response.data);
+  //   } catch (error) {
+  //     console.error('Error unfriending user:', error);
+  //     throw error;
+  //   }
+  // }
 
   private escapeHtml(text: string): string {
     const div = document.createElement('div');

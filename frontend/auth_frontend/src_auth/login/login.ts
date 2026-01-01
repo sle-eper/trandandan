@@ -78,7 +78,7 @@ export function attachLoginHandlers() {
 
       if (body.success) {
         currentUserId = response?.headers.get("x-user-id") || null;
-        const res = await fetch("http://localhost:8080/auth/verify", {
+        const res = await fetch("/auth/verify", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
         credentials: "include", // VERY IMPORTANT FOR Cookies

@@ -53,7 +53,7 @@ function  friendCart(friend:any,waitingMsg:object,myId:string):string //done
                                 md:w-12 md:h-12
                                 bg-cover bg-center rounded-full" 
                             style="
-                                background-image : url('http://localhost:8080/uploads/${friend.avatar_url}');
+                                background-image : url('/api/uploads/${friend.avatar_url}');
                                 aspect-ratio: 1/1;
                             ">
                         </div>
@@ -151,7 +151,7 @@ export function profileNav(img:string,userAccount:string,status:string):string{
 
                 <div class="h-10 w-10  bg-cover bg-center rounded-full" 
                     style="
-                        background-image : url('http://localhost:8080/uploads/${img}');
+                        background-image : url('/api/uploads/${img}');
                         aspect-ratio: 1/1;
                     ">
                 </div>

@@ -206,16 +206,20 @@ export async function verifyUser_get(request, reply) {
   // if (origin != "http://localhost:5173") {
   //   return reply.code(403).send("Forbidden");
   // }
+  console.log("Verifying token:", token);
+  console.log("Origin:", origin);
   if (!token) {
     return reply.code(401).send({ error: "Not Authorized" });
   }
   
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("Decoded token-----------------------------:", decoded.id, decoded.username);
+    // ✅ Correct - use .header() (singular) for individual headers
     reply
       .code(200)
-      .headers({ 'x-user': decoded.username })
-      .headers({ 'x-user-id': decoded.id })
+      .header('x-user', decoded.username)
+      .header('x-user-id', decoded.id)
       .send({
         authorization: true,
         message: "You are authenticated to access this resource.",
@@ -226,7 +230,6 @@ export async function verifyUser_get(request, reply) {
     console.log(' Token verification failed:', err.message);
     return reply.code(401).send({ error: "Not authorized" });
   }
-  return { accessToken: token };
 }
 
 // #########################################################

@@ -88,7 +88,7 @@ class UserModule{
 
 
     async updateProfile(userId, updates) {
-        const { displayName, bio, avatarUrl,email,username } = updates;
+        const { displayName, bio, avatarUrl,email,username, onlineStatus } = updates;
         
         const fields = [];
         const values = [];
@@ -114,6 +114,10 @@ class UserModule{
         if (avatarUrl) {
             fields.push('avatar_url = ?');
             values.push(avatarUrl);
+        }
+        if (onlineStatus) {
+            fields.push('online_status = ?');
+            values.push(onlineStatus);
         }
         
         fields.push('updated_at = CURRENT_TIMESTAMP');

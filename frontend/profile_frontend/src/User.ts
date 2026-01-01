@@ -14,7 +14,7 @@ export class User {
     static async fetchUserProfile(): Promise<UserProfile | null> {
 
         try {
-            const response = await axios.get('http://localhost:8080/api/users/User', {
+            const response = await axios.get('/api/users/User', {
     
                 headers: {
                     'Content-Type': 'application/json',
@@ -46,7 +46,8 @@ export class User {
 
     static async saveUserProfile(profile: Partial<UserProfile>): Promise<boolean> {
         try {
-        const response = await axios.put('http://localhost:8080/api/users/profile/update', profile, {
+            console.log('Saving user profile:', profile);
+        const response = await axios.put('/api/users/profile/update', profile, {
            
             headers: {
             'Content-Type': 'application/json',
@@ -61,7 +62,7 @@ export class User {
     }
   static async updateAvatar(formData: FormData): Promise<string | null> {
         try {
-            const response =  await axios.post('http://localhost:8080/api/users/profile/avatar', formData, {
+            const response =  await axios.post('/api/users/profile/avatar', formData, {
             headers: {
             'Content-Type': 'multipart/form-data',
             },

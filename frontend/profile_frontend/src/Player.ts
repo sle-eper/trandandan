@@ -22,7 +22,7 @@ export class PlayerFriendship {
  static async fetchPlayerProfile(playerId?: number): Promise<Player | null> {
   console.log('Fetching profile for player ID:', playerId);
   try {
-    const response = await axios.get(`http://localhost:8080/api/users/profile`, {
+    const response = await axios.get(`/api/users/profile`, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -59,7 +59,7 @@ export class PlayerFriendship {
   static async checkFriendshipStatus(friendId: number): Promise<boolean>   {
   try {
     // Check if already friends
-        const response = await axios.get('http://localhost:8080/api/users/friend/check', {
+        const response = await axios.get('/api/users/friend/check', {
         headers: {
             'Content-Type': 'application/json',
         },
@@ -81,7 +81,7 @@ export class PlayerFriendship {
     // Check if request is pending
     static async checkPendingRequest(friendId: number): Promise<boolean> {
     try {
-    const pendingResponse = await axios.get('http://localhost:8080/api/users/friend/requestStatus', {
+    const pendingResponse = await axios.get('/api/users/friend/requestStatus', {
       headers: {
         'Content-Type': 'application/json',
       },

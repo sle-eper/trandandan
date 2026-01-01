@@ -19,7 +19,7 @@ export function setCorrectChoice(value:string)
 export async function spyUi()
 {
     const main = document.getElementById("dashboard-content")
-    const response = await fetch("http://localhost:8080/auth/verify", {
+    const response = await fetch("/auth/verify", {
             method: "GET",
             headers: { "Content-Type": "application/json" },
             credentials: "include", // VERY IMPORTANT FOR Cookies

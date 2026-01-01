@@ -197,8 +197,9 @@ class ProfileController {
     // POST /profile/avatar - Upload avatar
    async uploadAvatar(request, reply) {
   try {
+    // const userId = request.headers['x-user-id'];
     const userId = request.headers['x-user-id'];
-    
+    console.log('User ID from headers:', userId);
     console.log('Starting avatar upload for user ID:', userId);
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];

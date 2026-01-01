@@ -226,7 +226,7 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
 }
 
 export async function showMainUI() {
-  const response = await fetch("http://localhost:8080/auth/verify", {
+  const response = await fetch("/auth/verify", {
     method: "GET",
     headers: { "Content-Type": "application/json" },
     credentials: "include", // VERY IMPORTANT FOR Cookies
