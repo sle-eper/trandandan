@@ -50,7 +50,13 @@ export function renderNavBar(): string {
         </div>
       </div>
 
+
       <div class="flex items-center gap-4 relative">
+
+        <div id="play-notification-container"
+        class="absolute right-full mr-4
+                max-w-md w-[420px]">
+        </div>
 
         <button id="notification-btn"
           class="w-10 h-10 flex items-center justify-center rounded-full
@@ -62,6 +68,13 @@ export function renderNavBar(): string {
             notifications
           </span>
         </button>
+
+        <div id="notification-menu"
+          class="hidden absolute right-0 top-12 w-70 rounded-xl bg-black/70
+                 border border-white/10 shadow-xl backdrop-blur-xl
+                 py-2 opacity-0 translate-y-[-6px]
+                 transition-all duration-200 ease-out max-h-[200px] overflow-y-auto overflow-x-hidden">
+        </div>
 
         <button id="settings-btn"
           class="w-10 h-10 flex items-center justify-center rounded-full
@@ -82,7 +95,7 @@ export function renderNavBar(): string {
 
           <button id="change-account"
             class="w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
-                   transition rounded-lg">
+                  transition rounded-lg">
             Change Account
           </button>
 
@@ -120,6 +133,8 @@ export function renderNavBar(): string {
 
 export async function navBarLogic() {
   const btn = document.getElementById("settings-btn");
+  const notifBtn = document.getElementById("notification-btn");
+  const notifmenu = document.getElementById("notification-menu");
   const menu = document.getElementById("settings-menu");
   const signOutBtn = document.getElementById("sign-out");
   const profile = document.getElementById("profile");
@@ -129,6 +144,24 @@ export async function navBarLogic() {
   const enable2FABtn = document.getElementById("enable-2fa");
 
   // Toggle settings menu
+  notifBtn?.addEventListener("click",()=>{
+    if(!notifmenu || notifmenu.children.length === 0) return;
+    const isHidden = notifmenu.classList.contains("hidden");
+    if (isHidden) {
+      notifmenu.classList.remove("hidden");
+      if(!menu?.classList.contains("hidden"))
+          menu?.classList.add("hidden");
+      setTimeout(() => {
+        notifmenu.classList.remove("opacity-0", "translate-y-[-6px]");
+        notifmenu.classList.add("opacity-100", "translate-y-0");
+      }, 10);
+    } else {
+      // CLOSE notifmenu
+      notifmenu.classList.add("opacity-0", "translate-y-[-6px]");
+      notifmenu.classList.remove("opacity-100", "translate-y-0");
+      setTimeout(() => notifmenu.classList.add("hidden"), 150);
+    }
+  })
   btn?.addEventListener("click", () => {
     if (!menu) return;
 
@@ -137,6 +170,8 @@ export async function navBarLogic() {
     if (isHidden) {
       // OPEN MENU
       menu.classList.remove("hidden");
+      if(!notifmenu?.classList.contains("hidden"))
+          notifmenu?.classList.add("hidden");
       setTimeout(() => {
         menu.classList.remove("opacity-0", "translate-y-[-6px]");
         menu.classList.add("opacity-100", "translate-y-0");

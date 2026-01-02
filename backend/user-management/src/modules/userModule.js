@@ -170,14 +170,9 @@ class UserModule{
           [secret, userId]
         );
       }
-      async getTwoFactorSecret(userId) {
-        const row = await this.db.get(
-          `SELECT two_factor_secret FROM users WHERE id = ?`,
-          [userId]
-        );
-        return row ? row.two_factor_secret : null;
-      }
-      async setTwoFactorFlag(userId) {
+      async setTwoFactorFlag(userId)
+      {
+        console.log("Enabling 2FA for userId:", userId);
         await this.db.run(
           `UPDATE users 
            SET two_factor_enabled = 1 WHERE id = ?`,

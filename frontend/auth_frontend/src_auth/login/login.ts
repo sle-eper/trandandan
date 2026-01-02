@@ -2,6 +2,7 @@
 import { loginTemplate, sharedImage } from "./templates";
 import { loginUser } from "./api";
 import { navigate } from "../app";
+
 import { io } from "socket.io-client";
 export const socket = io("http://localhost:3000");
 // import { showDashboard } from "../dashboard/dashboard";
@@ -74,19 +75,13 @@ export function attachLoginHandlers() {
 
     try {
       const { response, body } = await loginUser(username, password);
-
+      if (response && response.status === 206) {
+        // Show 2FA page
+      }
       if (body.success) {
         currentUserId = response?.headers.get("x-user-id") || null;
-        const res = await fetch("http://localhost:8080/auth/verify", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include", // VERY IMPORTANT FOR Cookies
-      });
-      let myId: string;
-      const responseJson = await res.json()
-      myId =  responseJson.id
-      // console.log(myId);
-      socket.emit("con", myId);
+        
+      socket.emit("con", currentUserId);
         // const socket = io("http://localhost:3000");
         navigate("/home");
       } else {

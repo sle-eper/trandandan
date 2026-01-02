@@ -1,7 +1,9 @@
 import { User } from './../User.ts';
 import type { UserProfile } from '../User.ts';
-
+import axios from 'axios';
 import { ChangePasswordModal } from './ChangePassword.ts';
+
+// import { ChangePasswordModal } from './ChangePassword.ts';
 
 export class ProfileForm {
     //  private formData: UserProfile;

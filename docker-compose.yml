@@ -72,7 +72,7 @@ services:
     networks:
       - app-network
 
-  chat-serves:
+  chat-service:
     build: ./backend/chat-service
     container_name: chat
     ports:

@@ -2,11 +2,11 @@ import ProfileController from '../controllers/profile.controller.js';;
 
 async function profileRoutes(fastify, options) {
   const profileController = new ProfileController(fastify.db);
-  
+
   // Profile routes
 
-  fastify.get('/profile/User',profileController.getUserBYemailorUsername.bind(profileController));
-  
+  fastify.get('/profile/User', profileController.getUserBYemailorUsername.bind(profileController));
+
   fastify.post('/profile/create',
   {
       schema: {
@@ -64,8 +64,8 @@ async function profileRoutes(fastify, options) {
           displayName: { type: 'string', minLength: 2, maxLength: 50 },
           bio: { type: 'string', maxLength: 500 },
           avatarUrl: { type: 'string' },
-          email: { 
-            type: 'string', 
+          email: {
+            type: 'string',
             format: 'email',
             maxLength: 100
           }
@@ -84,9 +84,9 @@ async function profileRoutes(fastify, options) {
         type: 'object',
         required: ['q'],
         properties: {
-          q: { 
-            type: 'string', 
-            minLength: 2, 
+          q: {
+            type: 'string',
+            minLength: 2,
             maxLength: 50
           }
         }

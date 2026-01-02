@@ -7,6 +7,8 @@ export default async function (fastify){
   fastify.get('/google', oauthController.googleAuth_get);
   fastify.get('/github', oauthController.githubAuth_get);
   fastify.post('/logout', authController.logout_post);
+  fastify.get('/2f/setup', authController.twofactor_get);
+  fastify.post('/2f/verify-2fa', authController.verify2fa_post);
   fastify.get('/google/callback', oauthController.googleAuthCallback_get);
   fastify.get('/github/callback', oauthController.githubAuthCallback_get);
   fastify.post('/forget-password', authController.forgetPassword_post);
