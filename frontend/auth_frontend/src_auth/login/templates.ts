@@ -128,6 +128,55 @@ export const signupTemplate = () => `
     </p>
   </div>
 `;
+export const gamesTemplate = () => `
+<div class="min-h-screen w-full flex flex-col justify-center items-center p-6">
+
+  <h1 class="text-4xl md:text-5xl font-bold text-white mb-12 flex items-center gap-4">
+    <span class="material-symbols-outlined text-5xl text-yellow-500">gamepad</span>
+    Choose a game
+  </h1>
+
+  <div class="flex flex-col md:flex-row gap-8 w-full max-w-4xl">
+
+    <!-- Ping Pong -->
+    <a href="/game/pong" data-route
+      class="group relative w-full h-80 md:h-96 rounded-3xl overflow-hidden cursor-pointer
+             duration-300 hover:scale-[1.02] ring-2 ring-transparent hover:ring-green-500">
+
+      <div class="absolute inset-0 bg-gradient-to-br from-green-900 to-black"></div>
+
+      <div class="absolute inset-0 flex flex-col justify-center items-center z-10 p-4">
+        <div class="bg-green-600/20 p-6 rounded-full mb-4 group-hover:bg-green-500/30">
+          <span class="material-symbols-outlined text-6xl text-white">sports_tennis</span>
+        </div>
+        <h2 class="text-3xl font-bold text-white uppercase">Ping Pong</h2>
+        <p class="text-green-200 mt-2 opacity-0 group-hover:opacity-100 duration-500">
+          Classic Table Tennis
+        </p>
+      </div>
+    </a>
+
+    <!-- Spy Game -->
+    <a href="/game/spy" data-route
+      class="group relative w-full h-80 md:h-96 rounded-3xl overflow-hidden cursor-pointer
+             duration-300 hover:scale-[1.02] ring-2 ring-transparent hover:ring-red-500">
+
+      <div class="absolute inset-0 bg-gradient-to-br from-red-900 to-black"></div>
+
+      <div class="absolute inset-0 flex flex-col justify-center items-center z-10 p-4">
+        <div class="bg-red-600/20 p-6 rounded-full mb-4 group-hover:bg-red-500/30">
+          <span class="material-symbols-outlined text-6xl text-white">visibility_off</span>
+        </div>
+        <h2 class="text-3xl font-bold text-white uppercase">Spy Game</h2>
+        <p class="text-red-200 mt-2 opacity-0 group-hover:opacity-100 duration-500">
+          Find the Imposter
+        </p>
+      </div>
+    </a>
+
+  </div>
+</div>
+`;
 
 
 export const forgotTemplate = () => `

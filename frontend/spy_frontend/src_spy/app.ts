@@ -7,6 +7,8 @@ import {PlayerAndSpaySelection} from "./component/PlayerAndSpaySelection.ts"
 import { findingSpy } from './component/findingSpy.ts';
 import { displayCard } from './component/localMode.ts';
 import { history } from './component/history.ts';
+import { navigate } from '../../auth_frontend/src_auth/app.ts';
+
 
 // //start og game 
 let correctChoice:string;
@@ -16,8 +18,10 @@ export function setCorrectChoice(value:string)
     correctChoice = value.toLocaleLowerCase()
 }
 
-export async function spyUi()
+export async function spyUi(step: string = "local")
+
 {
+    
     const main = document.getElementById("dashboard-content")
     const response = await fetch("http://localhost:8080/auth/verify", {
             method: "GET",
@@ -29,10 +33,38 @@ export async function spyUi()
         myId =  responseJson.id;
         const userName = responseJson.username;
         // console.log(responseJson)
-            
+        
     if(main)
     {
        //show game mode
+        if (step === "history") {
+            main.innerHTML = await history(myId);
+            return;
+        }
+
+        if (step === "players") {
+            main.innerHTML =
+            renderLocalMode() +
+            PlayerAndSpaySelection("players", 7);
+            return;
+        }
+
+        if (step === "spies") {
+            main.innerHTML =
+                renderLocalMode() +
+                PlayerAndSpaySelection("spays", 1);
+            return;
+        }
+
+        if (step === "sections") {
+            main.innerHTML =
+                renderLocalMode() +
+                renderSection();
+            return;
+        }
+
+        /* ===================== DEFAULT (MAIN SPY PAGE) ===================== */
+
         main.innerHTML = renderLocalMode() + renderSection() + PlayerAndSpaySelection("players",3) + PlayerAndSpaySelection("spays",1) /* + await history(myId) */
         const game = document.getElementById("dashboard-content")
         const data = {
@@ -64,7 +96,8 @@ export async function spyUi()
                         historySection.remove()
                     main.innerHTML += await history(myId)
                     const historySection2 = document.getElementById("historySection")
-                    historySection2?.classList.remove('hidden')
+                    historySection2?.classList.remove('hidden');
+                    // navigate("/game/spy/history")
                 }
                 if(el.id === 'confirm-btn')
                 {
@@ -217,6 +250,7 @@ export async function spyUi()
                             })
                             confirmSections.dataset.bound = 'true'
                         }
+                    // navigate("/game/spy/section")
                 }
                 if(el.id === 'next')
                 {
