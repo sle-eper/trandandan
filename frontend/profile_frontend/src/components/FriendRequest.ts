@@ -7,81 +7,339 @@ import { navigate } from "../../../auth_frontend/src_auth/app.ts";
 import { socket } from "../../../auth_frontend/src_auth/login/login.ts";
 // Types
 
-socket.on('friendRequestReceived', (from: string) => {
-  // console.log('ssssssssssssssssssss');
+socket.on('friendRequestReceived', (from: string, myId: string,friendId: string) => {
+ 
+  console.log('Friend request received myId:', myId, 'with frienID:', friendId);
   const notification = document.getElementById("notification-menu");
-      const container = document.getElementById("play-notification-container");
-      if (!container) return;
+  const container = document.getElementById("play-notification-container");
+  if (!container) return;
 
-      if (document.getElementById("play-notification")) return;
-      container.innerHTML = "";
+  const existing = document.getElementById("play-notification");
+  if (existing) existing.remove();
 
-      const notif = document.createElement("div");
-      notif.id = "play-notification";
-      notif.className = `
-        flex items-center justify-between gap-3
-        w-full px-4 py-2 rounded-2xl
-        bg-[#1a1a1a]/90 border border-[#FD1D1D]/40
-        shadow-lg backdrop-blur-lg
-        animate-slide-in
-      `;
+  container.innerHTML = "";
 
-      notif.innerHTML = `
-        <span class="text-sm text-white truncate">
-          🤌 <strong>${from}</strong> send you a request
-        </span>
+ 
+  const popupNotif = document.createElement("div");
+  popupNotif.id = "play-notification";
+  popupNotif.className = `
+    flex items-center justify-between gap-4
+    w-full max-w-md px-5 py-3 rounded-xl
+    bg-gradient-to-r from-gray-900/95 to-gray-800/95
+    border border-red-500/30
+    shadow-2xl shadow-red-500/20 backdrop-blur-xl
+    transition-all duration-300 ease-out
+    hover:border-red-500/50 hover:shadow-red-500/30
+  `;
 
-        <div class="flex gap-2 shrink-0">
-          <button class="accept px-3 py-1 text-xs font-bold rounded-lg
-                        bg-green-500/80 hover:bg-green-500 transition">
-            Accept
-          </button>
-          <button class="reject px-3 py-1 text-xs font-bold rounded-lg
-                        bg-red-500/80 hover:bg-red-500 transition">
-            Reject
-          </button>
-        </div>
-      `;
+  popupNotif.innerHTML = `
+    <div class="flex items-center gap-3 flex-1 min-w-0">
+      <!-- Icon -->
+      <div class="flex-shrink-0 w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
+        <svg class="w-5 h-5 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <line x1="19" y1="8" x2="19" y2="14"></line>
+          <line x1="22" y1="11" x2="16" y2="11"></line>
+        </svg>
+      </div>
+      
+      <!-- Message -->
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-semibold text-white truncate">Friend Request</p>
+        <p class="text-xs text-gray-400 truncate"><strong class="text-red-400">${from}</strong> wants to connect</p>
+      </div>
+    </div>
 
-      container.appendChild(notif);
+    <!-- Action Buttons -->
+    <div class="flex gap-2 shrink-0">
+      <button class="accept group relative px-4 py-2 text-xs font-bold rounded-lg
+                overflow-hidden transition-all duration-200
+                bg-green-500/20 hover:bg-green-500 text-green-400 hover:text-white
+                border border-green-500/30 hover:border-green-500
+                hover:shadow-lg hover:shadow-green-500/50 hover:scale-105">
+        <span class="relative z-10">✓</span>
+      </button>
+      <button class="reject group relative px-4 py-2 text-xs font-bold rounded-lg
+                overflow-hidden transition-all duration-200
+                bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white
+                border border-red-500/30 hover:border-red-500
+                hover:shadow-lg hover:shadow-red-500/50 hover:scale-105">
+        <span class="relative z-10">✕</span>
+      </button>
+    </div>
+  `;
 
-      // notif.querySelector(".accept").onclick = () => {
-      //   // socket.emit("accept_play", userID,friendId );
-        // notif.remove();
-      // };
+  container.appendChild(popupNotif);
 
-      // notif.querySelector(".reject").onclick = () => {
-      //   // socket.emit("reject_play", userID,friendId);
-      //   notif.remove();
-      // };
+ 
+  requestAnimationFrame(() => {
+    popupNotif.style.transform = 'translateY(0)';
+    popupNotif.style.opacity = '1';
+  });
 
-      const msgNotif = document.createElement("div");
-      msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
-                    transition rounded-lg`
-      msgNotif.innerHTML = `
-        <p class="text-sm text-white truncate">
-          🤌 <strong>${from}</strong>
-        </p>
 
-        <div class="flex gap-2 shrink-0">
-          <button class="accept px-3 py-1 text-xs font-bold rounded-lg
-                        bg-green-500/80 hover:bg-green-500 transition">
-            Accept
-          </button>
-          <button class="reject px-3 py-1 text-xs font-bold rounded-lg
-                        bg-red-500/80 hover:bg-red-500 transition">
-            Reject
-          </button>
-        </div>
-      `;
-      notification?.prepend(msgNotif);
-  
-  
+  const acceptBtn = popupNotif.querySelector(".accept");
+  const rejectBtn = popupNotif.querySelector(".reject");
+
+  if (acceptBtn) {
+    acceptBtn.addEventListener('click', async () => {
+      try {
+
+        acceptBtn.setAttribute('disabled', 'true');
+        rejectBtn?.setAttribute('disabled', 'true');
+        
+        const response = await fetch('/api/users/friends/accept', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify( friendId )
+        });
+        console.log("response:", response);
+        if (response.ok) {
+          acceptBtn.innerHTML = '<span class="relative z-10">✓ Accepted</span>';
+          acceptBtn.classList.add('bg-green-500');
+          
+      
+          socket.emit('acceptFriendRequest',  friendId );
+          
+        
+          setTimeout(() => {
+            popupNotif.style.transform = 'translateX(400px)';
+            popupNotif.style.opacity = '0';
+            setTimeout(() => popupNotif.remove(), 300);
+          }, 1000);
+        } else {
+          throw new Error('Failed to accept request');
+        }
+      } catch (error) {
+        console.error('Error accepting friend request:', error);
+        acceptBtn.innerHTML = '<span class="relative z-10">Error</span>';
+        acceptBtn.classList.add('bg-red-500');
+        
+     
         setTimeout(() => {
-          notif.remove();
-        }, 10000);
-  
+          acceptBtn.removeAttribute('disabled');
+          rejectBtn?.removeAttribute('disabled');
+          acceptBtn.innerHTML = '<span class="relative z-10">✓</span>';
+          acceptBtn.classList.remove('bg-red-500');
+        }, 2000);
+      }
+    });
+  }
+
+  if (rejectBtn) {
+    rejectBtn.addEventListener('click', async () => {
+      try {
+        console.log("Rejecting friend request...");
+        acceptBtn?.setAttribute('disabled', 'true');
+        rejectBtn.setAttribute('disabled', 'true');
+        
+        
+        const response = await fetch('/api/users/friends/reject', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({friendId} )
+        }); 
+
+        if (response.ok) {
+          
+          rejectBtn.innerHTML = '<span class="relative z-10">✓ Declined</span>';
+          
+          
+          socket.emit('rejectFriendRequest', {myId: from, friendId });
+          
+         
+          setTimeout(() => {
+            popupNotif.style.transform = 'translateX(400px)';
+            popupNotif.style.opacity = '0';
+            setTimeout(() => popupNotif.remove(), 300);
+          }, 1000);
+        } else {
+          throw new Error('Failed to reject request');
+        }
+      } catch (error) {
+        console.error('Error rejecting friend request:', error);
+        rejectBtn.innerHTML = '<span class="relative z-10">Error</span>';
+        
+       
+        setTimeout(() => {
+          acceptBtn?.removeAttribute('disabled');
+          rejectBtn.removeAttribute('disabled');
+          rejectBtn.innerHTML = '<span class="relative z-10">✕</span>';
+        }, 2000);
+      }
+    });
+  }
+
+ 
+  setTimeout(() => {
+    if (popupNotif.parentElement) {
+      popupNotif.style.transform = 'translateY(-20px)';
+      popupNotif.style.opacity = '0';
+      setTimeout(() => popupNotif.remove(), 300);
+    }
+  }, 10000);
+
+
+  if (notification) {
+    const menuNotif = document.createElement("div");
+    menuNotif.className = `
+      group relative w-full px-4 py-3 
+      bg-gray-900/40 hover:bg-red-500/10
+      border-l-4 border-red-500/50 hover:border-red-500
+      transition-all duration-200
+      cursor-pointer
+    `;
+    
+    menuNotif.innerHTML = `
+      <div class="flex items-start gap-3">
+        <!-- Avatar Icon -->
+        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-red-500/30 to-red-600/30 
+                    flex items-center justify-center border border-red-500/40 group-hover:border-red-500/60 transition">
+          <svg class="w-5 h-5 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <line x1="19" y1="8" x2="19" y2="14"></line>
+            <line x1="22" y1="11" x2="16" y2="11"></line>
+          </svg>
+        </div>
+
+        <!-- Content -->
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <p class="text-sm font-semibold text-white">Friend Request</p>
+            <span class="text-[10px] text-gray-500">now</span>
+          </div>
+          <p class="text-xs text-gray-400 mb-3">
+            <strong class="text-red-400 font-semibold">${from}</strong> sent you a friend request
+          </p>
+
+          <!-- Action Buttons -->
+          <div class="flex gap-2">
+            <button class="menu-accept flex-1 px-3 py-1.5 text-xs font-bold rounded-lg
+                      bg-green-500/20 hover:bg-green-500 text-green-400 hover:text-white
+                      border border-green-500/30 hover:border-green-500
+                      transition-all duration-200 hover:scale-105">
+              Accept
+            </button>
+            <button class="menu-reject flex-1 px-3 py-1.5 text-xs font-bold rounded-lg
+                      bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white
+                      border border-red-500/30 hover:border-red-500
+                      transition-all duration-200 hover:scale-105">
+              Decline
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    notification.prepend(menuNotif);
+
+    
+    const menuAcceptBtn = menuNotif.querySelector(".menu-accept");
+    const menuRejectBtn = menuNotif.querySelector(".menu-reject");
+
+    if (menuAcceptBtn) {
+      menuAcceptBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        
+        try {
+         
+          menuAcceptBtn.setAttribute('disabled', 'true');
+          menuRejectBtn?.setAttribute('disabled', 'true');
+          menuAcceptBtn.textContent = 'Accepting...';
+          
+         
+          const response = await fetch('/api/users/friends/accept', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ friendId })
+          });
+
+          if (response.ok) {
+            menuAcceptBtn.textContent = '✓ Accepted';
+            menuAcceptBtn.classList.add('bg-green-500', 'text-white');
+            
+            // Notify via socket
+            socket.emit('acceptFriendRequest', { myId: from, friendId });
+            
+           
+            setTimeout(() => {
+              menuNotif.style.opacity = '0';
+              menuNotif.style.transform = 'translateX(-20px)';
+              setTimeout(() => menuNotif.remove(), 300);
+            }, 1500);
+          } else {
+            throw new Error('Failed to accept');
+          }
+        } catch (error) {
+          console.error('Error accepting friend request:', error);
+          menuAcceptBtn.textContent = 'Failed';
+          menuAcceptBtn.classList.add('bg-red-500');
+          
+         
+          setTimeout(() => {
+            menuAcceptBtn.removeAttribute('disabled');
+            menuRejectBtn?.removeAttribute('disabled');
+            menuAcceptBtn.textContent = 'Accept';
+            menuAcceptBtn.classList.remove('bg-red-500');
+          }, 2000);
+        }
+      });
+    }
+
+    if (menuRejectBtn) {
+      menuRejectBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        
+        try {
+          
+          menuAcceptBtn?.setAttribute('disabled', 'true');
+          menuRejectBtn.setAttribute('disabled', 'true');
+          menuRejectBtn.textContent = 'Declining...';
+          
+         
+          const response = await fetch('/api/users/friends/reject', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ friendId })
+          });
+
+          if (response.ok) {
+            menuRejectBtn.textContent = '✓ Declined';
+            
+           
+            socket.emit('rejectFriendRequest', { myId: from, friendId });
+            
+          
+            setTimeout(() => {
+              menuNotif.style.opacity = '0';
+              menuNotif.style.transform = 'translateX(-20px)';
+              setTimeout(() => menuNotif.remove(), 300);
+            }, 1000);
+          } else {
+            throw new Error('Failed to reject');
+          }
+        } catch (error) {
+          console.error('Error rejecting friend request:', error);
+          menuRejectBtn.textContent = 'Failed';
+       
+          setTimeout(() => {
+            menuAcceptBtn?.removeAttribute('disabled');
+            menuRejectBtn.removeAttribute('disabled');
+            menuRejectBtn.textContent = 'Decline';
+          }, 2000);
+        }
+      });
+    }
+  }
 });
+
+
 
 
 

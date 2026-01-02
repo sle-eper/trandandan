@@ -106,7 +106,22 @@ function getnotif(): Promise<any[]> {
         </span>
       `;
       notification?.prepend(msgNotif);
-      
+        }else if(el.type == 'friendRequest')
+        {
+          const msgNotif = document.createElement("div");
+          msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
+                        transition rounded-lg`
+          msgNotif.innerHTML = `
+            <span class="block max-w-70 truncate">
+              🤝 <strong>${el.sender_name}</strong> sent you a friend request
+            </span>
+          `;
+          notification?.prepend(msgNotif);
+
+
+
+
+          
         }
     })
 

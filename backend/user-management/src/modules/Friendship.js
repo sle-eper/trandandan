@@ -43,7 +43,16 @@ class Friendship {
       
       return { success: true, message: 'Friend request accepted' };
     }
-  
+    // Reject friend request
+    async rejectRequest(userId, friendId) {
+      await this.db.run(
+        `DELETE FROM friendships 
+         WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?) AND status = 'pending'`,
+        [userId, friendId, friendId, userId]
+      );
+      
+      return { success: true, message: 'Friend request rejected' };
+    }
     // Remove friendship
     async removeFriendship(userId, friendId) {
       await this.db.run(

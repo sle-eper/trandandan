@@ -148,7 +148,7 @@ export class ProfileForm {
     //  private formData: UserProfile;
     private oldProfileData: UserProfile | null = null;
     private userData: UserProfile | null = null;
-    private avatarPreview: string = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default';
+    private avatarPreview: string = '/api/uploads/default.png';
     private isOnline: boolean = true;
     private selectedAvatarFile: File | null = null;
 

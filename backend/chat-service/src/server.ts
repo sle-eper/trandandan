@@ -277,20 +277,58 @@ server.ready().then(() => {
     })
     socket.on('friendRequestSent', async (myId: string, friendId: string) => {
       if (!myId || !friendId) return;
-      // console.log('friendRequestSent event received:', myId, friendId);
-      // console.log('size of online users:', onlineUsers.size);
-      // console.log('onlineUsers map:', onlineUsers);
-      // console.log('type of friendId:', typeof friendId);
+      await saveNotif(myId,friendId,'friendRequest',null);
       const userSocket = onlineUsers.get(String(friendId));
-      // console.log('userSocket:', userSocket);
+      
       if (!userSocket) return;
-      // console.log("lalallalla");
+     
       const UserData = await fetchUserData(myId);
       if (!UserData) return;
       for (const ids of userSocket) {
-        socket.to(ids).emit("friendRequestReceived", UserData.user.username);
+        
+        socket.to(ids).emit("friendRequestReceived", UserData.user.username, friendId,myId);
       }
-      // console.log('friendRequestSent event received:', myId, friendId);
+      
+    });
+    socket.on('acceptFriendRequest', async (myId: string, friendId: string) => {
+      try{
+        if (!friendId) return;
+        const id = socket.data.userId;
+        console.log("myId:", myId, "friendId:", friendId, "id from socket:", id);
+        if(!id) return;
+        const friendSocket = onlineUsers.get(String(friendId));
+        if(!friendSocket)return;
+        const UserData = await fetchUserData(id); 
+        if(!UserData)
+          return;
+        for(const isd of friendSocket)
+        {
+          socket.to(isd).emit("friendRequestAccepted",UserData?.user?.username,id);
+        }
+      }catch(err)
+      {
+        console.error('Error in acceptFriendRequest:', err);
+      }
+    }); 
+    socket.on('rejectFriendRequest', async (myId:string, friendId:string) => {
+      try{
+        if (!friendId) return;
+        const id = myId;
+        if(!id) return;
+        const friendSocket = onlineUsers.get(String(friendId));
+        if(!friendSocket)return;
+        const UserData = await fetchUserData(id); 
+        if(!UserData)
+          return;
+        for(const isd of friendSocket)
+        {
+          socket.to(isd).emit("friendRequestRejected",UserData?.user?.username,id);
+        }
+      }
+      catch(err)
+      {
+        console.error('Error in rejectFriendRequest:', err);
+      }
     });
     socket.on("disconnect", () => {
       try{

@@ -113,13 +113,13 @@ export function attachLoginHandlers() {
 
   if (googleBtn) {
     googleBtn.addEventListener("click", () => {
-      window.location.href = "http://localhost:8080/api/auth/google";
+      window.location.href = "/api/auth/google";
     });
   }
 
   if (githubBtn) {
     githubBtn.addEventListener("click", () => {
-      window.location.href = "http://localhost:8080/api/auth/github";
+      window.location.href = "/api/auth/github";
     });
   }
 }

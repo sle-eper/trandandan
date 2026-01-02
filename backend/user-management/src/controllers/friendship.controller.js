@@ -47,8 +47,8 @@ class FriendsController {
         // const userId = request.user.userId;
         const userId = request.headers['x-user-id'];
         
-        const { friendId } = request.body;
-        
+        const friendId = request.body;
+        console.log("acceptRequest called with userId:", userId, "friendId:", friendId);
         const result = await this.friendshipModel.acceptRequest( userId,friendId);
         
         return result;
@@ -56,12 +56,25 @@ class FriendsController {
         return reply.code(500).send({ error: error.message });
       }
     }
-  
-    // DELETE /friends/:id - Remove friend
+    async rejectRequest(request, reply) {
+      try {
+       
+        const userId = request.headers['x-user-id'];
+        
+        const friendId = request.body;
+        console.log("rejectRequest called with body:",friendId,userId);
+        
+        const result = await this.friendshipModel.rejectRequest( userId,friendId);
+        
+        return result;
+      } catch (error) {
+        return reply.code(500).send({ error: error.message });
+      }
+    }
     async removeFriend(request, reply) {
       try {
        
-        const userId = request.user.userId;
+        const userId = request.headers['x-user-id'];
         const { id } = request.params;
         
         const result = await this.friendshipModel.removeFriendship(userId, id);
