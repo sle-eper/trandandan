@@ -170,7 +170,15 @@ class UserModule{
           [secret, userId]
         );
       }
-
+      async setTwoFactorFlag(userId)
+      {
+        console.log("Enabling 2FA for userId:", userId);
+        await this.db.run(
+          `UPDATE users 
+           SET two_factor_enabled = 1 WHERE id = ?`,
+          [userId]
+        );
+      }
       async getAllUsers() {
         return await this.db.all(
           'SELECT id, username, display_name, email, online_status FROM users'

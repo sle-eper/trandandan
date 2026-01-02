@@ -111,13 +111,14 @@ export async function login_post(request, reply) {
   if (!row) {
     return reply.code(400).send({ success: false, message: "User not found" });
   }
-  if (String(row.data.two_factor_enabled) === "true") {
+  if (Number(row.data.two_factor_enabled) === 1) {
     console.log("🔍 2FA is enabled for this user.");
     console.log("🔍 Redirecting to 2FA verification.");
+    return reply.code(206).send({ success: true, message: "2FA required" });
   }
   console.log("🔍 Comparing passwords");
   console.log(row.data.password_hash);
-  
+
   const match = await bcrypt.compare(password, row.data.password_hash);
   if (!match) {
     return reply
@@ -165,14 +166,10 @@ export async function logout_post(request, reply) {
 
 export async function verifyUser_get(request, reply) {
   const token = request.cookies.token;
-  // const origin = request.headers.origin;
-  // if (origin != "http://localhost:5173") {
-  //   return reply.code(403).send("Forbidden");
-  // }
   if (!token) {
     return reply.code(401).send({ error: "Not Authorized" });
   }
-  
+
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     return reply
@@ -236,7 +233,6 @@ export async function forgetPassword_post(request, reply) {
 
 export async function twofactor_get(request, reply) {
   //check if 2fa is already enabled for user
-  console.log("-----------------------------------------------------------------")
   // const username = request.headers['x-user'];
   const token = request.cookies.token;
 
@@ -259,15 +255,20 @@ export async function twofactor_get(request, reply) {
     return reply.code(400).send({ success: false, message: "2FA is already enabled for this user" });
   }
   //generate secret 
-  const secret = crypto.randomBytes(20).toString("hex");
-  console.log("generated secret:", secret);
+  const secret = speakeasy.generateSecret({
+    name: `YourApp:${row.data.email}`,
+    issuer: "YourApp",
+    digits: 6,
+    period: 30,
+    window: 1 
+  }); console.log("generated secret:", secret);
   //put it in DB 
   await axios.put("http://user-management:3000/User/two-factor-secret", {
     username,
-    two_factor_secret: secret,
+    two_factor_secret: secret.base32,
   });
   //generate QR code for user to scan 
-  const qrImage = await QRCode.toDataURL(secret);
+  const qrImage = await QRCode.toDataURL(secret.otpauth_url);
   //send the QR code to frontend 
   return reply.code(200)
     .send({ qrImage })
@@ -277,14 +278,19 @@ export async function twofactor_get(request, reply) {
 export async function verify2fa_post(request, reply) {
   //get code from DB 
   const { code } = request.body;
-  const username = request.headers['x-user'];
+  const token = request.cookies.token;
+  if (!token) {
+    return reply.code(401).send({ error: "Not Authorized" });
+  }
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const username = decoded.username;
   const row = await axios.get("http://user-management:3000/profile/User", {
     params: {
       username,
     },
   });
   console.log("🔍 User fetched from user-management:", row.data);
-  if (!row) {
+  if (!row.data) {
     return reply.code(400).send({ success: false, message: "User not found" });
   }
   const secret = row.data.two_factor_secret;
@@ -293,13 +299,16 @@ export async function verify2fa_post(request, reply) {
   const isValid = speakeasy.totp.verify({
     secret: secret,
     encoding: 'base32',
-    token: code
+    token: code,
+    window: 1 
   });
   if (!isValid) {
     return reply.code(400).send({ success: false, message: "Invalid 2FA code" });
   }
   //if matched check if enabled or not if not enabled enable it
-  if (String(row.data.two_factor_enabled) === "false") {
+
+  if (Number(row.data.two_factor_enabled) === 0) {
+    console.log(" i am here to enable 2fa ")
     await axios.put("http://user-management:3000/User/enable-two-factor", {
       username,
     });

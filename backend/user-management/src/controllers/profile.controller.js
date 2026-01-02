@@ -382,9 +382,8 @@ class ProfileController {
 }
   async enableTwoFactor(request, reply) {
   try {
-    const { username } = request.query;
-    const { secret } = request.body;
-    if (!username || !secret) {
+    const { username} = request.body;
+    if (!username) {
       return reply.code(400).send({ error: 'Username and secret are required' });
     }
 

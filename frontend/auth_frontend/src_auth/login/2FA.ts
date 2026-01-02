@@ -29,8 +29,8 @@ export const twoFATemplate = () => `
     <!-- CODE INPUTS -->
     <div class="flex gap-2 mb-3">
       ${Array.from({ length: 6 })
-        .map(
-          (_, i) => `
+    .map(
+      (_, i) => `
         <input
           id="2fa-code-${i}"
           type="text"
@@ -42,8 +42,8 @@ export const twoFATemplate = () => `
                  focus:border-[#E64249] outline-none"
         />
       `
-        )
-        .join("")}
+    )
+    .join("")}
     </div>
 
     <!-- ERROR -->
@@ -91,69 +91,81 @@ function attach2FAHandlers() {
     document.getElementById(`2fa-code-${i}`) as HTMLInputElement
   );
   const errorBox = document.getElementById("2fa-error");
-  
+
 
   if (!btn || inputs.some((i) => !i)) return;
 
   inputs.forEach((input, idx) => {
-  input.addEventListener("input", () => {
-    // Allow only digits
-    input.value = input.value.replace(/[^0-9]/g, "");
+    input.addEventListener("input", () => {
+      // Allow only digits
+      input.value = input.value.replace(/[^0-9]/g, "");
 
-    if (input.value.length === 1 && idx < inputs.length - 1) {
-      inputs[idx + 1].focus();
-    }
-  });
+      if (input.value.length === 1 && idx < inputs.length - 1) {
+        inputs[idx + 1].focus();
+      }
+    });
 
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Backspace" && !input.value && idx > 0) {
-      inputs[idx - 1].focus();
-    }
-  });
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Backspace" && !input.value && idx > 0) {
+        inputs[idx - 1].focus();
+      }
+    });
 
-  // Block non-digit keys
-  input.addEventListener("keypress", (e) => {
-    if (!/[0-9]/.test(e.key)) {
-      e.preventDefault();
-    }
+    // Block non-digit keys
+    input.addEventListener("keypress", (e) => {
+      if (!/[0-9]/.test(e.key)) {
+        e.preventDefault();
+      }
+    });
   });
-});
 
   const qrImage = document.getElementById("2fa-qr") as HTMLImageElement | null;
   const submit2FA = async () => {
     const res = await fetch("http://localhost:8080/api/auth/2f/setup", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include", // VERY IMPORTANT FOR Cookies
-  });
-  console.log("2FA setup response:", res);
-  const data = await res.json();
-  console.log("2FA setup data:", data.qrImage);
-  if (qrImage) {
-    qrImage.src = data.qrImage;
-  }
-  const code = inputs.map((i) => i.value).join("");
-
-  if (!/^\d{6}$/.test(code)) {
-    if (errorBox) {
-      errorBox.textContent = "Code must be exactly 6 digits.";
-      errorBox.classList.add("opacity-100");
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include", // VERY IMPORTANT FOR Cookies
+    });
+    console.log("2FA setup response:", res);
+    const data = await res.json();
+    console.log("2FA setup data:", data.qrImage);
+    if (qrImage) {
+      qrImage.src = data.qrImage;
     }
-    return;
-  }
+    const code = inputs.map((i) => i.value).join("");
+
+    if (!/^\d{6}$/.test(code)) {
+      if (errorBox) {
+        errorBox.textContent = "Code must be exactly 6 digits.";
+        errorBox.classList.add("opacity-100");
+      }
+      return;
+    }
 
 
-  console.log("Entered 2FA code:", code);
-  navigate("dashboard");
-};
+    console.log("Entered 2FA code:", code);
+    navigate("dashboard");
+  };
 
   btn.addEventListener("click", submit2FA);
 
   submit2FA();
   // Enter key triggers verify
   inputs.forEach((input) =>
-    input.addEventListener("keydown", (e) => {
+    input.addEventListener("keydown", async (e) => {
       if (e.key === "Enter") {
+        console.log("==========================================");
+        console.log(inputs.map((i) => i.value).join(""));
+        const response = await fetch('http://localhost:8080/api/auth/2f/verify-2fa', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({ code: inputs.map((i) => i.value).join("") }),
+        });
+        console.log("2FA verify response:", response);
+        // alert("If that email exists, a reset link was sent (stub).");
         e.preventDefault();
       }
     })
