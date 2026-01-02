@@ -18,3 +18,8 @@ if profile is for the current user add the edit profile button
 if users  are friends don t send request and display that they are friends 
 if request sent to allow to resend it 
 
+
+
+** Soumaya**
+1. Add in login page for enabled two factor 
+2. forget password

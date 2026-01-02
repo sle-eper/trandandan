@@ -6,8 +6,8 @@ import crypto from "crypto";
 import QRCode from "qrcode";
 import nodemailer from "nodemailer";
 import speakeasy from "speakeasy";
-
-
+import dotenv from "dotenv";
+dotenv.config();
 // #########################################################
 //                     signup post
 // #########################################################
@@ -197,34 +197,88 @@ export async function forgetPassword_post(request, reply) {
   const { email } = request.body;
   console.log("Password reset requested for email:", email);
   //check if email exists in DB 
-  const row = await axios.get("http://user-management:3000/profile/User", {
-    params: {
-      email,
-    },
-  });
-  console.log("🔍 User fetched from user-management:", row.data);
-  if (!row) {
-    return reply.code(400).send({ success: false, message: "User not found" });
-  }
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: { user: "soumayaaitammi2023@gmail.com", pass: "SoumayaAmmi2023@" },
-  });
   try {
-    const info = await transporter.sendMail({
+    const row = await axios.get("http://user-management:3000/profile/User", {
+      params: {
+        email,
+      },
+    });
+    if (!row.data) {
+      return reply.code(400).send({ success: false, message: "User not found" });
+    }
+    let transporter = nodemailer.createTransport({
+      host: process.env.STMP_HOST,
+      port: process.env.STMP_PORT,
+      secure: false,
+      auth: {
+        user: process.env.STMP_MAIL,
+        pass: process.env.STMP_PASS,
+      },
+    });
+    const crypto = await import("crypto");
+    const token = crypto.randomBytes(20).toString("hex");
+    await axios.put("http://user-management:3000/User/TokenId", {
+      username: row.data.username,
+      token: token,
+    });
+    const resetUrl = `http://localhost:5173/change?token=${token}`;
+    let mailOptions = {
       from: '"My App" <soumayaaitammi2023@gmail.com>',
       to: email,
-      subject: "soumayyyyyyyyyyyya",
-      text: " aAit Ammi",
+      subject: "Reset Your Password",
+      text: `Click this link to reset your password: ${resetUrl}`,
+      html: `<p>Click <a href="${resetUrl}">here</a> to reset your password.</p>`
+    };
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        return console.log("Error:", error);
+      }
     });
-    await transporter.verify();
-    console.log("SMTP config is valid!");
-    return { message: "Email sent", messageId: info.messageId };
+    return reply.code(200).send({ success: true, message: "Reset link sent to email" });
   } catch (err) {
     reply.code(500);
     return { error: "Failed to send email", details: err.message };
   }
   //send mail with reset link 
+}
+
+export async function resetPassword_post(request, reply) {
+  const { token, newPassword, confirmPassword } = request.body;
+  console.log("Password change requested with token:", token);
+  console.log("passwords:", newPassword, confirmPassword);
+  if (newPassword !== confirmPassword) {
+    return reply.code(400).send({ success: false, message: "Passwords do not match." });
+  }
+  try {
+    const row = await axios.get("http://user-management:3000/profile/User", {
+      params:
+      {
+        token,
+      }
+    });
+    if (!row.data) {
+      console.log("Invalid or expired token");
+      return reply.code(400).send({ success: false, message: "Invalid or expired token" });
+    }
+    const { valid, errors } = validatePassword(newPassword, { minLen: 8 });
+    if (!valid) {
+      return reply
+        .code(400)
+        .send({ success: false, message: "Weak password.", errors });
+    }
+    const hashed = await bcrypt.hash(newPassword, 10);
+    console.log("Hashed new password:", hashed);
+    await axios.put("http://user-management:3000/User/changePassword", {
+      username: row.data.username,
+      newPassword: hashed,
+    });
+    console.log("=======Password updated successfully for user:", row.data.username);
+    return reply.code(200).send({ success: true, message: "Password changed successfully" });
+  }
+  catch (err) {
+    reply.code(500);
+    return { error: "Failed to change password", details: err.message };
+  }
 }
 // #########################################################
 //                Two Factor Controllers()
@@ -260,7 +314,7 @@ export async function twofactor_get(request, reply) {
     issuer: "YourApp",
     digits: 6,
     period: 30,
-    window: 1 
+    window: 1
   }); console.log("generated secret:", secret);
   //put it in DB 
   await axios.put("http://user-management:3000/User/two-factor-secret", {
@@ -300,7 +354,7 @@ export async function verify2fa_post(request, reply) {
     secret: secret,
     encoding: 'base32',
     token: code,
-    window: 1 
+    window: 1
   });
   if (!isValid) {
     return reply.code(400).send({ success: false, message: "Invalid 2FA code" });

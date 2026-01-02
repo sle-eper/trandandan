@@ -24,20 +24,34 @@ function attachChangepassHandlers() {
   if (!btn) return;
 
   btn.addEventListener("click", async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // Extract the token
+    const token = urlParams.get("token");
+    console.log("Token:", token);
     const password = (document.getElementById("change-pass") as HTMLInputElement).value.trim();
     const confirm = (document.getElementById("change-confirm") as HTMLInputElement).value.trim();
-
+    const restult = await fetch("http://localhost:8080/api/auth/reset-password", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      credentials: "include",
+      body: JSON.stringify({ newPassword: password, confirmPassword: confirm, token })
+    });
+    console.log("Password changed successfully", restult);
     if (!password || !confirm || password !== confirm) {
       alert("Passwords must match and cannot be empty.");
       return;
     }
-
+    if (restult.status === 200)
+    {
+      navigate("login");
+    }
     // TODO → call your backend API
     // Example:
     // const result = await changePassword(password);
 
     // Simulated success:
-    alert("Password changed successfully!");
-    navigate("login");
   });
 }

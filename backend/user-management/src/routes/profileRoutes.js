@@ -117,6 +117,9 @@ async function profileRoutes(fastify, options) {
 
   fastify.put('/User/enable-two-factor', profileController.enableTwoFactor.bind(profileController));
   fastify.put('/User/two-factor-secret', profileController.setsecretkeytwofactor.bind(profileController));
+  fastify.put('/User/changePassword', profileController.resetPassword.bind(profileController));
   fastify.get('/User/two-factor-secret', profileController.getsecretkeytwofactor.bind(profileController));
+  fastify.put('/User/TokenId', profileController.setIdToken.bind(profileController));
+  fastify.get('/User/TokenId', profileController.getIdToken.bind(profileController));
 }
 export default profileRoutes;
