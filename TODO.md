@@ -1,4 +1,2 @@
+1-khas nsayb spy err alert
 
-1. Tournament 
-2. Two Factor
-3. 
