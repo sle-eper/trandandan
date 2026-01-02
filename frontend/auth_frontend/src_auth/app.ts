@@ -31,7 +31,6 @@ async function checkSession(): Promise<boolean> {
       method: "GET",
       credentials: "include", // send cookies
     });
-    console.log("=--------------------------------", response);
     return response.ok;
   } catch {
     return false;
