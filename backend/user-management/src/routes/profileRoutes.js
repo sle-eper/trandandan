@@ -2,11 +2,11 @@ import ProfileController from '../controllers/profile.controller.js';;
 
 async function profileRoutes(fastify, options) {
   const profileController = new ProfileController(fastify.db);
-  
+
   // Profile routes
 
-  fastify.get('/profile/User',profileController.getUserBYemailorUsername.bind(profileController));
-  
+  fastify.get('/profile/User', profileController.getUserBYemailorUsername.bind(profileController));
+
   fastify.post('/profile/create',
   {
       schema: {
@@ -64,8 +64,8 @@ async function profileRoutes(fastify, options) {
           displayName: { type: 'string', minLength: 2, maxLength: 20 },
           bio: { type: 'string', maxLength: 500 },
           avatarUrl: { type: 'string' },
-          email: { 
-            type: 'string', 
+          email: {
+            type: 'string',
             format: 'email',
             maxLength: 100
           },
@@ -89,9 +89,9 @@ async function profileRoutes(fastify, options) {
         type: 'object',
         required: ['q'],
         properties: {
-          q: { 
-            type: 'string', 
-            minLength: 2, 
+          q: {
+            type: 'string',
+            minLength: 2,
             maxLength: 50
           }
         }
@@ -121,5 +121,10 @@ async function profileRoutes(fastify, options) {
   fastify.get('/User/two-factor-status', profileController.getTwoFactorStatus.bind(profileController));
 
   fastify.put('/User/enable-two-factor', profileController.enableTwoFactor.bind(profileController));
-  }
+  fastify.put('/User/two-factor-secret', profileController.setsecretkeytwofactor.bind(profileController));
+  fastify.put('/User/changePassword', profileController.resetPassword.bind(profileController));
+  fastify.get('/User/two-factor-secret', profileController.getsecretkeytwofactor.bind(profileController));
+  fastify.put('/User/TokenId', profileController.setIdToken.bind(profileController));
+  fastify.get('/User/TokenId', profileController.getIdToken.bind(profileController));
+}
 export default profileRoutes;

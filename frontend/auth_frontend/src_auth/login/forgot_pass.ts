@@ -30,7 +30,17 @@ function attachForgotHandlers() {
     }
 
     // TODO: call reset API -> then navigate
-    alert("If that email exists, a reset link was sent (stub).");
+    const res = await fetch("/api/auth/forget-password",{
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      credentials: "include",
+      body: JSON.stringify({email})
+    });
+    console.log("Reset link sent to email             " ,  res);
+    //send request to backend 
+  
     navigate("change");
   });
 }

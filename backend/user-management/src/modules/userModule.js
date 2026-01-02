@@ -1,8 +1,8 @@
 
 
-class UserModule{
+class UserModule {
 
-    constructor(db){
+    constructor(db) {
         this.db = db;
     }
 
@@ -18,18 +18,23 @@ class UserModule{
             [username]
         );
     }
-
+    async findByToken(token) {
+        return this.db.get(
+            'SELECT id, email, username,avatar_url ,display_name ,password_hash,two_factor_enabled,two_factor_secret FROM users WHERE id_token = ?',
+            [token]
+        );
+    }
     async findByEmail(email) {
         return this.db.get(
             'SELECT id, email, username ,avatar_url ,display_name ,password_hash,two_factor_enabled,two_factor_secret FROM users WHERE email = ?',
-            [email]  
+            [email]
         );
     }
 
     async findByDisplayName(displayName) {
         return await this.db.get(
-          'SELECT * FROM users WHERE display_name = ?',
-          [displayName]
+            'SELECT * FROM users WHERE display_name = ?',
+            [displayName]
         );
     }
     async getPasswordHashById(id) {
@@ -53,7 +58,7 @@ class UserModule{
 
     async getProfile(userId) {
         return await this.db.get(
-          `SELECT 
+            `SELECT 
             u.id, u.username, u.display_name, u.email, u.avatar_url, u.bio,
             u.online_status, u.created_at,
             s.total_games, s.wins, s.losses, s.win_rate,
@@ -62,28 +67,28 @@ class UserModule{
            FROM users u
            LEFT JOIN user_stats s ON u.id = s.user_id
            WHERE u.id = ?`,
-          [userId]
+            [userId]
         );
     }
 
 
     async create(user) {
-    const result = await this.db.run(
-        'INSERT INTO users (email, username, password_hash, display_name) VALUES (?, ?, ?, ?)',
-        [
-        user.email,
-        user.username,
-        user.password,   // ✅ FIX
-        user.display_name || user.username
-        ]
-    );
+        const result = await this.db.run(
+            'INSERT INTO users (email, username, password_hash, display_name) VALUES (?, ?, ?, ?)',
+            [
+                user.email,
+                user.username,
+                user.password,   // ✅ FIX
+                user.display_name || user.username
+            ]
+        );
 
-    await this.db.run(
-        'INSERT INTO user_stats (user_id) VALUES (?)',
-        [result.lastID]
-    );
+        await this.db.run(
+            'INSERT INTO user_stats (user_id) VALUES (?)',
+            [result.lastID]
+        );
 
-    return result.lastID;
+        return result.lastID;
     }
 
 
@@ -122,22 +127,22 @@ class UserModule{
         
         fields.push('updated_at = CURRENT_TIMESTAMP');
         values.push(userId);
-        
+
         await this.db.run(
-        `UPDATE users SET ${fields.join(', ')} WHERE id = ?`,
-        values
+            `UPDATE users SET ${fields.join(', ')} WHERE id = ?`,
+            values
         );
-        
+
         return await this.getProfile(userId);
     }
 
 
     async updateOnlineStatus(userId, status) {
         await this.db.run(
-          `UPDATE users 
+            `UPDATE users 
            SET online_status = ?, last_seen = CURRENT_TIMESTAMP 
            WHERE id = ?`,
-          [status, userId]
+            [status, userId]
         );
     }
 
@@ -148,37 +153,53 @@ class UserModule{
     async delete(id) {
         const result = await this.db.run(
             'DELETE FROM users WHERE id = ?',
-            [id]  
+            [id]
         );
         return result.changes;
     }
     async searchByDisplayName(query) {
 
         if (!query || query.trim() === '') {
-          return [];
+            return [];
         }
-      
-        const searchPattern = `%${query}%`;
-      
-        return await this.db.all(
-          'SELECT id, username, display_name, avatar_url FROM users WHERE display_name LIKE ?',
-          [searchPattern]
-        );
-      }
-      
-      async setTwoFactorSecret(userId, secret) {
-        await this.db.run(
-          `UPDATE users 
-           SET two_factor_secret = ? WHERE id = ?`,
-          [secret, userId]
-        );
-      }
 
-      async getAllUsers() {
+        const searchPattern = `%${query}%`;
+
         return await this.db.all(
-          'SELECT id, username, display_name, email, online_status FROM users'
+            'SELECT id, username, display_name, avatar_url FROM users WHERE display_name LIKE ?',
+            [searchPattern]
+        );
+    }
+    // add this methods for 2FA
+    async setTwoFactorSecret(userId, secret) {
+        console.log("Setting 2FA secret in DB for userId:", userId);
+        await this.db.run(
+            `UPDATE users 
+           SET two_factor_secret = ? WHERE id = ?`,
+            [secret, userId]
+        );
+    }
+    async setTwoFactorFlag(userId) {
+        console.log("Enabling 2FA for userId:", userId);
+        await this.db.run(
+            `UPDATE users 
+           SET two_factor_enabled = 1 WHERE id = ?`,
+            [userId]
+        );
+    }
+    async setIdToken(username, token) {
+        console.log("set the token for username:", username);
+        await this.db.run(
+            `UPDATE users 
+           SET id_token = ? WHERE username = ?`,
+            [token, username]
+        );
+    }
+    async getAllUsers() {
+        return await this.db.all(
+            'SELECT id, username, display_name, email, online_status FROM users'
         );
     }
 }
 
-export default UserModule ;
+export default UserModule;

@@ -9,7 +9,8 @@ export async function addParticipant_post(request, reply) {
         return reply.code(403)
         .send("Forbidden")
     }
-    if (Number(tournament.maxPlayers) === Number(tournament.currentPlayers)) {
+    if (Number(tournament.maxPlayers) === Number(tournament.currentPlayers)) 
+    {
         console.log("Tournament Full");
         return reply.code(400)
         .send("Tournament Full")

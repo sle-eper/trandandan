@@ -9,11 +9,10 @@ import {
   getNotif
 } from "./db/database";
 
-import { fetchUserData, getStatusOfTowFriends,changeStatusOfFriends,getFriendsOfUser } from "./fetchingData";
+import { fetchUserData, getStatusOfTowFriends, changeStatusOfFriends, getFriendsOfUser } from "./fetchingData";
 import fastify from "fastify";
 import fastifyIO from "fastify-socket.io";
-
-const server = fastify(/* { logger: true } */);
+const server = fastify({ logger: true });
 server.register(fastifyIO, {
   path: "/socket.io",
   cors: {
@@ -24,18 +23,17 @@ server.register(fastifyIO, {
 
 export const onlineUsers = new Map<string, Set<string>>();
 
-server.get('/online/:id',(req,res)=>{
-  const {id}  = req.params as {id:string}
-  if(onlineUsers.has(id))
-  {
+server.get('/online/:id', (req, res) => {
+  const { id } = req.params as { id: string }
+  if (onlineUsers.has(id)) {
     res.code(200).send({
       online: true,
-      socketIds :Array.from(onlineUsers.get(id))
+      socketIds: Array.from(onlineUsers.get(id))
     });
-  }else
+  } else
     res.code(200).send({
       online: false,
-      socketIds:[]
+      socketIds: []
     });
 
 })
@@ -96,32 +94,32 @@ server.ready().then(() => {
               }
             }
           }
-      }catch(err){
+        }
+      catch (err) {
         console.error('Error inside send_message:', err);
       }
     });
     socket.on('get_messages', async (data) => {
-      try{
-        if (!data?.myId || !data?.friendId) return;
-        const roomName = getRoomName(data.myId,data.friendId);
-        const limit = data.limit || 20;
-        const offset = data.offset || 0;
-        await changeAllToRecv(data.myId,roomName)
-        const messages = await getAllMsg(roomName, limit, offset);
-        const UserData = await fetchUserData(data.friendId);
-        socket.emit('messages_batch', messages.reverse(),UserData?.user.avatar_url);
-      }catch(err)
-      {
-        console.error('Error in get_messages:', err);
-      }
-    });
-    socket.on('get_old_messages', async (data) => {
-      try{
+      try {
         if (!data?.myId || !data?.friendId) return;
         const roomName = getRoomName(data.myId, data.friendId);
         const limit = data.limit || 20;
         const offset = data.offset || 0;
-        await changeAllToRecv(data.myId,roomName)
+        await changeAllToRecv(data.myId, roomName)
+        const messages = await getAllMsg(roomName, limit, offset);
+        const UserData = await fetchUserData(data.friendId);
+        socket.emit('messages_batch', messages.reverse(), UserData?.user.avatar_url);
+      } catch (err) {
+        console.error('Error in get_messages:', err);
+      }
+    });
+    socket.on('get_old_messages', async (data) => {
+      try {
+        if (!data?.myId || !data?.friendId) return;
+        const roomName = getRoomName(data.myId, data.friendId);
+        const limit = data.limit || 20;
+        const offset = data.offset || 0;
+        await changeAllToRecv(data.myId, roomName)
         const messages = await getAllMsg(roomName, limit, offset);
         const UserData = await fetchUserData(data.friendId); 
         socket.emit('messages_old_batch', messages,UserData?.user.avatar_url);
@@ -137,13 +135,12 @@ server.ready().then(() => {
         const friends = await getFriendsOfUser(id);
         const waitingMsg = await getWaitingMsg(id);
         socket.emit("friends_list", { friends, waitingMsg });
-      }catch(err)
-      {
+      } catch (err) {
         console.error('Error in get_friends:', err);
       }
     });
     socket.on("get_status", async (friendId) => {
-      try{
+      try {
         const id = socket.data.userId
         if (!id || !friendId) return;
         const roomName = getRoomName(id, friendId);
@@ -155,21 +152,18 @@ server.ready().then(() => {
           let allow: Boolean = (status1 === "accepted" && status2 === "accepted");
           socket.emit("allowMsg", allow);
           const userSocket = onlineUsers.get(id);
-          if(userSocket)
-          {
-            for(const ids of userSocket)
-            {
-              io.to(ids).emit("blockBtn",status1);
+          if (userSocket) {
+            for (const ids of userSocket) {
+              io.to(ids).emit("blockBtn", status1);
             }
           }
         }
-      }catch(err)
-      {
+      } catch (err) {
         console.error('Error in get_status:', err);
       }
     });
     socket.on("status", async (data) => {
-      try{
+      try {
         const id = socket.data.userId
         if (!id || !data?.friendId || !data?.status) return;
         const roomName = getRoomName(id, data.friendId);
@@ -184,52 +178,47 @@ server.ready().then(() => {
             statusGlobal = "accepted";
           const userSocket = onlineUsers.get(id);
           const friendSocket = onlineUsers.get(data.friendId);
-          if(userSocket)
-          {
-            for(const ids of userSocket)
-            {
+          if (userSocket) {
+            for (const ids of userSocket) {
               io.to(ids).emit("blockOrAccepted", roomName, statusGlobal);
             }
           }
-          if(friendSocket)
-          {
-            for(const isd of friendSocket)
-            {
+          if (friendSocket) {
+            for (const isd of friendSocket) {
               io.to(isd).emit("blockOrAccepted", roomName, statusGlobal);
             }
           }
         }
-      }catch(err)
-      {
+      } catch (err) {
         console.error('Error in status:', err);
       }
     });
-    socket.on('ack_message', async(msgId:string) => {
+    socket.on('ack_message', async (msgId: string) => {
       try {
-          if(msgId) await changeToRecv(msgId); // update status to 'sent'
+        if (msgId) await changeToRecv(msgId); // update status to 'sent'
       } catch (e) {
-          console.error("Error ack_message", e);
+        console.error("Error ack_message", e);
       }
     });
 
     socket.on("joinToRoom", (roomName: string) => {
-      try{
+      try {
         if (!roomName) return;
         const rooms = socket.rooms;
         for (const room of rooms) {
           if (room != socket.id) socket.leave(room);
         }
         socket.join(roomName);
-      }catch(err)
-      {
+      } catch (err) {
         console.error('Error in joinToRoom:', err);
       }
     });
-    socket.on('challenge',async(friendId)=>{
-      try{
+
+    socket.on('challenge', async (friendId) => {
+      try {
         if (!friendId) return;
         const id = socket.data.userId;
-        if(!id) return;
+        if (!id) return;
         const friendSocket = onlineUsers.get(friendId);
         await saveNotif(id,friendId,'challenge',null);
         if(!friendSocket)return;
@@ -240,14 +229,13 @@ server.ready().then(() => {
         {
           io.to(isd).emit("request_to_play",UserData?.user?.username,id);
         }
-        
-      }catch(err)
-      {
+
+      } catch (err) {
         console.error('Error in challenge:', err);
       }
     })
-    socket.on('accept_play',async(id,friendId)=>{
-      console.log(id,friendId);
+    socket.on('accept_play', async (id, friendId) => {
+      console.log(id, friendId);
     })
     socket.on('reject_play',async(id,friendId)=>{
       try{
@@ -331,36 +319,60 @@ server.ready().then(() => {
       }
     });
     socket.on("disconnect", () => {
-      try{
+      try {
         const id = socket.data.userId;
-        if (id && onlineUsers.has(id))
-        {
+        if (id && onlineUsers.has(id)) {
           onlineUsers.get(id).delete(socket.id);
           if (onlineUsers.get(id)!.size === 0) {
-              onlineUsers.delete(id);
+            onlineUsers.delete(id);
           }
         }
       }
-      catch(err)
-      {
+      catch (err) {
         console.error('Error in disconnect:', err);
       }
     });
     socket.on("error", (err) => {
-        console.error("Socket error:", err);
+      console.error("Socket error:", err);
+    });
+
+    // ************************************************************************************
+    // ***************************        Tournament event     ****************************
+    // ************************************************************************************
+
+    socket.on("/tournamentcreat", async (data) => {
+    });
+    socket.on("/tournamentjoin", async (data) => {
+    });
+    socket.on("/tournamentstart", async (data) => {
+
+    });
+    socket.on("/tournamentleave", async (data) => {
+
     });
   })
 });
 
+server.post('/tournamentCreate', async (request, reply) => {
+  const { userid, type, data } = request.body as any;
+  const io = (server as any).io;
+  const sockets = onlineUsers.get(userid);
+  if (sockets) {
+    for (const socketId of sockets) {
+      io.to(socketId).emit(type, data);
+    }
+  }
+  reply.code(200).send({ message: 'Tournament create notification sent' });
+});
 async function startServer() {
-  try{
+  try {
     await server.listen({ port: 3000, host: '0.0.0.0' });
     console.log("chat Server running on port 3000");
-  }catch(err)
-  {
+  } catch (err) {
     server.log.error(err);
     process.exit(1);
   }
-  
+
 }
 startServer();
+export { server };
