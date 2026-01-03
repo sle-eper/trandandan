@@ -41,15 +41,30 @@ const getRoomName = (id1: string, id2: string): string => {
   return [id1, id2].sort().join("_");
 };
 
+// const chat = server.
 
 server.ready().then(() => {
   const io = (server as any).io;
   io.on("connection", async (socket) => {
-    socket.on('con', async (id) => {
-      try {
-        if (!id)
-          return;
-        const stringId: string = String(id)
+    // const userId = socket.handshake.auth.userId;
+
+    // if (!userId) {
+    //   socket.disconnect();
+    //   return;
+    // }
+    // const stringId:string = String(userId)
+    // socket.data.userId = stringId;
+    // if(!onlineUsers.has(stringId))
+    // {
+    //   onlineUsers.set(String(stringId), new Set());;
+    // }
+    // onlineUsers.get(stringId)?.add(socket.id)
+
+    socket.on('con',async (id)=>{
+      try{
+        if(!id)
+            return;
+        const stringId:string = String(id)
         socket.data.userId = stringId;
         if (!onlineUsers.has(stringId)) {
           onlineUsers.set(String(id), new Set());;
@@ -57,41 +72,44 @@ server.ready().then(() => {
         onlineUsers.get(stringId)?.add(socket.id)
         // console.log(id ,"is connected");
         // console.log(onlineUsers.size ,"size of online");
-      } catch (err) {
+        socket.broadcast.emit("user_online", stringId);
+      }catch(err){
         console.error('Error connected:', err);
       }
     })
     socket.on("send_message", async (data) => {
-      try {
-        const id = socket.data.userId
-        if (!id) return;
-        const friendId: string = data?.friendId; //
-        const msg: string = data?.value; //
-        if (!friendId || !msg || typeof msg !== 'string' || msg.trim().length === 0 || msg.length > 1000)
-          return;
-        const roomName = getRoomName(id, friendId);
-        const status: any = await getStatusOfTowFriends(id, friendId);
-        if (status) {
-          const status1: string = status?.status1?.status; //
-          const status2: string = status?.status2?.status; //
-          if (status1 === "accepted" && status2 === "accepted") {
-            await saveNotif(id, friendId, 'msg', msg);
-            const friendSocketId = onlineUsers.get(friendId);
-            const msgId: string = await saveMsg(id, friendId, msg, roomName, "waiting");
-            const timeOfMsg: string = await getTimeOfMsg(msgId);
-            const UserData = await fetchUserData(friendId); // get data of user from user-management service
-            console.log(UserData.user);
-            socket.to(roomName).emit("receive_message", msg, msgId, id, timeOfMsg, UserData?.user.avatar_url);
-            if (friendSocketId) {
-              for (const ids of friendSocketId) {
-                socket.to(ids).emit("live", id, roomName, msg, timeOfMsg);
-                socket.to(ids).emit("msg_notification", UserData.user.username, msg);
+      try{
+          const id = socket.data.userId
+          if (!id) return;
+          const friendId: string = data?.friendId; //
+          const msg: string = data?.value; //
+          if (!friendId || !msg || typeof msg !== 'string' || msg.trim().length === 0 || msg.length > 1000)
+            return; 
+          const roomName = getRoomName(id,friendId);
+          const status:any = await getStatusOfTowFriends(id, friendId);
+          if(status){
+            const status1: string = status?.status1?.status; //
+            const status2: string = status?.status2?.status; //
+            if (status1 === "accepted" && status2 === "accepted")
+            {
+              await saveNotif(id,friendId,'msg',msg);
+              const friendSocketId = onlineUsers.get(friendId);
+              const msgId:string =  await saveMsg(id, friendId, msg, roomName, "waiting");
+              const timeOfMsg:string = await getTimeOfMsg(msgId);
+              const UserData = await fetchUserData(id); // get data of user from user-management service
+              console.log(UserData.user);
+              socket.to(roomName).emit("receive_message", msg, msgId ,id,timeOfMsg,UserData?.user.avatar_url);
+              if(friendSocketId)
+              {
+                for(const ids of friendSocketId)
+                {
+                  socket.to(ids).emit("live", id, roomName, msg,timeOfMsg);
+                  socket.to(ids).emit("msg_notification", UserData.user.username,msg);
+                }
               }
             }
           }
-        }
-      }
-      catch (err) {
+      }catch(err){
         console.error('Error inside send_message:', err);
       }
     });
@@ -172,14 +190,22 @@ server.ready().then(() => {
             statusGlobal = "accepted";
           const userSocket = onlineUsers.get(id);
           const friendSocket = onlineUsers.get(data.friendId);
-          if (userSocket) {
-            for (const ids of userSocket) {
-              io.to(ids).emit("blockOrAccepted", roomName, statusGlobal);
+
+          console.log("--------------------------");
+          console.log("status1",status1)
+          console.log("status2",status2)
+          if(userSocket)
+          {
+            for(const ids of userSocket)
+            {
+              io.to(ids).emit("blockOrAccepted", roomName, statusGlobal,status1);
             }
           }
-          if (friendSocket) {
-            for (const isd of friendSocket) {
-              io.to(isd).emit("blockOrAccepted", roomName, statusGlobal);
+          if(friendSocket)
+          {
+            for(const isd of friendSocket)
+            {
+              io.to(isd).emit("blockOrAccepted", roomName, statusGlobal,status2);
             }
           }
         }
@@ -311,9 +337,11 @@ server.ready().then(() => {
         if (id && onlineUsers.has(id)) {
           onlineUsers.get(id).delete(socket.id);
           if (onlineUsers.get(id)!.size === 0) {
-            onlineUsers.delete(id);
+              onlineUsers.delete(id);
+              socket.broadcast.emit("user_offline", id);
           }
         }
+        console.log("after this size of onlineUsers",onlineUsers.size);
       }
       catch (err) {
         console.error('Error in disconnect:', err);

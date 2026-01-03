@@ -2,6 +2,7 @@
 import { signupTemplate, sharedImage } from "./templates";
 import { navigate } from "../app";
 import { signupUser } from "./api";
+import { socket } from "./login";
 
 export function showSignupPage(containerId = "login-app") {
   const app = document.getElementById(containerId);

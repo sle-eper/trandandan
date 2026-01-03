@@ -41,6 +41,7 @@ services:
       - ./frontend/auth_frontend/src_auth:/app/auth_frontend/src_auth
       - ./frontend/profile_frontend/src:/app/profile_frontend/src
       - ./frontend/spy_frontend/src_spy:/app/spy_frontend/src_spy
+      - ./frontend/socket_manager:/app/socket_manager
       - /app/node_modules
 
     depends_on:

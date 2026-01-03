@@ -7,6 +7,7 @@
 // });
 // import { socket } from "../../src_auth/login/login";
 import { socket } from "../../../auth_frontend/src_auth/login/login";
+import { PlayerProfileManager } from "../../../profile_frontend/src/components/FriendRequest";
 
 import {
   lastMsg,
@@ -119,7 +120,8 @@ function setupPopupEvents() {
         const chatZone = document.getElementById("chat-zone") as HTMLDivElement;
         const msgTime = document.getElementById(`time-of-msg-${friendId}`);
         const time = getTime();
-        chatZone.innerHTML += sendMsg(value, time, myImg);
+        chatZone.innerHTML += sendMsg(value, time);
+        console.log("user",userID,"friend",friendId);
         socket.emit("send_message", { value, userID, friendId });
         moveUp(friendId);
         const container = document.getElementById(
@@ -186,24 +188,25 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
     else if (msg && !allow) msg.innerHTML = inputMsg("blocked");
     setupPopupEvents();
   });
-  socket.on("blockOrAccepted", (roomName, statusGlobal) => {
+  socket.on("blockOrAccepted", (roomName, statusGlobal,status) => {
     const dm = document.getElementById("DM");
     if (dm && dm.dataset.roomName == roomName) {
       const msg = document.getElementById("x");
-      if (msg) msg.innerHTML = inputMsg(statusGlobal);
+      if (msg) msg.innerHTML = inputMsg(statusGlobal,status);
       setupPopupEvents();
     }
   });
   socket.on("messages_batch", (messages, friendImg) => {
     const chatZone = document.getElementById("chat-zone") as HTMLDivElement;
+    if(!chatZone) return;
     for (const msg of messages) {
       if (msg.send == userID)
-        chatZone.insertAdjacentHTML(
+        chatZone?.insertAdjacentHTML(
           "beforeend",
           sendMsg(msg.msg, msg.time)
         );
       else
-        chatZone.insertAdjacentHTML(
+        chatZone?.insertAdjacentHTML(
           "beforeend",
           receivedMsg(msg.msg, msg.time, friendImg)
         );
@@ -391,7 +394,23 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
     // console.log(from,msg);
 
   })
-
+  socket.on("user_online", (userId: string) => {
+    const elements = document.querySelectorAll(`.online-indicator-${userId}`)
+    if(!elements)
+      return;
+    elements.forEach(el => {
+      el.classList.remove("hidden");
+    });
+  });
+  socket.on("user_offline", (userId: string) => {
+    const elements = document.querySelectorAll(`.online-indicator-${userId}`)
+    if(!elements)
+      return;
+    elements.forEach(el => {
+      if(!el.classList.contains("hidden"))
+          el.classList.add("hidden");
+    });
+  });
 
 }
 
@@ -507,10 +526,23 @@ export async function showMainUI() {
           }
           //*********************************************************************** */
           dmZone = document.getElementById("DM");
-          let contentChat = profileNav(friendFind.avatar_url,friendFind.username,friendFind.status);
+          let contentChat = profileNav(friendFind.avatar_url,friendFind.username,friendId);
+          // const userAccount = document.getElementById('user-account');
+          // console.log("userAccount", userAccount);
+          // userAccount?.addEventListener('click',()=>{
+          //     const profileManager: any = new PlayerProfileManager();
+          //     profileManager.showProfile(friendFind.id);
+          // });
           contentChat += chatZones();
           if (dmZone) dmZone.innerHTML = contentChat;
           socket.emit("get_status", friendId);
+            const userAccount = document.querySelectorAll('.user-account');
+            userAccount.forEach(element => {
+              element.addEventListener('click',()=>{
+                const profileManager: any = new PlayerProfileManager();
+                profileManager.showPlayerProfile(friendId);
+              });
+            });
           ////////////////////////////////////////////////////////////////////////////////
           sendButton = document.getElementById(
             "send-button"
@@ -530,7 +562,7 @@ export async function showMainUI() {
               "popup-option"
             ) as HTMLDivElement;
             //When pressed 3 point
-            option.addEventListener("click", async (event) => {
+            option?.addEventListener("click", async (event) => {
               socket.emit("get_status",friendId)
               const btn1 = await new Promise<string>((resolve) => {
                   socket.once("blockBtn", (btn) => {

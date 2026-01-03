@@ -1,6 +1,7 @@
 import axios from "axios";
 import { navigate } from "../app";
 import { PlayerSearch } from "./playerSearch";
+import { socket } from "../login/login";
 
 
 
@@ -200,6 +201,7 @@ export async function navBarLogic() {
     });
     if (result.ok) {
       console.log('Logout successful');
+      socket.disconnect();
       navigate("login");
     }
   });
