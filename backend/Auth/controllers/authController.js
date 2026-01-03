@@ -172,6 +172,7 @@ export async function verifyUser_get(request, reply) {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("Decoded token:", decoded.id, decoded.username);
     return reply
       .code(200)
       .header('x-user', decoded.username)

@@ -1,3 +1,5 @@
+import { PlayerProfileManager} from "../../../profile_frontend/src/components/FriendRequest.ts";
+
 
 export function lastMsg(status:string,msg:string,friendId:string):string
 {
@@ -142,19 +144,21 @@ export function generateBlockButton(status:string):string
 }
 /* ****************************************************************************************************************************************************************** */
 export function profileNav(img:string,userAccount:string,status:string):string{
+    
     return`
         <div id="profile-nav" class="flex h-[10%] items-center p-5 justify-between relative ">
-            <div class="flex items-center gap-6">
+            <div class="border flex items-center gap-6">
                 <div id="back-btn" class="flex justify-center items-center md:hidden p-2 text-[#E63946]   hover:cursor-pointer hover:bg-[#222222]  rounded-full">
                     <span class="material-symbols-outlined ">arrow_back_ios</span>
                 </div>
 
-                <div class="h-10 w-10  bg-cover bg-center rounded-full" 
+                <div id ="profile-img" class="h-10 w-10  bg-cover bg-center rounded-full" 
                     style="
                         background-image : url('/api/uploads/${img}');
                         aspect-ratio: 1/1;
                     ">
                 </div>
+                
                 <span class='font-semibold text-[#F5F5F5]'>${userAccount}</span>
             </div>
 

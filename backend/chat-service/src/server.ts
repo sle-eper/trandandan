@@ -257,7 +257,7 @@ server.ready().then(() => {
     })
     socket.on('getNotif',async(id)=>{
       try{
-        const data = await getNotif(id);
+        const data = await getNotif(String(id));
         socket.emit("notif",data);
       }catch(err){
         console.error('Error in getNotif:', err);
