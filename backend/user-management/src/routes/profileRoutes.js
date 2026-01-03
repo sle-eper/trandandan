@@ -61,14 +61,19 @@ async function profileRoutes(fastify, options) {
       body: {
         type: 'object',
         properties: {
-          displayName: { type: 'string', minLength: 2, maxLength: 50 },
+          displayName: { type: 'string', minLength: 2, maxLength: 20 },
           bio: { type: 'string', maxLength: 500 },
           avatarUrl: { type: 'string' },
           email: { 
             type: 'string', 
             format: 'email',
             maxLength: 100
+          },
+          onlineStatus: {
+            type: 'string',
+            enum: ['online', 'offline']
           }
+          
         },
         additionalProperties: false
       }

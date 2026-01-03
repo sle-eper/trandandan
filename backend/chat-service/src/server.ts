@@ -43,10 +43,25 @@ const getRoomName = (id1: string, id2: string): string => {
   return [id1, id2].sort().join("_");
 };
 
+// const chat = server.
 
 server.ready().then(() => {
   const io = (server as any).io;
   io.on("connection", async (socket) => {
+    // const userId = socket.handshake.auth.userId;
+
+    // if (!userId) {
+    //   socket.disconnect();
+    //   return;
+    // }
+    // const stringId:string = String(userId)
+    // socket.data.userId = stringId;
+    // if(!onlineUsers.has(stringId))
+    // {
+    //   onlineUsers.set(String(stringId), new Set());;
+    // }
+    // onlineUsers.get(stringId)?.add(socket.id)
+
     socket.on('con',async (id)=>{
       try{
         if(!id)
@@ -60,6 +75,7 @@ server.ready().then(() => {
         onlineUsers.get(stringId)?.add(socket.id)
         // console.log(id ,"is connected");
         // console.log(onlineUsers.size ,"size of online");
+        socket.broadcast.emit("user_online", stringId);
       }catch(err){
         console.error('Error connected:', err);
       }
@@ -83,8 +99,9 @@ server.ready().then(() => {
               const friendSocketId = onlineUsers.get(friendId);
               const msgId:string =  await saveMsg(id, friendId, msg, roomName, "waiting");
               const timeOfMsg:string = await getTimeOfMsg(msgId);
-              const UserData = await fetchUserData(friendId); // get data of user from user-management service
-              socket.to(roomName).emit("receive_message", msg, msgId ,id,timeOfMsg,UserData.user.avatar_url);
+              const UserData = await fetchUserData(id); // get data of user from user-management service
+              console.log(UserData.user);
+              socket.to(roomName).emit("receive_message", msg, msgId ,id,timeOfMsg,UserData?.user.avatar_url);
               if(friendSocketId)
               {
                 for(const ids of friendSocketId)
@@ -123,7 +140,7 @@ server.ready().then(() => {
         await changeAllToRecv(data.myId,roomName)
         const messages = await getAllMsg(roomName, limit, offset);
         const UserData = await fetchUserData(data.friendId); 
-        socket.emit('messages_old_batch', messages,UserData?.avatar_url);
+        socket.emit('messages_old_batch', messages,UserData?.user.avatar_url);
       }catch(err){
         console.error('Error in get_old_messages:', err);
       }
@@ -183,18 +200,22 @@ server.ready().then(() => {
             statusGlobal = "accepted";
           const userSocket = onlineUsers.get(id);
           const friendSocket = onlineUsers.get(data.friendId);
+
+          console.log("--------------------------");
+          console.log("status1",status1)
+          console.log("status2",status2)
           if(userSocket)
           {
             for(const ids of userSocket)
             {
-              io.to(ids).emit("blockOrAccepted", roomName, statusGlobal);
+              io.to(ids).emit("blockOrAccepted", roomName, statusGlobal,status1);
             }
           }
           if(friendSocket)
           {
             for(const isd of friendSocket)
             {
-              io.to(isd).emit("blockOrAccepted", roomName, statusGlobal);
+              io.to(isd).emit("blockOrAccepted", roomName, statusGlobal,status2);
             }
           }
         }
@@ -274,7 +295,23 @@ server.ready().then(() => {
         console.error('Error in getNotif:', err);
       }
     })
-
+    socket.on('friendRequestSent', async (myId: string, friendId: string) => {
+      if (!myId || !friendId) return;
+      // console.log('friendRequestSent event received:', myId, friendId);
+      // console.log('size of online users:', onlineUsers.size);
+      // console.log('onlineUsers map:', onlineUsers);
+      // console.log('type of friendId:', typeof friendId);
+      const userSocket = onlineUsers.get(String(friendId));
+      // console.log('userSocket:', userSocket);
+      if (!userSocket) return;
+      // console.log("lalallalla");
+      const UserData = await fetchUserData(myId);
+      if (!UserData) return;
+      for (const ids of userSocket) {
+        socket.to(ids).emit("friendRequestReceived", UserData.user.username);
+      }
+      // console.log('friendRequestSent event received:', myId, friendId);
+    });
     socket.on("disconnect", () => {
       try{
         const id = socket.data.userId;
@@ -283,8 +320,10 @@ server.ready().then(() => {
           onlineUsers.get(id).delete(socket.id);
           if (onlineUsers.get(id)!.size === 0) {
               onlineUsers.delete(id);
+              socket.broadcast.emit("user_offline", id);
           }
         }
+        console.log("after this size of onlineUsers",onlineUsers.size);
       }
       catch(err)
       {

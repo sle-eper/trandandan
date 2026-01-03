@@ -48,15 +48,21 @@ function  friendCart(friend:any,waitingMsg:object,myId:string):string
 
         return `<div id='msg-zone' data-id="${friend.id}" class="flex justify-center py-4 px-2 hover:bg-[#222222] transition-colors duration-300 sm:py-4 sm:px-4 md:py-5">
                     <div  class=" friend-msg-zone flex w-[95%] hover:cursor-pointer" data-id="${friend.id}" data-name = "${friend.username}" data-roomname = "${roomName}"  >
+                    <div class="relative">
                         <div class=" w-10 h-10 
                                 
                                 md:w-12 md:h-12
                                 bg-cover bg-center rounded-full" 
                             style="
-                                background-image : url('http://localhost:8080/uploads/${friend.avatar_url}');
+                                background-image : url('/api/uploads/${friend.avatar_url}');
                                 aspect-ratio: 1/1;
                             ">
                         </div>
+                        <span
+                            class="online-indicator-${friend.id} absolute bottom-0 right-0 h-3 w-3 bg-green-500 border-2 border-[#181818] rounded-full hidden ">
+                        </span>
+
+                    </div>
                     <div class="ml-3 sm:ml-4 w-full flex flex-col justify-center">
                         <div class="flex justify-between">
                             <span class="font-semibold text-[#F5F5F5] text-sm sm:text-base md:text-lg">${friend.username}</span>
@@ -141,19 +147,23 @@ export function generateBlockButton(status:string):string
 
 }
 /* ****************************************************************************************************************************************************************** */
-export function profileNav(img:string,userAccount:string,status:string):string{
+export function profileNav(img:string,userAccount:string,id:string):string{
     return`
         <div id="profile-nav" class="flex h-[10%] items-center p-5 justify-between relative ">
             <div class="flex items-center gap-6">
                 <div id="back-btn" class="flex justify-center items-center md:hidden p-2 text-[#E63946]   hover:cursor-pointer hover:bg-[#222222]  rounded-full">
                     <span class="material-symbols-outlined ">arrow_back_ios</span>
                 </div>
-
-                <div class="h-10 w-10  bg-cover bg-center rounded-full" 
-                    style="
-                        background-image : url('http://localhost:8080/uploads/${img}');
-                        aspect-ratio: 1/1;
-                    ">
+                <div class="relative">
+                    <div class="h-10 w-10  bg-cover bg-center rounded-full" 
+                        style="
+                            background-image : url('/api/uploads/${img}');
+                            aspect-ratio: 1/1;
+                        ">
+                    </div>
+                    <span
+                        class="online-indicator-${id} absolute bottom-0 right-0 h-3 w-3 bg-green-500 border-2 border-[#181818] rounded-full hidden">
+                    </span>
                 </div>
                 <span class='font-semibold text-[#F5F5F5]'>${userAccount}</span>
             </div>
@@ -185,12 +195,19 @@ export function profileNav(img:string,userAccount:string,status:string):string{
         </div>
         <div class="h-[2px] bg-gradient-to-r from-[#E63946] to-[#8A1C1C]"></div>`
 }
-export function inputMsg(status:string):string //done
+export function inputMsg(status:string,myStatus:string):string //done
 {
     if(status === 'blocked'){
-        return `<div class="h-[100%] flex items-center justify-center mt-2">
-                    <p class="text-[#E63946]">Contacting this account requires unblocking</p>
-                </div>`
+        if(myStatus === 'blocked')
+        {
+            return `<div class="h-[100%] flex items-center justify-center mt-2">
+                        <p class="text-[#E63946]">Contacting this account requires unblocking</p>
+                    </div>`
+        }else{
+            return `<div class="h-[100%] flex items-center justify-center mt-2">
+                        <p class="text-[#E63946]">This account has blocked you</p>
+                    </div>`
+        }
     }
     else{//TODO N9ra 3la ay l3ayba  dyal css
         return `
@@ -227,7 +244,7 @@ function escapeHTML(str: string): string {
                 .replace(/'/g, "&#039;");
 }
 
-export function sendMsg(msg:string,time:string,img:string):string{
+export function sendMsg(msg:string,time:string):string{
     return `<div id="received-msg" class="flex mt-5  md:w-[30vw] w-[60vw]  justify-end ml-auto pr-5 ">
     <div id="content-received" class="flex flex-col ">
         <div class=" bg-[#E63946] rounded-xl p-3 ">
@@ -246,7 +263,7 @@ export function sendMsg(msg:string,time:string,img:string):string{
 export function receivedMsg(msg:string,time:string,img:string):string{
 
     return `<div id="sent-msg" class="flex mt-5 md:w-[30vw] w-[80vw]  justify-start pl-5 ">
-                <img src='http://localhost:8080/uploads/${img}' alt="" class="h-10 w-10 rounded-full mt-2 mr-2">
+                <img src='/api/uploads/${img}' alt="" class="h-10 w-10 rounded-full mt-2 mr-2">
                 <div id="content-sent" class="max-w-[80%] flex flex-col">
                     <div  class="border-2 border-[#E63946] rounded-xl p-3  ">
                         <span class="text-[#F5F5F5]  break-all">

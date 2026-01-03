@@ -156,6 +156,18 @@ class FriendsController {
         return reply.code(500).send({ error: error.message });
       }
     }
+    async cancelFriendRequest(request, reply) {
+      try {
+        const userId = request.headers['x-user-id'];
+        const friendId = request.query.friendId;
+        
+        const result = await this.friendshipModel.cancelFriendRequest(userId, friendId);
+        
+        return result;
+      } catch (error) {
+        return reply.code(500).send({ error: error.message });
+      }
+    }
   }
 
   export default FriendsController;

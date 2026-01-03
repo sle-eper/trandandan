@@ -1,6 +1,7 @@
 import axios from "axios";
 import { navigate } from "../app";
 import { PlayerSearch } from "./playerSearch";
+import { socket } from "../login/login";
 
 
 
@@ -194,12 +195,13 @@ export async function navBarLogic() {
   signOutBtn?.addEventListener("click", async () => {
     document.body.classList.add("flex", "items-center", "justify-center", "px-6", "md:px-20");
     //here the request have to send to the backend to destroy the session
-    const result = await fetch('http://localhost:8080/api/auth/logout', {
+    const result = await fetch('/api/auth/logout', {
       method: 'POST',
       credentials: 'include', // include cookies
     });
     if (result.ok) {
       console.log('Logout successful');
+      socket.disconnect();
       navigate("login");
     }
   });

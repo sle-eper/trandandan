@@ -17,7 +17,7 @@ const fastify = Fastify({ logger: true });
 await fastify.register(cors, {
   origin: "http://localhost:5173", 
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type"],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-user-id', 'x-user'],
   credentials: true
 });
 await fastify.register(formbody);

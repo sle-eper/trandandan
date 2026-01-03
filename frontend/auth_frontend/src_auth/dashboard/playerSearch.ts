@@ -11,7 +11,7 @@ interface Player {
 
 async function fetchAllUsers(): Promise<Player[]| undefined> {
     try {
-    const response = await axios.get('http://localhost:8080/api/users/getAllUsers', {
+    const response = await axios.get('/api/users/getAllUsers', {
       headers: {
         'Content-Type': 'application/json',
       },

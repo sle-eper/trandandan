@@ -2,6 +2,7 @@
 import { signupTemplate, sharedImage } from "./templates";
 import { navigate } from "../app";
 import { signupUser } from "./api";
+import { socket } from "./login";
 
 export function showSignupPage(containerId = "login-app") {
   const app = document.getElementById(containerId);
@@ -66,6 +67,16 @@ function attachSignupHandlers() {
       const result = await signupUser(username, email, password, confirm);
 
       if (result.success) {
+              //  const  response?.headers.get("x-user-id") || null;
+                const res = await fetch("/auth/verify", {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include", // VERY IMPORTANT FOR Cookies
+              });
+              let myId: string;
+              const responseJson = await res.json()
+              myId =  responseJson.id
+              socket.emit("con", myId);
         console.log("-------------------------")
         navigate("/home"); // ✅ go to login on success
       } else {

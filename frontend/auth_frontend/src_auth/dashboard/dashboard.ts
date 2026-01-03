@@ -41,7 +41,7 @@ export async function showDashboard() {
 function getnotif(): Promise<any[]> {
   return new Promise(async (resolve, reject) => {
     try {
-      const response = await fetch("http://localhost:8080/auth/verify", {
+      const response = await fetch("/auth/verify", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

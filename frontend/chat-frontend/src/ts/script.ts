@@ -119,7 +119,8 @@ function setupPopupEvents() {
         const chatZone = document.getElementById("chat-zone") as HTMLDivElement;
         const msgTime = document.getElementById(`time-of-msg-${friendId}`);
         const time = getTime();
-        chatZone.innerHTML += sendMsg(value, time, myImg);
+        chatZone.innerHTML += sendMsg(value, time);
+        console.log("user",userID,"friend",friendId);
         socket.emit("send_message", { value, userID, friendId });
         moveUp(friendId);
         const container = document.getElementById(
@@ -163,7 +164,7 @@ function socketListener() {
       ++counterElementValue;
       if (counterElementValue <= 9)
         counterElement.innerText =
-          String(counterElementValue); //TODO handel 9+ msg
+          String(counterElementValue);
       else if (counterElementValue > 9) counterElement.innerText = "+9";
       const containerMsg = document.getElementById(`container-of-last-msg-of-${id}`);
       if (containerMsg) containerMsg.innerHTML = lastMsg("recv", msg, id);
@@ -171,6 +172,7 @@ function socketListener() {
     }
   });
   socket.on("receive_message", (msg, msgId, friendId, timeOfMsg, friendImg) => {
+    console.log('image received in chat script:', friendImg);
     const chatZone = document.getElementById("chat-zone") as HTMLDivElement;
     // console.log("recvMsg",chatZone)
     chatZone?.insertAdjacentHTML("beforeend",receivedMsg(msg, timeOfMsg, friendImg));
@@ -185,11 +187,11 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
     else if (msg && !allow) msg.innerHTML = inputMsg("blocked");
     setupPopupEvents();
   });
-  socket.on("blockOrAccepted", (roomName, statusGlobal) => {
+  socket.on("blockOrAccepted", (roomName, statusGlobal,status) => {
     const dm = document.getElementById("DM");
     if (dm && dm.dataset.roomName == roomName) {
       const msg = document.getElementById("x");
-      if (msg) msg.innerHTML = inputMsg(statusGlobal);
+      if (msg) msg.innerHTML = inputMsg(statusGlobal,status);
       setupPopupEvents();
     }
   });
@@ -199,7 +201,7 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
       if (msg.send == userID)
         chatZone.insertAdjacentHTML(
           "beforeend",
-          sendMsg(msg.msg, msg.time, myImg)
+          sendMsg(msg.msg, msg.time)
         );
       else
         chatZone.insertAdjacentHTML(
@@ -217,7 +219,7 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
       if (msg.send == userID)
         chatZone.insertAdjacentHTML(
           "afterbegin",
-          sendMsg(msg.msg, msg.time, myImg)
+          sendMsg(msg.msg, msg.time)
         );
       else
         chatZone.insertAdjacentHTML(
@@ -390,12 +392,28 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
     // console.log(from,msg);
 
   })
-
+  socket.on("user_online", (userId: string) => {
+    const elements = document.querySelectorAll(`.online-indicator-${userId}`)
+    if(!elements)
+      return;
+    elements.forEach(el => {
+      el.classList.remove("hidden");
+    });
+  });
+  socket.on("user_offline", (userId: string) => {
+    const elements = document.querySelectorAll(`.online-indicator-${userId}`)
+    if(!elements)
+      return;
+    elements.forEach(el => {
+      if(!el.classList.contains("hidden"))
+          el.classList.add("hidden");
+    });
+  });
 
 }
 
 export async function showMainUI() {
-  const response = await fetch("http://localhost:8080/auth/verify", {
+  const response = await fetch("/auth/verify", {
     method: "GET",
     headers: { "Content-Type": "application/json" },
     credentials: "include", // VERY IMPORTANT FOR Cookies
@@ -505,7 +523,7 @@ export async function showMainUI() {
           }
           //*********************************************************************** */
           dmZone = document.getElementById("DM");
-          let contentChat = profileNav(friendFind.avatar_url,friendFind.username,friendFind.status);
+          let contentChat = profileNav(friendFind.avatar_url,friendFind.username,friendId);
           contentChat += chatZones();
           if (dmZone) dmZone.innerHTML = contentChat;
           socket.emit("get_status", friendId);
