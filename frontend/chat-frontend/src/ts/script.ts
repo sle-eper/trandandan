@@ -401,6 +401,7 @@ export async function showMainUI() {
     headers: { "Content-Type": "application/json" },
     credentials: "include", // VERY IMPORTANT FOR Cookies
   });
+  console.log("response status:", response.status);
   let myId: string;
   const responseJson = await response.json()
   myId =  responseJson.id

@@ -80,8 +80,8 @@ export function attachLoginHandlers() {
       }
       if (body.success) {
         currentUserId = response?.headers.get("x-user-id") || null;
-        
-      socket.emit("con", currentUserId);
+
+        socket.emit("con", currentUserId);
         // const socket = io("http://localhost:3000");
         navigate("/home");
       } else {

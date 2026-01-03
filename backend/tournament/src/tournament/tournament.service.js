@@ -41,10 +41,10 @@ export async function createTournament_post(request, reply) {
                 VALUES(?, ?,?)`,
             [nickname, result.lastID, userid]
         );
-        await axios.post("http://chat-service:3000/tournamentCreate", {
-            userid,
+        await axios.post("http://chat-service:3000/notify", {
+            userids : [userid],
             type: "tournamentcreat",
-            data: { tournamentId: result.lastID, tournamentName: tournamentname }
+            data: { tournamentId: result.lastID, room: tournamentname }
         });
     }
     catch (error) {

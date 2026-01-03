@@ -22,8 +22,9 @@ export async function spyUi()
     const response = await fetch("/auth/verify", {
             method: "GET",
             headers: { "Content-Type": "application/json" },
-            credentials: "include", // VERY IMPORTANT FOR Cookies
+            credentials: "include",
         });
+        console.log("response status:", response.status);
         let myId: string;
         const responseJson = await response.json()
         myId =  responseJson.id;
