@@ -182,10 +182,10 @@ function socketListener() {
 if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
     // const container = document.getElementById(`container-of-last-msg-of-${friendId}`);
   });
-  socket.on("allowMsg", (allow: boolean) => {
+  socket.on("allowMsg", (allow: boolean,status:string) => {
     const msg = document.getElementById("x");
-    if (msg && allow) msg.innerHTML = inputMsg("accepted");
-    else if (msg && !allow) msg.innerHTML = inputMsg("blocked");
+    if (msg && allow) msg.innerHTML = inputMsg("accepted",status);
+    else if (msg && !allow) msg.innerHTML = inputMsg("blocked",status);
     setupPopupEvents();
   });
   socket.on("blockOrAccepted", (roomName, statusGlobal,status) => {
@@ -420,7 +420,7 @@ export async function showMainUI() {
     headers: { "Content-Type": "application/json" },
     credentials: "include", // VERY IMPORTANT FOR Cookies
   });
-  console.log("response status:", response.status);
+  // console.log("response status:", response.status);
   let myId: string;
   const responseJson = await response.json()
   myId =  responseJson.id
@@ -454,7 +454,7 @@ export async function showMainUI() {
     //     //get all of list friends
     const friendsEvent = document.querySelectorAll(".friend-msg-zone");
     friendsEvent.forEach((friend) => {
-      friend.addEventListener("click", (event) => {
+      friend.addEventListener("click", () => {
         //         /******************************************get msg on scroll*******************************/
 
         let firestOne: boolean = false;
@@ -562,11 +562,10 @@ export async function showMainUI() {
               "popup-option"
             ) as HTMLDivElement;
             //When pressed 3 point
-            option?.addEventListener("click", async (event) => {
+            option?.addEventListener("click", async () => {
               socket.emit("get_status",friendId)
               const btn1 = await new Promise<string>((resolve) => {
                   socket.once("blockBtn", (btn) => {
-                      // console.log("btn", btn); 
                       resolve(btn);
                   });
               });

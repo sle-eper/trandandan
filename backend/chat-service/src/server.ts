@@ -163,7 +163,7 @@ server.ready().then(() => {
           const status1: string = status?.status1?.status;
           const status2: string = status?.status2?.status;
           let allow: Boolean = (status1 === "accepted" && status2 === "accepted");
-          socket.emit("allowMsg", allow);
+          socket.emit("allowMsg", allow,status1);
           const userSocket = onlineUsers.get(id);
           if (userSocket) {
             for (const ids of userSocket) {
