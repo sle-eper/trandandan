@@ -45,56 +45,52 @@ const getRoomName = (id1: string, id2: string): string => {
 server.ready().then(() => {
   const io = (server as any).io;
   io.on("connection", async (socket) => {
-    socket.on('con',async (id)=>{
-      try{
-        if(!id)
-            return;
-        const stringId:string = String(id)
+    socket.on('con', async (id) => {
+      try {
+        if (!id)
+          return;
+        const stringId: string = String(id)
         socket.data.userId = stringId;
-        if(!onlineUsers.has(stringId))
-        {
+        if (!onlineUsers.has(stringId)) {
           onlineUsers.set(String(id), new Set());;
         }
         onlineUsers.get(stringId)?.add(socket.id)
         // console.log(id ,"is connected");
         // console.log(onlineUsers.size ,"size of online");
-      }catch(err){
+      } catch (err) {
         console.error('Error connected:', err);
       }
     })
     socket.on("send_message", async (data) => {
-      try{
-          const id = socket.data.userId
-          if (!id) return;
-          const friendId: string = data?.friendId; //
-          const msg: string = data?.value; //
-          if (!friendId || !msg || typeof msg !== 'string' || msg.trim().length === 0 || msg.length > 1000)
-            return; 
-          const roomName = getRoomName(id,friendId);
-          const status:any = await getStatusOfTowFriends(id, friendId);
-          if(status){
-            const status1: string = status?.status1?.status; //
-            const status2: string = status?.status2?.status; //
-            if (status1 === "accepted" && status2 === "accepted")
-            {
-              await saveNotif(id,friendId,'msg',msg);
-              const friendSocketId = onlineUsers.get(friendId);
-              const msgId:string =  await saveMsg(id, friendId, msg, roomName, "waiting");
-              const timeOfMsg:string = await getTimeOfMsg(msgId);
-              const UserData = await fetchUserData(friendId); // get data of user from user-management service
-              console.log(UserData.user);
-              socket.to(roomName).emit("receive_message", msg, msgId ,id,timeOfMsg,UserData?.user.avatar_url);
-              if(friendSocketId)
-              {
-                for(const ids of friendSocketId)
-                {
-                  socket.to(ids).emit("live", id, roomName, msg,timeOfMsg);
-                  socket.to(ids).emit("msg_notification", UserData.user.username,msg);
-                }
+      try {
+        const id = socket.data.userId
+        if (!id) return;
+        const friendId: string = data?.friendId; //
+        const msg: string = data?.value; //
+        if (!friendId || !msg || typeof msg !== 'string' || msg.trim().length === 0 || msg.length > 1000)
+          return;
+        const roomName = getRoomName(id, friendId);
+        const status: any = await getStatusOfTowFriends(id, friendId);
+        if (status) {
+          const status1: string = status?.status1?.status; //
+          const status2: string = status?.status2?.status; //
+          if (status1 === "accepted" && status2 === "accepted") {
+            await saveNotif(id, friendId, 'msg', msg);
+            const friendSocketId = onlineUsers.get(friendId);
+            const msgId: string = await saveMsg(id, friendId, msg, roomName, "waiting");
+            const timeOfMsg: string = await getTimeOfMsg(msgId);
+            const UserData = await fetchUserData(friendId); // get data of user from user-management service
+            console.log(UserData.user);
+            socket.to(roomName).emit("receive_message", msg, msgId, id, timeOfMsg, UserData?.user.avatar_url);
+            if (friendSocketId) {
+              for (const ids of friendSocketId) {
+                socket.to(ids).emit("live", id, roomName, msg, timeOfMsg);
+                socket.to(ids).emit("msg_notification", UserData.user.username, msg);
               }
             }
           }
         }
+      }
       catch (err) {
         console.error('Error inside send_message:', err);
       }
@@ -121,14 +117,14 @@ server.ready().then(() => {
         const offset = data.offset || 0;
         await changeAllToRecv(data.myId, roomName)
         const messages = await getAllMsg(roomName, limit, offset);
-        const UserData = await fetchUserData(data.friendId); 
-        socket.emit('messages_old_batch', messages,UserData?.user.avatar_url);
-      }catch(err){
+        const UserData = await fetchUserData(data.friendId);
+        socket.emit('messages_old_batch', messages, UserData?.user.avatar_url);
+      } catch (err) {
         console.error('Error in get_old_messages:', err);
       }
     });
-    socket.on("get_friends", async() => {
-      try{
+    socket.on("get_friends", async () => {
+      try {
 
         const id = socket.data.userId
         if (!id) return;
@@ -144,9 +140,8 @@ server.ready().then(() => {
         const id = socket.data.userId
         if (!id || !friendId) return;
         const roomName = getRoomName(id, friendId);
-        const status:any = await getStatusOfTowFriends(id,friendId);
-        if(status)
-        {
+        const status: any = await getStatusOfTowFriends(id, friendId);
+        if (status) {
           const status1: string = status?.status1?.status;
           const status2: string = status?.status2?.status;
           let allow: Boolean = (status1 === "accepted" && status2 === "accepted");
@@ -168,9 +163,8 @@ server.ready().then(() => {
         if (!id || !data?.friendId || !data?.status) return;
         const roomName = getRoomName(id, data.friendId);
 
-        const status:any = await changeStatusOfFriends(data.status, id, data.friendId);
-        if(status)
-        {
+        const status: any = await changeStatusOfFriends(data.status, id, data.friendId);
+        if (status) {
           const status1: string = status?.status1?.status;
           const status2: string = status?.status2?.status;
           let statusGlobal: string = "blocked";
@@ -220,14 +214,13 @@ server.ready().then(() => {
         const id = socket.data.userId;
         if (!id) return;
         const friendSocket = onlineUsers.get(friendId);
-        await saveNotif(id,friendId,'challenge',null);
-        if(!friendSocket)return;
-        const UserData = await fetchUserData(id); 
-        if(!UserData)
+        await saveNotif(id, friendId, 'challenge', null);
+        if (!friendSocket) return;
+        const UserData = await fetchUserData(id);
+        if (!UserData)
           return;
-        for(const isd of friendSocket)
-        {
-          io.to(isd).emit("request_to_play",UserData?.user?.username,id);
+        for (const isd of friendSocket) {
+          io.to(isd).emit("request_to_play", UserData?.user?.username, id);
         }
 
       } catch (err) {
@@ -237,84 +230,78 @@ server.ready().then(() => {
     socket.on('accept_play', async (id, friendId) => {
       console.log(id, friendId);
     })
-    socket.on('reject_play',async(id,friendId)=>{
-      try{
-        if(!id || !friendId)return;
-        await saveNotif(id,friendId,'reject',null);
+    socket.on('reject_play', async (id, friendId) => {
+      try {
+        if (!id || !friendId) return;
+        await saveNotif(id, friendId, 'reject', null);
         const Sockets = onlineUsers.get(friendId);
-        if(!Sockets)return;
-        const UserData = await fetchUserData(id); 
-        if(!UserData)return;
-        for(const isd of Sockets)
-        {
-          io.to(isd).emit("not_agree",UserData?.user?.username);
+        if (!Sockets) return;
+        const UserData = await fetchUserData(id);
+        if (!UserData) return;
+        for (const isd of Sockets) {
+          io.to(isd).emit("not_agree", UserData?.user?.username);
         }
 
-      }catch(err)
-      {
+      } catch (err) {
         console.error('Error in reject_play:', err);
       }
     })
-    socket.on('getNotif',async(id)=>{
-      try{
-        const data = await getNotif(String(id));
-        socket.emit("notif",data);
-      }catch(err){
+    socket.on('getNotif', async (id) => {
+      try {
+        const data = await getNotif(id);
+        socket.emit("notif", data);
+      } catch (err) {
         console.error('Error in getNotif:', err);
       }
     })
     socket.on('friendRequestSent', async (myId: string, friendId: string) => {
       if (!myId || !friendId) return;
-      await saveNotif(myId,friendId,'friendRequest',null);
+      await saveNotif(myId, friendId, 'friendRequest', null);
       const userSocket = onlineUsers.get(String(friendId));
-      
+
       if (!userSocket) return;
-     
+
       const UserData = await fetchUserData(myId);
       if (!UserData) return;
       for (const ids of userSocket) {
-        
-        socket.to(ids).emit("friendRequestReceived", UserData.user.username, friendId,myId);
+
+        socket.to(ids).emit("friendRequestReceived", UserData.user.username, friendId, myId);
       }
-      
+
     });
     socket.on('acceptFriendRequest', async (myId: string, friendId: string) => {
-      try{
+      try {
         if (!friendId) return;
         const id = socket.data.userId;
         console.log("myId:", myId, "friendId:", friendId, "id from socket:", id);
-        if(!id) return;
+        if (!id) return;
         const friendSocket = onlineUsers.get(String(friendId));
-        if(!friendSocket)return;
-        const UserData = await fetchUserData(id); 
-        if(!UserData)
+        if (!friendSocket) return;
+        const UserData = await fetchUserData(id);
+        if (!UserData)
           return;
-        for(const isd of friendSocket)
-        {
-          socket.to(isd).emit("friendRequestAccepted",UserData?.user?.username,id);
+        for (const isd of friendSocket) {
+          socket.to(isd).emit("friendRequestAccepted", UserData?.user?.username, id);
         }
-      }catch(err)
-      {
+      } catch (err) {
         console.error('Error in acceptFriendRequest:', err);
       }
-    }); 
-    socket.on('rejectFriendRequest', async (myId:string, friendId:string) => {
-      try{
+    });
+    socket.on('rejectFriendRequest', async (myId: string, friendId: string) => {
+      try {
         if (!friendId) return;
         const id = myId;
-        if(!id) return;
+        if (!id) return;
         const friendSocket = onlineUsers.get(String(friendId));
-        if(!friendSocket)return;
-        const UserData = await fetchUserData(id); 
-        if(!UserData)
+        if (!friendSocket) return;
+        const UserData = await fetchUserData(id);
+        if (!UserData)
           return;
-        for(const isd of friendSocket)
-        {
-          socket.to(isd).emit("friendRequestRejected",UserData?.user?.username,id);
+        for (const isd of friendSocket) {
+          socket.to(isd).emit("friendRequestRejected", UserData?.user?.username, id);
         }
       }
-      catch(err)
-      {
+      catch (err) {
         console.error('Error in rejectFriendRequest:', err);
       }
     });
@@ -341,8 +328,14 @@ server.ready().then(() => {
     // ************************************************************************************
 
     socket.on("/tournamentcreat", async (data) => {
+      console.log("tournament create event received", data);
+      socket.join(data.room);
+      console.log(`User joined ${data.room}`);
     });
     socket.on("/tournamentjoin", async (data) => {
+      console.log("tournament join event received", data);
+      socket.join(data.room);
+      console.log(`User joined ${data.room}`);
     });
     socket.on("/tournamentstart", async (data) => {
 
@@ -353,16 +346,19 @@ server.ready().then(() => {
   })
 });
 
-server.post('/tournamentCreate', async (request, reply) => {
-  const { userid, type, data } = request.body as any;
+server.post('/notifytournament', async (request, reply) => {
+  const { userids, type, data } = request.body as any;
   const io = (server as any).io;
-  const sockets = onlineUsers.get(userid);
-  if (sockets) {
-    for (const socketId of sockets) {
-      io.to(socketId).emit(type, data);
+  for (let id in userids) {
+
+    const sockets = onlineUsers.get(id);
+    if (sockets) {
+      for (const socketId of sockets) {
+        io.to(socketId).emit(type, data);
+      }
     }
   }
-  reply.code(200).send({ message: 'Tournament create notification sent' });
+  reply.code(200).send({ message: 'ALL is Good' });
 });
 async function startServer() {
   try {

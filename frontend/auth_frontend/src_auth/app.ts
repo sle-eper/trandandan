@@ -1,14 +1,5 @@
-// async function checkSession(): Promise<boolean> {
-  //   try {
-    //     const response = await fetch("/auth/verify/", {
-      //       method: "GET",
-//       credentials: "include" // send cookies
-//     });
-//     return response.status === 200;
-//   } catch {
-//     return false;
-//   }
-// }
+
+
 
 import { initRouter, addRoute, navigate } from "./login/router";
 import { showLandingPage } from "./login/landing";
@@ -24,7 +15,28 @@ import { showverifyPage } from "./login/verify";
 // import { spyUi } from "../../src_spy/app.ts"
 import { spyUi } from "../../spy_frontend/src_spy/app.ts"
 
+async function protectedRoute(
+  handler: () => void
+) {
+  const isLoggedIn = await checkSession();
 
+  if (!isLoggedIn) {    
+    navigate("/login");
+    return;
+  }
+  handler();
+}
+async function checkSession(): Promise<boolean> {
+  try {
+    const response = await fetch("/auth/verify", {
+      method: "GET",
+      credentials: "include", // send cookies
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
 
 // Register all routes
 addRoute("/", () => showLandingPage());
@@ -36,47 +48,74 @@ addRoute("/change", () => showchangePassPage());
 addRoute("/auth/success", () => handleOAuthSuccess());
 addRoute("/verify", () => showverifyPage());
 
-// Dashboard sub-pages
-addRoute("/home", () => {
-    showDashboard();   // ensures the dashboard layout is loaded
-    loadHome();        // loads Home content
-});
+addRoute("/home", () =>
+  protectedRoute(() => {
+    showDashboard();
+    loadHome();
+  })
+);
 
-addRoute("/game", () => {
+addRoute("/game", () =>
+  protectedRoute(() => {
     showDashboard();
     loadGame();
-    document.getElementById("pingpong-render")?.addEventListener('click',()=>{
-        
-    })
-    document.getElementById("spy-render")?.addEventListener('click',()=>{
-        spyUi()
-    })
-});
-addRoute("/chat", () => {
+
+    document.getElementById("spy-render")?.addEventListener("click", () => {
+      spyUi();
+    });
+  })
+);
+
+addRoute("/chat", () =>
+  protectedRoute(() => {
     showDashboard();
     loadChat();
-});
-addRoute("/tournament", () => {
+  })
+);
+
+addRoute("/tournament", () =>
+  protectedRoute(() => {
     showDashboard();
     loadtournament();
-});
+  })
+);
 
-addRoute("/profile", () => {
+addRoute("/profile", () =>
+  protectedRoute(() => {
     showDashboard();
     loadProfile();
-});
-addRoute("/2FA" , () => {
+  })
+);
+
+addRoute("/2FA", () =>
+  protectedRoute(() => {
     showDashboard();
     load2FA();
-});
+  })
+);
+
 // Start router
-window.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("DOMContentLoaded", async () => {
+  const isLoggedIn = await checkSession();
+
+  const protectedPaths = [
+    "/home",
+    "/game",
+    "/chat",
+    "/profile",
+    "/tournament",
+    "/2FA"
+  ];
+
+  const currentPath = window.location.pathname;
+
+  if (!isLoggedIn && protectedPaths.includes(currentPath)) {
+    navigate("/login");
+    return;
+  }
+
   initRouter(() => showNotFound());
 });
 
 
 export { navigate };
-
-
-
-

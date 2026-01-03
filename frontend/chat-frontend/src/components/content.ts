@@ -144,7 +144,8 @@ export function generateBlockButton(status:string):string
 }
 /* ****************************************************************************************************************************************************************** */
 export function profileNav(img:string,userAccount:string,status:string):string{
-    
+   const showProfile =  new PlayerProfileManager();
+   showProfile
     return`
         <div id="profile-nav" class="flex h-[10%] items-center p-5 justify-between relative ">
             <div class="border flex items-center gap-6">

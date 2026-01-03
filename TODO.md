@@ -26,4 +26,4 @@ rehab
 profile with chat 
 socket  for request notif database handling 
 online users 
-
+handle crash of services 

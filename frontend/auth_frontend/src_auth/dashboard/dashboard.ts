@@ -46,6 +46,7 @@ function getnotif(): Promise<any[]> {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
       });
+      console.log("response status:", response.status);
       const responseJson = await response.json();
       const myId = responseJson.id;
       console.log("user id ",myId);

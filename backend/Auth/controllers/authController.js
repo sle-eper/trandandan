@@ -111,11 +111,11 @@ export async function login_post(request, reply) {
   if (!row) {
     return reply.code(400).send({ success: false, message: "User not found" });
   }
-  if (Number(row.data.two_factor_enabled) === 1) {
-    console.log("🔍 2FA is enabled for this user.");
-    console.log("🔍 Redirecting to 2FA verification.");
-    return reply.code(206).send({ success: true, message: "2FA required" });
-  }
+  // if (Number(row.data.two_factor_enabled) === 1) {
+  //   console.log("🔍 2FA is enabled for this user.");
+  //   console.log("🔍 Redirecting to 2FA verification.");
+  //   return reply.code(206).send({ success: true, message: "2FA required" });
+  // }
   console.log("🔍 Comparing passwords");
   console.log(row.data.password_hash);
 
