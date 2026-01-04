@@ -62,7 +62,7 @@ export function renderNavBar(): string {
                  transition-all duration-300 hover:scale-110
                  hover:bg-[#FD1D1D]/20 hover:border-[#FD1D1D]
                  hover:shadow-[0_0_12px_#FD1D1D,0_0_22px_#711F21]">
-          <span class="material-symbols-outlined text-white text-[24px]">
+          <span id="notif-icon" class="material-symbols-outlined text-white text-[24px]">
             notifications
           </span>
         </button>
@@ -144,6 +144,14 @@ export async function navBarLogic() {
   // Toggle settings menu
   notifBtn?.addEventListener("click",()=>{
     if(!notifmenu || notifmenu.children.length === 0) return;
+    
+
+    const notifIcon = document.getElementById("notif-icon");
+    if(notifIcon)
+        notifIcon.innerHTML = `<span class="  material-symbols-outlined">
+                                notifications_unread
+                                </span>`
+
     const isHidden = notifmenu.classList.contains("hidden");
     if (isHidden) {
       notifmenu.classList.remove("hidden");

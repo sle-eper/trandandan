@@ -150,7 +150,7 @@ export function generateBlockButton(status:string):string
 }
 /* ****************************************************************************************************************************************************************** */
 export function profileNav(img:string,userAccount:string,id:string):string{
-    const profile = new PlayerProfileManager();
+    // const profile = new PlayerProfileManager();
     return`
         <div id="profile-nav" class="flex h-[10%] items-center p-5 justify-between relative ">
             <div class="flex items-center gap-6">
@@ -158,7 +158,7 @@ export function profileNav(img:string,userAccount:string,id:string):string{
                     <span class="material-symbols-outlined ">arrow_back_ios</span>
                 </div>
                 <div class="relative user-account">
-                    <div class="h-10 w-10  bg-cover bg-center rounded-full" 
+                    <div class=" hover:cursor-pointer h-10 w-10  bg-cover bg-center rounded-full" 
                         style="
                             background-image : url('/api/uploads/${img}');
                             aspect-ratio: 1/1;

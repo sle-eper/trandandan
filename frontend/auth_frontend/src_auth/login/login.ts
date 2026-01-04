@@ -7,6 +7,7 @@ import { io } from "socket.io-client";
 export const socket = io("http://localhost:3000");
 // import { showDashboard } from "../dashboard/dashboard";
 // import { showMainUI } from "../../src/ts/script.ts";
+import {socketInstance} from "../../../socket_manager/socket"
 function showError(msg: string) {
   const errorBox = document.getElementById("login-error");
   if (!errorBox) return;
@@ -80,6 +81,13 @@ export function attachLoginHandlers() {
       }
       if (body.success) {
         currentUserId = response?.headers.get("x-user-id") || null;
+        // if(currentUserId)
+        // {
+        //   localStorage.setItem("userId", currentUserId);
+        //   socketInstance();
+        // }
+        // console.log("body --- >" ,body);
+        // console.log("id->>>>>>>>",currentUserId)
 
         socket.emit("con", currentUserId);
         // const socket = io("http://localhost:3000");

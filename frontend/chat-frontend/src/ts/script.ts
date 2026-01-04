@@ -1,11 +1,3 @@
-// import { io } from "socket.io-client";
-// const socket = io("http://localhost:3000");
-// const socket = io("http://localhost:8080/api/chat", {
-//     path: "/socket.io",
-//     withCredentials: true, // Send cookies for auth
-//     transports: ['websocket', 'polling']
-// });
-// import { socket } from "../../src_auth/login/login";
 import { socket } from "../../../auth_frontend/src_auth/login/login";
 import { PlayerProfileManager } from "../../../profile_frontend/src/components/FriendRequest";
 
@@ -233,7 +225,7 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
   socket.on("setIMg", (img) => {
     myImg = img;
   });
-  socket.on("request_to_play", (from,friendId) => {
+  socket.on("request_to_play", (from,friendId,notifId) => {
       const notification = document.getElementById("notification-menu");
       const container = document.getElementById("play-notification-container");
       if (!container) return;
@@ -279,23 +271,32 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
         socket.emit("reject_play", userID,friendId);
         notif.remove();
       };
-
     const msgNotif = document.createElement("div");
     msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
                   transition rounded-lg`
     msgNotif.innerHTML = `
-      <span class="block max-w-70 truncate">
-        🎮 <strong>${from}</strong> wants to play
-      </span>
+        <div class = "flex justify-between">
+        <span class="block max-w-70 truncate">
+          🎮 <strong>${from}</strong> wants to play
+        </span>
+        <span class="hover:cursor-pointer close-btn">x</span>
+      </div>
     `;
     notification?.prepend(msgNotif);
+    msgNotif.querySelector(".close-btn")?.addEventListener("click", () => {
+    socket.emit("removeNotif", notifId);
+    msgNotif.remove();
+    const notifmenu = document.getElementById("notification-menu");
+    if(notifmenu?.children.length === 0)
+      notifmenu.classList.add("hidden")
+  });
 
 
       setTimeout(() => {
         notif.remove();
       }, 10000);
   });
-  socket.on("not_agree", (from ) => {
+  socket.on("not_agree", (from ,notifId) => {
     const container = document.getElementById("play-notification-container");
     const notification = document.getElementById("notification-menu");
 
@@ -342,17 +343,27 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
     msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
                   transition rounded-lg`
     msgNotif.innerHTML = `
+    <div class = "flex justify-between">
       <span class="block max-w-70 truncate">
         ❌ <strong>${from}</strong> rejected your play request
       </span>
+      <span class="hover:cursor-pointer close-btn">x</span>
+    </div>
     `;
     notification?.prepend(msgNotif);
+    msgNotif.querySelector(".close-btn")?.addEventListener("click", () => {
+    socket.emit("removeNotif", notifId);
+    msgNotif.remove();
+    const notifmenu = document.getElementById("notification-menu");
+    if(notifmenu?.children.length === 0)
+      notifmenu.classList.add("hidden")
+    });
 
     setTimeout(() => {
       notif.remove();
     }, 3000);
   });
-  socket.on('msg_notification',(from , msg)=>{
+  socket.on('msg_notification',(from , msg,notifId)=>{
     const container = document.getElementById("play-notification-container");
     const notification = document.getElementById("notification-menu");
     if (!container) return;
@@ -383,10 +394,20 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
     msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
                   transition rounded-lg`
     msgNotif.innerHTML = `
-      <span class="block max-w-70 truncate">
-        💬 <strong>${from}</strong>: ${msg}
-      </span>
+      <div class="flex justify-between">
+        <span class="block max-w-70 truncate">
+          💬 <strong>${from}</strong>: ${msg}
+        </span>
+        <span class="hover:cursor-pointer close-btn">x</span>
+      </div>
     `;
+    msgNotif.querySelector(".close-btn")?.addEventListener("click", () => {
+    socket.emit("removeNotif", notifId);
+    msgNotif.remove();
+    const notifmenu = document.getElementById("notification-menu");
+    if(notifmenu?.children.length === 0)
+      notifmenu.classList.add("hidden")
+    });
     notification?.prepend(msgNotif);
     
 

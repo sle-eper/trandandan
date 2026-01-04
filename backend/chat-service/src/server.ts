@@ -6,7 +6,9 @@ import {
   changeAllToRecv,
   getTimeOfMsg,
   saveNotif,
-  getNotif
+  getNotif,
+  changeDisplay,
+  changeDisplayOneNotif
 } from "./db/database";
 
 import { fetchUserData, getStatusOfTowFriends, changeStatusOfFriends, getFriendsOfUser } from "./fetchingData";
@@ -92,7 +94,7 @@ server.ready().then(() => {
             const status2: string = status?.status2?.status; //
             if (status1 === "accepted" && status2 === "accepted")
             {
-              await saveNotif(id,friendId,'msg',msg);
+              const notifId =  await saveNotif(id,friendId,'msg',msg);
               const friendSocketId = onlineUsers.get(friendId);
               const msgId:string =  await saveMsg(id, friendId, msg, roomName, "waiting");
               const timeOfMsg:string = await getTimeOfMsg(msgId);
@@ -104,7 +106,7 @@ server.ready().then(() => {
                 for(const ids of friendSocketId)
                 {
                   socket.to(ids).emit("live", id, roomName, msg,timeOfMsg);
-                  socket.to(ids).emit("msg_notification", UserData.user.username,msg);
+                  socket.to(ids).emit("msg_notification", UserData.user.username,msg,notifId);
                 }
               }
             }
@@ -120,6 +122,7 @@ server.ready().then(() => {
         const limit = data.limit || 20;
         const offset = data.offset || 0;
         await changeAllToRecv(data.myId, roomName)
+        await changeDisplay(data.myId)
         const messages = await getAllMsg(roomName, limit, offset);
         const UserData = await fetchUserData(data.friendId);
         socket.emit('messages_batch', messages.reverse(), UserData?.user.avatar_url);
@@ -134,6 +137,7 @@ server.ready().then(() => {
         const limit = data.limit || 20;
         const offset = data.offset || 0;
         await changeAllToRecv(data.myId, roomName)
+        await changeDisplay(data.myId)
         const messages = await getAllMsg(roomName, limit, offset);
         const UserData = await fetchUserData(data.friendId);
         socket.emit('messages_old_batch', messages, UserData?.user.avatar_url);
@@ -240,13 +244,13 @@ server.ready().then(() => {
         const id = socket.data.userId;
         if (!id) return;
         const friendSocket = onlineUsers.get(friendId);
-        await saveNotif(id, friendId, 'challenge', null);
+        const notfId =  await saveNotif(id, friendId, 'challenge', null);
         if (!friendSocket) return;
         const UserData = await fetchUserData(id);
         if (!UserData)
           return;
         for (const isd of friendSocket) {
-          io.to(isd).emit("request_to_play", UserData?.user?.username, id);
+          io.to(isd).emit("request_to_play", UserData?.user?.username, id,notfId);
         }
 
       } catch (err) {
@@ -259,13 +263,13 @@ server.ready().then(() => {
     socket.on('reject_play', async (id, friendId) => {
       try {
         if (!id || !friendId) return;
-        await saveNotif(id, friendId, 'reject', null);
+        const notifId =  await saveNotif(id, friendId, 'reject', null);
         const Sockets = onlineUsers.get(friendId);
         if (!Sockets) return;
         const UserData = await fetchUserData(id);
         if (!UserData) return;
         for (const isd of Sockets) {
-          io.to(isd).emit("not_agree", UserData?.user?.username);
+          io.to(isd).emit("not_agree", UserData?.user?.username,notifId);
         }
 
       } catch (err) {
@@ -331,6 +335,15 @@ server.ready().then(() => {
         console.error('Error in rejectFriendRequest:', err);
       }
     });
+    socket.on("removeNotif",async(id:string)=>{
+      try {
+        if (!id) return;
+        await changeDisplayOneNotif(id);
+      }
+      catch (err) {
+        console.error('Error in removeNotif:', err);
+      }
+    })
     socket.on("disconnect", () => {
       try {
         const id = socket.data.userId;

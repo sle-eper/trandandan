@@ -6,6 +6,55 @@ import { navBarLogic } from "./navbar";
 import { sidebarLogic } from "./sidebar";
 import { socket } from "../login/login";
 
+function addNotif(el: any, notification: HTMLElement) {
+  let text = "";
+
+  switch (el.type) {
+    case "challenge":
+      text = `🎮 <strong>${el.sender_name}</strong> wants to play`;
+      break;
+
+    case "reject":
+      text = `❌ <strong>${el.sender_name}</strong> rejected your play request`;
+      break;
+
+    case "msg":
+      text = `💬 <strong>${el.sender_name}</strong>: ${el.content}`;
+      break;
+
+    case "friendRequest":
+      text = `🤝 <strong>${el.sender_name}</strong> sent you a friend request`;
+      break;
+
+    default:
+      return;
+  }
+
+  const msgNotif = document.createElement("div");
+  msgNotif.className = `
+    w-full text-left px-4 py-2 text-white/90 
+    hover:bg-[#E63946]/20 transition rounded-lg
+  `;
+
+  msgNotif.innerHTML = `
+    <div class="flex justify-between">
+      <span class="block max-w-70 truncate">${text}</span>
+      <span class="hover:cursor-pointer close-btn">x</span>
+    </div>
+  `;
+
+  msgNotif.querySelector(".close-btn")?.addEventListener("click", () => {
+    socket.emit("removeNotif", el.id);
+    msgNotif.remove();
+    const notifmenu = document.getElementById("notification-menu");
+    if(notifmenu?.children.length === 0)
+      notifmenu.classList.add("hidden")
+  });
+
+  notification.prepend(msgNotif);
+}
+
+
 
 export async function showDashboard() {
   const app = document.getElementById("login-app");
@@ -65,70 +114,109 @@ function getnotif(): Promise<any[]> {
   // Render sidebar + navbar
   const nav = document.getElementById("navbar");
   const sidebar = document.getElementById("sidebar");
+  if (sidebar) sidebar.innerHTML = renderSidebar();
   if (nav)
   {
     nav.innerHTML = renderNavBar();
     let notif =  await getnotif()
     const notification = document.getElementById("notification-menu");
     if (!notification) return;
-    // console.log("ssss",container,notification);
-    // console.log("sssss",notif);
-    notif.forEach((el)=>{
-      if(el.type == "challenge")
-      {
-        const msgNotif = document.createElement("div");
-        msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
-                      transition rounded-lg`
-        msgNotif.innerHTML = `
-          <span class="block max-w-70 truncate">
-            🎮 <strong>${el.sender_name}</strong> wants to play
-          </span>
-        `;
-        notification?.prepend(msgNotif);
-      }else if(el.type == 'reject')
-      {
-        const msgNotif = document.createElement("div");
-        msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
-                      transition rounded-lg`
-        msgNotif.innerHTML = `
-          <span class="block max-w-70 truncate">
-            ❌ <strong>${el.sender_name}</strong> rejected your play request
-          </span>
-        `;
-        notification?.prepend(msgNotif);
-      }else if(el.type == 'msg')
-      {
-      const msgNotif = document.createElement("div");
-      msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
-                    transition rounded-lg`
-      msgNotif.innerHTML = `
-        <span class="block max-w-70 truncate">
-          💬 <strong>${el.sender_name}</strong>: ${el.content}
-        </span>
-      `;
-      notification?.prepend(msgNotif);
-        }else if(el.type == 'friendRequest')
-        {
-          const msgNotif = document.createElement("div");
-          msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
-                        transition rounded-lg`
-          msgNotif.innerHTML = `
-            <span class="block max-w-70 truncate">
-              🤝 <strong>${el.sender_name}</strong> sent you a friend request
-            </span>
-          `;
-          notification?.prepend(msgNotif);
+    // notif.forEach((el)=>{
+    //   if(!el.display)
+    //     return;
 
+    //   if(el.type == "challenge" && el.display)
+    //   {
+    //     const msgNotif = document.createElement("div");
+    //     msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
+    //                   transition rounded-lg`
+  
+    //     msgNotif.innerHTML = `
+    //       <div class="flex justify-between">
+    //           <span class="block max-w-70 truncate">
+    //             🎮 <strong>${el.sender_name}</strong> wants to play
+    //           </span>
+    //           <span class="hover:cursor-pointer close-btn">x</span>
+    //       </div>
+    //     `;
+    //     notification?.prepend(msgNotif);
+    //     const closeBtn = msgNotif.querySelector(".close-btn");
+    //     closeBtn?.addEventListener("click", async () => {
+    //       socket.emit("removeNotif",el.id);
+    //       msgNotif.remove();
+    //     });
+    //   }else if(el.type == 'reject' && el.display)
+    //   {
+    //     const msgNotif = document.createElement("div");
+    //     msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
+    //                   transition rounded-lg`
+  
+    //     msgNotif.innerHTML = `
+    //     <div class="flex justify-between">
+    //       <span class="block max-w-70 truncate">
+    //         ❌ <strong>${el.sender_name}</strong> rejected your play request
+    //       </span>
+    //       <span class="hover:cursor-pointer close-btn">x</span>
+    //     </div>
+    //     `;
+    //     notification?.prepend(msgNotif);
+    //     const closeBtn = msgNotif.querySelector(".close-btn");
+    //     closeBtn?.addEventListener("click", async () => {
+    //       socket.emit("removeNotif",el.id);
+    //       msgNotif.remove();
+    //     });
+    //   }else if(el.type == 'msg' && el.display)
+    //   {
+    //   const msgNotif = document.createElement("div");
+    //   msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
+    //                 transition rounded-lg`
 
-
-
-          
-        }
-    })
+    //   msgNotif.innerHTML = `
+    //   <div class="flex justify-between">
+    //     <span class="block max-w-70 truncate">
+    //       💬 <strong>${el.sender_name}</strong>: ${el.content}
+    //     </span>
+    //     <span class="hover:cursor-pointer close-btn">x</span>
+    //   </div>
+    //   `;
+    //   notification?.prepend(msgNotif);
+    //     const closeBtn = msgNotif.querySelector(".close-btn");
+    //     closeBtn?.addEventListener("click", async () => {
+    //       socket.emit("removeNotif",el.id);
+    //       msgNotif.remove();
+    //     });
+        
+    //   }else if(el.type == 'friendRequest')
+    //   {
+    //     const msgNotif = document.createElement("div");
+    //     msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
+    //                   transition rounded-lg`
+  
+    //     msgNotif.innerHTML = `
+    //     <div class="flex justify-between">
+    //       <span class="block max-w-70 truncate">
+    //         🤝 <strong>${el.sender_name}</strong> sent you a friend request
+    //       </span>
+    //       <span class="hover:cursor-pointer close-btn">x</span>
+    //       </div>
+    //     `;
+    //     notification?.prepend(msgNotif);
+    //     const closeBtn = msgNotif.querySelector(".close-btn");
+    //     closeBtn?.addEventListener("click", async () => {
+    //       socket.emit("removeNotif",el.id);
+    //       msgNotif.remove();
+    //     });
+        
+    //   }
+    // })
+    notif.forEach((el) => {
+    if (el.display) {
+      addNotif(el, notification);
+    }
+  });
 
 
   }
-  if (sidebar) sidebar.innerHTML = renderSidebar();
   navBarLogic();
   sidebarLogic();
 }
