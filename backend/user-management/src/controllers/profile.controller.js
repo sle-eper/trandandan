@@ -509,5 +509,26 @@ class ProfileController {
       return reply.code(500).send({ error: error.message });
     }
   }
+  async updateStatus(request, reply) {
+    try {
+      const { id } = request.params;
+      const { status } = request.body;
+      if (!id || !status) {
+        return reply.code(400).send({ error: 'User ID and status are required' });
+      }
+      const user = await this.userModel.findById(id);
+      if (!user) {
+        return reply.code(404).send({ error: 'User not found' });
+      }
+      await this.userModel.updateStatus(id, status);
+      return {
+        success: true,
+        message: 'Status updated successfully'
+      };
+    } catch (error) {
+      return reply.code(500).send({ error: error.message });
+    }
+  }
+
 }
 export default ProfileController;

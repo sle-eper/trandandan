@@ -6,10 +6,13 @@ import {
   changeAllToRecv,
   getTimeOfMsg,
   saveNotif,
-  getNotif
+  getNotif,
+  checkExistingNotification,
+  updateNotificationStatus,
+  deleteNotification
 } from "./db/database";
 
-import { fetchUserData, getStatusOfTowFriends, changeStatusOfFriends, getFriendsOfUser } from "./fetchingData";
+import { fetchUserData, getStatusOfTowFriends, changeStatusOfFriends, getFriendsOfUser, updateUserStat } from "./fetchingData";
 import fastify from "fastify";
 import fastifyIO from "fastify-socket.io";
 const server = fastify({ logger: true });
@@ -59,6 +62,7 @@ server.ready().then(() => {
     //   onlineUsers.set(String(stringId), new Set());;
     // }
     // onlineUsers.get(stringId)?.add(socket.id)
+  
 
     socket.on('con',async (id)=>{
       try{
@@ -71,7 +75,7 @@ server.ready().then(() => {
         }
         onlineUsers.get(stringId)?.add(socket.id)
         // console.log(id ,"is connected");
-        // console.log(onlineUsers.size ,"size of online");
+        console.log(onlineUsers.size ,"size of online");
         socket.broadcast.emit("user_online", stringId);
       }catch(err){
         console.error('Error connected:', err);
@@ -282,7 +286,20 @@ server.ready().then(() => {
     })
     socket.on('friendRequestSent', async (myId: string, friendId: string) => {
       if (!myId || !friendId) return;
-      await saveNotif(myId, friendId, 'friendRequest', null);
+       const existingRequest =  checkExistingNotification(
+        myId, 
+        friendId, 
+        'friendRequest', 
+        'pending'
+      );
+      
+      if (existingRequest) {
+        socket.emit('error', 'Friend request already pending');
+        return;
+      }
+      const notifId = await saveNotif(myId, friendId, 'friendRequest', 'pending') // 30 days
+      
+      console.log(`Notification ID: ${notifId}`);
       const userSocket = onlineUsers.get(String(friendId));
 
       if (!userSocket) return;
@@ -291,46 +308,70 @@ server.ready().then(() => {
       if (!UserData) return;
       for (const ids of userSocket) {
 
-        socket.to(ids).emit("friendRequestReceived", UserData.user.username, friendId, myId);
+        socket.to(ids).emit("friendRequestReceived", {
+          username: UserData.user.username, 
+          friendId, 
+          myId,
+          notifId
+        });
       }
 
     });
-    socket.on('acceptFriendRequest', async (myId: string, friendId: string) => {
+    socket.on('acceptFriendRequest', async (myId: string, friendId: string, notifId: string) => {
       try {
-        if (!friendId) return;
-        const id = socket.data.userId;
-        console.log("myId:", myId, "friendId:", friendId, "id from socket:", id);
-        if (!id) return;
+        if (!friendId || !myId) return;
+        
+       updateNotificationStatus(notifId, 'accepted');
         const friendSocket = onlineUsers.get(String(friendId));
         if (!friendSocket) return;
-        const UserData = await fetchUserData(id);
+        const UserData = await fetchUserData(myId);
         if (!UserData)
           return;
         for (const isd of friendSocket) {
-          socket.to(isd).emit("friendRequestAccepted", UserData?.user?.username, id);
+          socket.to(isd).emit("friendRequestAccepted", UserData?.user?.username, myId, friendId);
         }
       } catch (err) {
         console.error('Error in acceptFriendRequest:', err);
       }
     });
-    socket.on('rejectFriendRequest', async (myId: string, friendId: string) => {
+    socket.on('rejectFriendRequest', async (myId: string, friendId: string, notifId: string) => {
+      if (!friendId || !myId) return;
       try {
-        if (!friendId) return;
-        const id = myId;
-        if (!id) return;
+        deleteNotification(notifId);
         const friendSocket = onlineUsers.get(String(friendId));
         if (!friendSocket) return;
-        const UserData = await fetchUserData(id);
+        const UserData = await fetchUserData(myId);
         if (!UserData)
           return;
         for (const isd of friendSocket) {
-          socket.to(isd).emit("friendRequestRejected", UserData?.user?.username, id);
+          socket.to(isd).emit("friendRequestRejected", UserData?.user?.username, myId);
         }
       }
       catch (err) {
         console.error('Error in rejectFriendRequest:', err);
       }
     });
+
+    socket.on('cancelFriendRequest', async (notifId: string, receiverId: string,myId: string) => {
+  
+    if (!myId || !receiverId) return;
+
+    try {
+      
+        deleteNotification(notifId);
+
+        const receiverSocket = onlineUsers.get(String(receiverId));
+        if (receiverSocket) {
+          for (const socketId of receiverSocket) {
+            io.to(socketId).emit('friendRequestCancelled', { notifId });
+          }
+        }
+
+      } catch (err) {
+        console.error('Error cancelling friend request:', err);
+        socket.emit('error', 'Failed to cancel friend request');
+      }
+  });
     socket.on("disconnect", () => {
       try {
         const id = socket.data.userId;

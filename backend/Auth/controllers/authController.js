@@ -138,6 +138,8 @@ export async function login_post(request, reply) {
       sameSite: "none",
       secure: true,
     })
+    .header('x-user', row.data.username)
+    .header('x-user-id', row.data.id)
     .code(200).send({ success: true, message: "You are Authourised" });
   return { accessToken: token };
 }

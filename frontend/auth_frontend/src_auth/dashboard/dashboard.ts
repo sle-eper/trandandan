@@ -107,7 +107,7 @@ function getnotif(): Promise<any[]> {
         </span>
       `;
       notification?.prepend(msgNotif);
-        }else if(el.type == 'friendRequest')
+        }else if(el.type == 'friendRequest' && el.content == 'pending')
         {
           const msgNotif = document.createElement("div");
           msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
