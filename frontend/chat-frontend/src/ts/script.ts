@@ -139,6 +139,49 @@ function setupPopupEvents() {
   }
 }
 
+function addMenuNotification(icon, text, notifId ) {
+  const notification = document.getElementById("notification-menu");
+  if (!notification) return;
+      const notifIcon = document.getElementById("notif-icon");
+    if(!notifIcon) return;
+    notifIcon.innerHTML = `<span class="text-[#E63946]   material-symbols-outlined">
+                            notifications_unread
+                            </span>`
+
+  notification.classList.remove("hidden");
+
+  const msgNotif:HTMLDivElement = document.createElement("div");
+  msgNotif.className = `
+    w-full text-left px-4 py-2 text-white/90
+    hover:bg-[#E63946]/20 transition rounded-lg
+  `;
+
+  msgNotif.innerHTML = `
+    <div class="flex justify-between items-center">
+      <span class="block max-w-70 truncate">
+        ${icon} ${text}
+      </span>
+      <span class="hover:cursor-pointer close-btn">x</span>
+    </div>
+  `;
+  msgNotif.querySelector(".close-btn").onclick = () => {
+    socket.emit("removeNotif", notifId);
+    msgNotif.remove();
+
+    if (notification.children.length === 0) {
+      if(notification.classList.contains("hidden")) return;
+        notification.classList.add("opacity-0");
+        notification.classList.add("hidden");
+        notifIcon.innerHTML = `<span class="  material-symbols-outlined">
+                            notifications
+                            </span>`
+    }
+  };
+
+  notification.prepend(msgNotif);
+}
+
+
 function socketListener() {
   socket.on("live", (id, roomName, msg, timeOfMsg) => {
     moveUp(id);
@@ -226,7 +269,7 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
     myImg = img;
   });
   socket.on("request_to_play", (from,friendId,notifId) => {
-      const notification = document.getElementById("notification-menu");
+      // const notification = document.getElementById("notification-menu");
       const container = document.getElementById("play-notification-container");
       if (!container) return;
 
@@ -271,25 +314,26 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
         socket.emit("reject_play", userID,friendId);
         notif.remove();
       };
-    const msgNotif = document.createElement("div");
-    msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
-                  transition rounded-lg`
-    msgNotif.innerHTML = `
-        <div class = "flex justify-between">
-        <span class="block max-w-70 truncate">
-          🎮 <strong>${from}</strong> wants to play
-        </span>
-        <span class="hover:cursor-pointer close-btn">x</span>
-      </div>
-    `;
-    notification?.prepend(msgNotif);
-    msgNotif.querySelector(".close-btn")?.addEventListener("click", () => {
-    socket.emit("removeNotif", notifId);
-    msgNotif.remove();
-    const notifmenu = document.getElementById("notification-menu");
-    if(notifmenu?.children.length === 0)
-      notifmenu.classList.add("hidden")
-  });
+      addMenuNotification("🎮 ",`<strong>${from}</strong> wants to play`,notifId);
+    // const msgNotif = document.createElement("div");
+    // msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
+    //               transition rounded-lg`
+    // msgNotif.innerHTML = `
+    //     <div class = "flex justify-between">
+    //     <span class="block max-w-70 truncate">
+    //       🎮 <strong>${from}</strong> wants to play
+    //     </span>
+    //     <span class="hover:cursor-pointer close-btn">x</span>
+    //   </div>
+    // `;
+    // notification?.prepend(msgNotif);
+    // msgNotif.querySelector(".close-btn")?.addEventListener("click", () => {
+    // socket.emit("removeNotif", notifId);
+    // msgNotif.remove();
+    // const notifmenu = document.getElementById("notification-menu");
+    // if(notifmenu?.children.length === 0)
+    //   notifmenu.classList.add("hidden")
+  // });
 
 
       setTimeout(() => {
@@ -298,7 +342,7 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
   });
   socket.on("not_agree", (from ,notifId) => {
     const container = document.getElementById("play-notification-container");
-    const notification = document.getElementById("notification-menu");
+    // const notification = document.getElementById("notification-menu");
 
     
     if (!container) return;
@@ -339,25 +383,26 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
     textEl.textContent = 'Challenge';
     iconEl?.classList.remove("opacity-0");
 
-    const msgNotif = document.createElement("div");
-    msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
-                  transition rounded-lg`
-    msgNotif.innerHTML = `
-    <div class = "flex justify-between">
-      <span class="block max-w-70 truncate">
-        ❌ <strong>${from}</strong> rejected your play request
-      </span>
-      <span class="hover:cursor-pointer close-btn">x</span>
-    </div>
-    `;
-    notification?.prepend(msgNotif);
-    msgNotif.querySelector(".close-btn")?.addEventListener("click", () => {
-    socket.emit("removeNotif", notifId);
-    msgNotif.remove();
-    const notifmenu = document.getElementById("notification-menu");
-    if(notifmenu?.children.length === 0)
-      notifmenu.classList.add("hidden")
-    });
+    addMenuNotification("❌",`<strong>${from}</strong> rejected your play request`,notifId)
+    // const msgNotif = document.createElement("div");
+    // msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
+    //               transition rounded-lg`
+    // msgNotif.innerHTML = `
+    // <div class = "flex justify-between">
+    //   <span class="block max-w-70 truncate">
+    //     ❌ <strong>${from}</strong> rejected your play request
+    //   </span>
+    //   <span class="hover:cursor-pointer close-btn">x</span>
+    // </div>
+    // `;
+    // notification?.prepend(msgNotif);
+    // msgNotif.querySelector(".close-btn")?.addEventListener("click", () => {
+    // socket.emit("removeNotif", notifId);
+    // msgNotif.remove();
+    // const notifmenu = document.getElementById("notification-menu");
+    // if(notifmenu?.children.length === 0)
+    //   notifmenu.classList.add("hidden")
+    // });
 
     setTimeout(() => {
       notif.remove();
@@ -365,7 +410,7 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
   });
   socket.on('msg_notification',(from , msg,notifId)=>{
     const container = document.getElementById("play-notification-container");
-    const notification = document.getElementById("notification-menu");
+    // const notification = document.getElementById("notification-menu");
     if (!container) return;
 
     container.innerHTML = "";
@@ -387,28 +432,28 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
     `;
     container.appendChild(notif);
     setTimeout(() => {
-      
       notif.remove();
     }, 5000);
-    const msgNotif = document.createElement("div");
-    msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
-                  transition rounded-lg`
-    msgNotif.innerHTML = `
-      <div class="flex justify-between">
-        <span class="block max-w-70 truncate">
-          💬 <strong>${from}</strong>: ${msg}
-        </span>
-        <span class="hover:cursor-pointer close-btn">x</span>
-      </div>
-    `;
-    msgNotif.querySelector(".close-btn")?.addEventListener("click", () => {
-    socket.emit("removeNotif", notifId);
-    msgNotif.remove();
-    const notifmenu = document.getElementById("notification-menu");
-    if(notifmenu?.children.length === 0)
-      notifmenu.classList.add("hidden")
-    });
-    notification?.prepend(msgNotif);
+    addMenuNotification("💬",`<strong>${from}</strong>: ${msg}`,notifId);
+    // const msgNotif = document.createElement("div");
+    // msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
+    //               transition rounded-lg`
+    // msgNotif.innerHTML = `
+    //   <div class="flex justify-between">
+    //     <span class="block max-w-70 truncate">
+    //       💬 <strong>${from}</strong>: ${msg}
+    //     </span>
+    //     <span class="hover:cursor-pointer close-btn">x</span>
+    //   </div>
+    // `;
+    // msgNotif.querySelector(".close-btn")?.addEventListener("click", () => {
+    // socket.emit("removeNotif", notifId);
+    // msgNotif.remove();
+    // const notifmenu = document.getElementById("notification-menu");
+    // if(notifmenu?.children.length === 0)
+    //   notifmenu.classList.add("hidden")
+    // });
+    // notification?.prepend(msgNotif);
     
 
 

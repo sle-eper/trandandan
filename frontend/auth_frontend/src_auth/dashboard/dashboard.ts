@@ -7,6 +7,13 @@ import { sidebarLogic } from "./sidebar";
 import { socket } from "../login/login";
 
 function addNotif(el: any, notification: HTMLElement) {
+  const notifIcon = document.getElementById("notif-icon");
+  if(!notifIcon)return;
+  // red notification icon
+  notifIcon.innerHTML = `<span class=" text-[#E63946]  material-symbols-outlined">
+                          notifications_unread
+                          </span>`
+
   let text = "";
 
   switch (el.type) {
@@ -48,7 +55,14 @@ function addNotif(el: any, notification: HTMLElement) {
     msgNotif.remove();
     const notifmenu = document.getElementById("notification-menu");
     if(notifmenu?.children.length === 0)
-      notifmenu.classList.add("hidden")
+    {
+      if(notifmenu.classList.contains("hidden")) return;
+        notifmenu.classList.add("opacity-0");
+        notifmenu.classList.add("hidden")
+        notifIcon.innerHTML = `<span class="  material-symbols-outlined">
+                            notifications
+                            </span>`
+    }
   });
 
   notification.prepend(msgNotif);

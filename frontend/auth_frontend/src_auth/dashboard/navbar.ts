@@ -129,6 +129,39 @@ export function renderNavBar(): string {
   `;
 }
 
+
+function openNotifMenu() {
+  const menu = document.getElementById("notification-menu");
+  if (!menu) return;
+
+  menu.classList.remove("hidden", "opacity-0", "translate-y-[-6px]");
+  menu.classList.add("opacity-100", "translate-y-0");
+}
+
+function closeNotifMenu() {
+  const menu = document.getElementById("notification-menu");
+  if (!menu) return;
+
+  menu.classList.add("opacity-0", "translate-y-[-6px]");
+  menu.classList.remove("opacity-100", "translate-y-0");
+  menu.classList.add("hidden");
+}
+
+function setNotifIcon(active: boolean) {
+  const icon = document.getElementById("notif-icon");
+  if (!icon) return;
+
+  icon.innerHTML = active
+    ? `<span class="text-[#E63946] material-symbols-outlined">
+        notifications_unread
+      </span>`
+    : `<span class="material-symbols-outlined">
+        notifications
+      </span>`;
+}
+
+
+
 export async function navBarLogic() {
   const btn = document.getElementById("settings-btn");
   const notifBtn = document.getElementById("notification-btn");
@@ -144,29 +177,17 @@ export async function navBarLogic() {
   // Toggle settings menu
   notifBtn?.addEventListener("click",()=>{
     if(!notifmenu || notifmenu.children.length === 0) return;
-    
-
-    const notifIcon = document.getElementById("notif-icon");
-    if(notifIcon)
-        notifIcon.innerHTML = `<span class="  material-symbols-outlined">
-                                notifications_unread
-                                </span>`
-
-    const isHidden = notifmenu.classList.contains("hidden");
-    if (isHidden) {
-      notifmenu.classList.remove("hidden");
-      if(!menu?.classList.contains("hidden"))
-          menu?.classList.add("hidden");
-      setTimeout(() => {
-        notifmenu.classList.remove("opacity-0", "translate-y-[-6px]");
-        notifmenu.classList.add("opacity-100", "translate-y-0");
-      }, 10);
+    console.log("notif clicked",notifmenu);
+    const isOpen = notifmenu.classList.contains("opacity-100");
+    if (isOpen) {
+      closeNotifMenu();
     } else {
-      // CLOSE notifmenu
-      notifmenu.classList.add("opacity-0", "translate-y-[-6px]");
-      notifmenu.classList.remove("opacity-100", "translate-y-0");
-      setTimeout(() => notifmenu.classList.add("hidden"), 150);
+      openNotifMenu();
     }
+    if (!menu?.classList.contains("hidden")) {
+      menu?.classList.add("hidden");
+    }
+    setNotifIcon(false);
   })
   btn?.addEventListener("click", () => {
     if (!menu) return;
