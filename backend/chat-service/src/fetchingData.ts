@@ -245,4 +245,26 @@ async function changeStatusOfFriends(status:string,userId:string,friendId:string
 }
 
 
-export { fetchUserData , getFriendsOfUser , getStatusOfTowFriends , changeStatusOfFriends };
+async function updateUserStat( userId: number, status: string) {
+  try {
+     const response = await axios.put(`${USER_MANAGEMENT_SERVICE_URL}/user/${userId}/status`, {
+      status
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      timeout: 5000 
+    });
+    // console.log("User status updated successfully:", response.data);
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error(`Failed to update user status: ${error.message}`);
+      throw new Error(`User service unavailable: ${error.response?.status || 'unknown'}`);
+    }
+    throw error;
+  }
+}
+
+
+export { fetchUserData , getFriendsOfUser , getStatusOfTowFriends , changeStatusOfFriends , updateUserStat };

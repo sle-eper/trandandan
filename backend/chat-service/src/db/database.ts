@@ -191,4 +191,40 @@ export function dataOfUser(id:string):any
         throw new Error("Failed to dataOfUser");
     }
 }
+
+
+export  function checkExistingNotification(senderId: string, receiverId: string, type: string,status: string): boolean {
+  try {
+     const result =  db.prepare(
+    `SELECT id FROM notifications 
+     WHERE send = $1 
+     AND recv = $2 
+     AND type = $3 
+     AND content = $4`,
+    [senderId, receiverId, type, status]
+  ).all();
+  return result.length > 0;
+  }
+    catch (error) {
+    console.error("checkExistingNotification error:", error);
+    throw new Error("Failed to check existing notification");
+  }
+
+}
+
+export function updateNotificationStatus(notifId: string, status: string): void {
+  db.prepare(
+    `UPDATE notifications SET status = ? WHERE id = ?`
+  ).run(status, notifId);
+}
+
+export function deleteNotification(notifId: string): void {
+  db.prepare(
+    `DELETE FROM notifications WHERE id = ?`
+  ).run(notifId);
+}
+
+
+
+
 export { db };
