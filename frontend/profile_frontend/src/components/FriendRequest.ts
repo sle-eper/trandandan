@@ -4,11 +4,12 @@ import type { Player } from '../Player.ts';
 import { ProfileForm}  from './ProfileForm.ts';
 import  { User } from '../User.ts';
 import { navigate } from "../../../auth_frontend/src_auth/app.ts";
-import { socket } from "../../../auth_frontend/src_auth/login/login.ts";
+// import { socket } from "../../../auth_frontend/src_auth/login/login.ts";
+import { socketInstance } from "../../../socket_manager/socket.ts";
 import { createFriendRequestNotification } from "./RequestHandling.ts";
 // Types
 
-socket.on('friendRequestReceived', (from: string, myId: string,friendId: string, notifId: string) => {
+socketInstance()?.on('friendRequestReceived', (from: string, myId: string,friendId: string, notifId: string) => {
  
   console.log('Friend request received myId:', myId, 'with frienID:', friendId);
   const existing = document.querySelector(`[data-notif-id="${notifId}"]`);
@@ -377,7 +378,7 @@ export class PlayerProfileManager {
    // );
     } else if (status.isPending) {
       const cancelBtn = document.getElementById(`cancel-request-${player.id}`);
-      socket.emit('cancelFriendRequest', );
+      socketInstance()?.emit('cancelFriendRequest', );
       cancelBtn?.addEventListener('click', async () => {
         await this.cancelFriendRequest(player.id);
        
@@ -397,7 +398,7 @@ export class PlayerProfileManager {
           
           await this.sendFriendRequest(player.id);
           console.log('Emitting friendRequestSent event via socket...', String(currentUserId), String(player.id));
-          socket.emit('friendRequestSent', currentUserId, player.id);
+          socketInstance()?.emit('friendRequestSent', currentUserId, player.id);
           // Refresh the profile to show pending state
           this.showPlayerProfile(player.id);
         } catch (error) {

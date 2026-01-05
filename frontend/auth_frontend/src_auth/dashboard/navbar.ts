@@ -1,8 +1,8 @@
 import axios from "axios";
 import { navigate } from "../app";
 import { PlayerSearch } from "./playerSearch";
-import { socket } from "../login/login";
-
+// import { socket } from "../login/login";
+import { socketInstance } from "../../../socket_manager/socket";
 
 
 
@@ -230,7 +230,8 @@ export async function navBarLogic() {
     });
     if (result.ok) {
       console.log('Logout successful');
-      socket.disconnect();
+      // localStorage.removeItem("userId");
+      socketInstance()?.disconnect();
       navigate("login");
     }
   });

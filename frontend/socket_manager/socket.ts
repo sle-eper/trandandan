@@ -22,8 +22,11 @@ let socket: Socket | null = null;
 // }
 
 function getUserId(): string | null {
-  return localStorage.getItem("userId");
+  const id = localStorage.getItem("userId");
+  if (!id || id === "undefined" || id === "null") return null;
+  return id;
 }
+
 
 export function socketInstance(): Socket | null {
   if (!socket) {

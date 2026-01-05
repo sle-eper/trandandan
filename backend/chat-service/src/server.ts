@@ -7,6 +7,8 @@ import {
   getTimeOfMsg,
   saveNotif,
   getNotif,
+  changeDisplay,
+  changeDisplayOneNotif,
   checkExistingNotification,
   updateNotificationStatus,
   deleteNotification
@@ -49,38 +51,37 @@ const getRoomName = (id1: string, id2: string): string => {
 server.ready().then(() => {
   const io = (server as any).io;
   io.on("connection", async (socket) => {
-    // const userId = socket.handshake.auth.userId;
-
-    // if (!userId) {
-    //   socket.disconnect();
-    //   return;
-    // }
-    // const stringId:string = String(userId)
-    // socket.data.userId = stringId;
-    // if(!onlineUsers.has(stringId))
-    // {
-    //   onlineUsers.set(String(stringId), new Set());;
-    // }
-    // onlineUsers.get(stringId)?.add(socket.id)
-  
-
-    socket.on('con',async (id)=>{
-      try{
-        if(!id)
-            return;
-        const stringId:string = String(id)
-        socket.data.userId = stringId;
-        if (!onlineUsers.has(stringId)) {
-          onlineUsers.set(String(id), new Set());;
-        }
-        onlineUsers.get(stringId)?.add(socket.id)
-        // console.log(id ,"is connected");
-        console.log(onlineUsers.size ,"size of online");
-        socket.broadcast.emit("user_online", stringId);
-      }catch(err){
-        console.error('Error connected:', err);
-      }
-    })
+    const userId = socket.handshake.auth.userId;
+    if (!userId) {
+      socket.disconnect();
+      return;
+    }
+    socket.data.userId = userId;
+    if (!onlineUsers.has(userId)) {
+      onlineUsers.set(userId, new Set());
+      socket.broadcast.emit("user_online", userId);
+    }
+    onlineUsers.get(userId)?.add(socket.id);
+    console.log("--------------------------");
+    console.log("New client connected, userId:", userId);
+    console.log("size of onlineUsers", onlineUsers.size , "---->" , onlineUsers);
+    // socket.on('con',async (id)=>{
+    //   try{
+    //     if(!id)
+    //         return;
+    //     const stringId:string = String(id)
+    //     socket.data.userId = stringId;
+    //     if (!onlineUsers.has(stringId)) {
+    //       onlineUsers.set(String(id), new Set());;
+    //     }
+    //     onlineUsers.get(stringId)?.add(socket.id)
+    //     // console.log(id ,"is connected");
+    //     console.log(onlineUsers.size ,"size of online");
+    //     socket.broadcast.emit("user_online", stringId);
+    //   }catch(err){
+    //     console.error('Error connected:', err);
+    //   }
+    // })
     socket.on("send_message", async (data) => {
       try{
           const id = socket.data.userId
@@ -353,6 +354,36 @@ server.ready().then(() => {
         console.error('Error in rejectFriendRequest:', err);
       }
     });
+    socket.on("removeNotif",async(id:string)=>{
+      try {
+        if (!id) return;
+        await changeDisplayOneNotif(id);
+      }
+      catch (err) {
+        console.error('Error in removeNotif:', err);
+      }
+    })
+
+    socket.on('cancelFriendRequest', async (notifId: string, receiverId: string,myId: string) => {
+  
+    if (!myId || !receiverId) return;
+
+    try {
+      
+        deleteNotification(notifId);
+
+        const receiverSocket = onlineUsers.get(String(receiverId));
+        if (receiverSocket) {
+          for (const socketId of receiverSocket) {
+            io.to(socketId).emit('friendRequestCancelled', { notifId });
+          }
+        }
+
+      } catch (err) {
+        console.error('Error cancelling friend request:', err);
+        socket.emit('error', 'Failed to cancel friend request');
+      }
+  });
     socket.on("disconnect", () => {
       try {
         const id = socket.data.userId;
@@ -360,6 +391,8 @@ server.ready().then(() => {
           onlineUsers.get(id).delete(socket.id);
           if (onlineUsers.get(id)!.size === 0) {
               onlineUsers.delete(id);
+              console.log("--------------------------");
+              console.log("size of onlineUsers",onlineUsers.size , "---->" , onlineUsers);
               socket.broadcast.emit("user_offline", id);
           }
         }

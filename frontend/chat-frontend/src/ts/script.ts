@@ -1,5 +1,8 @@
-import { socket } from "../../../auth_frontend/src_auth/login/login";
+// import { socket } from "../../../auth_frontend/src_auth/login/login";
+import { socketInstance } from "../../../socket_manager/socket";
 import { PlayerProfileManager } from "../../../profile_frontend/src/components/FriendRequest";
+import { currentUserId } from "../../../auth_frontend/src_auth/login/login";
+// const socket = socketInstance;
 
 import {
   lastMsg,
@@ -114,7 +117,7 @@ function setupPopupEvents() {
         const time = getTime();
         chatZone.innerHTML += sendMsg(value, time);
         console.log("user",userID,"friend",friendId);
-        socket.emit("send_message", { value, userID, friendId });
+        socketInstance()?.emit("send_message", { value, userID, friendId });
         moveUp(friendId);
         const container = document.getElementById(
           `container-of-last-msg-of-${friendId}`
@@ -165,7 +168,7 @@ function addMenuNotification(icon, text, notifId ) {
     </div>
   `;
   msgNotif.querySelector(".close-btn").onclick = () => {
-    socket.emit("removeNotif", notifId);
+    socketInstance()?.emit("removeNotif", notifId);
     msgNotif.remove();
 
     if (notification.children.length === 0) {
@@ -183,7 +186,7 @@ function addMenuNotification(icon, text, notifId ) {
 
 
 function socketListener() {
-  socket.on("live", (id, roomName, msg, timeOfMsg) => {
+  socketInstance()?.on("live", (id, roomName, msg, timeOfMsg) => {
     moveUp(id);
     // console.log("id", id);
     const timeOfMsgSpan: HTMLSpanElement = document.getElementById(
@@ -207,23 +210,23 @@ function socketListener() {
       if (timeOfMsgSpan) timeOfMsgSpan.innerText = timeOfMsg;
     }
   });
-  socket.on("receive_message", (msg, msgId, friendId, timeOfMsg, friendImg) => {
+  socketInstance()?.on("receive_message", (msg, msgId, friendId, timeOfMsg, friendImg) => {
     console.log('image received in chat script:', friendImg);
     const chatZone = document.getElementById("chat-zone") as HTMLDivElement;
     // console.log("recvMsg",chatZone)
     chatZone?.insertAdjacentHTML("beforeend",receivedMsg(msg, timeOfMsg, friendImg));
-    socket.emit("ack_message", msgId);
+    socketInstance()?.emit("ack_message", msgId);
     const containerMsg = document.getElementById(`container-of-last-msg-of-${friendId}`);
 if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
     // const container = document.getElementById(`container-of-last-msg-of-${friendId}`);
   });
-  socket.on("allowMsg", (allow: boolean,status:string) => {
+  socketInstance()?.on("allowMsg", (allow: boolean,status:string) => {
     const msg = document.getElementById("x");
     if (msg && allow) msg.innerHTML = inputMsg("accepted",status);
     else if (msg && !allow) msg.innerHTML = inputMsg("blocked",status);
     setupPopupEvents();
   });
-  socket.on("blockOrAccepted", (roomName, statusGlobal,status) => {
+  socketInstance()?.on("blockOrAccepted", (roomName, statusGlobal,status) => {
     const dm = document.getElementById("DM");
     if (dm && dm.dataset.roomName == roomName) {
       const msg = document.getElementById("x");
@@ -231,7 +234,7 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
       setupPopupEvents();
     }
   });
-  socket.on("messages_batch", (messages, friendImg) => {
+  socketInstance()?.on("messages_batch", (messages, friendImg) => {
     const chatZone = document.getElementById("chat-zone") as HTMLDivElement;
     if(!chatZone) return;
     for (const msg of messages) {
@@ -250,7 +253,7 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
       chatZone.scrollTop = chatZone.scrollHeight;
     });
   });
-  socket.on("messages_old_batch", (messages, friendImg) => {
+  socketInstance()?.on("messages_old_batch", (messages, friendImg) => {
     const chatZone = document.getElementById("chat-zone") as HTMLDivElement;
     for (const msg of messages) {
       if (msg.send == userID)
@@ -265,10 +268,10 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
         );
     }
   });
-  socket.on("setIMg", (img) => {
+  socketInstance()?.on("setIMg", (img) => {
     myImg = img;
   });
-  socket.on("request_to_play", (from,friendId,notifId) => {
+  socketInstance()?.on("request_to_play", (from,friendId,notifId) => {
       // const notification = document.getElementById("notification-menu");
       const container = document.getElementById("play-notification-container");
       if (!container) return;
@@ -306,12 +309,12 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
       container.appendChild(notif);
 
       notif.querySelector(".accept").onclick = () => {
-        socket.emit("accept_play", userID,friendId );
+        socketInstance()?.emit("accept_play", userID,friendId );
         notif.remove();
       };
 
       notif.querySelector(".reject").onclick = () => {
-        socket.emit("reject_play", userID,friendId);
+        socketInstance()?.emit("reject_play", userID,friendId);
         notif.remove();
       };
       addMenuNotification("🎮 ",`<strong>${from}</strong> wants to play`,notifId);
@@ -340,7 +343,7 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
         notif.remove();
       }, 10000);
   });
-  socket.on("not_agree", (from ,notifId) => {
+  socketInstance()?.on("not_agree", (from ,notifId) => {
     const container = document.getElementById("play-notification-container");
     // const notification = document.getElementById("notification-menu");
 
@@ -408,7 +411,7 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
       notif.remove();
     }, 3000);
   });
-  socket.on('msg_notification',(from , msg,notifId)=>{
+  socketInstance()?.on('msg_notification',(from , msg,notifId)=>{
     const container = document.getElementById("play-notification-container");
     // const notification = document.getElementById("notification-menu");
     if (!container) return;
@@ -460,7 +463,7 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
     // console.log(from,msg);
 
   })
-  socket.on("user_online", (userId: string) => {
+  socketInstance()?.on("user_online", (userId: string) => {
     const elements = document.querySelectorAll(`.online-indicator-${userId}`)
     if(!elements)
       return;
@@ -468,7 +471,7 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
       el.classList.remove("hidden");
     });
   });
-  socket.on("user_offline", (userId: string) => {
+  socketInstance()?.on("user_offline", (userId: string) => {
     const elements = document.querySelectorAll(`.online-indicator-${userId}`)
     if(!elements)
       return;
@@ -490,7 +493,7 @@ export async function showMainUI() {
   let myId: string;
   const responseJson = await response.json()
   myId =  responseJson.id
-  socket.emit("con", myId);
+  // socket.emit("con", myId);
   userID = myId;
   // console.log(userID);
   const chatContent = document.getElementById("dashboard-content");
@@ -502,10 +505,10 @@ export async function showMainUI() {
 
   function fetchListOfFriends(): Promise<any> {
     return new Promise((resolve) => {
-      socket.once("friends_list", (friends) => {
+      socketInstance()?.once("friends_list", (friends) => {
         resolve(friends);
       });
-      socket.emit("get_friends");
+      socketInstance()?.emit("get_friends");
     });
   }
 
@@ -528,7 +531,7 @@ export async function showMainUI() {
         function onScroll() {
           let offset: number = 0;
           if (!firestOne) {
-            socket.emit("get_messages", { myId, friendId, limit: 20, offset });
+            socketInstance()?.emit("get_messages", { myId, friendId, limit: 20, offset });
             firestOne = true;
           }
           const chatZone = document.getElementById("chat-zone");
@@ -537,7 +540,7 @@ export async function showMainUI() {
               if (chatZone.scrollTop < 190 && !isFetching) {
                 isFetching = true;
                 offset += 20;
-                await socket.emit("get_old_messages", {
+                await socketInstance()?.emit("get_old_messages", {
                   myId,
                   friendId,
                   limit: 20,
@@ -572,7 +575,7 @@ export async function showMainUI() {
                 friendId = "";
             });
           })
-          socket.emit("joinToRoom", roomName);
+          socketInstance()?.emit("joinToRoom", roomName);
 
           const counterElement: HTMLDivElement = document.getElementById(
             `counter-of-${friendId}`
@@ -601,7 +604,7 @@ export async function showMainUI() {
           // });
           contentChat += chatZones();
           if (dmZone) dmZone.innerHTML = contentChat;
-          socket.emit("get_status", friendId);
+          socketInstance()?.emit("get_status", friendId);
             const userAccount = document.querySelectorAll('.user-account');
             userAccount.forEach(element => {
               element.addEventListener('click',()=>{
@@ -629,9 +632,9 @@ export async function showMainUI() {
             ) as HTMLDivElement;
             //When pressed 3 point
             option?.addEventListener("click", async () => {
-              socket.emit("get_status",friendId)
+              socketInstance()?.emit("get_status",friendId)
               const btn1 = await new Promise<string>((resolve) => {
-                  socket.once("blockBtn", (btn) => {
+                  socketInstance()?.once("blockBtn", (btn) => {
                       resolve(btn);
                   });
               });
@@ -714,7 +717,7 @@ export async function showMainUI() {
                 textEl.textContent = `Waiting ${remaining}s`;
                 iconEl.classList.add("opacity-0");
   
-                socket.emit("challenge", friendId);
+                socketInstance()?.emit("challenge", friendId);
   
                 challenge.dataset.intervalId = setInterval(() => {
                   remaining--;
@@ -755,7 +758,7 @@ export async function showMainUI() {
 
             //block behaver
             blockValid.addEventListener("click", () => {
-              socket.emit("status", { status: "blocked", friendId });
+              socketInstance()?.emit("status", { status: "blocked", friendId });
               blockOption.classList.add("hidden");
               const popupOption = document.getElementById("popup-option");
               if (popupOption) {
@@ -775,7 +778,7 @@ export async function showMainUI() {
             });
             //unblock behaver
             unblockValid.addEventListener("click", () => {
-              socket.emit("status", { status: "accepted", friendId });
+              socketInstance()?.emit("status", { status: "accepted", friendId });
               unblockOption.classList.add("hidden");
               const popupOption = document.getElementById("popup-option");
               if (popupOption) {
