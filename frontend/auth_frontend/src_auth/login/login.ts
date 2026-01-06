@@ -77,10 +77,13 @@ export function attachLoginHandlers() {
       const { response, body } = await loginUser(username, password);
       if (response && response.status === 206) {
         // Show 2FA page
+        navigate("/verify?username=" + body.username);
+        console.log("206---", body);
+        return  ;
       }
       if (body.success) {
         currentUserId = response?.headers.get("x-user-id") || null;
-
+        console.log("p---user id :", currentUserId)
         socket.emit("con", currentUserId);
         // const socket = io("http://localhost:3000");
         navigate("/home");

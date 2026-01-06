@@ -1,4 +1,4 @@
-import { ChangePass, sharedImage } from "./templates";
+import { ChangePass, mailsended, sharedImage} from "./templates";
 import { navigate } from "../app";
 
 export function showchangePassPage(containerId = "login-app") {
@@ -14,6 +14,19 @@ export function showchangePassPage(containerId = "login-app") {
 
   attachChangepassHandlers();
 }
+export function mailSendedPage(containerId = "login-app") {
+  const app = document.getElementById(containerId);
+  if (!app) return;
+
+  app.innerHTML = `
+    <div class="flex flex-col md:flex-row items-center justify-center gap-10 w-full">
+      ${mailsended()}
+      ${sharedImage("signup-page")}
+    </div>
+  `;
+}
+
+
 function attachChangepassHandlers() {
   const btn = document.getElementById("change-btn") as HTMLButtonElement | null;
   const back = document.getElementById("change-back");
@@ -28,7 +41,6 @@ function attachChangepassHandlers() {
 
     // Extract the token
     const token = urlParams.get("token");
-    console.log("Token:", token);
     const password = (document.getElementById("change-pass") as HTMLInputElement).value.trim();
     const confirm = (document.getElementById("change-confirm") as HTMLInputElement).value.trim();
     const restult = await fetch("/api/auth/reset-password", {
@@ -48,10 +60,6 @@ function attachChangepassHandlers() {
     {
       navigate("login");
     }
-    // TODO → call your backend API
-    // Example:
-    // const result = await changePassword(password);
-
-    // Simulated success:
   });
 }
+

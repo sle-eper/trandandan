@@ -170,6 +170,20 @@ export const ChangePass = () => `
       </p>
     </div>
 `;
+
+export const mailsended = () => `
+<div class="bg-black/40 backdrop-blur-md rounded-2xl shadow-lg border border-gray-700 px-8 py-8 md:px-10 md:py-10 w-full max-w-sm md:h-[550px] md:w-[320px] mb-10 md:mb-0 flex flex-col justify-center text-center">  
+      <div>
+        <button id="change-btn" 
+        class="w-full bg-red-600 
+        text-white py-2 rounded-md mt-6 hover:opacity-90 transition">
+          email sent
+        </button>
+      </div>
+
+      
+    </div>
+`;
 export const verifyTemplate = () => `
   <div id="verify-page"
     class="bg-black/40 backdrop-blur-md rounded-2xl shadow-lg border border-gray-700
@@ -187,8 +201,8 @@ export const verifyTemplate = () => `
       <!-- CODE INPUTS -->
       <div class="flex justify-between gap-2 mb-4">
         ${Array.from({ length: 6 })
-          .map(
-            (_, i) => `
+    .map(
+      (_, i) => `
           <input
             type="text"
             inputmode="numeric"
@@ -197,8 +211,8 @@ export const verifyTemplate = () => `
             border border-gray-700 focus:border-[#E64249] outline-none"
           />
         `
-          )
-          .join("")}
+    )
+    .join("")}
       </div>
 
       <!-- ERROR MESSAGE -->

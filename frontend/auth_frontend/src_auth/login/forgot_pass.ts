@@ -41,6 +41,6 @@ function attachForgotHandlers() {
     console.log("Reset link sent to email             " ,  res);
     //send request to backend 
   
-    navigate("change");
+    navigate("mailsended");
   });
 }

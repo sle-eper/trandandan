@@ -7,7 +7,7 @@ import { showLoginPage } from "./login/login";
 import { showSignupPage } from "./login/signup";
 import { showForgotPage } from "./login/forgot_pass";
 import { showDashboard } from "./dashboard/dashboard";
-import { showchangePassPage } from "./login/change_pass";
+import { showchangePassPage, mailSendedPage} from "./login/change_pass";
 import { handleOAuthSuccess } from "./login/auth_success";
 import { showNotFound } from "./login/not_found";
 import { loadHome, loadGame, loadtournament, loadProfile, loadChat , load2FA } from "./login/routing";
@@ -27,6 +27,9 @@ async function protectedRoute(
   handler();
 }
 async function checkSession(): Promise<boolean> {
+  if (window.location.pathname === "/login" || window.location.pathname === "/signup" || window.location.pathname === "/change" || window.location.pathname === "/2factor" || window.location.pathname  ==="/mailsended") {
+    return true; // No need to check session on public pages
+  }
   try {
     const response = await fetch("/auth/verify", {
       method: "GET",
@@ -45,6 +48,7 @@ addRoute("/login", () => showLoginPage());
 addRoute("/signup", () => showSignupPage());
 addRoute("/forgot", () => showForgotPage());
 addRoute("/change", () => showchangePassPage());
+addRoute("/mailsended", () => mailSendedPage());
 addRoute("/auth/success", () => handleOAuthSuccess());
 addRoute("/verify", () => showverifyPage());
 
