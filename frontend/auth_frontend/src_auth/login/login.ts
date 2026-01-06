@@ -80,8 +80,8 @@ export function attachLoginHandlers() {
       }
       if (body.success) {
         currentUserId = response?.headers.get("x-user-id") || null;
-        
-      socket.emit("con", currentUserId);
+
+        socket.emit("con", currentUserId);
         // const socket = io("http://localhost:3000");
         navigate("/home");
       } else {
@@ -107,13 +107,13 @@ export function attachLoginHandlers() {
 
   if (googleBtn) {
     googleBtn.addEventListener("click", () => {
-      window.location.href = "http://localhost:8080/api/auth/google";
+      window.location.href = "/api/auth/google";
     });
   }
 
   if (githubBtn) {
     githubBtn.addEventListener("click", () => {
-      window.location.href = "http://localhost:8080/api/auth/github";
+      window.location.href = "/api/auth/github";
     });
   }
 }

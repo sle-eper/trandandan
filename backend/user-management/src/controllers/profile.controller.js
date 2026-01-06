@@ -6,58 +6,78 @@ import fs from 'fs';
 import path from 'path';
 class ProfileController {
 
-    constructor(database) {
-      this.userModel = new UserModule(database);
-      this.friendshipModel = new Friendship(database);
-      this.statsModel = new UserStats(database);
-    }
+  constructor(database) {
+    this.userModel = new UserModule(database);
+    this.friendshipModel = new Friendship(database);
+    this.statsModel = new UserStats(database);
+  }
 
-    async getUser(request, reply) { 
-      try {
-        const id = request.params.id;
-        const user = await this.userModel.findById(id);
-        console.log('Fetched user by ID:', user , 'for ID:', id);
-        if (!user) {
-          return reply.code(404).send({ error: 'User not found' });
-        }
-        
-        return { success: true, user };
-      } catch (error) {
-        return reply.code(500).send({ error: error.message });
+  async getUser(request, reply) {
+    try {
+      const id = request.params.id;
+      const user = await this.userModel.findById(id);
+     
+      if (!user) {
+        return reply.code(404).send({ error: 'User not found' });
       }
-    }
 
-    async getById(request, reply) { 
-      try {
-        // console.log('Getting user by ID from headers:', request.headers);
-        const id = request.headers['x-user-id'];
-        const user = await this.userModel.findById(id);
-        console.log('Fetched user by ID:', user , 'for ID:', id);
-        if (!user) {
-          return reply.code(404).send({ error: 'User not found' });
-        }
-        
-        return { success: true, user };
-      } catch (error) {
-        return reply.code(500).send({ error: error.message });
-      }
+      return { success: true, user };
+    } catch (error) {
+      return reply.code(500).send({ error: error.message });
     }
+  }
+
+  async getById(request, reply) {
+    try {
+      // console.log('Getting user by ID from headers:', request.headers);
+      const id = request.headers['x-user-id'];
+      const user = await this.userModel.findById(id);
+    
+      if (!user) {
+        return reply.code(404).send({ error: 'User not found' });
+      }
+
+      return { success: true, user };
+    } catch (error) {
+      return reply.code(500).send({ error: error.message });
+    }
+  }
+
+
 
   async setUser(request, reply) {
     try {
-      const { username, email, displayName, password, id_token } = request.body;
-      if (!username || !email || !displayName || (!password && !id_token)) {
-        return reply.code(400).send({ error: 'All fields are required' });
+      let { username, email, displayName, password, id_token } = request.body;
+
+      if (!email || !displayName) {
+        return reply.code(400).send({ error: 'email and displayName are required' });
       }
 
-      const userId = await this.userModel.create({
+      // Generate username if not provided
+      if (!username) {
+        username = displayName.replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase();
+      } else {
+        username = username.replace(/[^a-zA-Z0-9_]/g, '_');
+      }
+
+      if (!password && !id_token) {
+        return reply.code(400).send({ error: 'password or id_token is required' });
+      }
+
+      // // Hash password if provided
+      // let password_hash = null;
+      console.log(password);
+      const userData = {
         username,
         email,
-        password,
-        display_name: displayName
-      });
+        display_name: displayName,
+        id_token: id_token || null,
+        password
+      };
 
+      const userId = await this.userModel.create(userData);
       const profile = await this.userModel.findById(userId);
+
       console.log('Created user profile:', profile);
 
       return reply.code(201).send({
@@ -65,71 +85,29 @@ class ProfileController {
         message: 'User created successfully',
         profile
       });
+
     } catch (error) {
       console.error(error);
-      return reply.code(500).send({ error: error.message });
+      return reply.code(500).send({ error: error.message || 'Internal server error' });
     }
   }
- async setUser(request, reply) {
-  try {
-    let { username, email, displayName, password, id_token } = request.body;
-
-    if (!email || !displayName) {
-      return reply.code(400).send({ error: 'email and displayName are required' });
-    }
-
-    // Generate username if not provided
-    if (!username) {
-      username = displayName.replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase();
-    } else {
-      username = username.replace(/[^a-zA-Z0-9_]/g, '_');
-    }
-
-    if (!password && !id_token) {
-      return reply.code(400).send({ error: 'password or id_token is required' });
-    }
-
-    // // Hash password if provided
-    // let password_hash = null;
-    console.log(password);
-    const userData = {
-      username,
-      email,
-      display_name: displayName,
-      id_token: id_token || null,
-      password
-    };
-
-    const userId = await this.userModel.create(userData);
-    const profile = await this.userModel.findById(userId);
-
-    console.log('Created user profile:', profile);
-
-    return reply.code(201).send({
-      success: true,
-      message: 'User created successfully',
-      profile
-    });
-
-  } catch (error) {
-    console.error(error);
-    return reply.code(500).send({ error: error.message || 'Internal server error' });
-  }
-}
 
 
   async getUserBYemailorUsername(request, reply) {
 
-  try {
-    const { email, username } = request.query; // can be email or username
-
-
+    try {
+      const { email, username } = request.query; // can be email or username
+      const {token} = request.query;
       let user = await this.userModel.findByEmail(email);
-      if(user){
+      if (user) {
         return reply.code(200).send(user);
       }
-      user = await this.userModel.findByUsername( username);
-      if(user){
+      user = await this.userModel.findByUsername(username);
+      if (user) {
+        return reply.code(200).send(user);
+      }
+      user = await this.userModel.findByToken(token);
+      if (user) {
         return reply.code(200).send(user);
       }
       return reply.code(200).send(null);
@@ -139,101 +117,97 @@ class ProfileController {
       return reply.code(500).send({ error: error.message });
     }
   }
-  
-    // GET /profile - Get current user profile(user information and stats) will be used in dashboard
-    async getMyProfile(request, reply) {
-      try {
-        // const userId = request.headers['x-user-id'];
 
-        const userId = request.query.id;
-        console.log('Fetching profile for user ID:', userId);
-        const profile = await this.userModel.getProfile(userId);
-        
-        if (!profile) {
-          return reply.code(404).send({ error: 'Profile not found' });
-        }
-        
-        return { success: true, profile };
-      } catch (error) {
-        return reply.code(500).send({ error: error.message });
+  // GET /profile - Get current user profile(user information and stats) will be used in dashboard
+  async getMyProfile(request, reply) {
+    try {
+      // const userId = request.headers['x-user-id'];
+
+      const userId = request.query.id;
+     
+      const profile = await this.userModel.getProfile(userId);
+
+      if (!profile) {
+        return reply.code(404).send({ error: 'Profile not found' });
       }
+
+      return { success: true, profile };
+    } catch (error) {
+      return reply.code(500).send({ error: error.message });
     }
-    // GET /profile/:id - Get another user's profile (view another user's profile /dashboard)
-    async getUserProfile(request, reply) {
-      try {
-        const id = request.headers['x-user-id'];
-        const profile = await this.userModel.getProfile(id);
-        
-        if (!profile) {
-          return reply.code(404).send({ error: 'User not found' });
-        }
-        
-        return { success: true, profile };
-      } catch (error) {
-        return reply.code(500).send({ error: error.message });
+  }
+
+  // GET /profile/:id - Get another user's profile (view another user's profile /dashboard)
+  async getUserProfile(request, reply) {
+    try {
+      const id = request.headers['x-user-id'];
+      const profile = await this.userModel.getProfile(id);
+
+      if (!profile) {
+        return reply.code(404).send({ error: 'User not found' });
       }
+
+      return { success: true, profile };
+    } catch (error) {
+      return reply.code(500).send({ error: error.message });
     }
+  }
 
   // PUT /profile/update - Update profile
   async updateProfile(request, reply) {
     try {
 
-      // const userId = request.headers['x-user-id'];
-      const { id: userId } = request.params;
-    
-      // const userId = request.headers['x-user-id'];
-      // const userId = request.headers['x-user-id'];
+      const userId = request.headers['x-user-id'];
       const updates = request.body;
-      console.log('Update request received for user ID:', updates);
-      console.log('User is updating:', Object.keys(updates));
-      
+   
+
       if (updates.email) {
         const existingUser = await this.userModel.findByEmail(updates.email);
-        
+
         if (existingUser && existingUser.id !== userId) {
           console.log('Email already taken:', updates.email);
-          return reply.code(409).send({ 
-            error: 'Email already taken' 
+          return reply.code(409).send({
+            error: 'Email already taken'
           });
         }
       }
 
-    if (updates.displayName) {
-      const availableName = await this.userModel.findByDisplayName(
-        updates.displayName,
-      );
+      if (updates.displayName) {
+        const availableName = await this.userModel.findByDisplayName(
+          updates.displayName,
+        );
 
-      if (availableName && availableName.id !== userId) {
-        console.log('Display name already taken:', updates.displayName);
-        return reply.code(409).send({
-          error: 'Display name already taken'
-        });
+        if (availableName && availableName.id !== userId) {
+          console.log('Display name already taken:', updates.displayName);
+          return reply.code(409).send({
+            error: 'Display name already taken'
+          });
+        }
       }
+
+      const updatedProfile = await this.userModel.updateProfile(userId, updates);
+
+      return {
+        success: true,
+        message: 'Profile updated successfully',
+        profile: updatedProfile
+      };
+    } catch (error) {
+      return reply.code(500).send({ error: error.message });
     }
-
-    const updatedProfile = await this.userModel.updateProfile(userId, updates);
-
-    return {
-      success: true,
-      message: 'Profile updated successfully',
-      profile: updatedProfile
-    };
-  } catch (error) {
-    return reply.code(500).send({ error: error.message });
   }
-}
-
+  
     // POST /profile/avatar - Upload avatar
    async uploadAvatar(request, reply) {
   try {
+    // const userId = request.headers['x-user-id'];
     const userId = request.headers['x-user-id'];
-    
-    console.log('Starting avatar upload for user ID:', userId);
+   
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
     
-    console.log('Uploading avatar for user ID:', userId);
+  
     
     
     const data = await request.file();
@@ -339,201 +313,201 @@ class ProfileController {
   
   
   async changePassword(request, reply) {
-      try {
-        const userId = request.headers['x-user-id'];
-        const { currentPassword, newPassword } = request.body;
-        if (!currentPassword || !newPassword) {
-          return reply.code(400).send({ 
-            error: 'Current password and new password are required' 
-       });
+    try {
+      const userId = request.headers['x-user-id'];
+      const { currentPassword, newPassword } = request.body;
+      if (!currentPassword || !newPassword) {
+        return reply.code(400).send({
+          error: 'Current password and new password are required'
+        });
       }
 
       if (newPassword.length < 8) {
-        return reply.code(400).send({ 
-          error: 'New password must be at least 8 characters' 
-        });
-      }
-        const passwordHash = await this.userModel.getPasswordHashById(userId);
-        
-        if (!passwordHash) {
-          return reply.code(404).send({ error: 'User not found' });
-        }
-        
-        const passwordMatch = await bcrypt.compare(currentPassword, passwordHash);
-        
-        if (!passwordMatch) {
-          return reply.code(401).send({ error: 'Current password is incorrect' });
-        }
-        
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-        
-        await this.userModel.updatePassword(userId, hashedPassword);
-        
-        return { success: true, message: 'Password changed successfully' };
-      } catch (error) {
-        console.error('Change password error:', error);
-        return reply.code(500).send({ error: error.message });
-      }
-    }
-    async getAllUsers(request, reply) {
-      try {
-        const users = await this.userModel.getAllUsers();
-        
-        return reply.code(200).send({ success: true, users });
-      } catch (error) {
-        console.error('Get all users error:', error);
-        return reply.code(500).send({ error: error.message });
-      }
-    }
-
-  // POST /profile/avatar - Upload avatar
-  async uploadAvatar(request, reply) {
-    try {
-
-      const userId = request.headers['x-user-id'];
-      const data = await request.file();
-
-      if (!data) {
-        return reply.code(400).send({ error: 'No file uploaded' });
-      }
-
-      // Validate file type add size limit later !!!
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-      if (!allowedTypes.includes(data.mimetype)) {
         return reply.code(400).send({
-          error: 'Invalid file type. Only JPEG, PNG, and GIF allowed'
+          error: 'New password must be at least 8 characters'
         });
       }
+      const passwordHash = await this.userModel.getPasswordHashById(userId);
 
-      const uploadDir = path.join(process.cwd(), 'public', 'avatars');
-      await fs.promises.mkdir(uploadDir, { recursive: true });
+      if (!passwordHash) {
+        return reply.code(404).send({ error: 'User not found' });
+      }
 
-      const filename = `${userId}-${Date.now()}.${data.mimetype.split('/')[1]}`;
-      const filePath = path.join(uploadDir, filename);
+      const passwordMatch = await bcrypt.compare(currentPassword, passwordHash);
 
+      if (!passwordMatch) {
+        return reply.code(401).send({ error: 'Current password is incorrect' });
+      }
 
-      const buffer = await data.toBuffer();
-      await fs.promises.writeFile(filePath, buffer);
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
 
+      await this.userModel.updatePassword(userId, hashedPassword);
 
-      const avatarUrl = `/avatars/${filename}`;
-      await this.userModel.updateProfile(userId, { avatarUrl });
-
-      return {
-        success: true,
-        message: 'Avatar uploaded successfully',
-        avatarUrl
-      };
+      return { success: true, message: 'Password changed successfully' };
     } catch (error) {
+      console.error('Change password error:', error);
       return reply.code(500).send({ error: error.message });
     }
   }
-
-  // GET /users/search?q=John - Search users 
-  async searchUsers(request, reply) {
+  async getAllUsers(request, reply) {
     try {
-      const { q } = request.query;
+      const users = await this.userModel.getAllUsers();
 
-      if (!q || q.length < 2) {
-        return reply.code(400).send({
-          error: 'Search query must be at least 2 characters'
-        });
-      }
-
-      const users = await this.userModel.searchByDisplayName(q);
-
-      return { success: true, users };
+      return reply.code(200).send({ success: true, users });
     } catch (error) {
+      console.error('Get all users error:', error);
       return reply.code(500).send({ error: error.message });
     }
   }
 
 
   async getTwoFactorStatus(request, reply) {
-  try {
-    const { username } = request.query;
-    if (!username) {
-      return reply.code(400).send({ error: 'Username query parameter is missing' });
+    try {
+      const { username } = request.query;
+      if (!username) {
+        return reply.code(400).send({ error: 'Username query parameter is missing' });
+      }
+
+      const user = await this.userModel.findByUsername(username);
+      if (!user) {
+        return reply.code(404).send({ error: 'User not found' });
+      }
+
+      return {
+        success: true,
+        twoFactorEnabled: user.two_factor_enabled
+
+      };
+    } catch (error) {
+      return reply.code(500).send({ error: error.message });
     }
-
-    const user = await this.userModel.findByUsername(username);
-    if (!user) {
-      return reply.code(404).send({ error: 'User not found' });
-    }
-
-    return {
-      success: true,
-      twoFactorEnabled: user.two_factor_enabled
-
-    };
-  } catch (error) {
-    return reply.code(500).send({ error: error.message });
   }
-}
   async enableTwoFactor(request, reply) {
-  try {
-    const { username} = request.body;
-    if (!username) {
-      return reply.code(400).send({ error: 'Username and secret are required' });
-    }
+    try {
+      const { username } = request.body;
+      if (!username) {
+        return reply.code(400).send({ error: 'Username and secret are required' });
+      }
 
-    const user = await this.userModel.findByUsername(username);
-    if (!user) {
-      return reply.code(404).send({ error: 'User not found' });
-    }
+      const user = await this.userModel.findByUsername(username);
+      if (!user) {
+        return reply.code(404).send({ error: 'User not found' });
+      }
 
-    await this.userModel.setTwoFactorFlag(user.id);
-    return {
-      success: true,
-      message: 'Two-factor authentication enabled successfully'
-    };
-  } catch (error) {
-    return reply.code(500).send({ error: error.message });
+      await this.userModel.setTwoFactorFlag(user.id);
+      return {
+        success: true,
+        message: 'Two-factor authentication enabled successfully'
+      };
+    } catch (error) {
+      return reply.code(500).send({ error: error.message });
+    }
   }
-}
+  async setIdToken(request, reply) {
+    const { username, token } = request.body;
+    try {
+      if (!username || !token) {
+        return reply.code(400).send({ error: 'Username and token are required' });
+      }
+      const user = await this.userModel.findByUsername(username);
+      if (!user) {
+        return reply.code(404).send({ error: 'User not found' });
+      }
+      await this.userModel.setIdToken(username, token);
+      return {
+        success: true,
+        message: 'ID token set successfully'
+      };
+    } catch (error) {
+      return reply.code(500).send({ error: error.message });
+    }
+
+  }
+  async getIdToken(request, reply)
+  {
+    try{
+      const { username } = request.query;
+      if (!username) {
+        return reply.code(400).send({ error: 'Username is required' });
+      }
+      const user = await this.userModel.findByUsername(username);
+      if (!user) {
+        return reply.code(404).send({ error: 'User not found' });
+      }
+      const token = user.id_token;
+      return {
+        success: true,
+        id_token: token
+      };
+
+    }
+    catch(error)
+    {
+      return reply.code(500).send({ error: error.message });
+    }
+  }
   // i add this for setting secret key for 2FA
   async setsecretkeytwofactor(request, reply) {
-  try {
-    const { username, two_factor_secret } = request.body;
-    console.log("Received username and secret:", username, two_factor_secret);
-    if (!username || !two_factor_secret) {
-      return reply.code(400).send({ error: 'Username and secret are required' });
+    try {
+      const { username, two_factor_secret } = request.body;
+      console.log("Received username and secret:", username, two_factor_secret);
+      if (!username || !two_factor_secret) {
+        return reply.code(400).send({ error: 'Username and secret are required' });
+      }
+      const user = await this.userModel.findByUsername(username);
+      if (!user) {
+        return reply.code(404).send({ error: 'User not found' });
+      }
+      await this.userModel.setTwoFactorSecret(user.id, two_factor_secret);
+      return {
+        success: true,
+        message: 'Two-factor authentication enabled successfully'
+      };
     }
-    const user = await this.userModel.findByUsername(username);
-    if (!user) {
-      return reply.code(404).send({ error: 'User not found' });
+    catch (error) {
+      return reply.code(500).send({ error: error.message });
     }
-    await this.userModel.setTwoFactorSecret(user.id, two_factor_secret);
-    return {
-      success: true,
-      message: 'Two-factor authentication enabled successfully'
-    };
   }
-  catch (error) {
-    return reply.code(500).send({ error: error.message });
-  }
-}
-async getsecretkeytwofactor(request, reply) {
-  try {
-    const { username } = request.query;
-    if (!username) {
-      return reply.code(400).send({ error: 'Username is required' });
+  async getsecretkeytwofactor(request, reply) {
+    try {
+      const { username } = request.query;
+      if (!username) {
+        return reply.code(400).send({ error: 'Username is required' });
+      }
+      const user = await this.userModel.findByUsername(username);
+      if (!user) {
+        return reply.code(404).send({ error: 'User not found' });
+      }
+      const secret = await this.userModel.getTwoFactorSecret(user.id);
+      return {
+        success: true,
+        two_factor_secret: secret
+      };
     }
-    const user = await this.userModel.findByUsername(username);
-    if (!user) {
-      return reply.code(404).send({ error: 'User not found' });
+    catch (error) {
+      return reply.code(500).send({ error: error.message });
     }
-    const secret = await this.userModel.getTwoFactorSecret(user.id);
-    return {
-      success: true,
-      two_factor_secret: secret
-    };
   }
-  catch (error) {
-    return reply.code(500).send({ error: error.message });
+  async resetPassword(request, reply) {
+    try {
+      const { username, newPassword } = request.body;
+      if (!username || !newPassword) {
+        return reply.code(400).send({
+          error: 'Username and new password are required'
+        });
+      }
+      const user = await this.userModel.findByUsername(username);
+      if (!user) {
+        return reply.code(404).send({ error: 'User not found' });
+      }
+      await this.userModel.updatePassword(user.id, newPassword);
+      return {
+        success: true,
+        message: 'Password reset successfully'
+      };
+    } catch (error) {
+      return reply.code(500).send({ error: error.message });
+    }
   }
-}
 }
 export default ProfileController;
-  
-  

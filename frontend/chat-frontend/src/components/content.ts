@@ -2,16 +2,16 @@
 export function lastMsg(status:string,msg:string,friendId:string):string
 {
     if(!msg)
-        return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#888]" > new friend </span>`
+        return `<span id='last-msg-${friendId}' class=" font-thin flex-grow    text-[#888]" > new friend </span>`
     const shortMsg = msg.length > 10 ? msg.slice(0,10) + '...' : msg
     if(status === 'recv')
-        return `<span id='last-msg-${friendId}' class=" font-semibold flex-grow  truncate  text-[#F5F5F5]" > ${shortMsg} </span>`
+        return `<span id='last-msg-${friendId}' class=" font-semibold flex-grow    text-[#F5F5F5]" > ${shortMsg} </span>`
     if(status === 'seen')
     {
-        return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#888]" > ${shortMsg} </span>`
+        return `<span id='last-msg-${friendId}' class=" font-thin flex-grow    text-[#888]" > ${shortMsg} </span>`
     }
     if(status === 'send')
-        return `<span id='last-msg-${friendId}' class=" font-thin flex-grow  truncate  text-[#888]" > You: ${shortMsg} </span>`
+        return `<span id='last-msg-${friendId}' class=" font-thin flex-grow    text-[#888]" > You: ${shortMsg} </span>`
     return ''
 }
 
@@ -34,12 +34,12 @@ export function unreadMsgNumber(nbr:number,friendId:string):string
 }
 
 
-function  friendCart(friend:any,waitingMsg:object,myId:string):string //done 
+function  friendCart(friend:any,waitingMsg:object,myId:string):string 
 {
         const roomName = [myId,friend.id].sort().join('_');
         const unreadMsg:number = waitingMsg.filter(m=> m.room === roomName).length
         let status:string;
-        if(friend.recv==myId && friend.msg_status && friend.msg_status === 'waiting')//TODO add this object status
+        if(friend.recv==myId && friend.msg_status && friend.msg_status === 'waiting')
             status = 'recv'
         else if(friend.recv==myId && friend.msg_status && friend.msg_status === 'send')
             status = 'seen'
@@ -53,7 +53,7 @@ function  friendCart(friend:any,waitingMsg:object,myId:string):string //done
                                 md:w-12 md:h-12
                                 bg-cover bg-center rounded-full" 
                             style="
-                                background-image : url('http://localhost:8080/uploads/${friend.avatar_url}');
+                                background-image : url('/api/uploads/${friend.avatar_url}');
                                 aspect-ratio: 1/1;
                             ">
                         </div>
@@ -151,7 +151,7 @@ export function profileNav(img:string,userAccount:string,status:string):string{
 
                 <div class="h-10 w-10  bg-cover bg-center rounded-full" 
                     style="
-                        background-image : url('http://localhost:8080/uploads/${img}');
+                        background-image : url('/api/uploads/${img}');
                         aspect-ratio: 1/1;
                     ">
                 </div>
@@ -227,7 +227,7 @@ function escapeHTML(str: string): string {
                 .replace(/'/g, "&#039;");
 }
 
-export function sendMsg(msg:string,time:string,img:string):string{
+export function sendMsg(msg:string,time:string):string{
     return `<div id="received-msg" class="flex mt-5  md:w-[30vw] w-[60vw]  justify-end ml-auto pr-5 ">
     <div id="content-received" class="flex flex-col ">
         <div class=" bg-[#E63946] rounded-xl p-3 ">
@@ -246,7 +246,7 @@ export function sendMsg(msg:string,time:string,img:string):string{
 export function receivedMsg(msg:string,time:string,img:string):string{
 
     return `<div id="sent-msg" class="flex mt-5 md:w-[30vw] w-[80vw]  justify-start pl-5 ">
-                <img src='http://localhost:8080/uploads/${img}' alt="" class="h-10 w-10 rounded-full mt-2 mr-2">
+                <img src='/api/uploads/${img}' alt="" class="h-10 w-10 rounded-full mt-2 mr-2">
                 <div id="content-sent" class="max-w-[80%] flex flex-col">
                     <div  class="border-2 border-[#E63946] rounded-xl p-3  ">
                         <span class="text-[#F5F5F5]  break-all">
@@ -282,10 +282,10 @@ export function chatZones():string{
         }
     </style>
     
-    <div id="chat-zone" class="flex flex-col h-[100%] overflow-y-auto ">
-    </div>
-    <div id="x" class=" h-15">
-    </div>`
+    <div id="chat-zone" class="flex flex-col h-[100%] overflow-y-auto "></div>
+    <div id="err-display" class=mr-4
+                max-w-md w-[420px] flex items-center justify-center "></div>
+    <div id="x" class=" h-15"></div>`
 }
 
 export function DM():string{

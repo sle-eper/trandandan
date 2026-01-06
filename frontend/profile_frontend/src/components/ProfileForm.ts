@@ -3,13 +3,152 @@ import type { UserProfile } from '../User.ts';
 import axios from 'axios';
 import { ChangePasswordModal } from './ChangePassword.ts';
 
-// import { ChangePasswordModal } from './ChangePassword.ts';
+
+class Toast {
+  private static container: HTMLElement | null = null;
+
+  private static createContainer(): void {
+    if (!this.container) {
+      this.container = document.createElement('div');
+      this.container.id = 'toast-container';
+      this.container.className = 'fixed top-6 left-1/2 -translate-x-1/2  z-[9999] flex flex-col gap-3 pointer-events-none';
+      document.body.appendChild(this.container);
+    }
+  }
+
+  private static show(message: string, type: 'success' | 'error' | 'warning' | 'info', duration: number = 3000): void {
+    this.createContainer();
+
+    const toast = document.createElement('div');
+    toast.className = `
+      pointer-events-auto
+      min-w-[300px] max-w-md
+      px-4 py-3 rounded-xl
+      shadow-2xl border
+      flex items-start gap-3
+      transform transition-all duration-300
+      translate-x-[400px] opacity-0
+      ${this.getTypeStyles(type)}
+    `;
+
+    const icon = this.getIcon(type);
+    const iconColor = this.getIconColor(type);
+
+    toast.innerHTML = `
+      <div class="flex-shrink-0 mt-0.5">
+        <svg class="${iconColor}" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          ${icon}
+        </svg>
+      </div>
+      <div class="flex-1">
+        <p class="text-sm font-medium text-white leading-relaxed">${message}</p>
+      </div>
+      <button class="flex-shrink-0 text-gray-400 hover:text-white transition-colors" onclick="this.parentElement.remove()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    `;
+
+    this.container!.appendChild(toast);
+
+    // Animate in
+    setTimeout(() => {
+      toast.style.transform = 'translateX(0)';
+      toast.style.opacity = '1';
+    }, 10);
+
+    // Auto remove
+    setTimeout(() => {
+      toast.style.transform = 'translateX(400px)';
+      toast.style.opacity = '0';
+      setTimeout(() => toast.remove(), 300);
+    }, duration);
+  }
+
+  private static getTypeStyles(type: string): string {
+    switch (type) {
+      case 'success':
+        return 'bg-gradient-to-r from-green-600/90 to-green-500/90 backdrop-blur-sm border-green-400/30';
+      case 'error':
+        return 'bg-gradient-to-r from-red-600/90 to-red-500/90 backdrop-blur-sm border-red-400/30';
+      case 'warning':
+        return 'bg-gradient-to-r from-yellow-600/90 to-yellow-500/90 backdrop-blur-sm border-yellow-400/30';
+      case 'info':
+        return 'bg-gradient-to-r from-blue-600/90 to-blue-500/90 backdrop-blur-sm border-blue-400/30';
+      default:
+        return 'bg-gradient-to-r from-gray-700/90 to-gray-600/90 backdrop-blur-sm border-gray-500/30';
+    }
+  }
+
+  private static getIcon(type: string): string {
+    switch (type) {
+      case 'success':
+        return '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>';
+      case 'error':
+        return '<circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line>';
+      case 'warning':
+        return '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>';
+      case 'info':
+        return '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>';
+      default:
+        return '<circle cx="12" cy="12" r="10"></circle>';
+    }
+  }
+
+  private static getIconColor(type: string): string {
+    switch (type) {
+      case 'success':
+        return 'text-green-200';
+      case 'error':
+        return 'text-red-200';
+      case 'warning':
+        return 'text-yellow-200';
+      case 'info':
+        return 'text-blue-200';
+      default:
+        return 'text-gray-200';
+    }
+  }
+
+  // Public API
+  static success(message: string, duration?: number): void {
+    this.show(message, 'success', duration);
+  }
+
+  static error(message: string, duration?: number): void {
+    this.show(message, 'error', duration);
+  }
+
+  static warning(message: string, duration?: number): void {
+    this.show(message, 'warning', duration);
+  }
+
+  static info(message: string, duration?: number): void {
+    this.show(message, 'info', duration);
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 export class ProfileForm {
     //  private formData: UserProfile;
     private oldProfileData: UserProfile | null = null;
     private userData: UserProfile | null = null;
-    private avatarPreview: string = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default';
+    private avatarPreview: string = '/api/uploads/default.png';
     private isOnline: boolean = true;
     private selectedAvatarFile: File | null = null;
 
@@ -21,12 +160,12 @@ export class ProfileForm {
       if (this.userData) {
         this.oldProfileData = JSON.parse(JSON.stringify(this.userData));
         this.avatarPreview = this.userData.avatarUrl || this.avatarPreview;
+        console.log('online status:', this.userData.onlineStatus);
         if (this.userData.onlineStatus !== 'offline') {
           this.isOnline = true;
         } else {
           this.isOnline = false;
         }
-        console.log('User profile loaded:', this.userData.avatarUrl);
       } else {
         console.log('No existing profile found, using defaults');
       }
@@ -43,199 +182,203 @@ export class ProfileForm {
         const bio = this.userData?.bio || '';
 
         return ` 
-            <div class="w-full max-w-4xl mx-auto h-full p-6">
-            <!-- Header -->
-            <div class="text-center mb-8">
-                <h1 class="text-4xl font-bold text-white mb-2 flex items-center justify-center gap-3">
-                <svg class="text-yellow-500" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-                    <path d="M4 22h16"></path>
-                    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
-                    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
-                    <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+           <div class="w-full h-full flex items-center justify-center">
+  <!-- Main Card - Takes full space -->
+  <div class="w-full h-full bg-black/40 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700/50 flex flex-col">
+    
+    <!-- Header inside card -->
+    <div class="text-center pt-6 pb-4">
+      <h1 class="text-2xl md:text-3xl font-bold text-white flex items-center justify-center gap-2">
+        <svg class="text-yellow-500" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+          <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+          <path d="M4 22h16"></path>
+          <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+          <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+          <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+        </svg>
+        Profile
+      </h1>
+    </div>
+
+    <!-- Content wrapper - centered -->
+    <div class="flex-1 flex items-center justify-center px-8 pb-6 overflow-hidden">
+      <div class="w-full max-w-5xl">
+        <!-- Two Column Layout - Centered -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          <!-- Left Column - Avatar & Status -->
+          <div class="lg:col-span-1 flex flex-col items-center justify-center">
+            <div class="relative group">
+              <div class="relative">
+                <img 
+                  id="avatar-img"
+                  src="/api/uploads/${this.userData?.avatarUrl}" 
+                  alt="Avatar" 
+                  class="w-32 h-32 rounded-full border-4 border-red-500 shadow-lg shadow-red-500/50 object-cover"
+                />
+                <div class="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                    <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
+                    <circle cx="12" cy="13" r="3"></circle>
+                  </svg>
+                </div>
+              </div>
+              
+              <label 
+                for="avatar-upload" 
+                class="absolute bottom-0 right-0 bg-red-500 hover:bg-red-600 p-2 rounded-full cursor-pointer shadow-lg transition-all hover:scale-110"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                  <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
+                  <circle cx="12" cy="13" r="3"></circle>
                 </svg>
-                 Profile
-                </h1>
-                <p class="text-gray-400">Edit your profile details</p>
+              </label>
+              <input 
+                id="avatar-upload" 
+                type="file" 
+                accept="image/*" 
+                class="hidden"
+              />
             </div>
-        
+            
+            <h2 class="mt-4 text-xl md:text-2xl font-bold text-white text-center">${displayName || username}</h2>
+            <div class="flex items-center gap-2 mt-2">
+              <div id="status-indicator" class="w-2.5 h-2.5 rounded-full ${this.isOnline ? 'bg-green-500' : 'bg-gray-500'} animate-pulse"></div>
+              <span id="status-text" class="text-sm text-gray-400">${this.isOnline ? 'Online' : 'Offline'}</span>
+            </div>
 
-          <!-- Main Card -->
-          <div class="bg-black/40 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700/50 overflow-hidden">
-            <div class="p-8">
-              <!-- Avatar Section -->
-              <div class="flex flex-col items-center mb-8">
-                <div class="relative group">
-                  <div class="relative">
-                    <img 
-                      id="avatar-img"
-                      src="http://localhost:8080/uploads/${this.userData?.avatarUrl || 'default.png'}" 
-                      alt="Avatar" 
-                      class="w-32 h-32 rounded-full border-4 border-red-500 shadow-lg shadow-red-500/50 object-cover"
-                    />
-                    <div class="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
-                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                        <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
-                        <circle cx="12" cy="13" r="3"></circle>
-                      </svg>
-                    </div>
-                  </div>
-                  
-                  <label 
-                    for="avatar-upload" 
-                    class="absolute bottom-0 right-0 bg-red-500 hover:bg-red-600 p-2.5 rounded-full cursor-pointer shadow-lg transition-all hover:scale-110"
-                  >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                      <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
-                      <circle cx="12" cy="13" r="3"></circle>
-                    </svg>
-                  </label>
-                  <input 
-                    id="avatar-upload" 
-                    type="file" 
-                    accept="image/*" 
-                    class="hidden"
-                  />
-                </div>
-                
-                <h2 class="mt-4 text-2xl font-bold text-white">${displayName || username}</h2>
-                <div class="flex items-center gap-2 mt-2">
-                  <div id="status-indicator" class="w-2.5 h-2.5 rounded-full ${this.isOnline ? 'bg-green-500' : 'bg-gray-500'} animate-pulse"></div>
-                  <span id="status-text" class="text-sm text-gray-400">${this.isOnline ? 'Online' : 'Offline'}</span>
-                </div>
-              </div>
-              <!-- Form Fields -->
-              <div class="space-y-6">
-                <!-- Username & Email Row -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label for="username" class="flex items-center gap-2 text-sm font-semibold text-gray-300 mb-2">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E64249" stroke-width="2">
-                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                      </svg>
-                      Username
-                    </label>
-                    <input 
-                      id="username" 
-                      name="username" 
-                      type="text" 
-                      value="${username}"
-                      class="w-full px-4 py-3 bg-gray-900/50 text-white rounded-xl border border-gray-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none transition-all placeholder-gray-500"
-                      placeholder="Enter username"
-                    />
-                  </div>
-                  <div>
-                    <label for="email" class="flex items-center gap-2 text-sm font-semibold text-gray-300 mb-2">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E64249" stroke-width="2">
-                        <rect width="20" height="16" x="2" y="4" rx="2"></rect>
-                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
-                      </svg>
-                      Email
-                    </label>
-                    <input 
-                      id="email" 
-                      name="email" 
-                      type="email" 
-                      value="${email}"
-                      class="w-full px-4 py-3 bg-gray-900/50 text-white rounded-xl border border-gray-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none transition-all placeholder-gray-500"
-                      placeholder="Enter email"
-                    />
-                  </div>
-                </div>
-
-                <!-- Display Name -->
+            <!-- Online Status Toggle - Moved here -->
+            <div class="bg-gray-900/30 rounded-xl p-4 border border-gray-700/50 mt-6 w-full">
+              <div class="flex items-center justify-between">
                 <div>
-                  <label for="displayName" class="flex items-center gap-2 text-sm font-semibold text-gray-300 mb-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E64249" stroke-width="2">
-                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path>
-                    </svg>
-                    Display Name
-                  </label>
+                  <h3 class="text-sm font-semibold text-gray-300">Status</h3>
+                  <p class="text-xs text-gray-500 mt-0.5">Visibility</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
                   <input 
-                    id="displayName" 
-                    name="displayName" 
-                    type="text"
-                    value="${displayName}"
-                    class="w-full px-4 py-3 bg-gray-900/50 text-white rounded-xl border border-gray-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none transition-all placeholder-gray-500"
-                    placeholder="Your in-game display name"
+                    id="online-toggle"
+                    type="checkbox" 
+                    ${this.isOnline ? 'checked' : ''}
+                    class="sr-only peer"
                   />
-                </div>
-
-                <!-- Bio -->
-                <div>
-                  <label for="bio" class="flex items-center gap-2 text-sm font-semibold text-gray-300 mb-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E64249" stroke-width="2">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
-                      <path d="M2 12h20"></path>
-                    </svg>
-                    Bio
-                  </label>
-                  <textarea 
-                    id="bio" 
-                    name="bio" 
-                    rows="3"
-                    class="w-full px-4 py-3 bg-gray-900/50 text-white rounded-xl border border-gray-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none transition-all placeholder-gray-500 resize-none"
-                    placeholder="Tell us about yourself..."
-                  >${bio}</textarea>
-                </div>
-
-                <!-- Online Status Toggle -->
-                <div class="bg-gray-900/30 rounded-xl p-4 border border-gray-700/50">
-                  <div class="flex items-center justify-between">
-                    <div>
-                      <h3 class="text-sm font-semibold text-gray-300">Online Status</h3>
-                      <p class="text-xs text-gray-500 mt-0.5">Show your availability to other players</p>
-                    </div>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                      <input 
-                        id="online-toggle"
-                        type="checkbox" 
-                        ${this.isOnline ? 'checked' : ''}
-                        class="sr-only peer"
-                      />
-                      <div class="w-14 h-7 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-red-500"></div>
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Action Buttons -->
-              <div class="flex gap-4 mt-8">
-                <button 
-                  id="cancel-btn"
-                  class="flex-1 py-3 px-6 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-lg"
-                >
-                  Cancel
-                </button>
-                <button 
-                  id="save-btn"
-                  class="flex-1 py-3 px-6 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-red-500/50 hover:scale-105"
-                >
-                  Save Changes
-                </button>
-              </div>
-
-              <!-- Change Password Link -->
-              <div class="mt-6 text-center">
-                <button 
-                  id="change-password-btn"   
-                  class="text-sm text-gray-400 hover:text-red-500 transition-colors underline"
-                >
-                  Change Password
-                </button>
+                  <div class="w-14 h-7 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-red-500"></div>
+                </label>
               </div>
             </div>
+
+            <!-- Change Password Link - Moved here -->
+            <button 
+              id="change-password-btn"   
+              class="mt-4 text-sm text-gray-400 hover:text-red-500 transition-colors underline"
+            >
+              Change Password
+            </button>
           </div>
 
-          <!-- Additional Info -->
-          <div class="mt-6 text-center text-sm text-gray-500">
-            <p>Profile changes are saved automatically</p>
+          <!-- Right Column - Form Fields -->
+          <div class="lg:col-span-2 flex flex-col justify-center">
+            <div class="space-y-6">
+              
+              <!-- Username & Email Row -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label for="username" class="flex items-center gap-2 text-sm font-semibold text-gray-300 mb-2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E64249" stroke-width="2">
+                      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Username
+                  </label>
+                  <input 
+                    id="username" 
+                    name="username" 
+                    type="text" 
+                    value="${username}"
+                    class="w-full px-4 py-3 bg-gray-900/50 text-white rounded-xl border border-gray-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none transition-all placeholder-gray-500"
+                    placeholder="Enter username"
+                  />
+                </div>
+                <div>
+                  <label for="email" class="flex items-center gap-2 text-sm font-semibold text-gray-300 mb-2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E64249" stroke-width="2">
+                      <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                    </svg>
+                    Email
+                  </label>
+                  <input 
+                    id="email" 
+                    name="email" 
+                    type="email" 
+                    value="${email}"
+                    class="w-full px-4 py-3 bg-gray-900/50 text-white rounded-xl border border-gray-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none transition-all placeholder-gray-500"
+                    placeholder="Enter email"
+                  />
+                </div>
+              </div>
+
+              <!-- Display Name -->
+              <div>
+                <label for="displayName" class="flex items-center gap-2 text-sm font-semibold text-gray-300 mb-2">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E64249" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path>
+                  </svg>
+                  Display Name
+                </label>
+                <input 
+                  id="displayName" 
+                  name="displayName" 
+                  type="text"
+                  value="${displayName}"
+                  class="w-full px-4 py-3 bg-gray-900/50 text-white rounded-xl border border-gray-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none transition-all placeholder-gray-500"
+                  placeholder="Your in-game display name"
+                />
+              </div>
+
+              <!-- Bio -->
+              <div>
+                <label for="bio" class="flex items-center gap-2 text-sm font-semibold text-gray-300 mb-2">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E64249" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+                    <path d="M2 12h20"></path>
+                  </svg>
+                  Bio
+                </label>
+                <textarea 
+                  id="bio" 
+                  name="bio" 
+                  rows="3"
+                  class="w-full px-4 py-3 bg-gray-900/50 text-white rounded-xl border border-gray-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none transition-all placeholder-gray-500 resize-none"
+                  placeholder="Tell us about yourself..."
+                >${bio}</textarea>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-4 mt-8">
+              <button 
+                id="cancel-btn"
+                class="flex-1 py-3 px-6 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-lg"
+              >
+                Cancel
+              </button>
+              <button 
+                id="save-btn"
+                class="flex-1 py-3 px-6 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-red-500/50 hover:scale-105"
+              >
+                Save Changes
+              </button>
+            </div>
           </div>
         </div>
-      
+      </div>
+    </div>
+  </div>
+</div>
+
+
     `;
   } 
 
@@ -275,14 +418,14 @@ export class ProfileForm {
 
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
-      alert('Please select a valid image file (JPEG, PNG, GIF, or WebP)');
+      Toast.error('Please select a valid image file (JPEG, PNG, GIF, or WebP)');
       input.value = '';
       return;
     }
 
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-      alert('Image size must be less than 5MB');
+      Toast.warning('Image size must be less than 5MB');
       input.value = '';
       return;
     }
@@ -354,11 +497,11 @@ export class ProfileForm {
     console.error('Avatar upload failed:', error);
   
     if (error.response?.status === 413) {
-      alert('File is too large. Please choose a smaller image.');
+      Toast.error('File is too large. Please choose a smaller image.');
     } else if (error.response?.status === 400) {
-      alert(error.response.data?.error || 'Invalid file. Please try again.');
+      Toast.error(error.response.data?.error || 'Invalid file. Please try again.');
     } else {
-      alert('Failed to upload avatar. Please try again.');
+      Toast.error('Failed to upload avatar. Please try again.');
     }
     
     return null;
@@ -372,6 +515,7 @@ export class ProfileForm {
     }
    try {
     
+     
       const formData: UserProfile = {
       username: (document.getElementById('username') as HTMLInputElement).value,
       email: (document.getElementById('email') as HTMLInputElement).value,
@@ -380,10 +524,10 @@ export class ProfileForm {
       avatarUrl: this.avatarPreview,
       onlineStatus: this.isOnline ? 'online' : 'offline'
     };
-   
+    
      let changedData = this.hasChanges(this.oldProfileData, formData);
     if (!changedData && !this.selectedAvatarFile) {
-      alert('No changes detected to save.');
+      Toast.info('No changes detected to save.');
       return;
     }
 
@@ -392,7 +536,7 @@ export class ProfileForm {
       const uploadedAvatarPath = await this.uploadAvatar(this.selectedAvatarFile);
       
       if (!uploadedAvatarPath) {
-        alert('Failed to upload avatar. Profile not saved.');
+        Toast.error('Failed to upload avatar. Profile not saved.');
         return;
       }
 
@@ -415,15 +559,15 @@ export class ProfileForm {
         this.selectedAvatarFile = null;
         this.avatarPreview = formData.avatarUrl || '';
         
-        alert('Profile updated successfully!');
+        Toast.success('Profile updated successfully!');
       } else {
-        alert('Failed to save profile. Please try again.');
+        Toast.error('Failed to save profile. Please try again.');
       }
     }
 
   } catch (error) {
     console.error('Save error:', error);
-    alert('An error occurred while saving. Please try again.');
+    Toast.error('An error occurred while saving. Please try again.');
   } finally {
   
     if (saveBtn) {

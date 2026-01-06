@@ -71,9 +71,9 @@ export function renderNavBar(): string {
 
         <div id="notification-menu"
           class="hidden absolute right-0 top-12 w-70 rounded-xl bg-black/70
-                 border border-white/10 shadow-xl backdrop-blur-xl
-                 py-2 opacity-0 translate-y-[-6px]
-                 transition-all duration-200 ease-out max-h-[200px] overflow-y-auto overflow-x-hidden">
+                border border-white/10 shadow-xl backdrop-blur-xl
+                py-2 opacity-0 translate-y-[-6px]
+                transition-all duration-200 ease-out max-h-[200px] overflow-y-auto overflow-x-hidden">
         </div>
 
         <button id="settings-btn"
@@ -211,7 +211,7 @@ export async function navBarLogic() {
   signOutBtn?.addEventListener("click", async () => {
     document.body.classList.add("flex", "items-center", "justify-center", "px-6", "md:px-20");
     //here the request have to send to the backend to destroy the session
-    const result = await fetch('http://localhost:8080/api/auth/logout', {
+    const result = await fetch('/api/auth/logout', {
       method: 'POST',
       credentials: 'include', // include cookies
     });

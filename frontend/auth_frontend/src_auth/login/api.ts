@@ -1,6 +1,6 @@
 export async function loginUser(username: string, password: string) {
   try {
-    const response = await fetch("http://localhost:8080/api/auth/login", {
+    const response = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include", // VERY IMPORTANT FOR Cookies
@@ -8,6 +8,7 @@ export async function loginUser(username: string, password: string) {
       // credentials: "include", // VERY IMPORTANT to handle cookies
     });
     const body = await response.json();
+    console.log("login response body:", body);
     return { response, body };
   } catch (err) {
     console.error(err);
@@ -23,7 +24,7 @@ export async function signupUser(
 ) {
   console.log("data", username, email, password);
   try {
-    const response = await fetch("http://localhost:8080/api/auth/signup", {
+    const response = await fetch("/api/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include", // VERY IMPORTANT FOR Cookies
@@ -37,9 +38,11 @@ export async function signupUser(
     return { success: false };
   }
 }
+
+// Forgot Password API
 export async function forgotPass(email: string) {
   try {
-    const response = await fetch("http://localhost:8080/login", {
+    const response = await fetch("/api/auth/forgot-password", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email }),

@@ -13,6 +13,7 @@ import { showNotFound } from "./login/not_found";
 import { loadHome, loadGame, loadtournament, loadProfile, loadChat , load2FA } from "./login/routing";
 import { showverifyPage } from "./login/verify";
 import { spyUi } from "../../spy_frontend/src_spy/app";
+import { showMainUI } from "../../chat-frontend/src/ts/script";
 
 async function protectedRoute(
   handler: () => void
@@ -73,6 +74,14 @@ addRoute("/game/spy/:step", (params) =>
     spyUi(params?.step);
   })
 );
+addRoute("/game/spy/win_page/:step", (params) =>
+  protectedRoute(() => {
+    showDashboard();
+    // game.innerHTML = renderSpyChoice(params?.step)
+    // spyUi(params?.step);
+  })
+);
+
 
 
 addRoute("/chat", () =>
@@ -81,6 +90,13 @@ addRoute("/chat", () =>
     loadChat();
   })
 );
+// addRoute("/chat/:username", (params) =>
+//   protectedRoute(() => {
+//     showDashboard();
+//     showMainUI();
+//   })
+// );
+
 
 addRoute("/tournament", () =>
   protectedRoute(() => {
@@ -128,7 +144,3 @@ window.addEventListener("DOMContentLoaded", async () => {
 
 
 export { navigate };
-
-
-
-

@@ -28,7 +28,9 @@ let userID: string = "";
 
 function moveUp(id: string) {
   const container = document.getElementById("list-of-msg");
-  const target = Array.from(container!.children).find(
+  if(!container)
+    return;
+  const target = Array.from(container.children).find(
     (el) => el.dataset.id == id
   );
   if (target) container?.prepend(target);
@@ -83,29 +85,34 @@ function setupPopupEvents() {
   });
 
   if (sendButton) {
-    // function showToast(message: string, duration = 3000) {
-    //   const toast = document.getElementById("toast");
-    //   if (!toast) return;
+    function showToast(message: string, duration = 3000) {//TODO hadi khasha twli pro chewiya
+      const container = document.getElementById("err-display");
+      if(!container)return;
+      container.innerHTML = "";
+      const notif = document.createElement("div");
+      notif.id = "error-notification";
+      notif.className = `
+        gap-3
+        px-4 py-2 rounded-2xl text-center
+        bg-[#1a1a1a]/90 border border-[#FD1D1D]/40
+        shadow-lg backdrop-blur-lg
+        animate-slide-in
+      `;
 
-    //   toast.textContent = message;
-    //   toast.classList.remove("hidden");
-    //   toast.classList.add("show");
+      notif.innerText = `${message}`;
 
-    //   setTimeout(() => {
-    //     toast.classList.remove("show");
-    //     setTimeout(() => {
-    //       toast.classList.add("hidden");
-    //     }, 300);
-    //   }, duration);
-    // }
+      container.appendChild(notif);
+      setTimeout(()=>{
+        notif.remove()
+      },duration);
+    }
 
     function send_message() {
       const value: string = textarea.value;
       if (value.trim()) {
-        if(value.length > 1000)//TODO handel 100
+        if(value.length > 2000)
         {
-          // textarea.value = ''
-          // showToast("bezzzzzzf")
+          showToast("You cannot send more than 2000 characters");
           return
         }
 
@@ -156,7 +163,7 @@ function socketListener() {
       ++counterElementValue;
       if (counterElementValue <= 9)
         counterElement.innerText =
-          String(counterElementValue); //TODO handel 9+ msg
+          String(counterElementValue);
       else if (counterElementValue > 9) counterElement.innerText = "+9";
       const containerMsg = document.getElementById(`container-of-last-msg-of-${id}`);
       if (containerMsg) containerMsg.innerHTML = lastMsg("recv", msg, id);
@@ -164,6 +171,7 @@ function socketListener() {
     }
   });
   socket.on("receive_message", (msg, msgId, friendId, timeOfMsg, friendImg) => {
+    console.log('image received in chat script:', friendImg);
     const chatZone = document.getElementById("chat-zone") as HTMLDivElement;
     // console.log("recvMsg",chatZone)
     chatZone?.insertAdjacentHTML("beforeend",receivedMsg(msg, timeOfMsg, friendImg));
@@ -192,7 +200,7 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
       if (msg.send == userID)
         chatZone.insertAdjacentHTML(
           "beforeend",
-          sendMsg(msg.msg, msg.time, myImg)
+          sendMsg(msg.msg, msg.time)
         );
       else
         chatZone.insertAdjacentHTML(
@@ -210,7 +218,7 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
       if (msg.send == userID)
         chatZone.insertAdjacentHTML(
           "afterbegin",
-          sendMsg(msg.msg, msg.time, myImg)
+          sendMsg(msg.msg, msg.time)
         );
       else
         chatZone.insertAdjacentHTML(
@@ -388,11 +396,12 @@ if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
 }
 
 export async function showMainUI() {
-  const response = await fetch("http://localhost:8080/auth/verify", {
+  const response = await fetch("/auth/verify", {
     method: "GET",
     headers: { "Content-Type": "application/json" },
     credentials: "include", // VERY IMPORTANT FOR Cookies
   });
+  console.log("response status:", response.status);
   let myId: string;
   const responseJson = await response.json()
   myId =  responseJson.id

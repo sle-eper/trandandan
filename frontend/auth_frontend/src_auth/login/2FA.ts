@@ -121,7 +121,7 @@ function attach2FAHandlers() {
 
   const qrImage = document.getElementById("2fa-qr") as HTMLImageElement | null;
   const submit2FA = async () => {
-    const res = await fetch("http://localhost:8080/api/auth/2f/setup", {
+    const res = await fetch("/api/auth/2f/setup", {
       method: "GET",
       headers: { "Content-Type": "application/json" },
       credentials: "include", // VERY IMPORTANT FOR Cookies
@@ -156,7 +156,7 @@ function attach2FAHandlers() {
       if (e.key === "Enter") {
         console.log("==========================================");
         console.log(inputs.map((i) => i.value).join(""));
-        const response = await fetch('http://localhost:8080/api/auth/2f/verify-2fa', {
+        const response = await fetch('/api/auth/2f/verify-2fa', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

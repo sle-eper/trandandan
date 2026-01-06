@@ -7,6 +7,7 @@ import{ ProfileForm } from "../../../profile_frontend/src/components/ProfileForm
 import { show2FAPage } from "./2FA.ts"
 import { showHome } from "./home.ts";
 import { games } from "./games.ts";
+import { Tournament } from "../../../tournament_frontend/src/create_tournament.ts"
 // import sss from "../images/ping.png"
 // import { currentUserId }? from "./login.ts"
 export function updateContent(html: string) {
@@ -51,10 +52,11 @@ export function loadGame(type?: string) {
 
 export function loadtournament()
 {
-    updateContent(`
-    <h1 class="text-3xl font-bold">tournament</h1>
-    <p class="text-gray-400 mt-2">Your account settings.</p>
-  `);
+  //   updateContent(`
+  //   <h1 class="text-3xl font-bold">tournament</h1>
+  //   <p class="text-gray-400 mt-2">Your account settings.</p>
+  // `);
+  Tournament();
 }
 export function load2FA()
 {

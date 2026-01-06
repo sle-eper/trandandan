@@ -34,8 +34,6 @@ services:
   front-end:
     build: ./frontend
     container_name: frontend
-    ports:
-      - "5173:5173"
     networks:
       - app-network
     volumes:
@@ -43,6 +41,7 @@ services:
       - ./frontend/auth_frontend/src_auth:/app/auth_frontend/src_auth
       - ./frontend/profile_frontend/src:/app/profile_frontend/src
       - ./frontend/spy_frontend/src_spy:/app/spy_frontend/src_spy
+      - ./frontend/tournament_frontend/src:/app/tournament_frontend/src
       - /app/node_modules
 
     depends_on:
@@ -88,7 +87,9 @@ services:
     build: ./api-gateway
     container_name: nginx
     ports:
-      - "8080:8080"
+      - "443:443"
+    volumes:
+      - nginx_certs:/etc/nginx/certs
     networks:
       - app-network
     depends_on:
@@ -98,3 +99,7 @@ services:
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  nginx_certs:
+    driver: local

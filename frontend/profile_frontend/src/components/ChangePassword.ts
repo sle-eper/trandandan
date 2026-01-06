@@ -192,7 +192,7 @@ export class ChangePasswordModal {
     submitBtn.textContent = 'Changing...';
 
     try {
-      const response = await axios.post('http://localhost:8080/api/users/User/changePassword', {
+      const response = await axios.post('/api/users/User/changePassword', {
         currentPassword,
         newPassword
       }, {

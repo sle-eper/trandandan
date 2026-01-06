@@ -7,7 +7,7 @@ import {PlayerAndSpaySelection} from "./component/PlayerAndSpaySelection.ts"
 import { findingSpy } from './component/findingSpy.ts';
 import { displayCard } from './component/localMode.ts';
 import { history } from './component/history.ts';
-import { navigate } from '../../auth_frontend/src_auth/app.ts';
+import { navigateSilent } from '../../auth_frontend/src_auth/login/router.ts';
 
 
 // //start og game 
@@ -23,11 +23,12 @@ export async function spyUi(step: string = "local")
 {
     
     const main = document.getElementById("dashboard-content")
-    const response = await fetch("http://localhost:8080/auth/verify", {
+    const response = await fetch("/auth/verify", {
             method: "GET",
             headers: { "Content-Type": "application/json" },
-            credentials: "include", // VERY IMPORTANT FOR Cookies
+            credentials: "include",
         });
+        console.log("response status:", response.status);
         let myId: string;
         const responseJson = await response.json()
         myId =  responseJson.id;
@@ -87,6 +88,7 @@ export async function spyUi(step: string = "local")
         // let correctChoice:string;
         game?.addEventListener("click",async(e)=>{
                 const el = e.target as HTMLElement;
+                console.log("tolll",selected.length)
                 console.log(el.id)
                 if(el.id === 'historyCard')
                 {
@@ -97,12 +99,7 @@ export async function spyUi(step: string = "local")
                     main.innerHTML += await history(myId)
                     const historySection2 = document.getElementById("historySection")
                     historySection2?.classList.remove('hidden');
-                    // navigate("/game/spy/history")
-                }
-                if(el.id === 'confirm-btn')
-                {
-                    document.getElementById("local-mode")?.classList.remove('hidden')
-                    document.getElementById("historySection")?.classList.add('hidden')
+                    navigateSilent("/game/spy/history")
                 }
                 if(el.id === 'spaysCard' || el.id === 'spaysInput')
                 {
@@ -163,10 +160,18 @@ export async function spyUi(step: string = "local")
                                 document.getElementById("counter-spays")?.classList.add('hidden')
                                 const playerInput = document.getElementById("spaysInput");
                                 if(playerInput) playerInput.innerHTML = String(spaysNumber)
-                            }
+                            }else{
+                                const origin = confirm.innerText;
+                                confirm.innerText = "invalid number";
+                                confirm.classList.add("opacity-50","cursor-not-allowed","pointer-events-none")
+                                setTimeout(()=>{
+                                    confirm.innerText = origin;
+                                    confirm.classList.remove("opacity-50","cursor-not-allowed","pointer-events-none")
+                                },3000)}
                         })
                         confirm.dataset.bound = "true"
                     }
+                    navigateSilent("/game/spy/spy");
                 }
                 if(el.id === 'playersCard' || el.id === 'playersInput')
                 {
@@ -221,15 +226,25 @@ export async function spyUi(step: string = "local")
                         confirm.addEventListener("click",()=>{
                             if(playerNumber > 0 && playerNumber <= 10)
                             {
+                                console.log(playerNumber);
                                 document.getElementById("local-mode")?.classList.remove('hidden')
                                 document.getElementById("counter-players")?.classList.add('hidden')
                                 const playerInput = document.getElementById("playersInput");
                                 if(playerInput) playerInput.innerHTML = String(playerNumber)
+                            }else{
+                                const origin = confirm.innerText;
+                                confirm.innerText = "invalid number";
+                                confirm.classList.add("opacity-50","cursor-not-allowed","pointer-events-none")
+                                setTimeout(()=>{
+                                    confirm.innerText = origin;
+                                    confirm.classList.remove("opacity-50","cursor-not-allowed","pointer-events-none")
+                                },3000)
                             }
                             
                         })
                         confirm.dataset.bound = "true"
                     }
+                    navigateSilent("/game/spy/players");
                 }
                 if(el.id === 'sectionsCard' || el.id === 'sectionInput' )
                 {
@@ -250,7 +265,7 @@ export async function spyUi(step: string = "local")
                             })
                             confirmSections.dataset.bound = 'true'
                         }
-                    // navigate("/game/spy/section")
+                    navigateSilent("/game/spy/section")
                 }
                 if(el.id === 'next')
                 {
@@ -261,12 +276,22 @@ export async function spyUi(step: string = "local")
                         //////////////////////// set data of game ///////////////////////////////////////////////////
                         const playersInput:HTMLDivElement = document.getElementById("playersInput") as HTMLDivElement;
                         const spaysInput:HTMLDivElement = document.getElementById("spaysInput") as HTMLDivElement;
+                        const confirm:HTMLButtonElement = document.getElementById("next") as HTMLButtonElement;
                         const numberOfPlayer = Number(playersInput.innerText)
                         const numberOfSpays = Number(spaysInput.innerText)
                         if(playersInput && numberOfPlayer > 0 && numberOfPlayer <= 10 )
                             data.players =  numberOfPlayer
                         if(spaysInput && validNumberOfSpays(numberOfPlayer,numberOfSpays))
-                            data.spays = numberOfSpays
+                            data.spays = numberOfSpays;
+                        else{
+                                const origin = confirm?.innerText;
+                                confirm.innerText = "players must be more than spies";
+                                confirm?.classList.add("opacity-50","cursor-not-allowed","pointer-events-none")
+                                setTimeout(()=>{
+                                    confirm.innerText = origin;
+                                    confirm?.classList.remove("opacity-50","cursor-not-allowed","pointer-events-none")
+                                },3000)
+                            }
                         
                         //////////////////////////////////////////////////////////////////////////////////////////
                         // console.log(data.spays,data.players);
@@ -275,7 +300,7 @@ export async function spyUi(step: string = "local")
                             // console.log(data.spays,data.players)
                             game.innerHTML = renderPlayers(data,userName) 
                         }
-    
+                    navigateSilent("/game/spy/name_players");
                 }
                 function ask(spy:any):object
                 {
@@ -332,7 +357,7 @@ export async function spyUi(step: string = "local")
                                     </div>
                                                     `
                 }
-                function chooseSpy(players): string {//TODO tol dyaal select 
+                function chooseSpy(players): string {
                     return `
                         <div id="choose-spy" 
                             class="flex flex-col items-center justify-center gap-8 py-12">
@@ -460,6 +485,7 @@ export async function spyUi(step: string = "local")
 
                         } else {
                             game.innerHTML = renderSpyChoice()
+                            navigateSilent("/game/spy/win_page");
                         }
                 }
                 if(el.id === 'guess-the-word')
@@ -491,6 +517,7 @@ export async function spyUi(step: string = "local")
                         </button>
 
                     </div>`
+                    navigateSilent("/game/spy/win_page/word");
                 }
                 if(el.id === 'confirm-guess')
                 {
@@ -498,46 +525,64 @@ export async function spyUi(step: string = "local")
                     if(value.trim())
                     {
                         // console.log(correctChoice)
+                        spaysNumberlit3arfo = 0;
                         if(value.toLocaleLowerCase() === correctChoice)
                         {
                             if(player1.spay === true)
                             {
-                                await fetch('http://localhost:3003/history',{
-                                    method: "POST",
-                                    headers: {
-                                        "Content-Type": "application/json",
-                                    },
-                                    body: JSON.stringify({ user_id: myId,role:'spy',result:'win'}),
-                                })//TODO handel errors
+                                try{
+                                    await fetch('http://localhost:3003/history',{
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                        },
+                                        body: JSON.stringify({ user_id: myId,role:'spy',result:'win'}),
+                                    })//TODO handel errors
+                                }catch{
+                                    alert("❌ Failed to save game history");
+                                }
                             }else{
-                                await fetch('http://localhost:3003/history',{
-                                    method: "POST",
-                                    headers: {
-                                        "Content-Type": "application/json",
-                                    },
-                                    body: JSON.stringify({ user_id: myId,role:'investigator',result:'lose'}),
-                                })//TODO handel errors
+                                try{
+                                    await fetch('http://localhost:3003/history',{
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                        },
+                                        body: JSON.stringify({ user_id: myId,role:'investigator',result:'lose'}),
+                                    })//TODO handel errors
+                                }catch
+                                {
+                                    alert("❌ Failed to save game history");
+                                }
                             }
                             game.innerHTML=findingSpy("The spy won")
                         }
                         else{
                             if(player1.spay === true)
                             {
-                                await fetch('http://localhost:3003/history',{
-                                    method: "POST",
-                                    headers: {
-                                        "Content-Type": "application/json",
-                                    },
-                                    body: JSON.stringify({ user_id: myId,role:'spy',result:'lose'}),
-                                })//TODO handel errors
+                                try{
+                                    await fetch('http://localhost:3003/history',{
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                        },
+                                        body: JSON.stringify({ user_id: myId,role:'spy',result:'lose'}),
+                                    })//TODO handel errors
+                                }catch{
+                                    alert("❌ Failed to save game history");
+                                }
                             }else{
-                                await fetch('http://localhost:3003/history',{
-                                    method: "POST",
-                                    headers: {
-                                        "Content-Type": "application/json",
-                                    },
-                                    body: JSON.stringify({ user_id: myId,role:'investigator',result:'win'}),
-                                })//TODO handel errors
+                                try{
+                                    await fetch('http://localhost:3003/history',{
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                        },
+                                        body: JSON.stringify({ user_id: myId,role:'investigator',result:'win'}),
+                                    })//TODO handel errors
+                                }catch{
+                                    alert("❌ Failed to save game history");
+                                }
                             }
                             game.innerHTML=findingSpy("The investigators won")
                         }
@@ -547,20 +592,21 @@ export async function spyUi(step: string = "local")
                 {
                     game.innerHTML = chooseSpy(whoAsks)
                 }
-                if(el.id === 'confirm-spy')
+                if(el.id === 'confirm-spy')//TODO if spy == player slat 
                 {
-                    // console.log("click 1",click)
+                    console.log("click 1",whoAsks)
                     const select = document.getElementById("spy-select") as HTMLSelectElement;
                     const result = document.getElementById("spy-result") as HTMLDivElement;
                     const id = Number(select.value);
-
+                    // console.log("sssss",alivePlayers,aliveSpies)
                     if (!id) {
-                        alert("Please choose a spy!");
                         return;
                     }
                     const section =  whoAsks.find((s)=>{
-                        return s.id == id
+                        return s.id == id;
                     })
+                    
+
                     if(section.spay === true && click === 0)
                     {
                         spaysNumberlit3arfo++
@@ -575,51 +621,32 @@ export async function spyUi(step: string = "local")
                     
                     click++
                     spays = whoAsks.filter(s => s.id !== id);
+                    const aliveSpies = spays.filter(p=>p.spay === true).length;
+                    const alivePlayers = spays.filter(p=>p.spay === false).length;
 
-                    console.log(spaysNumberlit3arfo,spaysNumber)
-
-                    if(spaysNumberlit3arfo === spaysNumber)
+                    // console.log(spaysNumberlit3arfo,spaysNumber)
+                    if(aliveSpies >= alivePlayers ) 
                     {
-                        // console.log("investigators won " , player1)
-                        if(!player1.spay === true)
-                        {
-                            await fetch('http://localhost:3003/history',{
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/json",
-                                },
-                                body: JSON.stringify({ user_id: myId,role:'investigator',result:'win'}),
-                                })//TODO handel errors
-                        }
-                        else
-                        {
-                            await fetch('http://localhost:3003/history',{
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                            },
-                            body: JSON.stringify({ user_id: myId,role:'spy',result:'lose'}),
-                            })//TODO handel errors
-                        }
-                        game.innerHTML=findingSpy("The investigators won")
-                        return
-                    }
-                    else if(spays.length === 2)//TODO handel ila kan spy m9adin m3a players //TODO ila dekhalt l history katkhesr game 
-                    {
+                        spaysNumberlit3arfo = 0;
                         // const win = section.find((s) => {
                         //     return s.id === 1
                         // })
-                        console.log("The spy won " , player1)
+                        // console.log("The spy won " , player1)
                         if(player1.spay === true)
                         {
-                            await fetch('http://localhost:3003/history',{
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/json",
-                                },
-                                body: JSON.stringify({ user_id: myId,role:'spy',result:'win'}),
-                                })//TODO handel errors
+                            try{
+                                await fetch('http://localhost:3003/history',{
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify({ user_id: myId,role:'spy',result:'win'}),
+                                    })//TODO handel errors
+                            }catch{
+                                alert("❌ Failed to save game history");
+                            }
                         }else{
+                            try{
                                 await fetch('http://localhost:3003/history',{
                                 method: "POST",
                                 headers: {
@@ -627,11 +654,48 @@ export async function spyUi(step: string = "local")
                                 },
                                 body: JSON.stringify({ user_id: myId,role:'investigator',result:'lose'}),
                                 })//TODO handel errors
+                            }catch{
+                                alert("❌ Failed to save game history");
+                            }
                         }
                         game.innerHTML=findingSpy("The spy won")
                         return
                     }
-                    console.log("click 2",click)
+                    else if(aliveSpies === 0)
+                    {
+                        spaysNumberlit3arfo = 0;
+                        // console.log("investigators won " , player1)
+                        if(player1.spay === false)
+                        {
+                            try{
+                                await fetch('http://localhost:3003/history',{
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify({ user_id: myId,role:'investigator',result:'win'}),
+                                    })//TODO handel errors
+                            }catch{
+                                alert("❌ Failed to save game history");
+                            }
+                        }
+                        else
+                        {
+                            try{
+                                await fetch('http://localhost:3003/history',{
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify({ user_id: myId,role:'spy',result:'lose'}),
+                                })//TODO handel errors
+                            }catch{
+                                alert("❌ Failed to save game history");
+                            }
+                        }
+                        game.innerHTML=findingSpy("The investigators won")
+                        return
+                    }
                     if(click === 2)
                     {
                         click = 0;

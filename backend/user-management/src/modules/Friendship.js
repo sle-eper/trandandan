@@ -43,7 +43,16 @@ class Friendship {
       
       return { success: true, message: 'Friend request accepted' };
     }
-  
+    // Reject friend request
+    async rejectRequest(userId, friendId) {
+      await this.db.run(
+        `DELETE FROM friendships 
+         WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?) AND status = 'pending'`,
+        [userId, friendId, friendId, userId]
+      );
+      
+      return { success: true, message: 'Friend request rejected' };
+    }
     // Remove friendship
     async removeFriendship(userId, friendId) {
       await this.db.run(
@@ -123,6 +132,19 @@ class Friendship {
         [friendId, userId]
       );
       return request;
+    }
+
+    async cancelFriendRequest(userId, friendId) {
+      const result = await this.db.run(
+        `DELETE FROM friendships 
+         WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?) AND status = 'pending'`,
+        [userId, friendId, friendId, userId]
+      );
+      
+      if (result.changes === 0) {
+        throw new Error('No pending friendship request found to cancel');
+      }
+      return { success: true, message: 'Friend request cancelled' };
     }
 
   }
