@@ -41,6 +41,7 @@ services:
       - ./frontend/auth_frontend/src_auth:/app/auth_frontend/src_auth
       - ./frontend/profile_frontend/src:/app/profile_frontend/src
       - ./frontend/spy_frontend/src_spy:/app/spy_frontend/src_spy
+      - ./frontend/tournament_frontend/src:/app/tournament_frontend/src
       - /app/node_modules
 
     depends_on:

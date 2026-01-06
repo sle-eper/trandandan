@@ -7,6 +7,8 @@ import {PlayerAndSpaySelection} from "./component/PlayerAndSpaySelection.ts"
 import { findingSpy } from './component/findingSpy.ts';
 import { displayCard } from './component/localMode.ts';
 import { history } from './component/history.ts';
+import { navigateSilent } from '../../auth_frontend/src_auth/login/router.ts';
+
 
 // //start og game 
 let correctChoice:string;
@@ -16,8 +18,10 @@ export function setCorrectChoice(value:string)
     correctChoice = value.toLocaleLowerCase()
 }
 
-export async function spyUi()
+export async function spyUi(step: string = "local")
+
 {
+    
     const main = document.getElementById("dashboard-content")
     const response = await fetch("/auth/verify", {
             method: "GET",
@@ -30,11 +34,39 @@ export async function spyUi()
         myId =  responseJson.id;
         const userName = responseJson.username;
         // console.log(responseJson)
-            
+        
     if(main)
     {
        //show game mode
-        main.innerHTML = renderLocalMode() + renderSection() + PlayerAndSpaySelection("players",7) + PlayerAndSpaySelection("spays",1) /* + await history(myId) */
+        if (step === "history") {
+            main.innerHTML = await history(myId);
+            return;
+        }
+
+        if (step === "players") {
+            main.innerHTML =
+            renderLocalMode() +
+            PlayerAndSpaySelection("players", 7);
+            return;
+        }
+
+        if (step === "spies") {
+            main.innerHTML =
+                renderLocalMode() +
+                PlayerAndSpaySelection("spays", 1);
+            return;
+        }
+
+        if (step === "sections") {
+            main.innerHTML =
+                renderLocalMode() +
+                renderSection();
+            return;
+        }
+
+        /* ===================== DEFAULT (MAIN SPY PAGE) ===================== */
+
+        main.innerHTML = renderLocalMode() + renderSection() + PlayerAndSpaySelection("players",3) + PlayerAndSpaySelection("spays",1) /* + await history(myId) */
         const game = document.getElementById("dashboard-content")
         const data = {
             players:0,
@@ -66,7 +98,8 @@ export async function spyUi()
                         historySection.remove()
                     main.innerHTML += await history(myId)
                     const historySection2 = document.getElementById("historySection")
-                    historySection2?.classList.remove('hidden')
+                    historySection2?.classList.remove('hidden');
+                    navigateSilent("/game/spy/history")
                 }
                 if(el.id === 'spaysCard' || el.id === 'spaysInput')
                 {
@@ -138,6 +171,7 @@ export async function spyUi()
                         })
                         confirm.dataset.bound = "true"
                     }
+                    navigateSilent("/game/spy/spy");
                 }
                 if(el.id === 'playersCard' || el.id === 'playersInput')
                 {
@@ -210,45 +244,28 @@ export async function spyUi()
                         })
                         confirm.dataset.bound = "true"
                     }
+                    navigateSilent("/game/spy/players");
                 }
                 if(el.id === 'sectionsCard' || el.id === 'sectionInput' )
                 {
                         selectSection(selected)
                         document.getElementById("local-mode")?.classList.add('hidden')
                         document.getElementById("sections-selection")?.classList.remove('hidden')
-                        // const confirmSections = document.getElementById("confirm-sections");
-                        // if(confirmSections && !confirmSections.dataset.bound )
-                        // {
-                            // confirmSections.addEventListener("click",()=>{
-                            //     if(selected.length > 0)
-                            //     {
-                            //         // console.log("confirm-sections ssssss")
-                            //         document.getElementById("local-mode")?.classList.remove('hidden')
-                            //         document.getElementById("sections-selection")?.classList.add('hidden')
-                            //         const sectionInput = document.getElementById("sectionInput");
-                            //         if(sectionInput) sectionInput.innerHTML = String(selected.length)
-                            //     }
-                            // })
-                            // confirmSections.dataset.bound = 'true'
-                        // }
-                }
-                if(el.id === 'confirm-sections')
-                {
-                    if(selected.length > 0)
-                    {
-                        // console.log("confirm-sections ssssss")
-                        document.getElementById("local-mode")?.classList.remove('hidden')
-                        document.getElementById("sections-selection")?.classList.add('hidden')
-                        const sectionInput = document.getElementById("sectionInput");
-                        if(sectionInput) sectionInput.innerHTML = String(selected.length)
-                    }
-                }
-                if(el.id === 'confirm-btn')
-                {
-                    document.getElementById("local-mode")?.classList.remove('hidden')
-                    document.getElementById("historySection")?.classList.add('hidden')
-                    setSectionBound(false);
-
+                        const confirmSections = document.getElementById("confirm-sections");
+                        if(confirmSections && !confirmSections.dataset.bound )
+                        {
+                            confirmSections.addEventListener("click",()=>{
+                                if(selected.length > 0)
+                                {
+                                    document.getElementById("local-mode")?.classList.remove('hidden')
+                                    document.getElementById("sections-selection")?.classList.add('hidden')
+                                    const sectionInput = document.getElementById("sectionInput");
+                                    if(sectionInput) sectionInput.innerHTML = String(selected.length)
+                                }
+                            })
+                            confirmSections.dataset.bound = 'true'
+                        }
+                    navigateSilent("/game/spy/section")
                 }
                 if(el.id === 'next')
                 {
@@ -283,6 +300,7 @@ export async function spyUi()
                             // console.log(data.spays,data.players)
                             game.innerHTML = renderPlayers(data,userName) 
                         }
+                    navigateSilent("/game/spy/name_players");
                 }
                 function ask(spy:any):object
                 {
@@ -467,6 +485,7 @@ export async function spyUi()
 
                         } else {
                             game.innerHTML = renderSpyChoice()
+                            navigateSilent("/game/spy/win_page");
                         }
                 }
                 if(el.id === 'guess-the-word')
@@ -498,6 +517,7 @@ export async function spyUi()
                         </button>
 
                     </div>`
+                    navigateSilent("/game/spy/win_page/word");
                 }
                 if(el.id === 'confirm-guess')
                 {

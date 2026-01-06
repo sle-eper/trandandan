@@ -161,6 +161,7 @@ export async function logout_post(request, reply) {
 export async function verifyUser_get(request, reply) {
   const token = request.cookies.token;
   if (!token) {
+    console.log("--------------------soumaya not authirized       ")
     return reply.code(401).send({ error: "Not Authorized" });
   }
 

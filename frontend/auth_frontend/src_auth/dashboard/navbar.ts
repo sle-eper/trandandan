@@ -1,6 +1,7 @@
 import axios from "axios";
 import { navigate } from "../app";
 import { PlayerSearch } from "./playerSearch";
+import logo from "../images/pingponglogo.jpg"
 
 
 
@@ -12,12 +13,14 @@ export function renderNavBar(): string {
              px-6 py-2 rounded-3xl sticky top-0 z-50 bg-[#111]">
 
       <!-- Logo -->
-      <div class="flex items-center gap-3">
-          <img src="/src_auth/images/pingponglogo.jpg" alt="logo" class="w-12 h-12 rounded-lg"/>
-        <span class="text-xl font-bold tracking-wide drop-shadow-sm">
-          PingPong
-        </span>
-      </div>
+      <div class="flex items-center gap-3 cursor-pointer hover:opacity-90 transition"
+    id="home-logo">
+      <img src="${logo}" alt="logo" class="w-12 h-12 rounded-lg" />
+      <span class="text-xl font-bold tracking-wide drop-shadow-sm">
+        PingPong
+      </span>
+    </div>
+
 
       <!-- Search Bar -->
       <div class="flex-1 max-w-md mx-8 relative group">
@@ -189,6 +192,20 @@ export async function navBarLogic() {
       setTimeout(() => menu?.classList.add("hidden"), 150);
     }
   });
+
+  document.getElementById("home-logo")?.addEventListener("click", () => {
+      navigate("/home");
+    });
+  const logo = document.getElementById("home-logo");
+
+  logo?.setAttribute("tabindex", "0");
+
+  logo?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      navigate("/home");
+    }
+  });
+
 
   // ✅ SIGN OUT BUTTON
   signOutBtn?.addEventListener("click", async () => {

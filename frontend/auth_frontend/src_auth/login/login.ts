@@ -78,7 +78,6 @@ export function attachLoginHandlers() {
       if (response && response.status === 206) {
         // Show 2FA page
         navigate("/verify?username=" + body.username);
-        console.log("206---", body);
         return  ;
       }
       if (body.success) {
