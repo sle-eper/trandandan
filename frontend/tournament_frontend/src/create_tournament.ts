@@ -175,24 +175,30 @@ export function renderCreateTournament() {
   function attachEntryHandlers() {
     document.getElementById("view-tournaments-btn")?.addEventListener("click", () => {
       renderTournamentList();
-      navigate("/tournament/list");
+      navigate("/tournement/list");
     });
 
     document.getElementById("create-tournament-btn")?.addEventListener("click", () => {
       renderCreateTournament();
+      navigate("/tournement/create");
+      document.getElementById("cancel-create-tournament")?.addEventListener("click", () => {
+        navigate("/tournement");
+      });
+
     });
   }
-  function renderTournamentList() {
+  export function renderTournamentList() {
     const main = document.getElementById("dashboard-content");
     if (!main) return;
     
     main.innerHTML = tournamentListTemplate();
     attachListHandlers();
+    
   }
 
   function attachListHandlers() {
     document.getElementById("back-to-entry")?.addEventListener("click", () => {
       Tournament();
-      navigate("/tournament");
+      navigate("/tournement");
     });
   }
