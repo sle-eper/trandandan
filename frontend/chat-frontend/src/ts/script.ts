@@ -1,4 +1,3 @@
-// import { socket } from "../../../auth_frontend/src_auth/login/login";
 import { socketInstance } from "../../../socket_manager/socket";
 import { PlayerProfileManager } from "../../../profile_frontend/src/components/FriendRequest";
 import { currentUserId } from "../../../auth_frontend/src_auth/login/login";
@@ -17,10 +16,9 @@ import {
   generateBlockButton,
 } from "../components/content";
 
-let myImg: string = "";
-let imInRoom: string = "";
-let friendId: string = "";
-let userID: string = "";
+let imInRoom:string = "";
+let friendId:string = "";
+let userID:string = "";
 
 function moveUp(id: string) {
   const container = document.getElementById("list-of-msg");
@@ -414,19 +412,53 @@ function socketListener() {
 
 }
 
+function fetchListOfFriends(): Promise<any> {
+  return new Promise((resolve) => {
+    socketInstance()?.once("friends_list", (friends) => {
+      resolve(friends);
+    });
+    socketInstance()?.emit("get_friends");
+  });
+}
+
+
+let firestOne: boolean = false;
+let isFetching = false;
+
+function onScroll() {
+  let offset: number = 0;
+  if (!firestOne) {
+    socketInstance()?.emit("get_messages", { myId, friendId, limit: 20, offset });
+    firestOne = true;
+  }
+  const chatZone = document.getElementById("chat-zone");
+  if (chatZone) {
+    chatZone.addEventListener("scroll", async () => {
+      if (chatZone.scrollTop < 190 && !isFetching) {
+        isFetching = true;
+        offset += 20;
+        await socketInstance()?.emit("get_old_messages", {
+          myId,
+          friendId,
+          limit: 20,
+          offset,
+        });
+        isFetching = false;
+      }
+    });
+  }
+}
 export async function showMainUI() {
   const response = await fetch("/auth/verify", {
     method: "GET",
     headers: { "Content-Type": "application/json" },
     credentials: "include", // VERY IMPORTANT FOR Cookies
   });
-  // console.log("response status:", response.status);
+
   let myId: string;
   const responseJson = await response.json()
   myId =  responseJson.id
-  // socket.emit("con", myId);
   userID = myId;
-  // console.log(userID);
   const chatContent = document.getElementById("dashboard-content");
 
   let sendButton: HTMLButtonElement;
@@ -434,62 +466,25 @@ export async function showMainUI() {
   let inputMsgZone: HTMLInputElement;
   let dmZone: HTMLElement | null;
 
-  function fetchListOfFriends(): Promise<any> {
-    return new Promise((resolve) => {
-      socketInstance()?.once("friends_list", (friends) => {
-        resolve(friends);
-      });
-      socketInstance()?.emit("get_friends");
-    });
-  }
 
+  //start working here
   if (chatContent) {
     socketListener();
     chatContent.classList.add("gap-6", "gap-y-3");
-    // chatContent.classList.remove("flex-grow");
     const friends = await fetchListOfFriends();
-    // console.table(friends.friends);
     chatContent.innerHTML = listOfMsg(friends.friends,friends.waitingMsg,myId);
+
     if(friends && friends.friends.length > 0)
       chatContent.innerHTML += DM();
-    //     //get all of list friends
+    
     const friendsEvent = document.querySelectorAll(".friend-msg-zone");
-    friendsEvent.forEach((friend) => {
+    friendsEvent.forEach((friend:any) => {
       friend.addEventListener("click", () => {
-        //         /******************************************get msg on scroll*******************************/
-
-        let firestOne: boolean = false;
-        let isFetching = false;
-        function onScroll() {
-          let offset: number = 0;
-          if (!firestOne) {
-            socketInstance()?.emit("get_messages", { myId, friendId, limit: 20, offset });
-            firestOne = true;
-          }
-          const chatZone = document.getElementById("chat-zone");
-          if (chatZone) {
-            chatZone.addEventListener("scroll", async () => {
-              if (chatZone.scrollTop < 190 && !isFetching) {
-                isFetching = true;
-                offset += 20;
-                await socketInstance()?.emit("get_old_messages", {
-                  myId,
-                  friendId,
-                  limit: 20,
-                  offset,
-                });
-                isFetching = false;
-              }
-            });
-          }
-        }
-
-        //             /**********************************************************************************************/
 
         imInRoom = friend.dataset.roomname;
         friendId = friend.dataset.id;
 
-        const friendFind = friends.friends.find((f) => f.id == friendId);
+        const friendFind = friends.friends.find((f:any) => f.id == friendId);
         if (friendFind) {
           const roomName: string = [myId, friendFind.id].sort().join("_");
           const dm = document.getElementById("DM");
@@ -509,12 +504,8 @@ export async function showMainUI() {
           })
           socketInstance()?.emit("joinToRoom", roomName);
 
-          const counterElement: HTMLDivElement = document.getElementById(
-            `counter-of-${friendId}`
-          ) as HTMLDivElement;
-          const lastMsgVar: HTMLSpanElement = document.getElementById(
-            `last-msg-${friendId}`
-          ) as HTMLSpanElement;
+          const counterElement: HTMLDivElement = document.getElementById(`counter-of-${friendId}`) as HTMLDivElement;
+          const lastMsgVar: HTMLSpanElement = document.getElementById(`last-msg-${friendId}`) as HTMLSpanElement;
           if (!counterElement.classList.contains("hidden")) {
             counterElement.textContent = "0";
             counterElement.classList.add("hidden");
@@ -540,15 +531,10 @@ export async function showMainUI() {
               });
             });
           ////////////////////////////////////////////////////////////////////////////////
-          sendButton = document.getElementById(
-            "send-button"
-          ) as HTMLButtonElement;
+          sendButton = document.getElementById("send-button") as HTMLButtonElement;
           chatZone = document.getElementById("chat-zone") as HTMLDivElement;
-          inputMsgZone = document.getElementById(
-            "input-msg-zone"
-          ) as HTMLInputElement;
+          inputMsgZone = document.getElementById("input-msg-zone") as HTMLInputElement;
           onScroll();
-
           //****************************** start popup part *************************************//
           {
             const option = document.getElementById(

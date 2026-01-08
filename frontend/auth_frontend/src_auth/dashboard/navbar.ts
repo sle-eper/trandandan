@@ -1,7 +1,6 @@
 import axios from "axios";
 import { navigate } from "../app";
 import { PlayerSearch } from "./playerSearch";
-// import { socket } from "../login/login";
 import { socketInstance } from "../../../socket_manager/socket";
 import {getSocket} from "../../../socket_manager/socket"
 import logo from "../images/pingponglogo.jpg?inline"
