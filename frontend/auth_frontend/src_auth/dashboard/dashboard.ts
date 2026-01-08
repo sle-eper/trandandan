@@ -79,29 +79,29 @@ export async function showDashboard() {
   document.body.classList.remove("flex", "items-center", "justify-center", "px-6", "md:px-20");
   // document.body.classList.add("bg-gray-900", "min-h-screen");
   //TODO hadi ba9i dak tol fih mochekil 
-  app.innerHTML = `
-    <div class="flex flex-col h-screen bg-[#111] text-white">
-        
-        <!-- Navbar -->
-        <div id="navbar"></div>
-        
-        <div class="flex flex-row flex-grow">
-          <!-- Sidebar -->
-          <div id="sidebar"></div>
-        <div id="dashboard-content"
-          class="flex items-center justify-center p-6 rounded-3xl
-                bg-gradient-to-br from-[#1a1a1d] to-[#0f0f11]
-                shadow-xl border border-[#2c2c2f]
-                mx-6 mt-4 mb-6 overflow-auto
-                max-h-[80vh] md:max-h-[87vh] w-full">
+    app.innerHTML = `
+      <div class="flex flex-col h-screen bg-[#111] text-white">
+          
+          <!-- Navbar -->
+          <div id="navbar"></div>
+          
+          <div class="flex flex-row flex-grow">
+            <!-- Sidebar -->
+            <div id="sidebar"></div>
+          <div id="dashboard-content"
+            class="flex items-center justify-center p-6 rounded-3xl
+                  bg-gradient-to-br from-[#1a1a1d] to-[#0f0f11]
+                  shadow-xl border border-[#2c2c2f]
+                  mx-6 mt-4 mb-6 overflow-auto
+                  max-h-[80vh] md:max-h-[87vh] w-full">
 
-            <div class="h-full flex flex-col justify-center items-center text-center">
+              <div class="h-full flex flex-col justify-center items-center text-center">
+              </div>
+
             </div>
-
           </div>
-        </div>
-    </div>
-  `;
+      </div>
+    `;
 
 function getnotif(): Promise<any[]> {
   return new Promise(async (resolve, reject) => {
@@ -134,104 +134,15 @@ function getnotif(): Promise<any[]> {
   if (nav)
   {
     nav.innerHTML = renderNavBar();
-    let notif =  await getnotif()
-    const notification = document.getElementById("notification-menu");
-    if (!notification) return;
-    // notif.forEach((el)=>{
-    //   if(!el.display)
-    //     return;
-
-    //   if(el.type == "challenge" && el.display)
-    //   {
-    //     const msgNotif = document.createElement("div");
-    //     msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
-    //                   transition rounded-lg`
-  
-    //     msgNotif.innerHTML = `
-    //       <div class="flex justify-between">
-    //           <span class="block max-w-70 truncate">
-    //             🎮 <strong>${el.sender_name}</strong> wants to play
-    //           </span>
-    //           <span class="hover:cursor-pointer close-btn">x</span>
-    //       </div>
-    //     `;
-    //     notification?.prepend(msgNotif);
-    //     const closeBtn = msgNotif.querySelector(".close-btn");
-    //     closeBtn?.addEventListener("click", async () => {
-    //       socket.emit("removeNotif",el.id);
-    //       msgNotif.remove();
-    //     });
-    //   }else if(el.type == 'reject' && el.display)
-    //   {
-    //     const msgNotif = document.createElement("div");
-    //     msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
-    //                   transition rounded-lg`
-  
-    //     msgNotif.innerHTML = `
-    //     <div class="flex justify-between">
-    //       <span class="block max-w-70 truncate">
-    //         ❌ <strong>${el.sender_name}</strong> rejected your play request
-    //       </span>
-    //       <span class="hover:cursor-pointer close-btn">x</span>
-    //     </div>
-    //     `;
-    //     notification?.prepend(msgNotif);
-    //     const closeBtn = msgNotif.querySelector(".close-btn");
-    //     closeBtn?.addEventListener("click", async () => {
-    //       socket.emit("removeNotif",el.id);
-    //       msgNotif.remove();
-    //     });
-    //   }else if(el.type == 'msg' && el.display)
-    //   {
-    //   const msgNotif = document.createElement("div");
-    //   msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
-    //                 transition rounded-lg`
-
-    //   msgNotif.innerHTML = `
-    //   <div class="flex justify-between">
-    //     <span class="block max-w-70 truncate">
-    //       💬 <strong>${el.sender_name}</strong>: ${el.content}
-    //     </span>
-    //     <span class="hover:cursor-pointer close-btn">x</span>
-    //   </div>
-    //   `;
-    //   notification?.prepend(msgNotif);
-    //     const closeBtn = msgNotif.querySelector(".close-btn");
-    //     closeBtn?.addEventListener("click", async () => {
-    //       socket.emit("removeNotif",el.id);
-    //       msgNotif.remove();
-    //     });
-        
-    //   }else if(el.type == 'friendRequest')
-    //   {
-    //     const msgNotif = document.createElement("div");
-    //     msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
-    //                   transition rounded-lg`
-  
-    //     msgNotif.innerHTML = `
-    //     <div class="flex justify-between">
-    //       <span class="block max-w-70 truncate">
-    //         🤝 <strong>${el.sender_name}</strong> sent you a friend request
-    //       </span>
-    //       <span class="hover:cursor-pointer close-btn">x</span>
-    //       </div>
-    //     `;
-    //     notification?.prepend(msgNotif);
-    //     const closeBtn = msgNotif.querySelector(".close-btn");
-    //     closeBtn?.addEventListener("click", async () => {
-    //       socket.emit("removeNotif",el.id);
-    //       msgNotif.remove();
-    //     });
-        
-    //   }
-    // })
-    notif.forEach((el) => {
-    if (el.display) {
-      addNotif(el, notification);
-    }
-  });
-
-
+    if (sidebar) sidebar.innerHTML = renderSidebar();
+      let notif =  await getnotif()
+      const notification = document.getElementById("notification-menu");
+      if (!notification) return;
+      notif.forEach((el) => {
+      if (el.display) {
+        addNotif(el, notification);
+      }
+    });
   }
   navBarLogic();
   sidebarLogic();

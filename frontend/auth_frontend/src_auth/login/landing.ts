@@ -1,4 +1,7 @@
 import { navigate } from "../app";
+import logo from "../images/pingponglogo.jpg?inline"
+import video from "../images/vedio14.mp4?inline"
+
 export function showLandingPage(containerId = "login-app") {
   const app = document.getElementById(containerId);
   if (!app) return;
@@ -10,7 +13,7 @@ export function showLandingPage(containerId = "login-app") {
   <nav class="flex-shrink-0 w-full flex justify-between items-center px-8 py-5 border-b border-white/10">
     <div class="flex items-center gap-2">
       <div class="px-2 py-1 rounded-lg">
-      <img src="/src_auth/images/pingponglogo.jpg" alt="logo" class="w-12 h-12 rounded-lg"/>
+      <img src=${logo} alt="logo" class="w-12 h-12 rounded-lg"/>
       </div>
       <span class="text-xl font-bold">Ping Pong</span>
     </div>
@@ -44,7 +47,7 @@ export function showLandingPage(containerId = "login-app") {
 
     <!-- RIGHT -->
     <div class="flex items-center justify-center">
-      <video src="src_auth/images/vedio14.mp4"
+      <video src=${video}
       autoplay
       muted
       loop

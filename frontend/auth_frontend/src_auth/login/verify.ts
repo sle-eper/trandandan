@@ -77,7 +77,7 @@ export function attachVerifyHandlers() {
     }
 
     // ✅ Success → go to login
-    navigate("login");
+    navigate("/login");
   };
 
   btn.addEventListener("click", submitCode);

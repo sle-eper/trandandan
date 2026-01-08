@@ -47,6 +47,10 @@ export function initRouter(onNotFound: () => void) {
 
   router(onNotFound);
 }
+export function navigateSilent(path: string) {
+  history.pushState({}, "", path);
+}
+
 
 function router(onNotFound?: () => void) {
   const path = window.location.pathname;
