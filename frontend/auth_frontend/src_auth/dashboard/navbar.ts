@@ -3,7 +3,7 @@ import { navigate } from "../app";
 import { PlayerSearch } from "./playerSearch";
 // import { socket } from "../login/login";
 import { socketInstance } from "../../../socket_manager/socket";
-
+import {getSocket} from "../../../socket_manager/socket"
 
 
 export function renderNavBar(): string {
@@ -232,6 +232,8 @@ export async function navBarLogic() {
       console.log('Logout successful');
       // localStorage.removeItem("userId");
       socketInstance()?.disconnect();
+      getSocket();
+      localStorage.removeItem("userId")
       navigate("login");
     }
   });

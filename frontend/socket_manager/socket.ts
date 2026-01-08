@@ -21,6 +21,11 @@ let socket: Socket | null = null;
 //   return socket;
 // }
 
+
+export function getSocket(){
+  socket = null;
+}
+
 function getUserId(): string | null {
   const id = localStorage.getItem("userId");
   if (!id || id === "undefined" || id === "null") return null;
@@ -29,14 +34,24 @@ function getUserId(): string | null {
 
 
 export function socketInstance(): Socket | null {
-  if (!socket) {
-    const userId = getUserId();
-    if (!userId) return null;
+  const userId = getUserId();
+  console.log("socketInstance userId:", userId);
+  if (!userId) return null;
 
-    socket = io("http://localhost:3000", {
-      auth: { userId },
-      autoConnect: true,
-    });
+  if (socket && socket.io.opts.auth.userId === userId)
+  {
+    console.log("socketInstance existing socket returned");
+    return socket;
   }
+
+  if (socket) {
+    socket.disconnect();
+  }
+
+  socket = io("http://localhost:3000", {
+    auth: { userId },
+    autoConnect: true,
+  });
+  console.log("socketInstance new socket created");
   return socket;
 }

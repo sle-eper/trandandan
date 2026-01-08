@@ -9,11 +9,11 @@ export const loginTemplate = () => `
       <p class="text-gray-400 mb-6 text-sm md:text-base">Glad you're back!</p>
 
       <div class="space-y-4">
-        <input id="login-username" type="text" placeholder="Username"
+        <input id="login-username" type="text" placeholder="Username"  autocomplete="username"
           class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249]" />
 
         <div class="relative">
-          <input id="login-password" type="password" placeholder="Password"
+          <input id="login-password" type="password" placeholder="Password" autocomplete="current-password"
             class="w-full p-3 bg-transparent rounded-xl border border-gray-700 focus:border-[#E64249] pr-10" />
 
           <span id="toggle-password"

@@ -60,6 +60,7 @@ server.ready().then(() => {
     if (!onlineUsers.has(userId)) {
       onlineUsers.set(userId, new Set());
       socket.broadcast.emit("user_online", userId);
+      updateUserStat(userId,"online");
     }
     onlineUsers.get(userId)?.add(socket.id);
     console.log("--------------------------");
@@ -150,7 +151,7 @@ server.ready().then(() => {
     });
     socket.on("get_friends", async () => {
       try {
-
+        // console.log("get_friends event triggered");
         const id = socket.data.userId
         if (!id) return;
         const friends = await getFriendsOfUser(id);
@@ -394,6 +395,7 @@ server.ready().then(() => {
               console.log("--------------------------");
               console.log("size of onlineUsers",onlineUsers.size , "---->" , onlineUsers);
               socket.broadcast.emit("user_offline", id);
+              updateUserStat(id,"offline");
           }
         }
         console.log("after this size of onlineUsers",onlineUsers.size);

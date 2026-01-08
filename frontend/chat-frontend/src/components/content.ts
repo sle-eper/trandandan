@@ -48,6 +48,9 @@ function  friendCart(friend:any,waitingMsg:object,myId:string):string
         else
             status = 'send'
 
+        // if(friend.online_status === 'online')
+
+
         return `<div id='msg-zone' data-id="${friend.id}" class="flex justify-center py-4 px-2 hover:bg-[#222222] transition-colors duration-300 sm:py-4 sm:px-4 md:py-5">
                     <div  class=" friend-msg-zone flex w-[95%] hover:cursor-pointer" data-id="${friend.id}" data-name = "${friend.username}" data-roomname = "${roomName}"  >
                     <div class="relative">
@@ -61,7 +64,7 @@ function  friendCart(friend:any,waitingMsg:object,myId:string):string
                             ">
                         </div>
                         <span
-                            class="online-indicator-${friend.id} absolute bottom-0 right-0 h-3 w-3 bg-green-500 border-2 border-[#181818] rounded-full hidden ">
+                            class="online-indicator-${friend.id} absolute bottom-0 right-0 h-3 w-3 bg-green-500 border-2 border-[#181818] rounded-full ${friend.online_status === 'online' ? '' : 'hidden'} ">
                         </span>
 
                     </div>
@@ -149,7 +152,7 @@ export function generateBlockButton(status:string):string
 
 }
 /* ****************************************************************************************************************************************************************** */
-export function profileNav(img:string,userAccount:string,id:string):string{
+export function profileNav(img:string,userAccount:string,id:string,onlineStatus:string):string{
     // const profile = new PlayerProfileManager();
     return`
         <div id="profile-nav" class="flex h-[10%] items-center p-5 justify-between relative ">
@@ -165,7 +168,7 @@ export function profileNav(img:string,userAccount:string,id:string):string{
                         ">
                     </div>
                     <span
-                        class="online-indicator-${id} absolute bottom-0 right-0 h-3 w-3 bg-green-500 border-2 border-[#181818] rounded-full hidden">
+                        class="online-indicator-${id} absolute bottom-0 right-0 h-3 w-3 bg-green-500 border-2 border-[#181818] rounded-full ${onlineStatus === 'online' ? 'block' : 'hidden'}">
                     </span>
                 </div>
                 

@@ -245,7 +245,7 @@ async function changeStatusOfFriends(status:string,userId:string,friendId:string
 }
 
 
-async function updateUserStat( userId: number, status: string) {
+async function updateUserStat( userId: string, status: string) {
   try {
      const response = await axios.put(`${USER_MANAGEMENT_SERVICE_URL}/user/${userId}/status`, {
       status
