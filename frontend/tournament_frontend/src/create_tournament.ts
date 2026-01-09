@@ -182,6 +182,8 @@ export function renderCreateTournament() {
       renderCreateTournament();
     });
   }
+
+  
   function renderTournamentList() {
     const main = document.getElementById("dashboard-content");
     if (!main) return;
