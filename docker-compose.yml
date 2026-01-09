@@ -42,6 +42,8 @@ services:
       - ./frontend/profile_frontend/src:/app/profile_frontend/src
       - ./frontend/spy_frontend/src_spy:/app/spy_frontend/src_spy
       - ./frontend/tournament_frontend/src:/app/tournament_frontend/src
+      - ./frontend/game_frontend/src_game/src:/app/game_frontend/src_game/src     
+      - ./frontend/game_frontend/src_game/css:/app/game_frontend/src_game/css     
       - /app/node_modules
 
     depends_on:
@@ -87,7 +89,7 @@ services:
     build: ./api-gateway
     container_name: nginx
     ports:
-      - "8443:443"
+      - "443:443"
     volumes:
       - nginx_certs:/etc/nginx/certs
     networks:
