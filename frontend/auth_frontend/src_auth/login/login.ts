@@ -3,10 +3,11 @@ import { loginTemplate, sharedImage } from "./templates";
 import { loginUser } from "./api";
 import { navigate } from "../app";
 
-import { io } from "socket.io-client";
-export const socket = io("http://localhost:3000");
+// import { io } from "socket.io-client";
+// export const socket = io("http://localhost:3000");
 // import { showDashboard } from "../dashboard/dashboard";
 // import { showMainUI } from "../../src/ts/script.ts";
+import {socketInstance} from "../../../socket_manager/socket"
 function showError(msg: string) {
   const errorBox = document.getElementById("login-error");
   if (!errorBox) return;
@@ -80,9 +81,12 @@ export function attachLoginHandlers() {
       }
       if (body.success) {
         currentUserId = response?.headers.get("x-user-id") || null;
+        // localStorage.setItem("userId", currentUserId);
+        if (currentUserId) localStorage.setItem("userId", currentUserId);
+        // console.log("Logged in user ID:", currentUserId);
+        socketInstance();
 
-        socket.emit("con", currentUserId);
-        // const socket = io("http://localhost:3000");
+        // socket.emit("con", currentUserId);
         navigate("/home");
       } else {
         showError(body.message || "Invalid username or password.");

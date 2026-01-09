@@ -35,16 +35,16 @@ fastify.register(fastifyStatic, {
 
 
 // This returns JSON for API testing
-// fastify.get('/api', (req, reply) => {
-//     return {
-//         message: 'API is running',
-//         version: '1.0.0',
-//         endpoints: {
-//             users: '/api/users',
-//             frontend: '/'
-//         }
-//     };
-// });
+fastify.get('/api', (req, reply) => {
+    return {
+        message: 'API is running',
+        version: '1.0.0',
+        endpoints: {
+            users: '/api/users',
+            frontend: '/'
+        }
+    };
+});
 
 async function start() {
     try {

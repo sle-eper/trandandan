@@ -19,21 +19,40 @@ db.prepare(`
 
 
 db.prepare(`
-    CREATE TABLE IF NOT EXISTS notification (
+CREATE TABLE IF NOT EXISTS notification (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     send INTEGER NOT NULL,
     recv INTEGER NOT NULL,
     type TEXT NOT NULL,
-    content TEXT
-    )
-    `).run();
+    content TEXT,
+    display INTEGER DEFAULT 1
+)
+`).run();
+
+
+export function changeDisplay(recvId: string) {
+    try {
+        if (!recvId) throw new Error("Invalid recvId");
+
+        db.prepare(`
+            UPDATE notification
+            SET display = 0
+            WHERE recv = ?
+        `).run(recvId);
+    } catch (err) {
+        console.error("DB changeDisplay error:", err);
+        throw new Error("Failed to change notification display");
+    }
+}
+
 
 export function saveNotif(send:string,recv:string,type:string,content:string)
 {
     try{
         if(!send||!recv||!type)
             throw new Error("Invalid data in getNotif");
-        db.prepare(`INSERT INTO notification(send,recv,type,content) VALUES(?,?,?,?)`).run(send,recv,type,content);
+         const result =db.prepare(`INSERT INTO notification(send,recv,type,content) VALUES(?,?,?,?)`).run(send,recv,type,content);
+         return String(result.lastInsertRowid);
     }catch(err)
     {
         console.error("DB saveNotif error:", err);
@@ -64,6 +83,21 @@ export async function getNotif(id: string) {
     {
         console.error("getNotif error:", err);
         return [];
+    }
+}
+export function changeDisplayOneNotif(id:string)
+{
+    try {
+        if (!id) throw new Error("Invalid recvId");
+
+        db.prepare(`
+            UPDATE notification
+            SET display = 0
+            WHERE id = ?
+        `).run(id);
+    } catch (err) {
+        console.error("DB changeDisplay error:", err);
+        throw new Error("Failed to change notification display");
     }
 }
 
@@ -157,4 +191,40 @@ export function dataOfUser(id:string):any
         throw new Error("Failed to dataOfUser");
     }
 }
+
+
+export  function checkExistingNotification(senderId: string, receiverId: string, type: string,status: string): boolean {
+  try {
+     const result =  db.prepare(
+    `SELECT id FROM notifications 
+     WHERE send = $1 
+     AND recv = $2 
+     AND type = $3 
+     AND content = $4`,
+    [senderId, receiverId, type, status]
+  ).all();
+  return result.length > 0;
+  }
+    catch (error) {
+    console.error("checkExistingNotification error:", error);
+    throw new Error("Failed to check existing notification");
+  }
+
+}
+
+export function updateNotificationStatus(notifId: string, status: string): void {
+  db.prepare(
+    `UPDATE notifications SET status = ? WHERE id = ?`
+  ).run(status, notifId);
+}
+
+export function deleteNotification(notifId: string): void {
+  db.prepare(
+    `DELETE FROM notifications WHERE id = ?`
+  ).run(notifId);
+}
+
+
+
+
 export { db };

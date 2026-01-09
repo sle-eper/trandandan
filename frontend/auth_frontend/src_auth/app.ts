@@ -13,7 +13,6 @@ import { showNotFound } from "./login/not_found";
 import { loadHome, loadGame, loadtournament, loadProfile, loadChat , load2FA } from "./login/routing";
 import { showverifyPage } from "./login/verify";
 import { spyUi } from "../../spy_frontend/src_spy/app";
-import { showMainUI } from "../../chat-frontend/src/ts/script";
 import { renderCreateTournament } from "../../tournament_frontend/src/create_tournament";
 import { renderTournamentList } from "../../tournament_frontend/src/create_tournament";
 

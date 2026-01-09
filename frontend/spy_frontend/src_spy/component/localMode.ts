@@ -1,8 +1,8 @@
 
-import spays from "../img/spays.png"
-import players from "../img/players.png"
-import sections from "../img/sections.png"
-import history from "../img/history.png"
+import spays from "../img/spays.png?inline"
+import players from "../img/players.png?inline"
+import sections from "../img/sections.png?inline"
+import history from "../img/history.png?inline"
 
 export function displayCard(index:number)
 {
