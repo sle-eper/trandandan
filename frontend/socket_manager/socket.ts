@@ -4,7 +4,7 @@ let socket: Socket | null = null;
 
 // export function initSocket(userId: string) {
 //   if (!socket) {
-//     // console.log("waaaaaaaa3");
+//     /
 //     socket = io("http://localhost:3000", {
 //       auth: { userId },
 //       autoConnect: true
@@ -15,7 +15,7 @@ let socket: Socket | null = null;
 
 // export function getSocket(): Socket {
 //   if (!socket) {
-//     // console.log("walo");
+//     /
 //     throw new Error("Socket not initialized");//TODO catch 
 //   }
 //   return socket;
@@ -27,6 +27,10 @@ export function getSocket(){
 }
 
 function getUserId(): string | null {
+   const path = window.location.pathname;
+  if (path === "/login") return null;
+  if (path === "/signup") return null;
+  if(path === "/") return null;
   const id = localStorage.getItem("userId");
   if (!id || id === "undefined" || id === "null") return null;
   return id;
@@ -35,12 +39,11 @@ function getUserId(): string | null {
 
 export function socketInstance(): Socket | null {
   const userId = getUserId();
-  console.log("socketInstance userId:", userId);
   if (!userId) return null;
 
   if (socket && socket.io.opts.auth.userId === userId)
   {
-    console.log("socketInstance existing socket returned");
+
     return socket;
   }
 
@@ -52,6 +55,5 @@ export function socketInstance(): Socket | null {
     auth: { userId },
     autoConnect: true,
   });
-  console.log("socketInstance new socket created");
   return socket;
 }

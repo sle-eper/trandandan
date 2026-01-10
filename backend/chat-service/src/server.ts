@@ -103,14 +103,14 @@ server.ready().then(() => {
               const msgId:string =  await saveMsg(id, friendId, msg, roomName, "waiting");
               const timeOfMsg:string = await getTimeOfMsg(msgId);
               const UserData = await fetchUserData(id); // get data of user from user-management service
-              console.log(UserData.user);
-              socket.to(roomName).emit("receive_message", msg, msgId ,id,timeOfMsg,UserData?.user.avatar_url);
+              console.log(UserData?.user);
+              socket.to(roomName).emit("receive_message", msg, msgId ,id,timeOfMsg,UserData?.user?.avatar_url);
               if(friendSocketId)
               {
                 for(const ids of friendSocketId)
                 {
                   socket.to(ids).emit("live", id, roomName, msg,timeOfMsg);
-                  socket.to(ids).emit("msg_notification", UserData.user.username,msg,notifId);
+                  socket.to(ids).emit("msg_notification", UserData?.user?.username,msg,notifId);
                 }
               }
             }
@@ -121,30 +121,33 @@ server.ready().then(() => {
     });
     socket.on('get_messages', async (data) => {
       try {
-        if (!data?.myId || !data?.friendId) return;
-        const roomName = getRoomName(data.myId, data.friendId);
+        console.log("get_messages event data:", data);
+        if (!data?.userID || !data?.friendId) return;
+        const roomName = getRoomName(data.userID, data.friendId);
         const limit = data.limit || 20;
         const offset = data.offset || 0;
-        await changeAllToRecv(data.myId, roomName)
-        await changeDisplay(data.myId)
+        await changeAllToRecv(data.userID, roomName)
+        await changeDisplay(data.userID)
         const messages = await getAllMsg(roomName, limit, offset);
         const UserData = await fetchUserData(data.friendId);
-        socket.emit('messages_batch', messages.reverse(), UserData?.user.avatar_url);
+        console.log("messages fetched:", messages);
+        socket.emit('messages_batch', messages.reverse(), UserData?.user?.avatar_url);
       } catch (err) {
         console.error('Error in get_messages:', err);
       }
     });
     socket.on('get_old_messages', async (data) => {
       try {
-        if (!data?.myId || !data?.friendId) return;
-        const roomName = getRoomName(data.myId, data.friendId);
+        if (!data?.userID || !data?.friendId) return;
+        const roomName = getRoomName(data.userID, data.friendId);
         const limit = data.limit || 20;
         const offset = data.offset || 0;
-        await changeAllToRecv(data.myId, roomName)
-        await changeDisplay(data.myId)
+        await changeAllToRecv(data.userID, roomName)
+        await changeDisplay(data.userID)
         const messages = await getAllMsg(roomName, limit, offset);
         const UserData = await fetchUserData(data.friendId);
-        socket.emit('messages_old_batch', messages, UserData?.user.avatar_url);
+        console.log("Old messages fetched:", messages);
+        socket.emit('messages_old_batch', messages, UserData?.user?.avatar_url);
       } catch (err) {
         console.error('Error in get_old_messages:', err);
       }
@@ -199,7 +202,6 @@ server.ready().then(() => {
           const userSocket = onlineUsers.get(id);
           const friendSocket = onlineUsers.get(data.friendId);
 
-          console.log("--------------------------");
           console.log("status1",status1)
           console.log("status2",status2)
           if(userSocket)
