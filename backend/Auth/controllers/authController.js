@@ -81,17 +81,19 @@ export async function signup_post(request, reply) {
         sameSite: "none",
         secure: true,
       })
-      .code(200).send({
+      .code(200)
+      .send({
         success: true,
         message: "Registration successful",
       });
   } catch (err) {
     console.error("Error during registration:", err);
-    return reply.code(500).send({ success: false, message: "Internal server error" });
+    return reply
+      .code(500)
+      .send({ success: false, message: "Internal server error" });
   }
   // return { accessToken: token };
 }
-
 
 // #########################################################
 //                     login post
@@ -115,6 +117,7 @@ export async function login_post(request, reply) {
   if (!match) {
     return reply
       .code(400)
+
       .send({ success: false, message: "Invalid password" });
   }
   const token = jwt.sign(
@@ -151,7 +154,8 @@ export async function logout_post(request, reply) {
       sameSite: "none",
       secure: true,
     })
-    .code(200).send({ success: true, message: "You are logged out" });
+    .code(200)
+    .send({ success: true, message: "You are logged out" });
 }
 
 // #########################################################
@@ -167,15 +171,16 @@ export async function verifyUser_get(request, reply) {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("Decoded token:", decoded.id, decoded.username);
     return reply
       .code(200)
-      .header('x-user', decoded.username)
-      .header('x-user-id', decoded.id)
+      .header("x-user", decoded.username)
+      .header("x-user-id", decoded.id)
       .send({
         authorization: true,
         message: "You are authenticated to access this resource.",
         id: decoded.id,
-        username: decoded.username
+        username: decoded.username,
       });
   } catch (err) {
     return reply.code(401).send({ error: "Not authorized" });
@@ -196,7 +201,9 @@ export async function forgetPassword_post(request, reply) {
       },
     });
     if (!row.data) {
-      return reply.code(400).send({ success: false, message: "User not found" });
+      return reply
+        .code(400)
+        .send({ success: false, message: "User not found" });
     }
     let transporter = nodemailer.createTransport({
       host: process.env.STMP_HOST,
@@ -227,25 +234,28 @@ export async function forgetPassword_post(request, reply) {
         return console.log("Error:", error);
       }
     });
-    return reply.code(200).send({ success: true, message: "Reset link sent to email" });
+    return reply
+      .code(200)
+      .send({ success: true, message: "Reset link sent to email" });
   } catch (err) {
     reply.code(500);
     return { error: "Failed to send email", details: err.message };
   }
-  //send mail with reset link 
+  //send mail with reset link
 }
 
 export async function resetPassword_post(request, reply) {
   const { token, newPassword, confirmPassword } = request.body;
   if (newPassword !== confirmPassword) {
-    return reply.code(400).send({ success: false, message: "Passwords do not match." });
+    return reply
+      .code(400)
+      .send({ success: false, message: "Passwords do not match." });
   }
   try {
     const row = await axios.get("http://user-management:3000/profile/User", {
-      params:
-      {
+      params: {
         token,
-      }
+      },
     });
     if (!row.data) {
       return reply.code(400).send({ success: false, message: "Invalid or expired token" });

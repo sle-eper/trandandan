@@ -1,6 +1,6 @@
 import { navigate } from "../app";
-import logo from "../images/pingponglogo.jpg"
-import vedio from "../images/vedio14.mp4"
+import logo from "../images/pingponglogo.jpg?inline"
+import video from "../images/vedio14.mp4?inline"
 
 export function showLandingPage(containerId = "login-app") {
   const app = document.getElementById(containerId);
@@ -47,7 +47,7 @@ export function showLandingPage(containerId = "login-app") {
 
     <!-- RIGHT -->
     <div class="flex items-center justify-center">
-      <video src=${vedio}
+      <video src=${video}
       autoplay
       muted
       loop

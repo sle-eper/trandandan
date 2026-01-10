@@ -24,7 +24,7 @@ services:
     ports: 
       - "5000:5000" 
     env_file:
-      - ./backend/Auth/.env 
+      - ./backend/.env 
     command: npm start
     volumes:
       - ./backend/Auth/DataBase:/Auth/DataBase
@@ -42,6 +42,7 @@ services:
       - ./frontend/profile_frontend/src:/app/profile_frontend/src
       - ./frontend/spy_frontend/src_spy:/app/spy_frontend/src_spy
       - ./frontend/tournament_frontend/src:/app/tournament_frontend/src
+      - ./frontend/socket_manager:/app/socket_manager
       - /app/node_modules
 
     depends_on:
@@ -81,6 +82,8 @@ services:
     volumes:
       - ./backend/chat-service/src:/app/src
       - /app/node_modules
+    env_file:
+      - ./backend/.env 
 
   # API Gateway Service
   api-gateway:
