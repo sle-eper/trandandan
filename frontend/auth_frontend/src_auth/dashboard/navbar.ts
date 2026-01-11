@@ -251,19 +251,19 @@ export async function navBarLogic() {
       getSocketInstance()?.disconnect();
       getSocket();
       // localStorage.removeItem("userId")
-      navigate("login");
+      navigate("/login");
     }
   });
 
   // ✅ PROFILE NAV
   profile?.addEventListener("click", async () => {
-    navigate("profile");
+    navigate("/profile");
   });
 
   // ✅ CHANGE ACCOUNT
   changeAccountBtn?.addEventListener("click", () => {
     document.body.classList.add("flex", "items-center", "justify-center", "px-6", "md:px-20");
-    navigate("login");
+    navigate("/login");
   });
 
   // ✅ ENABLE 2FA

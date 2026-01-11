@@ -57,8 +57,7 @@ server.ready().then(() => {
   io.on("connection", async (socket) => {
     const cookies = cookie.parse(socket.handshake.headers.cookie ?? "");
     const token = cookies.token;
-    if (!token)
-    {
+    if (!token) {
       socket.disconnect();
       return;
     }
@@ -400,11 +399,17 @@ server.ready().then(() => {
     // ***************************        Tournament event     ****************************
     // ************************************************************************************
 
-    socket.on("/tournamentcreat", async (data) => {
+    socket.on("tournament:create", async (data) => {
       console.log("tournament create event received", data);
       socket.join(data.room);
-      console.log(`User joined ${data.room}`);
+
+      // 4️⃣ Notify creator
+      socket.emit("tournament:created", data);
     });
+
+
+
+    
     socket.on("/tournamentjoin", async (data) => {
       console.log("tournament join event received", data);
       socket.join(data.room);

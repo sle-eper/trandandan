@@ -50,8 +50,8 @@ export function attachLoginHandlers() {
 
   if (!form || !btn || !usernameInput || !passwordInput) return;
 
-  if (signup) signup.addEventListener("click", () => navigate("signup"));
-  if (forgot) forgot.addEventListener("click", () => navigate("forgot"));
+  if (signup) signup.addEventListener("click", () => navigate("/signup"));
+  if (forgot) forgot.addEventListener("click", () => navigate("/forgot"));
 
   const togglePassword = document.getElementById("toggle-password");
   if (togglePassword) {

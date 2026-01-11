@@ -58,7 +58,7 @@ function attachChangepassHandlers() {
     }
     if (restult.status === 200)
     {
-      navigate("login");
+      navigate("/login");
     }
   });
 }

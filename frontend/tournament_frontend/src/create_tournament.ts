@@ -59,8 +59,8 @@ function tournamentCard(name: string, status: "Upcoming" | "Ongoing" | "Finished
     status === "Upcoming"
       ? "bg-yellow-500/20 text-yellow-400"
       : status === "Ongoing"
-      ? "bg-green-500/20 text-green-400"
-      : "bg-gray-500/20 text-gray-400";
+        ? "bg-green-500/20 text-green-400"
+        : "bg-gray-500/20 text-gray-400";
   return `
     <div class="rounded-2xl border border-white/10 p-5 flex flex-col justify-between
                 bg-gradient-to-br from-[#1a1a1d] to-[#0f0f11]">
@@ -296,11 +296,11 @@ function matchCard(player1: string, score1: string, player2: string, score2: str
 function connectorPair(width: number, height: number, yOffset: number, strokeWidth: number = 1.5) {
   const cardHeight = 56;
   const cardMidpoint = cardHeight / 2;
-  
+
   const topMatchY = yOffset + cardMidpoint;
   const bottomMatchY = yOffset + height + cardMidpoint;
   const midY = (topMatchY + bottomMatchY) / 2;
-  
+
   return `
     <line x1="0" y1="${topMatchY}" x2="20" y2="${topMatchY}" stroke="currentColor" stroke-width="${strokeWidth}"/>
     <line x1="20" y1="${topMatchY}" x2="20" y2="${midY}" stroke="currentColor" stroke-width="${strokeWidth}"/>
@@ -371,19 +371,39 @@ export function renderCreateTournament() {
       </div>
     </div>
   `;
-  
+
   document.getElementById("cancel-create-tournament")?.addEventListener("click", () => {
     navigate("/tournament");
     Tournament();
   });
-  
+  function showToast(message: string) {
+    const toast = document.createElement('div');
+    toast.className = `
+      pointer-events-auto
+      min-w-[300px] max-w-md
+      px-4 py-3 rounded-xl
+      shadow-2xl border
+      flex items-start gap-3
+      transform transition-all duration-300
+      translate-x-[400px] opacity-0
+    `;
+    toast.textContent = message;
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.transform = 'translateX(400px)';
+      toast.style.opacity = '0';
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
   document.getElementById("create")?.addEventListener("click", async () => {
     const nameInput = document.getElementById("tournament-name-input") as HTMLInputElement;
     const playersSelect = document.getElementById("max-players-select") as HTMLSelectElement;
-    
+
     currentTournament.name = nameInput.value || "New Tournament";
     currentTournament.maxPlayers = parseInt(playersSelect.value);
-    const result = await fetch("/tournament/create", {
+    const result = await fetch("/tournament/create  ", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -394,9 +414,18 @@ export function renderCreateTournament() {
       }),
     })
     if (result.ok) {
-      
-      renderTournamentBracket();
-      navigate("/tournament/bracket");
+      const socket = Socket.getSocketInstance();
+
+      // 1️⃣ LISTEN (once)
+      socket?.on("tournament:created", () => {
+        showToast("TEST NOTIFICATION");
+        console.log("Tournament created event received");
+        renderTournamentBracket();
+        navigate("/tournament/bracket");
+      });
+      socket?.emit("tournament:create", {
+        room: currentTournament.name,
+      });
     }
   });
 }
@@ -422,7 +451,7 @@ function attachEntryHandlers() {
 export function renderTournamentList() {
   const main = document.getElementById("dashboard-content");
   if (!main) return;
-  
+
   main.innerHTML = tournamentListTemplate();
   attachListHandlers();
 }
@@ -435,11 +464,10 @@ function attachListHandlers() {
 
   document.querySelectorAll(".view-bracket-btn").forEach(btn => {
     btn.addEventListener("click", async (e) => {
-      console.log("**************************************************8")
       const target = e.currentTarget as HTMLElement;
       currentTournament.name = target.dataset.tournamentName || "Tournament";
       currentTournament.maxPlayers = parseInt(target.dataset.maxPlayers || "16");
-      
+
       renderTournamentBracket();
       navigate("/tournament/bracket");
     });
@@ -450,7 +478,7 @@ export function renderTournamentBracket() {
   const main = document.getElementById("dashboard-content");
   if (!main) return;
   main.innerHTML = tournamentBracketTemplate();
-  
+
   document.getElementById("back-to-tournaments")?.addEventListener("click", async () => {
     renderTournamentList();
     navigate("/tournament/list");
