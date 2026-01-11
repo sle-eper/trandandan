@@ -131,6 +131,7 @@ export const request_to_playHandler = (from:string,friendId:string,notifId:strin
       });
 
       notif.querySelector(".reject")?.addEventListener("click", () => {
+        console.log("reject clicked", friendId);
         socketInstance()?.emit("reject_play", getCurrentUserId(),friendId);
         notif.remove();
       });

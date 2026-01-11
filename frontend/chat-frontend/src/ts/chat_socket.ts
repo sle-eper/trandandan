@@ -20,5 +20,5 @@ export function socketListener() {
 export function socketNotificationListener() {
   socketInstance()?.on('msg_notification', msg_notificationHandler);
   socketInstance()?.on("request_to_play", request_to_playHandler);
-  socketInstance()?.on("not_agree", not_agreeHandler);
+  socketInstance()?.on("not_agree", not_agreeHandler);//TODO makhedamach 
 }

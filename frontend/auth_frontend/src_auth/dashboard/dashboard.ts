@@ -6,6 +6,7 @@ import { navBarLogic } from "./navbar";
 import { sidebarLogic } from "./sidebar";
 // import { socket } from "../login/login";
 import { socketInstance } from "../../../socket_manager/socket";
+import { socketNotificationListener } from "../../../chat-frontend/src/ts/chat_socket";
 
 
 function addNotif(el: any, notification: HTMLElement) {
@@ -48,7 +49,7 @@ function addNotif(el: any, notification: HTMLElement) {
   msgNotif.innerHTML = `
     <div class="flex justify-between">
       <span class="block max-w-70 truncate">${text}</span>
-      <span class="hover:cursor-pointer close-btn">x</span>
+      <span class="hover:cursor-pointer close-btn material-symbols-outlined">close</span>
     </div>
   `;
 
@@ -134,6 +135,8 @@ function getnotif(): Promise<any[]> {
   if (nav)
   {
     nav.innerHTML = renderNavBar();
+    socketNotificationListener();
+
     if (sidebar) sidebar.innerHTML = renderSidebar();
       let notif =  await getnotif()
       const notification = document.getElementById("notification-menu");
