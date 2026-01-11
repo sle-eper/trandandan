@@ -18,12 +18,36 @@ let playerSide: 'left' | 'right' = 'left';
 let currentGameId: string | null = null;
 let leftScore = 0;
 let rightScore = 0;
-const winningScore = 11;
+const winningScore = 5;
 let leftPaddle: Paddle;
 let rightPaddle: Paddle;
 let pongBall: PongBall;
 let countdown: CountDown;
 let animationId: number | null = null;
+let winnerName: string | null = null;
+
+// Define listeners outside to allow proper removal and avoid accumulation
+const handleKeyDown = (e: KeyboardEvent) => {
+    if (!gameStarted || gameOver) return;
+
+    const myPaddle = playerSide === 'left' ? leftPaddle : rightPaddle;
+
+    if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        myPaddle.moveUp();
+    }
+    if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        myPaddle.moveDown();
+    }
+};
+
+const handleKeyUp = (e: KeyboardEvent) => {
+    const myPaddle = playerSide === 'left' ? leftPaddle : rightPaddle;
+    if (['w', 'W', 's', 'S', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+        myPaddle.stop();
+    }
+};
 
 export function initializeGame() {
     console.debug('Initializing game...');
@@ -64,10 +88,13 @@ export function initializeGame() {
     gameStarted = false;
     awaitingServe = false;
     gameOver = false;
-    aiMode = false;
-    isRemote = false;
     leftScore = 0;
     rightScore = 0;
+    currentGameId = null;
+    playerSide = 'left';
+    isRemote = false;
+    aiMode = false;
+    winnerName = null;
 
     leftPaddle = new Paddle(c, ctxt, 0, (c.height - 100) / 2, '#0ff');
     rightPaddle = new Paddle(c, ctxt, (c.width - 10), (c.height - 100) / 2, '#f0f');
@@ -146,51 +173,35 @@ function setupSocketListeners() {
     });
 
     gameSocket.socket.on('ball_update', (data: any) => {
-        if (playerSide === 'right') {
-            pongBall.syncState(data.ball);
+        if (isRemote) {
+            // If we are on the right, we must sync the ball position from the host
+            if (playerSide === 'right') {
+                pongBall.syncState(data.ball);
+            }
+            // Everyone syncs the score from the authoritative server broadcast
             leftScore = data.score.left;
             rightScore = data.score.right;
         }
     });
 
     gameSocket.socket.on('game_over', (data: any) => {
+        console.log('Game Over received:', data);
         gameOver = true;
         gameStarted = false;
-        const winnerName = data.winner?.username || 'Opponent';
+
+        // Sync final scores from server to ensure loser sees the 11 (or 5)
+        if (data.score) {
+            leftScore = data.score.left;
+            rightScore = data.score.right;
+        }
+
+        winnerName = data.winner?.username || (leftScore > rightScore ? 'Left Player' : 'Right Player');
         drawWin(winnerName + ' Wins!');
     });
 }
 
 function setupInputListeners() {
-    const handleKeyDown = (e: KeyboardEvent) => {
-        if (!gameStarted || gameOver) return;
-
-        const myPaddle = playerSide === 'left' ? leftPaddle : rightPaddle;
-
-        if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') {
-            e.preventDefault();
-            myPaddle.moveUp();
-        }
-        if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') {
-            e.preventDefault();
-            myPaddle.moveDown();
-        }
-
-        if (isRemote && currentGameId) {
-            gameSocket.socket.emit('paddle_move', { gameId: currentGameId, y: myPaddle.getY() });
-        }
-    };
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-        const myPaddle = playerSide === 'left' ? leftPaddle : rightPaddle;
-        if (['w', 'W', 's', 'S', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
-            myPaddle.stop();
-            if (isRemote && currentGameId) {
-                gameSocket.socket.emit('paddle_move', { gameId: currentGameId, y: myPaddle.getY() });
-            }
-        }
-    };
-
+    // Always remove first to avoid duplicates in SPAs
     window.removeEventListener('keydown', handleKeyDown);
     window.removeEventListener('keyup', handleKeyUp);
     window.addEventListener('keydown', handleKeyDown);
@@ -333,22 +344,23 @@ export function animate() {
         }
     }
 
+    const myPaddle = playerSide === 'left' ? leftPaddle : rightPaddle;
+    const oldY = myPaddle.getY();
+
     leftPaddle.update();
     rightPaddle.update();
+
+    // If my paddle moved, emit the new position to the server
+    if (isRemote && currentGameId && myPaddle.getY() !== oldY) {
+        gameSocket.socket.emit('paddle_move', { gameId: currentGameId, y: myPaddle.getY() });
+    }
+
     drawScores();
 
     if (gameStarted && !gameOver) {
         // Only host calculates ball in remote mode, or both in local
         if (!isRemote || playerSide === 'left') {
             const scorer = pongBall.update(leftPaddle, rightPaddle);
-
-            if (isRemote && currentGameId) {
-                gameSocket.socket.emit('ball_sync', {
-                    gameId: currentGameId,
-                    ball: pongBall.getState(),
-                    score: { left: leftScore, right: rightScore }
-                });
-            }
 
             if (scorer) {
                 if (scorer === 'left') leftScore++;
@@ -363,6 +375,15 @@ export function animate() {
                     setTimeout(() => { if (!gameOver) { pongBall.start(); gameStarted = true; } }, 1000);
                 }
             }
+
+            // ALWAYS sync after update/score increment to ensure server sees the final state
+            if (isRemote && currentGameId) {
+                gameSocket.socket.emit('ball_sync', {
+                    gameId: currentGameId,
+                    ball: pongBall.getState(),
+                    score: { left: leftScore, right: rightScore }
+                });
+            }
         }
     }
 
@@ -371,8 +392,13 @@ export function animate() {
     pongBall.draw();
 
     if (gameOver) {
-        const winner = leftScore >= winningScore ? 'Left Player' : 'Right Player';
-        drawWin(winner + ' Wins!');
+        if (isRemote) {
+            const displayWinner = winnerName || (leftScore > rightScore ? 'Left Player' : 'Right Player');
+            drawWin(displayWinner + ' Wins!');
+        } else {
+            const winner = leftScore >= winningScore ? 'Left Player' : 'Right Player';
+            drawWin(winner + ' Wins!');
+        }
     }
 }
 

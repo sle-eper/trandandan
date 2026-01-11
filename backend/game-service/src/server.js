@@ -131,11 +131,6 @@ const start = async () => {
                 userSockets.set(socket.user.username, socket.id);
                 userSockets.set(socket.user.id, socket.id);
 
-                socket.on('disconnect', () => {
-                    userSockets.delete(socket.user.username);
-                    userSockets.delete(socket.user.id);
-                });
-
                 socket.on('join_game', (gameId) => {
                     console.log(`[SOCKET] User ${socket.user.username} (ID: ${socket.user.id}) attempting to join game: ${gameId}`);
                     const game = games.get(gameId);
@@ -144,8 +139,24 @@ const start = async () => {
                         console.log(`[SOCKET] User ${socket.user.username} successfully joined room: ${gameId}`);
 
                         // Check if player already in game
-                        const isPlayer = game.players.find(p => p.id === socket.user.id);
-                        if (!isPlayer && game.players.length < 2) {
+                        let player = game.players.find(p => p.id === socket.user.id);
+
+                        // If player is already in but with a different socket, update the socketId
+                        if (player) {
+                            player.socketId = socket.id;
+                            console.log(`[SOCKET] User ${socket.user.username} re-joined with new socket`);
+
+                            if (game.status === 'playing') {
+                                // Resume game for this player
+                                socket.emit('game_start', game);
+                            } else {
+                                socket.emit('waiting_for_opponent', game);
+                            }
+                            return;
+                        }
+
+                        // New player joining
+                        if (game.players.length < 2) {
                             const side = game.players.length === 0 ? 'left' : 'right';
                             game.players.push({
                                 id: socket.user.id,
@@ -160,14 +171,32 @@ const start = async () => {
                             } else {
                                 socket.emit('waiting_for_opponent', game);
                             }
-                        } else if (isPlayer) {
-                            socket.emit('game_state', game);
                         } else {
                             socket.emit('game_full');
                         }
                     } else {
                         socket.emit('error', 'Game not found');
                     }
+                });
+
+                socket.on('disconnect', () => {
+                    userSockets.delete(socket.user.username);
+                    userSockets.delete(socket.user.id);
+                    console.log(`[SOCKET] User ${socket.user.username} disconnected`);
+                    // Find any game where this player was waiting and remove them
+                    games.forEach((game, gameId) => {
+                        if (game.status === 'waiting') {
+                            const index = game.players.findIndex(p => p.id === socket.user.id);
+                            if (index !== -1) {
+                                game.players.splice(index, 1);
+                                console.log(`[SOCKET] Removed ${socket.user.username} from waiting game ${gameId}`);
+                                if (game.players.length === 0) {
+                                    games.delete(gameId);
+                                    console.log(`[SOCKET] Deleted empty waiting game ${gameId}`);
+                                }
+                            }
+                        }
+                    });
                 });
 
                 socket.on('paddle_move', (data) => {
@@ -191,11 +220,11 @@ const start = async () => {
                         game.score = score;
                         socket.to(gameId).emit('ball_update', { ball, score });
 
-                        // Check for game over
-                        if (score.left >= 11 || score.right >= 11) {
+                        // Check for game over (Updated winning score to 5 to match frontend)
+                        if (score.left >= 5 || score.right >= 5) {
                             game.status = 'finished';
-                            const winner = score.left >= 11 ? game.players.find(p => p.side === 'left') : game.players.find(p => p.side === 'right');
-                            const loser = score.left >= 11 ? game.players.find(p => p.side === 'right') : game.players.find(p => p.side === 'left');
+                            const winner = score.left >= 5 ? game.players.find(p => p.side === 'left') : game.players.find(p => p.side === 'right');
+                            const loser = score.left >= 5 ? game.players.find(p => p.side === 'right') : game.players.find(p => p.side === 'left');
 
                             fastify.io.to(gameId).emit('game_over', { winner, score });
 
