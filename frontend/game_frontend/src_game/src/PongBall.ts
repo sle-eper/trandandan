@@ -125,4 +125,20 @@ export class PongBall {
         this.y += this.incrementHeight;
         return null;
     }
+
+    syncState(state: { x: number, y: number, dx: number, dy: number }) {
+        this.x = state.x;
+        this.y = state.y;
+        this.incrementWidth = state.dx;
+        this.incrementHeight = state.dy;
+    }
+
+    getState() {
+        return {
+            x: this.x,
+            y: this.y,
+            dx: this.incrementWidth,
+            dy: this.incrementHeight
+        };
+    }
 }
