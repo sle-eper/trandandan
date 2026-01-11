@@ -174,12 +174,7 @@ export function onScroll() {
     const userID = getCurrentUserId();
     let offset: number = 0;
     if (!firestOne) {
-    console.log("first one emit get_messages UserID:", userID, "FriendID:", friendId);
-    if(socketInstance())
-    {
-        console.log("Emitting get_messages");
         socketInstance()?.emit("get_messages", { userID, friendId, limit: 20, offset });
-    }
     firestOne = true;
     }
     const chatZone = document.getElementById("chat-zone");

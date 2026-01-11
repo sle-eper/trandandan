@@ -26,6 +26,8 @@ server.register(fastifyIO, {
   }
 });
 
+
+//TODO khasni nb9a nkhedm b user id mn socket
 export const onlineUsers = new Map<string, Set<string>>();
 
 server.get('/online/:id', (req, res) => {
@@ -121,13 +123,13 @@ server.ready().then(() => {
     });
     socket.on('get_messages', async (data) => {
       try {
-        console.log("get_messages event data:", data);
-        if (!data?.userID || !data?.friendId) return;
-        const roomName = getRoomName(data.userID, data.friendId);
+        const userID = socket.data.userId;
+        if (!userID || !data?.friendId) return;
+        const roomName = getRoomName(userID, data.friendId);
         const limit = data.limit || 20;
         const offset = data.offset || 0;
-        await changeAllToRecv(data.userID, roomName)
-        await changeDisplay(data.userID)
+        await changeAllToRecv(userID, roomName)
+        await changeDisplay(userID)
         const messages = await getAllMsg(roomName, limit, offset);
         const UserData = await fetchUserData(data.friendId);
         console.log("messages fetched:", messages);
@@ -138,12 +140,13 @@ server.ready().then(() => {
     });
     socket.on('get_old_messages', async (data) => {
       try {
-        if (!data?.userID || !data?.friendId) return;
-        const roomName = getRoomName(data.userID, data.friendId);
+        const userID = socket.data.userId;
+        if (!userID  || !data?.friendId) return;
+        const roomName = getRoomName(userID, data.friendId);
         const limit = data.limit || 20;
         const offset = data.offset || 0;
-        await changeAllToRecv(data.userID, roomName)
-        await changeDisplay(data.userID)
+        await changeAllToRecv(userID, roomName)
+        await changeDisplay(userID)
         const messages = await getAllMsg(roomName, limit, offset);
         const UserData = await fetchUserData(data.friendId);
         console.log("Old messages fetched:", messages);
@@ -154,7 +157,6 @@ server.ready().then(() => {
     });
     socket.on("get_friends", async () => {
       try {
-        // console.log("get_friends event triggered");
         const id = socket.data.userId
         if (!id) return;
         const friends = await getFriendsOfUser(id);
