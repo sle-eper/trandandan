@@ -20,7 +20,6 @@ export async function createTournament_post(request, reply) {
         });
     }
     const nickname = existingUser.data.display_name;
-    console.log("Creating tournament for user:",existingUser.data);
     const {tournamentname, maxPlayers} = request.body;
     const db = getDatabase();
     console.log(nickname, userid, tournamentname, maxPlayers);
@@ -41,11 +40,11 @@ export async function createTournament_post(request, reply) {
                 VALUES(?, ?,?)`,
             [nickname, result.lastID, userid]
         );
-        await axios.post("http://chat-service:3000/notify", {
-            userids : [userid],
-            type: "tournamentcreat",
-            data: { tournamentId: result.lastID, room: tournamentname }
-        });
+        // await axios.post("http://chat-service:3000/notify", {
+        //     userids : [userid],
+        //     type: "tournamentcreat",
+        //     data: { tournamentId: result.lastID, room: tournamentname }
+        // });
     }
     catch (error) {
         console.log(error);

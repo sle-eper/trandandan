@@ -103,7 +103,7 @@ addRoute("/chat", () =>
 // );
 
 
-addRoute("/tournement", () =>
+addRoute("/tournament", () =>
   protectedRoute(() => {
     showDashboard();
     loadtournament();
@@ -146,7 +146,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     "/game",
     "/chat",
     "/profile",
-    "/tournement",
+    "/tournament",
     "/2FA"
   ];
 

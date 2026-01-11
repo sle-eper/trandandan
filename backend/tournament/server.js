@@ -5,7 +5,7 @@ import TourRoutes from './src/tournament/tournament.controller.js'
 import { initializeDatabase } from './config/database.js'
 const fastify = Fastify({ logger: true });
 await fastify.register(cors, {
-  origin: "http://localhost:5173",
+  origin: "https://localhost:8443",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type"],
 });

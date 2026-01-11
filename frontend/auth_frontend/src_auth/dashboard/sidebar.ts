@@ -41,7 +41,7 @@ export function renderSidebar(): string {
             </span>
           </a>
 
-          <a href="/tournement" data-route>
+          <a href="/tournament" data-route>
             <span id="btn-tourn" class="material-symbols-outlined 
               transition duration-300 ease-in-out 
               hover:scale-110 text-[#fff] hover:text-[#fff]
@@ -153,7 +153,7 @@ export function sidebarLogic() {
     "/home": "btn-home",
     "/game": "btn-game",
     "/chat": "btn-chat",
-    "/tournement": "btn-tourn",
+    "/tournament": "btn-tourn",
     "/profile": "btn-profile",
   };
 

@@ -1,5 +1,5 @@
 import { navigate } from "../../auth_frontend/src_auth/app"
-
+import * as Socket from "../../socket_manager/socket";
 /* =======================
    TOURNAMENT STATE
 ======================= */
@@ -373,19 +373,31 @@ export function renderCreateTournament() {
   `;
   
   document.getElementById("cancel-create-tournament")?.addEventListener("click", () => {
-    navigate("/tournement");
+    navigate("/tournament");
     Tournament();
   });
   
-  document.getElementById("create")?.addEventListener("click", () => {
+  document.getElementById("create")?.addEventListener("click", async () => {
     const nameInput = document.getElementById("tournament-name-input") as HTMLInputElement;
     const playersSelect = document.getElementById("max-players-select") as HTMLSelectElement;
     
     currentTournament.name = nameInput.value || "New Tournament";
     currentTournament.maxPlayers = parseInt(playersSelect.value);
-    
-    renderTournamentBracket();
-    navigate("/tournement/bracket");
+    const result = await fetch("/tournament/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        tournamentname: currentTournament.name,
+        maxPlayers: currentTournament.maxPlayers,
+      }),
+    })
+    if (result.ok) {
+      
+      renderTournamentBracket();
+      navigate("/tournament/bracket");
+    }
   });
 }
 
@@ -399,11 +411,11 @@ export function Tournament() {
 function attachEntryHandlers() {
   document.getElementById("view-tournaments-btn")?.addEventListener("click", () => {
     renderTournamentList();
-    navigate("/tournement/list");
+    navigate("/tournament/list");
   });
   document.getElementById("create-tournament-btn")?.addEventListener("click", () => {
     renderCreateTournament();
-    navigate("/tournement/create");
+    navigate("/tournament/create");
   });
 }
 
@@ -418,17 +430,18 @@ export function renderTournamentList() {
 function attachListHandlers() {
   document.getElementById("back-to-entry")?.addEventListener("click", () => {
     Tournament();
-    navigate("/tournement");
+    navigate("/tournament");
   });
 
   document.querySelectorAll(".view-bracket-btn").forEach(btn => {
-    btn.addEventListener("click", (e) => {
+    btn.addEventListener("click", async (e) => {
+      console.log("**************************************************8")
       const target = e.currentTarget as HTMLElement;
       currentTournament.name = target.dataset.tournamentName || "Tournament";
       currentTournament.maxPlayers = parseInt(target.dataset.maxPlayers || "16");
       
       renderTournamentBracket();
-      navigate("/tournement/bracket");
+      navigate("/tournament/bracket");
     });
   });
 }
@@ -438,8 +451,8 @@ export function renderTournamentBracket() {
   if (!main) return;
   main.innerHTML = tournamentBracketTemplate();
   
-  document.getElementById("back-to-tournaments")?.addEventListener("click", () => {
+  document.getElementById("back-to-tournaments")?.addEventListener("click", async () => {
     renderTournamentList();
-    navigate("/tournement/list");
+    navigate("/tournament/list");
   });
 }

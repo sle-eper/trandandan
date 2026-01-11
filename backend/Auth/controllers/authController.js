@@ -126,7 +126,7 @@ export async function login_post(request, reply) {
     { expiresIn: "10000h" }
   );
   // ✅ Send JWT in cookie
-  reply
+  return reply
     .setCookie("token", token, {
       path: "/",
       httpOnly: true,
@@ -165,13 +165,11 @@ export async function logout_post(request, reply) {
 export async function verifyUser_get(request, reply) {
   const token = request.cookies.token;
   if (!token) {
-    console.log("--------------------soumaya not authirized       ")
     return reply.code(401).send({ error: "Not Authorized" });
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("Decoded token:", decoded.id, decoded.username);
     return reply
       .code(200)
       .header("x-user", decoded.username)
