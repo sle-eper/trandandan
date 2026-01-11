@@ -27,8 +27,8 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
-
 export async function showMainUI() {
+  socketListener();
   const response = await fetch("/auth/verify", {
     method: "GET",
     headers: { "Content-Type": "application/json" },
@@ -45,8 +45,8 @@ export async function showMainUI() {
 
   // let chatZone: HTMLDivElement;
   let dmZone: HTMLElement | null;
+  
   if (chatContent) {
-    socketListener();
     chatContent.classList.add("gap-6", "gap-y-3");
     const friends = await fetchListOfFriends();
     console.table(friends.waitingMsg);
