@@ -114,8 +114,9 @@ export async function showDashboard() {
         });
         console.log("response status:", response.status);
         const responseJson = await response.json();
-        const myId = responseJson.id;
-        setCurrentUserId(String(myId)); // Set global ID for chat interactions
+        const myId = String(responseJson.id);
+        localStorage.setItem("userId", myId); // Persist for socket.ts
+        setCurrentUserId(myId); // Set global for chat handlers
         console.log("user id ", myId);
 
         socketInstance()?.once("notif", (data) => {

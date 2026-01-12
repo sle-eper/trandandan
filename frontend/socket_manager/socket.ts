@@ -22,17 +22,19 @@ let socket: Socket | null = null;
 // }
 
 
-export function getSocket(){
+export function getSocket() {
   socket = null;
 }
 
 function getUserId(): string | null {
-   const path = window.location.pathname;
+  const path = window.location.pathname;
   if (path === "/login") return null;
   if (path === "/signup") return null;
-  if(path === "/") return null;
-  const id = localStorage.getItem("userId");
+  if (path === "/") return null;
+  let id = localStorage.getItem("userId");
   if (!id || id === "undefined" || id === "null") return null;
+  id = id.trim();
+  if (!id) return null;
   return id;
 }
 
@@ -41,8 +43,8 @@ export function socketInstance(): Socket | null {
   const userId = getUserId();
   if (!userId) return null;
 
-  if (socket && socket.io.opts.auth.userId === userId)
-  {
+  const opts = socket?.io.opts as any;
+  if (socket && opts?.auth && opts.auth.userId === userId) {
 
     return socket;
   }

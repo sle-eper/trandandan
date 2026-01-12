@@ -131,12 +131,21 @@ const start = async () => {
                 userSockets.set(socket.user.username, socket.id);
                 userSockets.set(socket.user.id, socket.id);
 
-                socket.on('join_game', (gameId) => {
-                    console.log(`[SOCKET] User ${socket.user.username} (ID: ${socket.user.id}) attempting to join game: ${gameId}`);
+                socket.on('join_game', (data) => {
+                    // Support both old string format and new object format { gameId, side }
+                    let gameId, requestedSide;
+                    if (typeof data === 'string') {
+                        gameId = data;
+                    } else {
+                        gameId = data.gameId;
+                        requestedSide = data.side;
+                    }
+
+                    console.log(`[SOCKET] User ${socket.user.username} attempting to join game: ${gameId} (Requested side: ${requestedSide || 'any'})`);
 
                     let game = games.get(gameId);
 
-                    // Lazy Creation: If game doesn't exist (e.g. from chat challenge), create it
+                    // Lazy Creation
                     if (!game) {
                         console.log(`[SOCKET] Game ${gameId} not found, creating it...`);
                         game = {
@@ -157,13 +166,11 @@ const start = async () => {
                         // Check if player already in game
                         let player = game.players.find(p => p.id === socket.user.id);
 
-                        // If player is already in but with a different socket, update the socketId
                         if (player) {
                             player.socketId = socket.id;
                             console.log(`[SOCKET] User ${socket.user.username} re-joined with new socket`);
 
                             if (game.status === 'playing') {
-                                // Resume game for this player
                                 socket.emit('game_start', game);
                             } else {
                                 socket.emit('waiting_for_opponent', game);
@@ -173,7 +180,18 @@ const start = async () => {
 
                         // New player joining
                         if (game.players.length < 2) {
-                            const side = game.players.length === 0 ? 'left' : 'right';
+                            // Determine side: use requested if available and free, otherwise take whatever is left
+                            let side;
+                            const occupiedSides = game.players.map(p => p.side);
+
+                            if (requestedSide && !occupiedSides.includes(requestedSide)) {
+                                side = requestedSide;
+                            } else {
+                                side = occupiedSides.includes('left') ? 'right' : 'left';
+                            }
+
+                            console.log(`[SOCKET] Assigning ${socket.user.username} to side: ${side}`);
+
                             game.players.push({
                                 id: socket.user.id,
                                 username: socket.user.username,

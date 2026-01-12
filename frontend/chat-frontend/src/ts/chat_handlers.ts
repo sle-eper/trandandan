@@ -239,7 +239,7 @@ export const user_offlineHandler = (userId: string) => {
   });
 };
 export const start_gameHandler = (data: { gameId: string, side: string }) => {
-  console.log('Starting remote game from chat challenge:', data.gameId);
-  // Redirect using the SPA router navigate function
-  navigate(`/game/pong?gameId=${data.gameId}`);
+  console.log('Starting remote game from chat challenge:', data.gameId, 'as side:', data.side);
+  // Redirect using the SPA router navigate function, passing both gameId and side
+  navigate(`/game/pong?gameId=${data.gameId}&side=${data.side}`);
 };

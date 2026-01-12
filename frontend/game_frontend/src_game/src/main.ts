@@ -2,6 +2,7 @@ import { Paddle } from './Paddle';
 import { PongBall } from './PongBall';
 import CountDown from './CountDown';
 import '../css/gameCountDown.css';
+import '../css/gameLobby.css';
 import { gameSocket } from './services/gameSocket';
 
 console.debug('Game module loaded');
@@ -10,7 +11,6 @@ console.debug('Game module loaded');
 let c: HTMLCanvasElement;
 let ctxt: CanvasRenderingContext2D;
 let gameStarted = false;
-let awaitingServe = false;
 let gameOver = false;
 let aiMode = false;
 let isRemote = false;
@@ -30,22 +30,59 @@ let winnerName: string | null = null;
 const handleKeyDown = (e: KeyboardEvent) => {
     if (!gameStarted || gameOver) return;
 
-    const myPaddle = playerSide === 'left' ? leftPaddle : rightPaddle;
+    if (isRemote) {
+        const myPaddle = playerSide === 'left' ? leftPaddle : rightPaddle;
+        if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            myPaddle.moveUp();
+        }
+        if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            myPaddle.moveDown();
+        }
+    } else {
+        // Local mode
+        const leftUp = e.key === 'w' || e.key === 'W' || (aiMode && e.key === 'ArrowUp');
+        const leftDown = e.key === 's' || e.key === 'S' || (aiMode && e.key === 'ArrowDown');
 
-    if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') {
-        e.preventDefault();
-        myPaddle.moveUp();
-    }
-    if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') {
-        e.preventDefault();
-        myPaddle.moveDown();
+        if (leftUp) {
+            e.preventDefault();
+            leftPaddle.moveUp();
+        }
+        if (leftDown) {
+            e.preventDefault();
+            leftPaddle.moveDown();
+        }
+
+        if (!aiMode) {
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                rightPaddle.moveUp();
+            }
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                rightPaddle.moveDown();
+            }
+        }
     }
 };
 
 const handleKeyUp = (e: KeyboardEvent) => {
-    const myPaddle = playerSide === 'left' ? leftPaddle : rightPaddle;
-    if (['w', 'W', 's', 'S', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
-        myPaddle.stop();
+    if (isRemote) {
+        const myPaddle = playerSide === 'left' ? leftPaddle : rightPaddle;
+        if (['w', 'W', 's', 'S', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+            myPaddle.stop();
+        }
+    } else {
+        // Local mode
+        const leftKey = ['w', 'W', 's', 'S'].includes(e.key) || (aiMode && ['ArrowUp', 'ArrowDown'].includes(e.key));
+        if (leftKey) {
+            leftPaddle.stop();
+        }
+
+        if (!aiMode && ['ArrowUp', 'ArrowDown'].includes(e.key)) {
+            rightPaddle.stop();
+        }
     }
 };
 
@@ -86,7 +123,6 @@ export function initializeGame() {
     c = canvas;
     ctxt = ctx;
     gameStarted = false;
-    awaitingServe = false;
     gameOver = false;
     leftScore = 0;
     rightScore = 0;
@@ -208,15 +244,38 @@ function setupInputListeners() {
     window.addEventListener('keyup', handleKeyUp);
 }
 
+const showGameView = () => {
+    const lobby = document.getElementById('game-lobby');
+    const container = document.getElementById('game-container');
+    if (lobby) lobby.classList.add('hidden');
+    if (container) container.classList.remove('hidden');
+};
+
 function setupMenuButtons() {
+    const toggleJoin = document.getElementById('toggle-join');
+    const joinSection = document.getElementById('join-section');
+
+    if (toggleJoin && joinSection) {
+        toggleJoin.onclick = () => {
+            joinSection.classList.toggle('hidden');
+            toggleJoin.innerText = joinSection.classList.contains('hidden') ? 'Or join an existing match with ID' : 'Hide join section';
+        };
+    }
+
     const btnRemote = document.getElementById('btn-remote');
     if (btnRemote) {
-        btnRemote.onclick = startRemoteGame;
+        btnRemote.onclick = () => {
+            showGameView();
+            startRemoteGame();
+        };
     }
 
     const btnJoin = document.getElementById('btn-join');
     if (btnJoin) {
-        btnJoin.onclick = joinMatch;
+        btnJoin.onclick = () => {
+            // joinMatch handles its own showGameView if successful or starting
+            joinMatch();
+        };
     }
 
     const btnAI = document.getElementById('btn-ai');
@@ -224,6 +283,7 @@ function setupMenuButtons() {
         btnAI.onclick = () => {
             aiMode = true;
             isRemote = false;
+            showGameView();
             countdown.start(() => { gameStarted = true; pongBall.start(); });
         };
     }
@@ -233,6 +293,7 @@ function setupMenuButtons() {
         btnFriend.onclick = () => {
             aiMode = false;
             isRemote = false;
+            showGameView();
             countdown.start(() => { gameStarted = true; pongBall.start(); });
         };
     }
@@ -254,7 +315,7 @@ async function startRemoteGame() {
 
         const emitJoin = () => {
             console.log('Socket connected, emitting join_game for creator');
-            gameSocket.socket.emit('join_game', gameId);
+            gameSocket.socket.emit('join_game', { gameId, side: 'left' });
         };
 
         if (gameSocket.socket.connected) {
@@ -302,11 +363,16 @@ async function joinMatch() {
     });
 
     const performJoin = () => {
+        const lobby = document.getElementById('game-lobby');
+        const container = document.getElementById('game-container');
+        if (lobby) lobby.classList.add('hidden');
+        if (container) container.classList.remove('hidden');
+
         if (infoBox) infoBox.innerText = 'Joining match...';
         currentGameId = gameId;
         isRemote = true;
         playerSide = 'right';
-        gameSocket.socket.emit('join_game', gameId);
+        gameSocket.socket.emit('join_game', { gameId, side: 'right' });
     };
 
     if (gameSocket.socket.connected) {
@@ -319,12 +385,27 @@ async function joinMatch() {
 function checkUrlForGame() {
     const params = new URLSearchParams(window.location.search);
     const gameId = params.get('gameId');
+    const sideParam = params.get('side');
+
     if (gameId) {
+        console.log('Automatic join from URL:', gameId, 'Side:', sideParam);
+        showGameView();
         gameSocket.connect();
         currentGameId = gameId;
         isRemote = true;
-        playerSide = 'right';
-        gameSocket.socket.emit('join_game', gameId);
+        // Default to right if joining via URL (acceptor/friend), but respect sideParam if present
+        playerSide = (sideParam === 'left' || sideParam === 'right') ? sideParam : 'right';
+
+        const emitJoin = () => {
+            console.log('Emitting join_game from URL with side:', playerSide);
+            gameSocket.socket.emit('join_game', { gameId, side: playerSide });
+        };
+
+        if (gameSocket.socket.connected) {
+            emitJoin();
+        } else {
+            gameSocket.socket.once('connect', emitJoin);
+        }
     }
 }
 
