@@ -2,6 +2,8 @@
 import { signupTemplate, sharedImage } from "./templates";
 import { navigate } from "../app";
 import { signupUser } from "./api";
+import { socketInstance } from "../../../socket_manager/socket";
+// import { socket } from "./login";
 
 export function showSignupPage(containerId = "login-app") {
   const app = document.getElementById(containerId);
@@ -67,6 +69,7 @@ function attachSignupHandlers() {
 
       if (result.success) {
         console.log("-------------------------")//TODO add socket connection here
+        
         navigate("/home"); // ✅ go to login on success
       } else {
         showSignupError(result.message || "Signup failed.");

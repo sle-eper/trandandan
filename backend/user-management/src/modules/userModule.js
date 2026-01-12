@@ -200,6 +200,14 @@ class UserModule {
             'SELECT id, username, display_name, email, online_status FROM users'
         );
     }
+    async updateStatus(userId, status) {
+        await this.db.run(
+            `UPDATE users 
+           SET online_status = ?, last_seen = CURRENT_TIMESTAMP 
+           WHERE id = ?`,
+            [status, userId]
+        );
+    }
 }
 
 export default UserModule;

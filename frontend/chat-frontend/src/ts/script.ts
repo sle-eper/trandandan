@@ -1,477 +1,68 @@
-// import { io } from "socket.io-client";
-// const socket = io("http://localhost:3000");
-// const socket = io("http://localhost:8080/api/chat", {
-//     path: "/socket.io",
-//     withCredentials: true, // Send cookies for auth
-//     transports: ['websocket', 'polling']
-// });
-// import { socket } from "../../src_auth/login/login";
-import { socket } from "../../../auth_frontend/src_auth/login/login";
+// import { socket } from "../../../auth_frontend/src_auth/login/login";
+import { socketInstance } from "../../../socket_manager/socket";
+import { PlayerProfileManager } from "../../../profile_frontend/src/components/FriendRequest";
+import { socketListener } from "./chat_socket";
+import {setupPopupEvents ,onScroll,fetchListOfFriends,resetScrollState} from "./chat_ui_tools";
+// import { currentUserId } from "../../../auth_frontend/src_auth/login/login";
+import { setFriendId, setImInRoom , getFriendId, setCurrentUserId } from "./global_var";
+// const socket = socketInstance;
 
 import {
-  lastMsg,
   chatZones,
   listOfMsg,
   DM,
-  sendMsg,
-  receivedMsg,
   profileNav,
-  inputMsg,
   choseFriend,
   generateBlockButton,
 } from "../components/content";
 
-let myImg: string = "";
-let imInRoom: string = "";
-let friendId: string = "";
-let userID: string = "";
 
-function moveUp(id: string) {
-  const container = document.getElementById("list-of-msg");
-  if(!container)
-    return;
-  const target = Array.from(container.children).find(
-    (el) => el.dataset.id == id
-  );
-  if (target) container?.prepend(target);
-}
+
 window.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
-    imInRoom = "";
-    friendId = "";
+    setImInRoom("");
+    setFriendId("");
     const dmZone = document.getElementById("DM");
     if (dmZone) dmZone.innerHTML = choseFriend();
   }
 });
 
-function setupPopupEvents() {
-  //Ai
-  const blockButton = document.getElementById("block-button");
-  const unblockButton = document.getElementById("unblock-button");
-  const blockOption = document.getElementById("block-option");
-  const unblockOption = document.getElementById("unblock-option");
-  const sendButton = document.getElementById(
-    "send-button"
-  ) as HTMLButtonElement;
-
-  if (blockButton && blockOption) {
-    blockButton.addEventListener("click", () =>
-      blockOption.classList.remove("hidden")
-    );
-  }
-
-  if (unblockButton && unblockOption) {
-    unblockButton.addEventListener("click", () =>
-      unblockOption.classList.remove("hidden")
-    );
-  }
-  function getTime(): string {
-    const date = new Date();
-    const h: string = date.getHours().toString().padStart(2, "0");
-    const m: string = date.getMinutes().toString().padStart(2, "0");
-    return `${h}:${m}`;
-  }
-  const textarea = document.getElementById(
-    "input-msg-zone"
-  ) as HTMLTextAreaElement;
-
-  textarea?.addEventListener("input", () => {
-    if (textarea.value.trim() === "") {
-      textarea.style.overflow = "hidden";
-    } else {
-      // textarea.style.padding = "10px"
-      textarea.style.overflow = "auto";
-    }
-  });
-
-  if (sendButton) {
-    function showToast(message: string, duration = 3000) {//TODO hadi khasha twli pro chewiya
-      const container = document.getElementById("err-display");
-      if(!container)return;
-      container.innerHTML = "";
-      const notif = document.createElement("div");
-      notif.id = "error-notification";
-      notif.className = `
-        gap-3
-        px-4 py-2 rounded-2xl text-center
-        bg-[#1a1a1a]/90 border border-[#FD1D1D]/40
-        shadow-lg backdrop-blur-lg
-        animate-slide-in
-      `;
-
-      notif.innerText = `${message}`;
-
-      container.appendChild(notif);
-      setTimeout(()=>{
-        notif.remove()
-      },duration);
-    }
-
-    function send_message() {
-      const value: string = textarea.value;
-      if (value.trim()) {
-        if(value.length > 2000)
-        {
-          showToast("You cannot send more than 2000 characters");
-          return
-        }
-
-        const chatZone = document.getElementById("chat-zone") as HTMLDivElement;
-        const msgTime = document.getElementById(`time-of-msg-${friendId}`);
-        const time = getTime();
-        chatZone.innerHTML += sendMsg(value, time, myImg);
-        socket.emit("send_message", { value, userID, friendId });
-        moveUp(friendId);
-        const container = document.getElementById(
-          `container-of-last-msg-of-${friendId}`
-        );
-        chatZone.scrollTop = chatZone.scrollHeight;
-        if (container) container.innerHTML = lastMsg("send", value, friendId);
-        if (msgTime) msgTime.innerHTML = time;
-      }
-      textarea.value = "";
-      textarea.style.overflow = "hidden";
-      textarea.focus();
-    }
-    sendButton.addEventListener("click", () => {
-      send_message();
-    });
-    textarea.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        send_message();
-      }
-    });
-  }
-}
-
-function socketListener() {
-  socket.on("live", (id, roomName, msg, timeOfMsg) => {
-    moveUp(id);
-    // console.log("id", id);
-    const timeOfMsgSpan: HTMLSpanElement = document.getElementById(
-      `time-of-msg-${id}`
-    ) as HTMLSpanElement;
-    if (roomName !== imInRoom) {
-      const counterElement: HTMLDivElement = document.getElementById(
-        `counter-of-${id}`
-      ) as HTMLDivElement;
-      if (counterElement?.classList.contains("hidden"))
-        counterElement?.classList.remove("hidden");
-
-      let counterElementValue: number = Number(counterElement.textContent);
-      ++counterElementValue;
-      if (counterElementValue <= 9)
-        counterElement.innerText =
-          String(counterElementValue);
-      else if (counterElementValue > 9) counterElement.innerText = "+9";
-      const containerMsg = document.getElementById(`container-of-last-msg-of-${id}`);
-      if (containerMsg) containerMsg.innerHTML = lastMsg("recv", msg, id);
-      if (timeOfMsgSpan) timeOfMsgSpan.innerText = timeOfMsg;
-    }
-  });
-  socket.on("receive_message", (msg, msgId, friendId, timeOfMsg, friendImg) => {
-    console.log('image received in chat script:', friendImg);
-    const chatZone = document.getElementById("chat-zone") as HTMLDivElement;
-    // console.log("recvMsg",chatZone)
-    chatZone?.insertAdjacentHTML("beforeend",receivedMsg(msg, timeOfMsg, friendImg));
-    socket.emit("ack_message", msgId);
-    const containerMsg = document.getElementById(`container-of-last-msg-of-${friendId}`);
-if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
-    // const container = document.getElementById(`container-of-last-msg-of-${friendId}`);
-  });
-  socket.on("allowMsg", (allow: boolean) => {
-    const msg = document.getElementById("x");
-    if (msg && allow) msg.innerHTML = inputMsg("accepted");
-    else if (msg && !allow) msg.innerHTML = inputMsg("blocked");
-    setupPopupEvents();
-  });
-  socket.on("blockOrAccepted", (roomName, statusGlobal) => {
-    const dm = document.getElementById("DM");
-    if (dm && dm.dataset.roomName == roomName) {
-      const msg = document.getElementById("x");
-      if (msg) msg.innerHTML = inputMsg(statusGlobal);
-      setupPopupEvents();
-    }
-  });
-  socket.on("messages_batch", (messages, friendImg) => {
-    const chatZone = document.getElementById("chat-zone") as HTMLDivElement;
-    for (const msg of messages) {
-      if (msg.send == userID)
-        chatZone.insertAdjacentHTML(
-          "beforeend",
-          sendMsg(msg.msg, msg.time)
-        );
-      else
-        chatZone.insertAdjacentHTML(
-          "beforeend",
-          receivedMsg(msg.msg, msg.time, friendImg)
-        );
-    }
-    requestAnimationFrame(() => {
-      chatZone.scrollTop = chatZone.scrollHeight;
-    });
-  });
-  socket.on("messages_old_batch", (messages, friendImg) => {
-    const chatZone = document.getElementById("chat-zone") as HTMLDivElement;
-    for (const msg of messages) {
-      if (msg.send == userID)
-        chatZone.insertAdjacentHTML(
-          "afterbegin",
-          sendMsg(msg.msg, msg.time)
-        );
-      else
-        chatZone.insertAdjacentHTML(
-          "afterbegin",
-          receivedMsg(msg.msg, msg.time, friendImg)
-        );
-    }
-  });
-  socket.on("setIMg", (img) => {
-    myImg = img;
-  });
-  socket.on("request_to_play", (from,friendId) => {
-      const notification = document.getElementById("notification-menu");
-      const container = document.getElementById("play-notification-container");
-      if (!container) return;
-
-      if (document.getElementById("play-notification")) return;
-      container.innerHTML = "";
-
-      const notif = document.createElement("div");
-      notif.id = "play-notification";
-      notif.className = `
-        flex items-center justify-between gap-3
-        w-full px-4 py-2 rounded-2xl
-        bg-[#1a1a1a]/90 border border-[#FD1D1D]/40
-        shadow-lg backdrop-blur-lg
-        animate-slide-in
-      `;
-
-      notif.innerHTML = `
-        <span class="text-sm text-white truncate">
-          🎮 <strong>${from}</strong> wants to play
-        </span>
-
-        <div class="flex gap-2 shrink-0">
-          <button class="accept px-3 py-1 text-xs font-bold rounded-lg
-                        bg-green-500/80 hover:bg-green-500 transition">
-            Accept
-          </button>
-          <button class="reject px-3 py-1 text-xs font-bold rounded-lg
-                        bg-red-500/80 hover:bg-red-500 transition">
-            Reject
-          </button>
-        </div>
-      `;
-
-      container.appendChild(notif);
-
-      notif.querySelector(".accept").onclick = () => {
-        socket.emit("accept_play", userID,friendId );
-        notif.remove();
-      };
-
-      notif.querySelector(".reject").onclick = () => {
-        socket.emit("reject_play", userID,friendId);
-        notif.remove();
-      };
-
-    const msgNotif = document.createElement("div");
-    msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
-                  transition rounded-lg`
-    msgNotif.innerHTML = `
-      <span class="block max-w-70 truncate">
-        🎮 <strong>${from}</strong> wants to play
-      </span>
-    `;
-    notification?.prepend(msgNotif);
-
-
-      setTimeout(() => {
-        notif.remove();
-      }, 10000);
-  });
-  socket.on("not_agree", (from ) => {
-    const container = document.getElementById("play-notification-container");
-    const notification = document.getElementById("notification-menu");
-
-    
-    if (!container) return;
-
-    container.innerHTML = "";
-
-    const notif = document.createElement("div");
-    notif.className = `
-      flex items-center justify-between
-      w-full px-4 py-2 rounded-2xl
-      bg-[#1a1a1a]/90 border border-red-500/40
-      text-red-400
-      shadow-lg backdrop-blur-lg
-      animate-slide-in
-    `;
-
-    notif.innerHTML = `
-      <span class="text-sm truncate">
-        ❌ <strong>${from}</strong> rejected your play request
-      </span>
-    `;
-
-    container.appendChild(notif);
-    const challenge  = document.getElementById(
-      "challenge-option"
-    )
-    const textEl = challenge?.querySelector("p");
-    const iconEl = challenge?.querySelector("span");
-    // const originalText = textEl?.textContent;
-    challenge?.classList.remove(
-      "opacity-50",
-      "cursor-not-allowed",
-      "pointer-events-none"
-    );
-
-
-    clearInterval(challenge.dataset.intervalId);
-    textEl.textContent = 'Challenge';
-    iconEl?.classList.remove("opacity-0");
-
-    const msgNotif = document.createElement("div");
-    msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
-                  transition rounded-lg`
-    msgNotif.innerHTML = `
-      <span class="block max-w-70 truncate">
-        ❌ <strong>${from}</strong> rejected your play request
-      </span>
-    `;
-    notification?.prepend(msgNotif);
-
-    setTimeout(() => {
-      notif.remove();
-    }, 3000);
-  });
-  socket.on('msg_notification',(from , msg)=>{
-    const container = document.getElementById("play-notification-container");
-    const notification = document.getElementById("notification-menu");
-    if (!container) return;
-
-    container.innerHTML = "";
-
-    const notif = document.createElement("div");
-    notif.className = `
-      flex items-center justify-between gap-3
-      w-full px-4 py-2 rounded-2xl
-      bg-[#1a1a1a]/90 border border-[#FD1D1D]/40
-      shadow-lg backdrop-blur-lg
-      animate-slide-in
-    `;
-
-
-    notif.innerHTML = `
-      <span class="text-sm truncate">
-        💬 <strong>${from}</strong>: ${msg}
-      </span>
-    `;
-    container.appendChild(notif);
-    setTimeout(() => {
-      
-      notif.remove();
-    }, 5000);
-    const msgNotif = document.createElement("div");
-    msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
-                  transition rounded-lg`
-    msgNotif.innerHTML = `
-      <span class="block max-w-70 truncate">
-        💬 <strong>${from}</strong>: ${msg}
-      </span>
-    `;
-    notification?.prepend(msgNotif);
-    
-
-
-    // console.log(from,msg);
-
-  })
-
-
-}
-
 export async function showMainUI() {
+  socketListener();
   const response = await fetch("/auth/verify", {
     method: "GET",
     headers: { "Content-Type": "application/json" },
     credentials: "include", // VERY IMPORTANT FOR Cookies
   });
-  console.log("response status:", response.status);
-  let myId: string;
   const responseJson = await response.json()
-  myId =  responseJson.id
-  socket.emit("con", myId);
-  userID = myId;
-  // console.log(userID);
+  const userID = responseJson.id as string;
+  setCurrentUserId(userID);
+  if(!userID){
+    console.error("User ID not found. Cannot show main UI.");
+    return;
+  }
   const chatContent = document.getElementById("dashboard-content");
 
-  let sendButton: HTMLButtonElement;
-  let chatZone: HTMLDivElement;
-  let inputMsgZone: HTMLInputElement;
+  // let chatZone: HTMLDivElement;
   let dmZone: HTMLElement | null;
-
-  function fetchListOfFriends(): Promise<any> {
-    return new Promise((resolve) => {
-      socket.once("friends_list", (friends) => {
-        resolve(friends);
-      });
-      socket.emit("get_friends");
-    });
-  }
-
+  
   if (chatContent) {
     chatContent.classList.add("gap-6", "gap-y-3");
-    // chatContent.classList.remove("flex-grow");
     const friends = await fetchListOfFriends();
-    // console.table(friends.friends);
-    chatContent.innerHTML = listOfMsg(friends.friends,friends.waitingMsg,myId);
+    console.table(friends.waitingMsg);
+    chatContent.innerHTML = listOfMsg(friends.friends,friends.waitingMsg,userID);
     if(friends && friends.friends.length > 0)
       chatContent.innerHTML += DM();
     //     //get all of list friends
     const friendsEvent = document.querySelectorAll(".friend-msg-zone");
-    friendsEvent.forEach((friend) => {
-      friend.addEventListener("click", (event) => {
-        //         /******************************************get msg on scroll*******************************/
-
-        let firestOne: boolean = false;
-        let isFetching = false;
-        function onScroll() {
-          let offset: number = 0;
-          if (!firestOne) {
-            socket.emit("get_messages", { myId, friendId, limit: 20, offset });
-            firestOne = true;
-          }
-          const chatZone = document.getElementById("chat-zone");
-          if (chatZone) {
-            chatZone.addEventListener("scroll", async () => {
-              if (chatZone.scrollTop < 190 && !isFetching) {
-                isFetching = true;
-                offset += 20;
-                await socket.emit("get_old_messages", {
-                  myId,
-                  friendId,
-                  limit: 20,
-                  offset,
-                });
-                isFetching = false;
-              }
-            });
-          }
-        }
-
-        //             /**********************************************************************************************/
-
-        imInRoom = friend.dataset.roomname;
-        friendId = friend.dataset.id;
-
-        const friendFind = friends.friends.find((f) => f.id == friendId);
+    friendsEvent.forEach((friend:any) => {
+      friend.addEventListener("click", () => {
+        setImInRoom(friend.dataset.roomname);
+        setFriendId(friend.dataset.id);
+        const friendId = getFriendId()
+        const friendFind = friends.friends.find((f:any) => f.id == friendId);
         if (friendFind) {
-          const roomName: string = [myId, friendFind.id].sort().join("_");
+          const roomName: string = [userID, friendFind.id].sort().join("_");
           const dm = document.getElementById("DM");
           const listContainer = document.getElementById("list-of-msg-container");
           if (dm){
@@ -483,11 +74,11 @@ export async function showMainUI() {
             document.getElementById("back-btn")?.addEventListener("click", () => {
                 dm?.classList.add("hidden");
                 listContainer?.classList.remove("hidden");
-                imInRoom = "";
-                friendId = "";
+                setImInRoom("");
+                setFriendId("");
             });
           })
-          socket.emit("joinToRoom", roomName);
+          socketInstance()?.emit("joinToRoom", roomName);
 
           const counterElement: HTMLDivElement = document.getElementById(
             `counter-of-${friendId}`
@@ -507,18 +98,21 @@ export async function showMainUI() {
           }
           //*********************************************************************** */
           dmZone = document.getElementById("DM");
-          let contentChat = profileNav(friendFind.avatar_url,friendFind.username,friendFind.status);
+          let contentChat = profileNav(friendFind.avatar_url,friendFind.username,friendId,friendFind.online_status);
+
           contentChat += chatZones();
           if (dmZone) dmZone.innerHTML = contentChat;
-          socket.emit("get_status", friendId);
+          socketInstance()?.emit("get_status", friendId);
+            const userAccount = document.querySelectorAll('.user-account');
+            userAccount.forEach(element => {
+              element.addEventListener('click',()=>{
+                const profileManager: any = new PlayerProfileManager();
+                profileManager.showPlayerProfile(friendId);
+              });
+            });
           ////////////////////////////////////////////////////////////////////////////////
-          sendButton = document.getElementById(
-            "send-button"
-          ) as HTMLButtonElement;
-          chatZone = document.getElementById("chat-zone") as HTMLDivElement;
-          inputMsgZone = document.getElementById(
-            "input-msg-zone"
-          ) as HTMLInputElement;
+
+          resetScrollState();
           onScroll();
 
           //****************************** start popup part *************************************//
@@ -530,16 +124,15 @@ export async function showMainUI() {
               "popup-option"
             ) as HTMLDivElement;
             //When pressed 3 point
-            option.addEventListener("click", async (event) => {
-              socket.emit("get_status",friendId)
+            option?.addEventListener("click", async () => {
+              socketInstance()?.emit("get_status",friendId)
               const btn1 = await new Promise<string>((resolve) => {
-                  socket.once("blockBtn", (btn) => {
-                      // console.log("btn", btn); 
+                  socketInstance()?.once("blockBtn", (btn) => {
                       resolve(btn);
                   });
               });
               if(!document.getElementById("block-button") && !document.getElementById("unblock-button"))
-                  document.getElementById("popup-option")!.innerHTML += generateBlockButton(btn1)
+                  document.getElementById("popup-option")!.innerHTML += generateBlockButton(btn1);
               if (popupOption.classList.contains("hidden"))
                 popupOption.classList.remove("hidden");
               else 
@@ -569,9 +162,10 @@ export async function showMainUI() {
             const unblockOption = document.getElementById(
               "unblock-option"
             ) as HTMLDivElement;
-            const challenge  = document.getElementById(
+            const challenge: HTMLButtonElement = document.getElementById(
               "challenge-option"
-            )
+            ) as HTMLButtonElement;
+            //TODO handel ila blkah may9edarch yel3ab m3ah game 
 
             // to close popup if click out of popup
             window.addEventListener("click", (event) => {
@@ -600,8 +194,8 @@ export async function showMainUI() {
 
             
           if (challenge) {
-            const textEl = challenge.querySelector("p");
-            const iconEl = challenge.querySelector("span");
+            const textEl:HTMLParagraphElement = challenge.querySelector("p") as HTMLParagraphElement;
+            const iconEl:HTMLSpanElement = challenge.querySelector("span") as HTMLSpanElement;
             if(!challenge.dataset.click)
             {
               challenge.addEventListener("click", () => {
@@ -617,25 +211,22 @@ export async function showMainUI() {
                 textEl.textContent = `Waiting ${remaining}s`;
                 iconEl.classList.add("opacity-0");
   
-                socket.emit("challenge", friendId);
+                socketInstance()?.emit("challenge", friendId);
   
-                challenge.dataset.intervalId = setInterval(() => {
+                challenge.dataset.intervalId = String(setInterval(() => {
                   remaining--;
                   textEl.textContent = `Waiting ${remaining}s`;
-  
                   if (remaining <= 0) {
-                    clearInterval(challenge.dataset.intervalId);
-  
+                    clearInterval(Number(challenge.dataset.intervalId));
                     challenge.classList.remove(
                       "opacity-50",
                       "cursor-not-allowed",
                       "pointer-events-none"
                     );
-  
                     textEl.textContent = originalText;
                     iconEl.classList.remove("opacity-0");
                   }
-                }, 1000);
+                }, 1000));
               });
               challenge.dataset.click = 'yes';
             }
@@ -658,7 +249,7 @@ export async function showMainUI() {
 
             //block behaver
             blockValid.addEventListener("click", () => {
-              socket.emit("status", { status: "blocked", friendId });
+              socketInstance()?.emit("status", { status: "blocked", friendId });
               blockOption.classList.add("hidden");
               const popupOption = document.getElementById("popup-option");
               if (popupOption) {
@@ -672,13 +263,14 @@ export async function showMainUI() {
               }
               setupPopupEvents();
             });
+            
             blockUnvalid.addEventListener("click", () => {
               blockOption.classList.add("hidden");
               popupOption.classList.remove("hidden");
             });
             //unblock behaver
             unblockValid.addEventListener("click", () => {
-              socket.emit("status", { status: "accepted", friendId });
+              socketInstance()?.emit("status", { status: "accepted", friendId });
               unblockOption.classList.add("hidden");
               const popupOption = document.getElementById("popup-option");
               if (popupOption) {
@@ -698,11 +290,8 @@ export async function showMainUI() {
             });
             });
           }
-          //
-          //****************************** end popup part *************************************//
         }
       });
     });
   }
 }
-socketListener();

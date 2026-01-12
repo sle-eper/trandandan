@@ -1,7 +1,7 @@
 
-import normalPlayer from '../img/normalPlayer.png' 
-import spayCard from '../img/spayCard.png' 
-import backCard from "../img/backCard.png"
+import normalPlayer from '../img/normalPlayer.png?inline' 
+import spayCard from '../img/spayCard.png?inline' 
+import backCard from "../img/backCard.png?inline"
 import spaySections from "../sectionsData/sectionsData"
 import { setCorrectChoice } from "../app";
 

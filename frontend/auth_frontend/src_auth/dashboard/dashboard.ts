@@ -4,7 +4,73 @@ import { renderNavBar } from "./navbar";
 import { renderSidebar } from "./sidebar";
 import { navBarLogic } from "./navbar";
 import { sidebarLogic } from "./sidebar";
-import { socket } from "../login/login";
+// import { socket } from "../login/login";
+import { socketInstance } from "../../../socket_manager/socket";
+import { socketNotificationListener } from "../../../chat-frontend/src/ts/chat_socket";
+
+
+function addNotif(el: any, notification: HTMLElement) {
+  const notifIcon = document.getElementById("notif-icon");
+  if(!notifIcon)return;
+  // red notification icon
+  notifIcon.innerHTML = `<span class=" text-[#E63946]  material-symbols-outlined">
+                          notifications_unread
+                          </span>`
+
+  let text = "";
+
+  switch (el.type) {
+    case "challenge":
+      text = `🎮 <strong>${el.sender_name}</strong> wants to play`;
+      break;
+
+    case "reject":
+      text = `❌ <strong>${el.sender_name}</strong> rejected your play request`;
+      break;
+
+    case "msg":
+      text = `💬 <strong>${el.sender_name}</strong>: ${el.content}`;
+      break;
+
+    case "friendRequest":
+      text = `🤝 <strong>${el.sender_name}</strong> sent you a friend request`;
+      break;
+
+    default:
+      return;
+  }
+
+  const msgNotif = document.createElement("div");
+  msgNotif.className = `
+    w-full text-left px-4 py-2 text-white/90 
+    hover:bg-[#E63946]/20 transition rounded-lg
+  `;
+
+  msgNotif.innerHTML = `
+    <div class="flex justify-between">
+      <span class="block max-w-70 truncate">${text}</span>
+      <span class="hover:cursor-pointer close-btn material-symbols-outlined">close</span>
+    </div>
+  `;
+
+  msgNotif.querySelector(".close-btn")?.addEventListener("click", () => {
+    socketInstance()?.emit("removeNotif", el.id);
+    msgNotif.remove();
+    const notifmenu = document.getElementById("notification-menu");
+    if(notifmenu?.children.length === 0)
+    {
+      if(notifmenu.classList.contains("hidden")) return;
+        notifmenu.classList.add("opacity-0");
+        notifmenu.classList.add("hidden")
+        notifIcon.innerHTML = `<span class="  material-symbols-outlined">
+                            notifications
+                            </span>`
+    }
+  });
+
+  notification.prepend(msgNotif);
+}
+
 
 
 export async function showDashboard() {
@@ -49,12 +115,13 @@ function getnotif(): Promise<any[]> {
       console.log("response status:", response.status);
       const responseJson = await response.json();
       const myId = responseJson.id;
+      console.log("user id ",myId);
 
-      socket.once("notif", (data) => {
+      socketInstance()?.once("notif", (data) => {
         resolve(data);
       });
 
-      socket.emit("getNotif", myId);
+      socketInstance()?.emit("getNotif", myId);
     } catch (err) {
       reject(err);
     }
@@ -64,64 +131,21 @@ function getnotif(): Promise<any[]> {
   // Render sidebar + navbar
   const nav = document.getElementById("navbar");
   const sidebar = document.getElementById("sidebar");
+  if (sidebar) sidebar.innerHTML = renderSidebar();
   if (nav)
   {
     nav.innerHTML = renderNavBar();
-  if (sidebar) sidebar.innerHTML = renderSidebar();
-    let notif =  await getnotif()
-    const notification = document.getElementById("notification-menu");
-    if (!notification) return;
-    // console.log("ssss",container,notification);
-    // console.log("sssss",notif);
-    notif.forEach((el)=>{
-      if(el.type == "challenge")
-      {
-        const msgNotif = document.createElement("div");
-        msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
-                      transition rounded-lg`
-        msgNotif.innerHTML = `
-          <span class="block max-w-70 truncate">
-            🎮 <strong>${el.sender_name}</strong> wants to play
-          </span>
-        `;
-        notification?.prepend(msgNotif);
-      }else if(el.type == 'reject')
-      {
-        const msgNotif = document.createElement("div");
-        msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
-                      transition rounded-lg`
-        msgNotif.innerHTML = `
-          <span class="block max-w-70 truncate">
-            ❌ <strong>${el.sender_name}</strong> rejected your play request
-          </span>
-        `;
-        notification?.prepend(msgNotif);
-      }else if(el.type == 'msg')
-      {
-      const msgNotif = document.createElement("div");
-      msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
-                    transition rounded-lg`
-      msgNotif.innerHTML = `
-        <span class="block max-w-70 truncate">
-          💬 <strong>${el.sender_name}</strong>: ${el.content}
-        </span>
-      `;
-      notification?.prepend(msgNotif);
-        }else if(el.type == 'friendRequest')
-        {
-          const msgNotif = document.createElement("div");
-          msgNotif.className = `w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
-                        transition rounded-lg`
-          msgNotif.innerHTML = `
-            <span class="block max-w-70 truncate">
-              🤝 <strong>${el.sender_name}</strong> sent you a friend request
-            </span>
-          `;
-          notification?.prepend(msgNotif);
-        }
-    })
+    socketNotificationListener();
 
-
+    if (sidebar) sidebar.innerHTML = renderSidebar();
+      let notif =  await getnotif()
+      const notification = document.getElementById("notification-menu");
+      if (!notification) return;
+      notif.forEach((el) => {
+      if (el.display) {
+        addNotif(el, notification);
+      }
+    });
   }
   navBarLogic();
   sidebarLogic();

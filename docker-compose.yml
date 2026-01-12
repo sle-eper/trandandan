@@ -44,6 +44,7 @@ services:
       - ./frontend/tournament_frontend/src:/app/tournament_frontend/src
       - ./frontend/game_frontend/src_game/src:/app/game_frontend/src_game/src
       - ./frontend/game_frontend/src_game/css:/app/game_frontend/src_game/css
+      - ./frontend/socket_manager:/app/socket_manager
       - /app/node_modules
 
     depends_on:

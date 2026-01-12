@@ -14,7 +14,7 @@ ENV PYTHON=/usr/bin/python3
 
 COPY package*.json ./
 
-RUN npm install
+RUN npm install && npm rebuild
 
 COPY . .
 

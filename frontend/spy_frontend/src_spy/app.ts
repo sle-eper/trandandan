@@ -333,9 +333,6 @@ export async function spyUi(step: string = "local")
                 {
                     currentIndex = 0
                     whoAsks = ask(spays)
-                    console.log("whoAsks",whoAsks)
-                    // console.log("spays",spays)
-                    // Who should ask 
                     game!.innerHTML = `
                                     <div class="flex flex-col items-center justify-center gap-10 py-12">
                                         <div class="text-3xl font-bold uppercase text-[#ff4d4d]
@@ -360,7 +357,19 @@ export async function spyUi(step: string = "local")
                 function chooseSpy(players): string {
                     return `
                         <div id="choose-spy" 
-                            class="flex flex-col items-center justify-center gap-8 py-12">
+                            class="relative h-full w-full flex flex-col items-center justify-center gap-8 py-12">
+
+                            <!-- Back Button -->
+                            <button id="back-to-choose"
+                                class="absolute top-4 left-4
+                                    px-5 py-2 text-sm font-bold rounded-md
+                                    bg-[#1a1a1a] text-[#ff4d4d]
+                                    border-2 border-[#ff4d4d]
+                                    hover:bg-[#ff4d4d] hover:text-white
+                                    transition-all duration-200
+                                    font-['Share_Tech_Mono'] tracking-wider">
+                                ← BACK
+                            </button>
 
                             <!-- Title -->
                             <div class="text-3xl font-bold uppercase text-[#ff4d4d]
@@ -383,6 +392,7 @@ export async function spyUi(step: string = "local")
                                     <option value="${p.id}">${p.name}</option>
                                 `).join("")}
                             </select>
+
                             <div id="spy-result"></div>
 
                             <!-- Confirm button -->
@@ -395,6 +405,7 @@ export async function spyUi(step: string = "local")
                                 CONFIRM
                             </button>
                         </div>
+
                     `;
                 }
                 if(el.id === 'play')
@@ -491,32 +502,44 @@ export async function spyUi(step: string = "local")
                 if(el.id === 'guess-the-word')
                 {
                     console.log(correctChoice)
-                    game.innerHTML = `<div class="h-full w-full flex flex-col items-center justify-center gap-8">
+                    game.innerHTML = `<div class="relative h-full w-full flex flex-col items-center justify-center gap-8">
 
-                        <h1 class="text-4xl font-bold uppercase text-[#ff4d4d]
-                            font-['Share_Tech_Mono']
-                            [text-shadow:0_0_5px_#ff0000,0_0_15px_#ff0000]">
-                            GUESS THE WORD
-                        </h1>
+                                        <!-- Back Button -->
+                                        <button id="back-to-choose"
+                                            class="absolute top-4 left-4
+                                                px-5 py-2 text-sm font-bold rounded-md
+                                                bg-[#1a1a1a] text-[#ff4d4d]
+                                                border-2 border-[#ff4d4d]
+                                                hover:bg-[#ff4d4d] hover:text-white
+                                                transition-all duration-200
+                                                font-['Share_Tech_Mono'] tracking-wider">
+                                            ← BACK
+                                        </button>
 
-                        <input
-                            id="confirm-guess-input"
-                            type="text"
-                            placeholder="Enter the word..."
-                            class="w-[300px] px-5 py-4 text-lg rounded-xl
-                            bg-[#1a1a1a] text-white border-2 border-[#ff4d4d]
-                            focus:outline-none focus:ring-2 focus:ring-[#ff4d4d]"
-                        />
+                                        <h1 class="text-4xl font-bold uppercase text-[#ff4d4d]
+                                            font-['Share_Tech_Mono']
+                                            [text-shadow:0_0_5px_#ff0000,0_0_15px_#ff0000]">
+                                            GUESS THE WORD
+                                        </h1>
 
-                        <button id="confirm-guess"
-                            class="px-10 py-4 text-xl font-bold rounded-xl
-                            bg-[#ff4d4d] text-white shadow-lg
-                            hover:bg-[#e63939] hover:scale-105
-                            transition-all duration-200">
-                            CONFIRM
-                        </button>
+                                        <input
+                                            id="confirm-guess-input"
+                                            type="text"
+                                            placeholder="Enter the word..."
+                                            class="w-[300px] px-5 py-4 text-lg rounded-xl
+                                                bg-[#1a1a1a] text-white border-2 border-[#ff4d4d]
+                                                focus:outline-none focus:ring-2 focus:ring-[#ff4d4d]"
+                                        />
 
-                    </div>`
+                                        <button id="confirm-guess"
+                                            class="px-10 py-4 text-xl font-bold rounded-xl
+                                                bg-[#ff4d4d] text-white shadow-lg
+                                                hover:bg-[#e63939] hover:scale-105
+                                                transition-all duration-200">
+                                            CONFIRM
+                                        </button>
+
+                                    </div>`
                     navigateSilent("/game/spy/win_page/word");
                 }
                 if(el.id === 'confirm-guess')
@@ -701,6 +724,10 @@ export async function spyUi(step: string = "local")
                         click = 0;
                         hadlhebla(spays)
                     }
+                }
+                if(el.id === 'back-to-choose')
+                {
+                    game.innerHTML = renderSpyChoice()
                 }
             }
         )
