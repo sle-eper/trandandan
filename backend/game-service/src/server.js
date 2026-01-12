@@ -133,7 +133,23 @@ const start = async () => {
 
                 socket.on('join_game', (gameId) => {
                     console.log(`[SOCKET] User ${socket.user.username} (ID: ${socket.user.id}) attempting to join game: ${gameId}`);
-                    const game = games.get(gameId);
+
+                    let game = games.get(gameId);
+
+                    // Lazy Creation: If game doesn't exist (e.g. from chat challenge), create it
+                    if (!game) {
+                        console.log(`[SOCKET] Game ${gameId} not found, creating it...`);
+                        game = {
+                            id: gameId,
+                            players: [],
+                            status: 'waiting',
+                            score: { left: 0, right: 0 },
+                            ball: { x: 400, y: 200, dx: 0, dy: 0 },
+                            paddles: { left: 150, right: 150 }
+                        };
+                        games.set(gameId, game);
+                    }
+
                     if (game) {
                         socket.join(gameId);
                         console.log(`[SOCKET] User ${socket.user.username} successfully joined room: ${gameId}`);

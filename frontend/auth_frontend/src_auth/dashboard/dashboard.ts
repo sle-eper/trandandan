@@ -7,11 +7,12 @@ import { sidebarLogic } from "./sidebar";
 // import { socket } from "../login/login";
 import { socketInstance } from "../../../socket_manager/socket";
 import { socketNotificationListener } from "../../../chat-frontend/src/ts/chat_socket";
+import { setCurrentUserId } from "../../../chat-frontend/src/ts/global_var";
 
 
 function addNotif(el: any, notification: HTMLElement) {
   const notifIcon = document.getElementById("notif-icon");
-  if(!notifIcon)return;
+  if (!notifIcon) return;
   // red notification icon
   notifIcon.innerHTML = `<span class=" text-[#E63946]  material-symbols-outlined">
                           notifications_unread
@@ -57,12 +58,11 @@ function addNotif(el: any, notification: HTMLElement) {
     socketInstance()?.emit("removeNotif", el.id);
     msgNotif.remove();
     const notifmenu = document.getElementById("notification-menu");
-    if(notifmenu?.children.length === 0)
-    {
-      if(notifmenu.classList.contains("hidden")) return;
-        notifmenu.classList.add("opacity-0");
-        notifmenu.classList.add("hidden")
-        notifIcon.innerHTML = `<span class="  material-symbols-outlined">
+    if (notifmenu?.children.length === 0) {
+      if (notifmenu.classList.contains("hidden")) return;
+      notifmenu.classList.add("opacity-0");
+      notifmenu.classList.add("hidden")
+      notifIcon.innerHTML = `<span class="  material-symbols-outlined">
                             notifications
                             </span>`
     }
@@ -80,7 +80,7 @@ export async function showDashboard() {
   document.body.classList.remove("flex", "items-center", "justify-center", "px-6", "md:px-20");
   // document.body.classList.add("bg-gray-900", "min-h-screen");
   //TODO hadi ba9i dak tol fih mochekil 
-    app.innerHTML = `
+  app.innerHTML = `
       <div class="flex flex-col h-screen bg-[#111] text-white">
           
           <!-- Navbar -->
@@ -104,44 +104,44 @@ export async function showDashboard() {
       </div>
     `;
 
-function getnotif(): Promise<any[]> {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const response = await fetch("/auth/verify", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      });
-      console.log("response status:", response.status);
-      const responseJson = await response.json();
-      const myId = responseJson.id;
-      console.log("user id ",myId);
+  function getnotif(): Promise<any[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const response = await fetch("/auth/verify", {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        });
+        console.log("response status:", response.status);
+        const responseJson = await response.json();
+        const myId = responseJson.id;
+        setCurrentUserId(String(myId)); // Set global ID for chat interactions
+        console.log("user id ", myId);
 
-      socketInstance()?.once("notif", (data) => {
-        resolve(data);
-      });
+        socketInstance()?.once("notif", (data) => {
+          resolve(data);
+        });
 
-      socketInstance()?.emit("getNotif", myId);
-    } catch (err) {
-      reject(err);
-    }
-  });
-}
+        socketInstance()?.emit("getNotif", myId);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
 
   // Render sidebar + navbar
   const nav = document.getElementById("navbar");
   const sidebar = document.getElementById("sidebar");
   if (sidebar) sidebar.innerHTML = renderSidebar();
-  if (nav)
-  {
+  if (nav) {
     nav.innerHTML = renderNavBar();
     socketNotificationListener();
 
     if (sidebar) sidebar.innerHTML = renderSidebar();
-      let notif =  await getnotif()
-      const notification = document.getElementById("notification-menu");
-      if (!notification) return;
-      notif.forEach((el) => {
+    let notif = await getnotif()
+    const notification = document.getElementById("notification-menu");
+    if (!notification) return;
+    notif.forEach((el) => {
       if (el.display) {
         addNotif(el, notification);
       }
