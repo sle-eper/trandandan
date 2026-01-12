@@ -8,7 +8,7 @@ export async function loginUser(username: string, password: string) {
       // credentials: "include", // VERY IMPORTANT to handle cookies
     });
     const body = await response.json();
-    console.log("login response body:", body);
+    // console.log("login response body:", body);
     return { response, body };
   } catch (err) {
     console.error(err);

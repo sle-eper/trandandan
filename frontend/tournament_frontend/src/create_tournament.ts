@@ -34,7 +34,7 @@ function tournamentEntryTemplate() {
   `;
 }
 
-function tournamentListTemplate() {
+function tournamentListTemplate(tournaments?: any[]) {
   return `
     <div class="w-full h-full flex flex-col gap-6 p-6">
       <div class="flex items-center justify-between">
@@ -46,9 +46,7 @@ function tournamentListTemplate() {
         </button>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow">
-        ${tournamentCard("Ping Pong Masters", "Upcoming", "ping-pong-masters", 16)}
-        ${tournamentCard("Night Knockout", "Ongoing", "night-knockout", 8)}
-        ${tournamentCard("Champions Cup", "Finished", "champions-cup", 4)}
+        ${tournaments && tournaments.length > 0 ? tournaments.map(t => tournamentCard(t.name, t.status, t.id, t.maxPlayers)).join('') : '<p class="text-gray-400">No tournaments available.</p>'}
       </div>
     </div>
   `;
@@ -379,14 +377,16 @@ export function renderCreateTournament() {
   function showToast(message: string) {
     const toast = document.createElement('div');
     toast.className = `
+    fixed top-6 right-6 z-50
+      bg-[#1a1a1d] text-white
       pointer-events-auto
       min-w-[300px] max-w-md
       px-4 py-3 rounded-xl
-      shadow-2xl border
+      shadow-2xl border border-white/10
       flex items-start gap-3
       transform transition-all duration-300
-      translate-x-[400px] opacity-0
-    `;
+  `;
+
     toast.textContent = message;
 
     document.body.appendChild(toast);
@@ -403,7 +403,7 @@ export function renderCreateTournament() {
 
     currentTournament.name = nameInput.value || "New Tournament";
     currentTournament.maxPlayers = parseInt(playersSelect.value);
-    const result = await fetch("/tournament/create  ", {
+    const result = await fetch("/tournament/create", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -413,12 +413,12 @@ export function renderCreateTournament() {
         maxPlayers: currentTournament.maxPlayers,
       }),
     })
+    const body = await result.json();
     if (result.ok) {
       const socket = Socket.getSocketInstance();
 
-      // 1️⃣ LISTEN (once)
-      socket?.on("tournament:created", () => {
-        showToast("TEST NOTIFICATION");
+      socket?.once("tournament:created", () => {
+        showToast("Tournament created successfully!");
         console.log("Tournament created event received");
         renderTournamentBracket();
         navigate("/tournament/bracket");
@@ -427,6 +427,8 @@ export function renderCreateTournament() {
         room: currentTournament.name,
       });
     }
+    else
+      showToast(body.message || "Error creating tournament.");
   });
 }
 
@@ -448,11 +450,18 @@ function attachEntryHandlers() {
   });
 }
 
-export function renderTournamentList() {
+export async function renderTournamentList() {
   const main = document.getElementById("dashboard-content");
   if (!main) return;
-
-  main.innerHTML = tournamentListTemplate();
+  const result =await  fetch("/tournament/list", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  const tournament = await result.json();
+  console.log("Tournaments data:", tournament);
+  main.innerHTML = tournamentListTemplate(tournament.tournaments || []);
   attachListHandlers();
 }
 

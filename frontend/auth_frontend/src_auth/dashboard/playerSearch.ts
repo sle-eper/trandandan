@@ -18,7 +18,7 @@ async function fetchAllUsers(): Promise<Player[]| undefined> {
       withCredentials: true,
     });
     const usersData = response.data.users;
-   console.log('Fetched users data:', usersData);
+  //  console.log('Fetched users data:', usersData);
     const players: Player[] = [];
     
     

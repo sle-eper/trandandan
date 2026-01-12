@@ -111,10 +111,10 @@ function getnotif(): Promise<any[]> {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
       });
-      console.log("response status:", response.status);
+      // console.log("response status:", response.status);
       const responseJson = await response.json();
       const myId = responseJson.id;
-      console.log("user id ",myId);
+      // console.log("user id ",myId);
 
       getSocketInstance()?.once("notif", (data) => {
         resolve(data);
