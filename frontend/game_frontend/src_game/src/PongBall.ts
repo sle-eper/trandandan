@@ -11,6 +11,8 @@ export class PongBall {
     initialSpeed: number = 1.2;
     speed: number = this.initialSpeed;
     speedIncrement: number = 0.2;
+    trail: { x: number, y: number }[] = [];
+    maxTrail: number = 15;
 
     constructor(canvas: HTMLCanvasElement, c: CanvasRenderingContext2D) {
         this.canvas = canvas;
@@ -27,21 +29,30 @@ export class PongBall {
     }
 
     draw() {
+        // Draw trail first
+        this.c.save();
+        for (let i = 0; i < this.trail.length; i++) {
+            const opacity = (i + 1) / this.trail.length * 0.5;
+            this.c.beginPath();
+            this.c.arc(this.trail[i].x, this.trail[i].y, this.radius * (i / this.trail.length), 0, 2 * Math.PI);
+            this.c.fillStyle = `rgba(255, 69, 0, ${opacity})`; // Orange-Red trail
+            this.c.fill();
+        }
+        this.c.restore();
+
         this.c.beginPath();
         this.c.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false);
 
         // Neon Glow
-        this.c.fillStyle = '#f0f'; // Neon Magenta
-        this.c.shadowColor = '#f0f';
-        this.c.shadowBlur = 15;
+        this.c.fillStyle = '#ff4500'; // Orange Red
+        this.c.shadowColor = '#ff4500';
+        this.c.shadowBlur = 35;
         this.c.fill();
 
         // Solid core
         this.c.fillStyle = '#fff';
         this.c.shadowBlur = 0;
         this.c.fill();
-
-        // Restore fill for next frame (optional, main loop clears it anyway)
     }
 
     checkPaddleCollision(paddle: Paddle): boolean {
@@ -99,6 +110,7 @@ export class PongBall {
         this.x = this.canvas.width / 2;
         this.y = this.canvas.height / 2;
         this.speed = this.initialSpeed;
+        this.trail = [];
         // Do not call `start()` here; caller decides when to serve.
         this.incrementWidth = 0;
         this.incrementHeight = 0;
@@ -120,6 +132,9 @@ export class PongBall {
         }
 
         if (this.y + this.radius > this.canvas.height || this.y - this.radius < 0) this.incrementHeight = -this.incrementHeight;
+
+        this.trail.push({ x: this.x, y: this.y });
+        if (this.trail.length > this.maxTrail) this.trail.shift();
 
         this.x += this.incrementWidth;
         this.y += this.incrementHeight;

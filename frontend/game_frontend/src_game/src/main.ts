@@ -3,6 +3,7 @@ import { PongBall } from './PongBall';
 import CountDown from './CountDown';
 import '../css/gameCountDown.css';
 import '../css/gameLobby.css';
+import '../css/gameVisuals.css';
 import { gameSocket } from './services/gameSocket';
 
 console.debug('Game module loaded');
@@ -101,21 +102,25 @@ export function initializeGame() {
         return false;
     }
 
-    // Create canvas
     const canvas = document.createElement('canvas');
+    canvas.id = 'game-canvas';
     canvas.width = 800;
     canvas.height = 400;
-    canvas.style.border = '2px solid #0ff';
-    canvas.style.borderRadius = '15px';
-    canvas.style.display = 'block';
-    canvas.style.margin = '10px auto';
-    canvas.style.backgroundColor = 'rgba(10, 10, 10, 0.9)';
-    canvas.style.boxShadow = '0 0 20px rgba(0, 255, 255, 0.5)';
-    canvas.style.maxWidth = '100%';
-    canvas.style.height = 'auto';
 
-    container.innerHTML = ''; // Clean up previous canvas
-    container.appendChild(canvas);
+    // Wrapper for scanline effects
+    container.innerHTML = `
+        <div class="game-container-premium">
+            <div class="canvas-wrapper">
+                <div class="scanlines"></div>
+                <div class="vignette"></div>
+                <div class="scanline-moving"></div>
+                <div id="canvas-mount"></div>
+            </div>
+        </div>
+    `;
+
+    const mount = container.querySelector('#canvas-mount');
+    if (mount) mount.appendChild(canvas);
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return false;
@@ -132,8 +137,8 @@ export function initializeGame() {
     aiMode = false;
     winnerName = null;
 
-    leftPaddle = new Paddle(c, ctxt, 0, (c.height - 100) / 2, '#0ff');
-    rightPaddle = new Paddle(c, ctxt, (c.width - 10), (c.height - 100) / 2, '#f0f');
+    leftPaddle = new Paddle(c, ctxt, 0, (c.height - 100) / 2, '#ff0000');
+    rightPaddle = new Paddle(c, ctxt, (c.width - 10), (c.height - 100) / 2, '#ff8c00');
     pongBall = new PongBall(c, ctxt);
     countdown = new CountDown();
 
@@ -413,7 +418,8 @@ export function animate() {
     animationId = requestAnimationFrame(animate);
     if (!ctxt) return;
 
-    ctxt.clearRect(0, 0, c.width, c.height);
+    // Draw Cyber Background
+    drawPremiumBackground();
 
     if (aiMode && gameStarted) {
         const paddleCenter = rightPaddle.y + rightPaddle.heightPaddle / 2;
@@ -484,20 +490,73 @@ export function animate() {
 }
 
 function drawScores() {
-    ctxt.fillStyle = '#fff';
-    ctxt.font = '30px "Share Tech Mono", monospace';
+    ctxt.save();
+    ctxt.fillStyle = 'rgba(255, 0, 0, 0.9)';
+    ctxt.font = '700 40px "Share Tech Mono", monospace';
     ctxt.textAlign = 'center';
-    ctxt.fillText(String(leftScore), c.width * 0.25, 50);
-    ctxt.fillText(String(rightScore), c.width * 0.75, 50);
+    ctxt.shadowColor = '#f00';
+    ctxt.shadowBlur = 15;
+
+    // Left Score
+    ctxt.fillText(String(leftScore), c.width * 0.25, 60);
+    // Right Score
+    ctxt.fillText(String(rightScore), c.width * 0.75, 60);
+
+    // Center Line Divider
+    ctxt.setLineDash([10, 15]);
+    ctxt.strokeStyle = 'rgba(255, 0, 0, 0.15)';
+    ctxt.lineWidth = 2;
+    ctxt.beginPath();
+    ctxt.moveTo(c.width / 2, 0);
+    ctxt.lineTo(c.width / 2, c.height);
+    ctxt.stroke();
+    ctxt.restore();
+}
+
+let bgOffset = 0;
+function drawPremiumBackground() {
+    // Solid base
+    ctxt.fillStyle = '#100505';
+    ctxt.fillRect(0, 0, c.width, c.height);
+
+    // Animated Grid
+    ctxt.strokeStyle = 'rgba(255, 0, 0, 0.05)';
+    ctxt.lineWidth = 1;
+
+    bgOffset = (bgOffset + 0.5) % 40;
+
+    // Vertical lines
+    for (let x = 0; x <= c.width; x += 40) {
+        ctxt.beginPath();
+        ctxt.moveTo(x, 0);
+        ctxt.lineTo(x, c.height);
+        ctxt.stroke();
+    }
+
+    // Horizontal lines (scrolling)
+    for (let y = 0; y <= c.height + 40; y += 40) {
+        ctxt.beginPath();
+        ctxt.moveTo(0, y + bgOffset);
+        ctxt.lineTo(c.width, y + bgOffset);
+        ctxt.stroke();
+    }
 }
 
 function drawWin(text: string) {
-    ctxt.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctxt.save();
+    ctxt.fillStyle = 'rgba(20, 0, 0, 0.9)';
     ctxt.fillRect(0, 0, c.width, c.height);
-    ctxt.fillStyle = '#0ff';
-    ctxt.font = '50px "Share Tech Mono", monospace';
+
+    ctxt.shadowColor = '#f00';
+    ctxt.shadowBlur = 30;
+    ctxt.fillStyle = '#f00';
+    ctxt.font = '60px "Share Tech Mono", monospace';
     ctxt.textAlign = 'center';
-    ctxt.fillText(text, c.width / 2, c.height / 2);
+    ctxt.fillText(text.toUpperCase(), c.width / 2, c.height / 2);
+
+    ctxt.shadowBlur = 0;
+    ctxt.fillStyle = 'rgba(255, 100, 100, 0.6)';
     ctxt.font = '20px "Share Tech Mono", monospace';
-    ctxt.fillText('Press F5 to restart', c.width / 2, c.height / 2 + 70);
+    ctxt.fillText('PRESS F5 TO REGENERATE THE HELLFIRE', c.width / 2, c.height / 2 + 80);
+    ctxt.restore();
 }
