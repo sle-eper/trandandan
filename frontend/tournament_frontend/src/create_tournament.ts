@@ -1,5 +1,5 @@
 import { navigate } from "../../auth_frontend/src_auth/app"
-
+import * as Socket from "../../socket_manager/socket";
 /* =======================
    TOURNAMENT STATE
 ======================= */
@@ -39,7 +39,7 @@ function tournamentEntryTemplate() {
   `;
 }
 
-function tournamentListTemplate() {
+function tournamentListTemplate(tournaments?: any[]) {
   return `
     <div class="w-full h-full flex flex-col gap-6 p-6">
       <div class="flex items-center justify-between">
@@ -51,42 +51,68 @@ function tournamentListTemplate() {
         </button>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow">
-        ${tournamentCard("Ping Pong Masters", "Upcoming", "ping-pong-masters", 16)}
-        ${tournamentCard("Night Knockout", "Ongoing", "night-knockout", 8)}
-        ${tournamentCard("Champions Cup", "Finished", "champions-cup", 4)}
+        ${tournaments && tournaments.length > 0 ? tournaments.map(t => tournamentCard(t.name, t.status, t.id, t.maxPlayers)).join('') : '<p class="text-gray-400">No tournaments available.</p>'}
       </div>
     </div>
   `;
 }
 
-function tournamentCard(name: string, status: "Upcoming" | "Ongoing" | "Finished", id: string, maxPlayers: number) {
+function tournamentCard(
+  name: string,
+  status: "Upcoming" | "Ongoing" | "Finished",
+  id: string,
+  maxPlayers: number
+) {
   const statusColor =
     status === "Upcoming"
       ? "bg-yellow-500/20 text-yellow-400"
       : status === "Ongoing"
-      ? "bg-green-500/20 text-green-400"
-      : "bg-gray-500/20 text-gray-400";
+        ? "bg-green-500/20 text-green-400"
+        : "bg-gray-500/20 text-gray-400";
+
+  const canJoin = status !== "Finished";
+
   return `
     <div class="rounded-2xl border border-white/10 p-5 flex flex-col justify-between
                 bg-gradient-to-br from-[#1a1a1d] to-[#0f0f11]">
+
       <div>
         <h3 class="text-xl font-semibold mb-2">${name}</h3>
-        <div class="flex gap-2 items-center">
+
+        <div class="flex gap-2 items-center mb-3">
           <span class="text-xs px-3 py-1 rounded-full ${statusColor}">
             ${status}
           </span>
           <span class="text-xs text-gray-500">${maxPlayers} Players</span>
         </div>
       </div>
-      <button
-        class="mt-4 w-full py-2 rounded-lg bg-red-600/80 hover:bg-red-600 transition text-sm view-bracket-btn"
-        data-tournament-name="${name}"
-        data-max-players="${maxPlayers}">
-        View Bracket
-      </button>
+
+      <div class="flex gap-2 mt-4">
+        <button
+          class="flex-1 py-2 rounded-lg bg-red-600/80 hover:bg-red-600 transition text-sm view-bracket-btn"
+          data-tournament-name="${name}"
+          data-max-players="${maxPlayers}">
+          View Bracket
+        </button>
+
+        ${
+          canJoin
+            ? `
+          <button
+            class="flex-1 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition text-sm join-tournament-btn"
+            data-tournament-id="${id}"
+            data-tournament-name="${name}">
+            Join
+          </button>
+          `
+            : ""
+        }
+      </div>
+
     </div>
   `;
 }
+
 
 function generateBracketHTML(maxPlayers: number) {
   if (maxPlayers === 4) {
@@ -320,6 +346,7 @@ function generate16PlayerBracket() {
     </div>
   `;
 }
+let joinedPlayers: string[] = [];
 
 function tournamentBracketTemplate() {
   return `
@@ -327,18 +354,43 @@ function tournamentBracketTemplate() {
       
       <!-- Header -->
       <div class="flex items-center justify-between px-6 py-4 border-b border-white/10">
+
+        <!-- Tournament Info -->
         <div>
           <h2 class="text-2xl font-bold">${currentTournament.name}</h2>
-          <p class="text-xs text-gray-400 mt-1">Single Elimination • ${currentTournament.maxPlayers} Players</p>
+          <p class="text-xs text-gray-400 mt-1">
+            Single Elimination • 
+            <span id="player-count">0</span> / ${currentTournament.maxPlayers} Players
+          </p>
         </div>
-        <button
-          id="back-to-tournaments"
-          class="px-4 py-2 bg-white/10 rounded-xl text-sm hover:bg-white/20 transition">
-          ← Back
-        </button>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-3">
+
+          <button
+            id="add-player-btn"
+            class="px-4 py-2 bg-white/10 rounded-xl text-sm hover:bg-white/20 transition">
+            + Add Player
+          </button>
+
+          <button
+            id="start-tournament-btn"
+            class="px-4 py-2 bg-green-600/80 rounded-xl text-sm
+                   hover:bg-green-600 transition disabled:opacity-40 disabled:cursor-not-allowed"
+            disabled>
+            ▶ Start Tournament
+          </button>
+
+          <button
+            id="back-to-tournaments"
+            class="px-4 py-2 bg-white/10 rounded-xl text-sm hover:bg-white/20 transition">
+            ← Back
+          </button>
+
+        </div>
       </div>
 
-      <!-- Bracket Container (No Scroll) -->
+      <!-- Bracket Container -->
       <div class="flex-1 flex items-center justify-center p-4">
         ${generateBracketHTML(currentTournament.maxPlayers)}
       </div>
@@ -365,11 +417,11 @@ function matchCard(player1: string, score1: string, player2: string, score2: str
 function connectorPair(width: number, height: number, yOffset: number, strokeWidth: number = 1.5) {
   const cardHeight = 56;
   const cardMidpoint = cardHeight / 2;
-  
+
   const topMatchY = yOffset + cardMidpoint;
   const bottomMatchY = yOffset + height + cardMidpoint;
   const midY = (topMatchY + bottomMatchY) / 2;
-  
+
   return `
     <line x1="0" y1="${topMatchY}" x2="20" y2="${topMatchY}" stroke="currentColor" stroke-width="${strokeWidth}"/>
     <line x1="20" y1="${topMatchY}" x2="20" y2="${midY}" stroke="currentColor" stroke-width="${strokeWidth}"/>
@@ -440,21 +492,66 @@ export function renderCreateTournament() {
       </div>
     </div>
   `;
-  
+
   document.getElementById("cancel-create-tournament")?.addEventListener("click", () => {
-    navigate("/tournement");
+    navigate("/tournament");
     Tournament();
   });
-  
-  document.getElementById("create")?.addEventListener("click", () => {
+  function showToast(message: string) {
+    const toast = document.createElement('div');
+    toast.className = `
+    fixed top-6 right-6 z-50
+      bg-[#1a1a1d] text-white
+      pointer-events-auto
+      min-w-[300px] max-w-md
+      px-4 py-3 rounded-xl
+      shadow-2xl border border-white/10
+      flex items-start gap-3
+      transform transition-all duration-300
+  `;
+
+    toast.textContent = message;
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.transform = 'translateX(400px)';
+      toast.style.opacity = '0';
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+  document.getElementById("create")?.addEventListener("click", async () => {
     const nameInput = document.getElementById("tournament-name-input") as HTMLInputElement;
     const playersSelect = document.getElementById("max-players-select") as HTMLSelectElement;
-    
+
     currentTournament.name = nameInput.value || "New Tournament";
     currentTournament.maxPlayers = parseInt(playersSelect.value);
-    
-    renderTournamentBracket();
-    navigate("/tournement/bracket");
+    const result = await fetch("/tournament/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        tournamentname: currentTournament.name,
+        maxPlayers: currentTournament.maxPlayers,
+      }),
+    })
+    const body = await result.json();
+    if (result.ok) {
+      const socket = Socket.getSocketInstance();
+
+      socket?.once("tournament:created", () => {
+        showToast("Tournament created successfully!");
+        console.log("Tournament created event received");
+        renderTournamentBracket();
+        navigate("/tournament/bracket");
+      });
+      socket?.emit("tournament:create", {
+        room: currentTournament.name,
+      });
+    }
+    else
+      showToast(body.message || "Error creating tournament.");
   });
 }
 
@@ -468,47 +565,114 @@ export function Tournament() {
 function attachEntryHandlers() {
   document.getElementById("view-tournaments-btn")?.addEventListener("click", () => {
     renderTournamentList();
-    navigate("/tournement/list");
+    navigate("/tournament/list");
   });
   document.getElementById("create-tournament-btn")?.addEventListener("click", () => {
     renderCreateTournament();
-    navigate("/tournement/create");
+    navigate("/tournament/create");
   });
 }
 
-export function renderTournamentList() {
+export async function renderTournamentList() {
   const main = document.getElementById("dashboard-content");
   if (!main) return;
-  
-  main.innerHTML = tournamentListTemplate();
+  const result =await  fetch("/tournament/list", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  const tournament = await result.json();
+  console.log("Tournaments data:", tournament);
+  main.innerHTML = tournamentListTemplate(tournament.tournaments || []);
   attachListHandlers();
 }
 
 function attachListHandlers() {
   document.getElementById("back-to-entry")?.addEventListener("click", () => {
     Tournament();
-    navigate("/tournement");
+    navigate("/tournament");
   });
 
+  // View Bracket
   document.querySelectorAll(".view-bracket-btn").forEach(btn => {
     btn.addEventListener("click", (e) => {
       const target = e.currentTarget as HTMLElement;
       currentTournament.name = target.dataset.tournamentName || "Tournament";
       currentTournament.maxPlayers = parseInt(target.dataset.maxPlayers || "16");
-      
+
       renderTournamentBracket();
-      navigate("/tournement/bracket");
+      navigate("/tournament/bracket");
+    });
+  });
+
+  // Join Tournament
+  document.querySelectorAll(".join-tournament-btn").forEach(btn => {
+    btn.addEventListener("click", async (e) => {
+      const target = e.currentTarget as HTMLElement;
+      const tournamentId = target.dataset.tournamentId;
+      const tournamentName = target.dataset.tournamentName;
+
+      if (!tournamentId || !tournamentName) return;
+
+      const socket = Socket.getSocketInstance();
+
+      socket?.emit("tournament:join", {
+        tournamentId,
+        room: tournamentName,
+      });
+
+      socket?.once("tournament:joined", () => {
+        console.log("Joined tournament:", tournamentName);
+        navigate("/tournament/bracket");
+      });
     });
   });
 }
+
 
 export function renderTournamentBracket() {
   const main = document.getElementById("dashboard-content");
   if (!main) return;
   main.innerHTML = tournamentBracketTemplate();
-  
+
+  const addBtn = document.getElementById("add-player-btn");
+  const startBtn = document.getElementById("start-tournament-btn");
+  const playerCount = document.getElementById("player-count");
+
+  addBtn?.addEventListener("click", () => {
+    if (joinedPlayers.length >= currentTournament.maxPlayers) return;
+
+    const newPlayer = `Player ${joinedPlayers.length + 1}`;
+    joinedPlayers.push(newPlayer);
+
+    playerCount!.textContent = String(joinedPlayers.length);
+
+    // Enable start button only if full
+    if (joinedPlayers.length === currentTournament.maxPlayers) {
+      startBtn?.removeAttribute("disabled");
+    }
+
+    console.log("Player added:", newPlayer);
+  });
+
+  startBtn?.addEventListener("click", () => {
+    if (joinedPlayers.length !== currentTournament.maxPlayers) {
+      alert("Not all players have joined yet!");
+      return;
+    }
+
+    console.log("Tournament started with players:", joinedPlayers);
+
+    // 🔌 Socket / API hook
+    // socket.emit("tournament:start", { players: joinedPlayers });
+  });
+
   document.getElementById("back-to-tournaments")?.addEventListener("click", () => {
+    navigate("/tournament");
+  });
+  document.getElementById("back-to-tournaments")?.addEventListener("click", async () => {
     renderTournamentList();
-    navigate("/tournement/list");
+    navigate("/tournament/list");
   });
 }

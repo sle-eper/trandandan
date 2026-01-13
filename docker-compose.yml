@@ -24,7 +24,7 @@ services:
     ports: 
       - "5000:5000" 
     env_file:
-      - ./backend/Auth/.env 
+      - ./backend/.env 
     command: npm start
     volumes:
       - ./backend/Auth/DataBase:/Auth/DataBase
@@ -82,6 +82,8 @@ services:
     volumes:
       - ./backend/chat-service/src:/app/src
       - /app/node_modules
+    env_file:
+      - ./backend/.env 
 
   # API Gateway Service
   api-gateway:

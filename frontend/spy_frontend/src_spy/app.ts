@@ -28,7 +28,7 @@ export async function spyUi(step: string = "local")
             headers: { "Content-Type": "application/json" },
             credentials: "include",
         });
-        console.log("response status:", response.status);
+        // console.log("response status:", response.status);
         let myId: string;
         const responseJson = await response.json()
         myId =  responseJson.id;

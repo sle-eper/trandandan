@@ -1,5 +1,5 @@
 // import { socket } from "../../../auth_frontend/src_auth/login/login";
-import { socketInstance } from "../../../socket_manager/socket";
+import { getSocketInstance } from "../../../socket_manager/socket";
 import { PlayerProfileManager } from "../../../profile_frontend/src/components/FriendRequest";
 import { currentUserId } from "../../../auth_frontend/src_auth/login/login";
 // const socket = socketInstance;
@@ -117,7 +117,7 @@ function setupPopupEvents() {
         const time = getTime();
         chatZone.innerHTML += sendMsg(value, time);
         console.log("user",userID,"friend",friendId);
-        socketInstance()?.emit("send_message", { value, userID, friendId });
+        getSocketInstance()?.emit("send_message", { value, userID, friendId });
         moveUp(friendId);
         const container = document.getElementById(
           `container-of-last-msg-of-${friendId}`
@@ -168,7 +168,7 @@ function addMenuNotification(icon, text, notifId ) {
     </div>
   `;
   msgNotif.querySelector(".close-btn").onclick = () => {
-    socketInstance()?.emit("removeNotif", notifId);
+    getSocketInstance()?.emit("removeNotif", notifId);
     msgNotif.remove();
 
     if (notification.children.length === 0) {
@@ -186,7 +186,7 @@ function addMenuNotification(icon, text, notifId ) {
 
 
 function socketListener() {
-  socketInstance()?.on("live", (id, roomName, msg, timeOfMsg) => {
+  getSocketInstance()?.on("live", (id, roomName, msg, timeOfMsg) => {
     moveUp(id);
     // console.log("id", id);
     const timeOfMsgSpan: HTMLSpanElement = document.getElementById(
@@ -210,24 +210,24 @@ function socketListener() {
       if (timeOfMsgSpan) timeOfMsgSpan.innerText = timeOfMsg;
     }
   });
-  socketInstance()?.on("receive_message", (msg, msgId, friendId, timeOfMsg, friendImg) => {
+  getSocketInstance()?.on("receive_message", (msg, msgId, friendId, timeOfMsg, friendImg) => {
     console.log('image received in chat script:', friendImg);
     const chatZone = document.getElementById("chat-zone") as HTMLDivElement;
     // console.log("recvMsg",chatZone)
     chatZone?.insertAdjacentHTML("beforeend",receivedMsg(msg, timeOfMsg, friendImg));
-    socketInstance()?.emit("ack_message", msgId);
+    getSocketInstance()?.emit("ack_message", msgId);
     const containerMsg = document.getElementById(`container-of-last-msg-of-${friendId}`);
     if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
     // const container = document.getElementById(`container-of-last-msg-of-${friendId}`);
   });
-  socketInstance()?.on("allowMsg", (allow: boolean,status:string) => {
+  getSocketInstance()?.on("allowMsg", (allow: boolean,status:string) => {
     // console.log("allowMsg", allow);
     const msg = document.getElementById("x");
     if (msg && allow) msg.innerHTML = inputMsg("accepted",status);
     else if (msg && !allow) msg.innerHTML = inputMsg("blocked",status);
     setupPopupEvents();
   });
-  socketInstance()?.on("blockOrAccepted", (roomName, statusGlobal,status) => {
+  getSocketInstance()?.on("blockOrAccepted", (roomName, statusGlobal,status) => {
     const dm = document.getElementById("DM");
     if (dm && dm.dataset.roomName == roomName) {
       const msg = document.getElementById("x");
@@ -235,7 +235,7 @@ function socketListener() {
       setupPopupEvents();
     }
   });
-  socketInstance()?.on("messages_batch", (messages, friendImg) => {
+  getSocketInstance()?.on("messages_batch", (messages, friendImg) => {
     const chatZone = document.getElementById("chat-zone") as HTMLDivElement;
     if(!chatZone) return;
     for (const msg of messages) {
@@ -254,7 +254,7 @@ function socketListener() {
       chatZone.scrollTop = chatZone.scrollHeight;
     });
   });
-  socketInstance()?.on("messages_old_batch", (messages, friendImg) => {
+  getSocketInstance()?.on("messages_old_batch", (messages, friendImg) => {
     const chatZone = document.getElementById("chat-zone") as HTMLDivElement;
     for (const msg of messages) {
       if (msg.send == userID)
@@ -269,7 +269,7 @@ function socketListener() {
         );
     }
   });
-  socketInstance()?.on("request_to_play", (from,friendId,notifId) => {
+  getSocketInstance()?.on("request_to_play", (from,friendId,notifId) => {
       const container = document.getElementById("play-notification-container");
       if (!container) return;
 
@@ -306,12 +306,12 @@ function socketListener() {
       container.appendChild(notif);
 
       notif.querySelector(".accept").onclick = () => {
-        socketInstance()?.emit("accept_play", userID,friendId );
+        getSocketInstance()?.emit("accept_play", userID,friendId );
         notif.remove();
       };
 
       notif.querySelector(".reject").onclick = () => {
-        socketInstance()?.emit("reject_play", userID,friendId);
+        getSocketInstance()?.emit("reject_play", userID,friendId);
         notif.remove();
       };
       addMenuNotification("🎮 ",`<strong>${from}</strong> wants to play`,notifId);
@@ -321,7 +321,7 @@ function socketListener() {
         notif.remove();
       }, 10000);
   });
-  socketInstance()?.on("not_agree", (from ,notifId) => {
+  getSocketInstance()?.on("not_agree", (from ,notifId) => {
     const container = document.getElementById("play-notification-container");
 
     if (!container) return;
@@ -367,7 +367,7 @@ function socketListener() {
       notif.remove();
     }, 3000);
   });
-  socketInstance()?.on('msg_notification',(from , msg,notifId)=>{
+  getSocketInstance()?.on('msg_notification',(from , msg,notifId)=>{
     const container = document.getElementById("play-notification-container");
     if (!container) return;
 
@@ -394,7 +394,7 @@ function socketListener() {
     }, 5000);
     addMenuNotification("💬",`<strong>${from}</strong>: ${msg}`,notifId);
   })
-  socketInstance()?.on("user_online", (userId: string) => {
+  getSocketInstance()?.on("user_online", (userId: string) => {
     const elements = document.querySelectorAll(`.online-indicator-${userId}`)
     if(!elements)
       return;
@@ -402,7 +402,7 @@ function socketListener() {
       el.classList.remove("hidden");
     });
   });
-  socketInstance()?.on("user_offline", (userId: string) => {
+  getSocketInstance()?.on("user_offline", (userId: string) => {
     const elements = document.querySelectorAll(`.online-indicator-${userId}`)
     if(!elements)
       return;
@@ -436,10 +436,10 @@ export async function showMainUI() {
 
   function fetchListOfFriends(): Promise<any> {
     return new Promise((resolve) => {
-      socketInstance()?.once("friends_list", (friends) => {
+      getSocketInstance()?.once("friends_list", (friends) => {
         resolve(friends);
       });
-      socketInstance()?.emit("get_friends");
+      getSocketInstance()?.emit("get_friends");
     });
   }
 
@@ -463,7 +463,7 @@ export async function showMainUI() {
         function onScroll() {
           let offset: number = 0;
           if (!firestOne) {
-            socketInstance()?.emit("get_messages", { myId, friendId, limit: 20, offset });
+            getSocketInstance()?.emit("get_messages", { myId, friendId, limit: 20, offset });
             firestOne = true;
           }
           const chatZone = document.getElementById("chat-zone");
@@ -472,7 +472,7 @@ export async function showMainUI() {
               if (chatZone.scrollTop < 190 && !isFetching) {
                 isFetching = true;
                 offset += 20;
-                await socketInstance()?.emit("get_old_messages", {
+                await getSocketInstance()?.emit("get_old_messages", {
                   myId,
                   friendId,
                   limit: 20,
@@ -507,7 +507,7 @@ export async function showMainUI() {
                 friendId = "";
             });
           })
-          socketInstance()?.emit("joinToRoom", roomName);
+          getSocketInstance()?.emit("joinToRoom", roomName);
 
           const counterElement: HTMLDivElement = document.getElementById(
             `counter-of-${friendId}`
@@ -531,7 +531,7 @@ export async function showMainUI() {
 
           contentChat += chatZones();
           if (dmZone) dmZone.innerHTML = contentChat;
-          socketInstance()?.emit("get_status", friendId);
+          getSocketInstance()?.emit("get_status", friendId);
             const userAccount = document.querySelectorAll('.user-account');
             userAccount.forEach(element => {
               element.addEventListener('click',()=>{
@@ -559,9 +559,9 @@ export async function showMainUI() {
             ) as HTMLDivElement;
             //When pressed 3 point
             option?.addEventListener("click", async () => {
-              socketInstance()?.emit("get_status",friendId)
+              getSocketInstance()?.emit("get_status",friendId)
               const btn1 = await new Promise<string>((resolve) => {
-                  socketInstance()?.once("blockBtn", (btn) => {
+                  getSocketInstance()?.once("blockBtn", (btn) => {
                       resolve(btn);
                   });
               });
@@ -645,7 +645,7 @@ export async function showMainUI() {
                 textEl.textContent = `Waiting ${remaining}s`;
                 iconEl.classList.add("opacity-0");
   
-                socketInstance()?.emit("challenge", friendId);
+                getSocketInstance()?.emit("challenge", friendId);
   
                 challenge.dataset.intervalId = setInterval(() => {
                   remaining--;
@@ -686,7 +686,7 @@ export async function showMainUI() {
 
             //block behaver
             blockValid.addEventListener("click", () => {
-              socketInstance()?.emit("status", { status: "blocked", friendId });
+              getSocketInstance()?.emit("status", { status: "blocked", friendId });
               blockOption.classList.add("hidden");
               const popupOption = document.getElementById("popup-option");
               if (popupOption) {
@@ -706,7 +706,7 @@ export async function showMainUI() {
             });
             //unblock behaver
             unblockValid.addEventListener("click", () => {
-              socketInstance()?.emit("status", { status: "accepted", friendId });
+              getSocketInstance()?.emit("status", { status: "accepted", friendId });
               unblockOption.classList.add("hidden");
               const popupOption = document.getElementById("popup-option");
               if (popupOption) {

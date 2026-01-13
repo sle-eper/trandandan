@@ -144,7 +144,7 @@ function attach2FAHandlers() {
 
 
     console.log("Entered 2FA code:", code);
-    navigate("dashboard");
+    navigate("/dashboard");
   };
 
   btn.addEventListener("click", submit2FA);
