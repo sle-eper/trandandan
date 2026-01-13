@@ -2,25 +2,6 @@ import { io, Socket } from "socket.io-client";
 
 let socket: Socket | null = null;
 
-// export function initSocket(userId: string) {
-//   if (!socket) {
-//     /
-//     socket = io("http://localhost:3000", {
-//       auth: { userId },
-//       autoConnect: true
-//     });
-//   }
-//   return socket;
-// }
-
-// export function getSocket(): Socket {
-//   if (!socket) {
-//     /
-//     throw new Error("Socket not initialized");//TODO catch 
-//   }
-//   return socket;
-// }
-
 
 export function getSocket(){
   socket = null;

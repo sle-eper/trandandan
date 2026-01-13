@@ -26,8 +26,6 @@ server.register(fastifyIO, {
   }
 });
 
-
-//TODO khasni nb9a nkhedm b user id mn socket
 export const onlineUsers = new Map<string, Set<string>>();
 
 server.get('/online/:id', (req, res) => {

@@ -53,7 +53,7 @@ export async function spyUi(step: string = "local")
         if (step === "spies") {
             main.innerHTML =
                 renderLocalMode() +
-                PlayerAndSpaySelection("spays", 1);
+                PlayerAndSpaySelection("spies", 1);
             return;
         }
 
@@ -66,7 +66,7 @@ export async function spyUi(step: string = "local")
 
         /* ===================== DEFAULT (MAIN SPY PAGE) ===================== */
 
-        main.innerHTML = renderLocalMode() + renderSection() + PlayerAndSpaySelection("players",3) + PlayerAndSpaySelection("spays",1) /* + await history(myId) */
+        main.innerHTML = renderLocalMode() + renderSection() + PlayerAndSpaySelection("players",7) + PlayerAndSpaySelection("spies",1) /* + await history(myId) */
         const game = document.getElementById("dashboard-content")
         const data = {
             players:0,
@@ -470,7 +470,7 @@ export async function spyUi(step: string = "local")
                     currentIndex = 0;
                     whoAsks = ''
                     spays = ''
-                    game.innerHTML = renderLocalMode(playerNumber,spaysNumber,selected.length) + renderSection() + PlayerAndSpaySelection("players",playerNumber) + PlayerAndSpaySelection("spays",spaysNumber) 
+                    game.innerHTML = renderLocalMode(playerNumber,spaysNumber,selected.length) + renderSection() + PlayerAndSpaySelection("players",playerNumber) + PlayerAndSpaySelection("spies",spaysNumber) 
                 }
                 if(el.id === 'next-btn' || el.id === 'next-btn-logo')
                 {
@@ -615,7 +615,7 @@ export async function spyUi(step: string = "local")
                 {
                     game.innerHTML = chooseSpy(whoAsks)
                 }
-                if(el.id === 'confirm-spy')//TODO if spy == player slat 
+                if(el.id === 'confirm-spy')
                 {
                     console.log("click 1",whoAsks)
                     const select = document.getElementById("spy-select") as HTMLSelectElement;
@@ -728,6 +728,11 @@ export async function spyUi(step: string = "local")
                 if(el.id === 'back-to-choose')
                 {
                     game.innerHTML = renderSpyChoice()
+                }
+                if(el.id === 'confirm-btn')
+                {
+                    document.getElementById("local-mode")?.classList.remove('hidden');
+                    document.getElementById("historySection")?.classList.add('hidden');
                 }
             }
         )

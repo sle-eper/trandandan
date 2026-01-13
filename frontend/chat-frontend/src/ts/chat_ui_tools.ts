@@ -19,9 +19,13 @@ export function setupPopupEvents() {
     const unblockButton = document.getElementById("unblock-button");
     const blockOption = document.getElementById("block-option");
     const unblockOption = document.getElementById("unblock-option");
-    const sendButton = document.getElementById(
-        "send-button"
-    ) as HTMLButtonElement;
+    const sendButton = document.getElementById("send-button") as HTMLButtonElement;
+    const challenge: HTMLButtonElement = document.getElementById("challenge-option") as HTMLButtonElement;
+    
+
+    if (challenge && challenge.dataset.click) { 
+            challenge.dataset.click = undefined;
+    }
 
     if (blockButton && blockOption) {
         blockButton.addEventListener("click", () =>
@@ -55,7 +59,6 @@ export function setupPopupEvents() {
 
     if (sendButton) {
         function showToast(message: string, duration = 3000) {
-            //TODO hadi khasha twli pro chewiya
             const container = document.getElementById("err-display");
             if (!container) return;
             container.innerHTML = "";
