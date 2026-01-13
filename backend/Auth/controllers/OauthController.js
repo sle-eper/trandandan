@@ -54,7 +54,7 @@ export async function googleAuthCallback_get(request, reply) {
                     path: '/',
                     httpOnly: true,
                 })
-            .redirect(`http://localhost:8080/auth/success?token=${token}`)
+            .redirect(`https://localhost:8443/home`);
 
         }
         else {
@@ -134,6 +134,9 @@ export async function githubAuthCallback_get(request, reply) {
                 .redirect(`http://localhost:8080/auth/success?token=${token}`);
         } else {
             // User doesn't exist → create profile
+            console.log("Creating new user profile for:", email);
+            console.log("Name:", name);
+            console.log("password: null");
             const response = await axios.post('http://user-management:3000/profile/create', {
                 username: name,
                 email,
@@ -141,10 +144,9 @@ export async function githubAuthCallback_get(request, reply) {
                 // password can be null or generated randomly
                 password: null,
             });
-
             return reply
                 .setCookie('token', token, { path: '/', httpOnly: true })
-                .redirect(`http://localhost:8080/auth/success?token=${token}`);
+                .redirect(`https://localhost:8443/`);
         }
 
     } catch (err) {
