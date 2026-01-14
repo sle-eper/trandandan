@@ -7,6 +7,11 @@ let currentTournament = {
   name: "",
   maxPlayers: 16
 };
+const CARD_HEIGHT = 56;
+const GAP_R16 = 40;
+const MATCH_STEP = CARD_HEIGHT + GAP_R16; // 96
+const COLUMN_TOP_PADDING = 32; // px
+
 
 /* =======================
    PAGE TEMPLATES
@@ -52,34 +57,62 @@ function tournamentListTemplate(tournaments?: any[]) {
   `;
 }
 
-function tournamentCard(name: string, status: "Upcoming" | "Ongoing" | "Finished", id: string, maxPlayers: number) {
+function tournamentCard(
+  name: string,
+  status: "Upcoming" | "Ongoing" | "Finished",
+  id: string,
+  maxPlayers: number
+) {
   const statusColor =
     status === "Upcoming"
       ? "bg-yellow-500/20 text-yellow-400"
       : status === "Ongoing"
         ? "bg-green-500/20 text-green-400"
         : "bg-gray-500/20 text-gray-400";
+
+  const canJoin = status !== "Finished";
+
   return `
     <div class="rounded-2xl border border-white/10 p-5 flex flex-col justify-between
                 bg-gradient-to-br from-[#1a1a1d] to-[#0f0f11]">
+
       <div>
         <h3 class="text-xl font-semibold mb-2">${name}</h3>
-        <div class="flex gap-2 items-center">
+
+        <div class="flex gap-2 items-center mb-3">
           <span class="text-xs px-3 py-1 rounded-full ${statusColor}">
             ${status}
           </span>
           <span class="text-xs text-gray-500">${maxPlayers} Players</span>
         </div>
       </div>
-      <button
-        class="mt-4 w-full py-2 rounded-lg bg-red-600/80 hover:bg-red-600 transition text-sm view-bracket-btn"
-        data-tournament-name="${name}"
-        data-max-players="${maxPlayers}">
-        View Bracket
-      </button>
+
+      <div class="flex gap-2 mt-4">
+        <button
+          class="flex-1 py-2 rounded-lg bg-red-600/80 hover:bg-red-600 transition text-sm view-bracket-btn"
+          data-tournament-name="${name}"
+          data-max-players="${maxPlayers}">
+          View Bracket
+        </button>
+
+        ${
+          canJoin
+            ? `
+          <button
+            class="flex-1 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition text-sm join-tournament-btn"
+            data-tournament-id="${id}"
+            data-tournament-name="${name}">
+            Join
+          </button>
+          `
+            : ""
+        }
+      </div>
+
     </div>
   `;
 }
+
 
 function generateBracketHTML(maxPlayers: number) {
   if (maxPlayers === 4) {
@@ -94,12 +127,20 @@ function generateBracketHTML(maxPlayers: number) {
 function generate4PlayerBracket() {
   return `
     <div class="w-full h-full flex items-center justify-center gap-12">
-      
+
       <!-- Semi-Finals -->
-      <div class="flex flex-col gap-2">
-        <h3 class="text-xs text-gray-400 uppercase tracking-wider mb-4 text-center">Semi-Final</h3>
-        <div class="flex flex-col gap-24">
+      <div class="relative w-44" style="height: 280px;">
+        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
+          Semi-Final
+        </h3>
+
+        <!-- SF 1 -->
+        <div class="absolute left-0" style="top: 48px;">
           ${matchCard("Player 1", "TBD", "Player 2", "TBD")}
+        </div>
+
+        <!-- SF 2 -->
+        <div class="absolute left-0" style="top: 168px;">
           ${matchCard("Player 3", "TBD", "Player 4", "TBD")}
         </div>
       </div>
@@ -107,14 +148,17 @@ function generate4PlayerBracket() {
       <!-- Connector Lines SF → F -->
       <div class="flex flex-col justify-center">
         <svg width="60" height="280" class="text-white/20">
-          ${connectorPair(60, 96, 48, 3)}
+          ${connectorPair(60, 110, 60, 3)}
         </svg>
       </div>
 
       <!-- Final -->
-      <div class="flex flex-col gap-2">
-        <h3 class="text-xs text-gray-400 uppercase tracking-wider mb-4 text-center">Final</h3>
-        <div class="flex flex-col justify-center h-full">
+      <div class="relative w-44" style="height: 280px;">
+        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
+          Final
+        </h3>
+
+        <div class="absolute left-0" style="top: 108px;">
           ${matchCard("TBD", "TBD", "TBD", "TBD")}
         </div>
       </div>
@@ -126,14 +170,30 @@ function generate4PlayerBracket() {
 function generate8PlayerBracket() {
   return `
     <div class="w-full h-full flex items-center justify-center gap-10">
-      
+
       <!-- Quarter-Finals -->
-      <div class="flex flex-col gap-2">
-        <h3 class="text-xs text-gray-400 uppercase tracking-wider mb-4 text-center">Quarter-Final</h3>
-        <div class="flex flex-col gap-14">
+      <div class="relative w-44" style="height: 480px;">
+        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
+          Quarter-Final
+        </h3>
+
+        <!-- QF 1 -->
+        <div class="absolute left-0" style="top: 48px;">
           ${matchCard("Player 1", "TBD", "Player 2", "TBD")}
+        </div>
+
+        <!-- QF 2 -->
+        <div class="absolute left-0" style="top: 168px;">
           ${matchCard("Player 3", "TBD", "Player 4", "TBD")}
+        </div>
+
+        <!-- QF 3 -->
+        <div class="absolute left-0" style="top: 288px;">
           ${matchCard("Player 5", "TBD", "Player 6", "TBD")}
+        </div>
+
+        <!-- QF 4 -->
+        <div class="absolute left-0" style="top: 408px;">
           ${matchCard("Player 7", "TBD", "Player 8", "TBD")}
         </div>
       </div>
@@ -141,31 +201,40 @@ function generate8PlayerBracket() {
       <!-- Connector Lines QF → SF -->
       <div class="flex flex-col justify-center">
         <svg width="60" height="480" class="text-white/20">
-          ${connectorPair(60, 70, 48, 2)}
-          ${connectorPair(60, 70, 308, 2)}
+          ${connectorPair(60, 120, 48, 2)}
+          ${connectorPair(60, 120, 308, 2)}
         </svg>
       </div>
 
       <!-- Semi-Finals -->
-      <div class="flex flex-col gap-2">
-        <h3 class="text-xs text-gray-400 uppercase tracking-wider mb-4 text-center">Semi-Final</h3>
-        <div class="flex flex-col gap-32">
+      <div class="relative w-44" style="height: 480px;">
+        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
+          Semi-Final
+        </h3>
+
+        <div class="absolute left-0" style="top: 108px;">
           ${matchCard("TBD", "TBD", "TBD", "TBD")}
+        </div>
+
+        <div class="absolute left-0" style="top: 368px;">
           ${matchCard("TBD", "TBD", "TBD", "TBD")}
         </div>
       </div>
 
       <!-- Connector Lines SF → F -->
       <div class="flex flex-col justify-center">
-        <svg width="60" height="320" class="text-white/20">
-          ${connectorPair(60, 128, 48, 3)}
+        <svg width="60" height="480" class="text-white/20">
+          ${connectorPair(60, 260, 108, 3)}
         </svg>
       </div>
 
       <!-- Final -->
-      <div class="flex flex-col gap-2">
-        <h3 class="text-xs text-gray-400 uppercase tracking-wider mb-4 text-center">Final</h3>
-        <div class="flex flex-col justify-center h-full">
+      <div class="relative w-44" style="height: 480px;">
+        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
+          Final
+        </h3>
+
+        <div class="absolute left-0" style="top: 228px;">
           ${matchCard("TBD", "TBD", "TBD", "TBD")}
         </div>
       </div>
@@ -174,6 +243,7 @@ function generate8PlayerBracket() {
   `;
 }
 
+
 function generate16PlayerBracket() {
   return `
     <div class="w-full h-full flex items-center justify-center gap-8">
@@ -181,7 +251,7 @@ function generate16PlayerBracket() {
       <!-- Round of 16 -->
       <div class="flex flex-col gap-2">
         <h3 class="text-xs text-gray-400 uppercase tracking-wider mb-4 text-center">Round of 16</h3>
-        <div class="flex flex-col gap-20">
+        <div class="flex flex-col gap-10 pt-8">
           ${matchCard("Player 1", "3", "Player 2", "1")}
           ${matchCard("Player 3", "TBD", "Player 4", "TBD")}
           ${matchCard("Player 5", "TBD", "Player 6", "TBD")}
@@ -194,54 +264,81 @@ function generate16PlayerBracket() {
       </div>
 
       <!-- Connector Lines R16 → QF -->
-      <div class="flex flex-col justify-center">
-        <svg width="50" height="960" class="text-white/20">
-          ${connectorPair(50, 160, 48, 2)}
-          ${connectorPair(50, 160, 328, 2)}
-          ${connectorPair(50, 160, 608, 2)}
-          ${connectorPair(50, 160, 888, 2)}
+      <div>
+        <svg width="50" height="860" class="text-white/20">
+          ${connectorPair(50, 100, 50, 2)}
+          ${connectorPair(50, 100, 280, 2)}
+          ${connectorPair(50, 100, 510, 2)}
+          ${connectorPair(50, 100, 730, 2)}
         </svg>
+
       </div>
 
-      <!-- Quarter-Finals -->
-      <div class="flex flex-col gap-2">
-        <h3 class="text-xs text-gray-400 uppercase tracking-wider mb-4 text-center">Quarter-Final</h3>
-        <div class="flex flex-col gap-32">
-          ${matchCard("Player 1", "TBD", "TBD", "TBD")}
-          ${matchCard("TBD", "TBD", "TBD", "TBD")}
-          ${matchCard("TBD", "TBD", "TBD", "TBD")}
-          ${matchCard("TBD", "TBD", "TBD", "TBD")}
-        </div>
+  <!-- Quarter-Finals -->
+    <div class="relative w-44" style="height: 860px;">
+      <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
+        Quarter-Final
+      </h3>
+
+      <div class="absolute left-0" style="top: 98px;">
+        ${matchCard("Player 1", "TBD", "TBD", "TBD")}
       </div>
+
+      <div class="absolute left-0" style="top: 328px;">
+        ${matchCard("TBD", "TBD", "TBD", "TBD")}
+      </div>
+
+      <div class="absolute left-0" style="top: 558px;">
+        ${matchCard("TBD", "TBD", "TBD", "TBD")}
+      </div>
+
+      <div class="absolute left-0" style="top: 778px;">
+        ${matchCard("TBD", "TBD", "TBD", "TBD")}
+      </div>
+    </div>
+
+
+
 
       <!-- Connector Lines QF → SF -->
       <div class="flex flex-col justify-center">
-        <svg width="50" height="680" class="text-white/20">
-          ${connectorPair(50, 240, 48, 2.5)}
-          ${connectorPair(50, 240, 504, 2.5)}
+        <svg width="50" height="860" class="text-white/20">
+          ${connectorPair(50, 224, 106, 2.5)}
+          ${connectorPair(50, 224, 566, 2.5)}
         </svg>
       </div>
 
       <!-- Semi-Finals -->
-      <div class="flex flex-col gap-2">
-        <h3 class="text-xs text-gray-400 uppercase tracking-wider mb-4 text-center">Semi-Final</h3>
-        <div class="flex flex-col gap-56">
+      <div class="relative w-44" style="height: 860px;">
+        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
+          Semi-Final
+        </h3>
+
+        <!-- SF 1 -->
+        <div class="absolute left-0" style="top: 212px;">
           ${matchCard("TBD", "TBD", "TBD", "TBD")}
+        </div>
+
+        <!-- SF 2 -->
+        <div class="absolute left-0" style="top: 672px;">
           ${matchCard("TBD", "TBD", "TBD", "TBD")}
         </div>
       </div>
 
       <!-- Connector Lines SF → F -->
       <div class="flex flex-col justify-center">
-        <svg width="50" height="500" class="text-white/20">
-          ${connectorPair(50, 320, 48, 3)}
+        <svg width="50" height="860" class="text-white/20">
+          ${connectorPair(50, 460, 220, 3)}
         </svg>
       </div>
 
       <!-- Final -->
-      <div class="flex flex-col gap-2">
-        <h3 class="text-xs text-gray-400 uppercase tracking-wider mb-4 text-center">Final</h3>
-        <div class="flex flex-col justify-center h-full">
+      <div class="relative w-44" style="height: 860px;">
+        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
+          Final
+        </h3>
+
+        <div class="absolute left-0" style="top: 450px;">
           ${matchCard("TBD", "TBD", "TBD", "TBD")}
         </div>
       </div>
@@ -249,6 +346,7 @@ function generate16PlayerBracket() {
     </div>
   `;
 }
+let joinedPlayers: string[] = [];
 
 function tournamentBracketTemplate() {
   return `
@@ -256,18 +354,43 @@ function tournamentBracketTemplate() {
       
       <!-- Header -->
       <div class="flex items-center justify-between px-6 py-4 border-b border-white/10">
+
+        <!-- Tournament Info -->
         <div>
           <h2 class="text-2xl font-bold">${currentTournament.name}</h2>
-          <p class="text-xs text-gray-400 mt-1">Single Elimination • ${currentTournament.maxPlayers} Players</p>
+          <p class="text-xs text-gray-400 mt-1">
+            Single Elimination • 
+            <span id="player-count">0</span> / ${currentTournament.maxPlayers} Players
+          </p>
         </div>
-        <button
-          id="back-to-tournaments"
-          class="px-4 py-2 bg-white/10 rounded-xl text-sm hover:bg-white/20 transition">
-          ← Back
-        </button>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-3">
+
+          <button
+            id="add-player-btn"
+            class="px-4 py-2 bg-white/10 rounded-xl text-sm hover:bg-white/20 transition">
+            + Add Player
+          </button>
+
+          <button
+            id="start-tournament-btn"
+            class="px-4 py-2 bg-green-600/80 rounded-xl text-sm
+                   hover:bg-green-600 transition disabled:opacity-40 disabled:cursor-not-allowed"
+            disabled>
+            ▶ Start Tournament
+          </button>
+
+          <button
+            id="back-to-tournaments"
+            class="px-4 py-2 bg-white/10 rounded-xl text-sm hover:bg-white/20 transition">
+            ← Back
+          </button>
+
+        </div>
       </div>
 
-      <!-- Bracket Container (No Scroll) -->
+      <!-- Bracket Container -->
       <div class="flex-1 flex items-center justify-center p-4">
         ${generateBracketHTML(currentTournament.maxPlayers)}
       </div>
@@ -471,8 +594,9 @@ function attachListHandlers() {
     navigate("/tournament");
   });
 
+  // View Bracket
   document.querySelectorAll(".view-bracket-btn").forEach(btn => {
-    btn.addEventListener("click", async (e) => {
+    btn.addEventListener("click", (e) => {
       const target = e.currentTarget as HTMLElement;
       currentTournament.name = target.dataset.tournamentName || "Tournament";
       currentTournament.maxPlayers = parseInt(target.dataset.maxPlayers || "16");
@@ -481,13 +605,72 @@ function attachListHandlers() {
       navigate("/tournament/bracket");
     });
   });
+
+  // Join Tournament
+  document.querySelectorAll(".join-tournament-btn").forEach(btn => {
+    btn.addEventListener("click", async (e) => {
+      const target = e.currentTarget as HTMLElement;
+      const tournamentId = target.dataset.tournamentId;
+      const tournamentName = target.dataset.tournamentName;
+
+      if (!tournamentId || !tournamentName) return;
+
+      const socket = Socket.getSocketInstance();
+
+      socket?.emit("tournament:join", {
+        tournamentId,
+        room: tournamentName,
+      });
+
+      socket?.once("tournament:joined", () => {
+        console.log("Joined tournament:", tournamentName);
+        navigate("/tournament/bracket");
+      });
+    });
+  });
 }
+
 
 export function renderTournamentBracket() {
   const main = document.getElementById("dashboard-content");
   if (!main) return;
   main.innerHTML = tournamentBracketTemplate();
 
+  const addBtn = document.getElementById("add-player-btn");
+  const startBtn = document.getElementById("start-tournament-btn");
+  const playerCount = document.getElementById("player-count");
+
+  addBtn?.addEventListener("click", () => {
+    if (joinedPlayers.length >= currentTournament.maxPlayers) return;
+
+    const newPlayer = `Player ${joinedPlayers.length + 1}`;
+    joinedPlayers.push(newPlayer);
+
+    playerCount!.textContent = String(joinedPlayers.length);
+
+    // Enable start button only if full
+    if (joinedPlayers.length === currentTournament.maxPlayers) {
+      startBtn?.removeAttribute("disabled");
+    }
+
+    console.log("Player added:", newPlayer);
+  });
+
+  startBtn?.addEventListener("click", () => {
+    if (joinedPlayers.length !== currentTournament.maxPlayers) {
+      alert("Not all players have joined yet!");
+      return;
+    }
+
+    console.log("Tournament started with players:", joinedPlayers);
+
+    // 🔌 Socket / API hook
+    // socket.emit("tournament:start", { players: joinedPlayers });
+  });
+
+  document.getElementById("back-to-tournaments")?.addEventListener("click", () => {
+    navigate("/tournament");
+  });
   document.getElementById("back-to-tournaments")?.addEventListener("click", async () => {
     renderTournamentList();
     navigate("/tournament/list");

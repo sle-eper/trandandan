@@ -103,20 +103,20 @@ addRoute("/chat", () =>
 // );
 
 
-addRoute("/tournament", () =>
+addRoute("/tournement", () =>
   protectedRoute(() => {
     showDashboard();
     loadtournament();
   })
 );
-addRoute("/tournament/list", () =>
+addRoute("/tournement/list", () =>
   protectedRoute(() => {
     showDashboard();
     renderTournamentList();
   })
 );
 
-addRoute("/tournament/create", () =>
+addRoute("/tournement/create", () =>
   protectedRoute(() => {
     showDashboard();
     renderCreateTournament();
@@ -146,7 +146,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     "/game",
     "/chat",
     "/profile",
-    "/tournament",
+    "/tournement",
     "/2FA"
   ];
 
