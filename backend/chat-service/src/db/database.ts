@@ -196,7 +196,7 @@ export function dataOfUser(id:string):any
 export  function checkExistingNotification(senderId: string, receiverId: string, type: string,status: string): boolean {
   try {
      const result =  db.prepare(
-    `SELECT id FROM notifications 
+    `SELECT id FROM notification 
      WHERE send = $1 
      AND recv = $2 
      AND type = $3 
@@ -214,13 +214,13 @@ export  function checkExistingNotification(senderId: string, receiverId: string,
 
 export function updateNotificationStatus(notifId: string, status: string): void {
   db.prepare(
-    `UPDATE notifications SET status = ? WHERE id = ?`
+    `UPDATE notification SET status = ? WHERE id = ?`
   ).run(status, notifId);
 }
 
 export function deleteNotification(notifId: string): void {
   db.prepare(
-    `DELETE FROM notifications WHERE id = ?`
+    `DELETE FROM notification WHERE id = ?`
   ).run(notifId);
 }
 
