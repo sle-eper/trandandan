@@ -2,6 +2,7 @@
 import { getSocketInstance } from "../../../socket_manager/socket";
 import { PlayerProfileManager } from "../../../profile_frontend/src/components/FriendRequest";
 import { currentUserId } from "../../../auth_frontend/src_auth/login/login";
+import { navigateSilent } from "../../../auth_frontend/src_auth/login/router.ts";
 // const socket = socketInstance;
 
 import {
@@ -37,6 +38,7 @@ window.addEventListener("keydown", (e) => {
     friendId = "";
     const dmZone = document.getElementById("DM");
     if (dmZone) dmZone.innerHTML = choseFriend();
+    navigateSilent(`/chat`);
   }
 });
 
@@ -454,8 +456,10 @@ export async function showMainUI() {
       chatContent.innerHTML += DM();
     //     //get all of list friends
     const friendsEvent = document.querySelectorAll(".friend-msg-zone");
-    friendsEvent.forEach((friend) => {
+    friendsEvent.forEach((friend:any) => {
       friend.addEventListener("click", () => {
+        // console.log("ssss",friend.dataset.name);
+      navigateSilent(`/chat/${friend.dataset.name}`);
         //         /******************************************get msg on scroll*******************************/
 
         let firestOne: boolean = false;
