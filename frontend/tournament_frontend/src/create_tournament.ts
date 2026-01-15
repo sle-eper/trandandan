@@ -642,6 +642,11 @@ export function renderTournamentBracket() {
 
   addBtn?.addEventListener("click", () => {
     if (joinedPlayers.length >= currentTournament.maxPlayers) return;
+    console.log("Adding player...");
+    //list friend to request to join the tournament 
+    //click to friend to send request 
+    //send socket event to server to add player to tournament
+    //if accept add to joined players list in backend
 
     const newPlayer = `Player ${joinedPlayers.length + 1}`;
     joinedPlayers.push(newPlayer);
