@@ -1,7 +1,6 @@
 export async function history(id:string) {
     try {
         const response = await fetch(`http://localhost:3003/users/${id}/history`);
-
         if (!response.ok) {
             return `<p class="text-red-500">No history found</p>`;
         }

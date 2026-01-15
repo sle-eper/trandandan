@@ -11,11 +11,6 @@ export function socketListener() {
   socketInstance()?.on("messages_old_batch", messages_old_batchHandler);
   socketInstance()?.on("user_online", user_onlineHandler);
   socketInstance()?.on("user_offline", user_offlineHandler);
-
-  // socketInstance()?.on("request_to_play", request_to_playHandler);
-  // socketInstance()?.on("not_agree", not_agreeHandler);
-  // socketInstance()?.on('msg_notification', msg_notificationHandler);
-
 }
 export function socketNotificationListener() {
   socketInstance()?.on('msg_notification', msg_notificationHandler);
