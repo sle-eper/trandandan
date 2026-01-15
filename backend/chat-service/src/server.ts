@@ -30,6 +30,8 @@ server.register(fastifyIO, {
   }
 });
 
+
+//TODO khasni nb9a nkhedm b user id mn socket
 export const onlineUsers = new Map<string, Set<string>>();
 
 server.get('/online/:id', (req, res) => {
@@ -96,12 +98,12 @@ server.ready().then(() => {
             const msgId: string = await saveMsg(id, friendId, msg, roomName, "waiting");
             const timeOfMsg: string = await getTimeOfMsg(msgId);
             const UserData = await fetchUserData(id); // get data of user from user-management service
-            console.log(UserData.user);
-            socket.to(roomName).emit("receive_message", msg, msgId, id, timeOfMsg, UserData?.user.avatar_url);
+            // console.log(UserData?.user);
+            socket.to(roomName).emit("receive_message", msg, msgId, id, timeOfMsg, UserData?.user?.avatar_url);
             if (friendSocketId) {
               for (const ids of friendSocketId) {
                 socket.to(ids).emit("live", id, roomName, msg, timeOfMsg);
-                socket.to(ids).emit("msg_notification", UserData.user.username, msg, notifId);
+                socket.to(ids).emit("msg_notification", UserData?.user?.username, msg, notifId);
               }
             }
           }
@@ -112,37 +114,40 @@ server.ready().then(() => {
     });
     socket.on('get_messages', async (data) => {
       try {
-        if (!data?.myId || !data?.friendId) return;
-        const roomName = getRoomName(data.myId, data.friendId);
+        const userID = socket.data.userId;
+        if (!userID || !data?.friendId) return;
+        const roomName = getRoomName(userID, data.friendId);
         const limit = data.limit || 20;
         const offset = data.offset || 0;
-        await changeAllToRecv(data.myId, roomName)
-        await changeDisplay(data.myId)
+        await changeAllToRecv(userID, roomName)
+        await changeDisplay(userID)
         const messages = await getAllMsg(roomName, limit, offset);
         const UserData = await fetchUserData(data.friendId);
-        socket.emit('messages_batch', messages.reverse(), UserData?.user.avatar_url);
+        // console.log("messages fetched:", messages);
+        socket.emit('messages_batch', messages.reverse(), UserData?.user?.avatar_url);
       } catch (err) {
         console.error('Error in get_messages:', err);
       }
     });
     socket.on('get_old_messages', async (data) => {
       try {
-        if (!data?.myId || !data?.friendId) return;
-        const roomName = getRoomName(data.myId, data.friendId);
+        const userID = socket.data.userId;
+        if (!userID || !data?.friendId) return;
+        const roomName = getRoomName(userID, data.friendId);
         const limit = data.limit || 20;
         const offset = data.offset || 0;
-        await changeAllToRecv(data.myId, roomName)
-        await changeDisplay(data.myId)
+        await changeAllToRecv(userID, roomName)
+        await changeDisplay(userID)
         const messages = await getAllMsg(roomName, limit, offset);
         const UserData = await fetchUserData(data.friendId);
-        socket.emit('messages_old_batch', messages, UserData?.user.avatar_url);
+        // console.log("Old messages fetched:", messages);
+        socket.emit('messages_old_batch', messages, UserData?.user?.avatar_url);
       } catch (err) {
         console.error('Error in get_old_messages:', err);
       }
     });
     socket.on("get_friends", async () => {
       try {
-        // console.log("get_friends event triggered");
         const id = socket.data.userId
         if (!id) return;
         const friends = await getFriendsOfUser(id);
@@ -190,9 +195,8 @@ server.ready().then(() => {
           const userSocket = onlineUsers.get(id);
           const friendSocket = onlineUsers.get(data.friendId);
 
-          console.log("--------------------------");
-          console.log("status1", status1)
-          console.log("status2", status2)
+          // console.log("status1",status1)
+          // console.log("status2",status2)
           if (userSocket) {
             for (const ids of userSocket) {
               io.to(ids).emit("blockOrAccepted", roomName, statusGlobal, status1);
@@ -234,13 +238,15 @@ server.ready().then(() => {
         if (!friendId) return;
         const id = socket.data.userId;
         if (!id) return;
-        const friendSocket = onlineUsers.get(friendId);
+        // console.log('challenge event received', friendId);
         const notfId = await saveNotif(id, friendId, 'challenge', null);
+        const friendSocket = onlineUsers.get(friendId);
         if (!friendSocket) return;
         const UserData = await fetchUserData(id);
         if (!UserData)
           return;
         for (const isd of friendSocket) {
+          console.log("emitting request_to_play to socket:", isd);
           io.to(isd).emit("request_to_play", UserData?.user?.username, id, notfId);
         }
 
@@ -276,36 +282,41 @@ server.ready().then(() => {
       }
     })
     socket.on('friendRequestSent', async (myId: string, friendId: string) => {
-      if (!myId || !friendId) return;
-      const existingRequest = checkExistingNotification(
-        myId,
-        friendId,
-        'friendRequest',
-        'pending'
-      );
-
-      if (existingRequest) {
-        socket.emit('error', 'Friend request already pending');
-        return;
-      }
-      const notifId = await saveNotif(myId, friendId, 'friendRequest', 'pending') // 30 days
-
-      console.log(`Notification ID: ${notifId}`);
-      const userSocket = onlineUsers.get(String(friendId));
-
-      if (!userSocket) return;
-
-      const UserData = await fetchUserData(myId);
-      if (!UserData) return;
-      for (const ids of userSocket) {
-
-        socket.to(ids).emit("friendRequestReceived", {
-          username: UserData.user.username,
-          friendId,
+      try {
+        if (!myId || !friendId) return;
+        const existingRequest = checkExistingNotification(
           myId,
-          notifId
-        });
+          friendId,
+          'friendRequest',
+          'pending'
+        );
+
+        if (existingRequest) {
+          socket.emit('error', 'Friend request already pending');
+          return;
+        }
+        const notifId = await saveNotif(myId, friendId, 'friendRequest', 'pending') // 30 days
+
+        // console.log(`Notification ID: ${notifId}`);
+        const userSocket = onlineUsers.get(String(friendId));
+
+        if (!userSocket) return;
+
+        const UserData = await fetchUserData(myId);
+        if (!UserData) return;
+        for (const ids of userSocket) {
+
+          socket.to(ids).emit("friendRequestReceived", {
+            username: UserData.user.username,
+            friendId,
+            myId,
+            notifId
+          });
+        }
+      } catch (err) {
+        console.error('Error in friendRequestSent:', err);
       }
+
 
     });
     socket.on('acceptFriendRequest', async (myId: string, friendId: string, notifId: string) => {
@@ -409,7 +420,7 @@ server.ready().then(() => {
 
 
 
-    
+
     socket.on("/tournamentjoin", async (data) => {
       console.log("tournament join event received", data);
       socket.join(data.room);

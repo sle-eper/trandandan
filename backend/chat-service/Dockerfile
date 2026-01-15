@@ -18,7 +18,7 @@ RUN npm i -D @types/node
 ENV PYTHON=/usr/bin/python3
 
 
-RUN npm install
+RUN npm install && npm rebuild
 
 COPY . .
 
