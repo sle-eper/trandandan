@@ -49,7 +49,7 @@ export function attachVerifyHandlers() {
       }
     });
 
-    input.addEventListener("keydown", (e) => {
+    input.addEventListener("keydown", async (e) => {
       if (e.key === "Backspace" && !input.value && inputs[index - 1]) {
         inputs[index - 1].focus();
       }
@@ -57,11 +57,12 @@ export function attachVerifyHandlers() {
       if (e.key === "Enter") {
         e.preventDefault();
         submitCode();
+        
       }
     });
   });
 
-  const submitCode = () => {
+  const submitCode = async () => {
     clearError();
     const code = inputs.map(i => i.value).join("");
 
@@ -69,15 +70,22 @@ export function attachVerifyHandlers() {
       showError("Please enter the complete verification code.");
       return;
     }
-
     // 🚧 MOCK verification (replace later with API)
-    if (code !== "123456") {
-      showError("Invalid verification code.");
-      return;
-    }
+    const result = await fetch("/api/auth/verify-2factor", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          credentials: "include",
+          body: JSON.stringify({ code: inputs.map(i => i.value).join(""), username: new URLSearchParams(window.location.search).get("username") })
+        });
+        console.log("Enter pressed", result);
 
     // ✅ Success → go to login
-    navigate("/login");
+    if(result.status === 200)
+    {
+      navigate("home");
+    }
   };
 
   btn.addEventListener("click", submitCode);

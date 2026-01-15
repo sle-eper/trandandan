@@ -50,8 +50,8 @@ export function attachLoginHandlers() {
 
   if (!form || !btn || !usernameInput || !passwordInput) return;
 
-  if (signup) signup.addEventListener("click", () => navigate("signup"));
-  if (forgot) forgot.addEventListener("click", () => navigate("forgot"));
+  if (signup) signup.addEventListener("click", () => navigate("/signup"));
+  if (forgot) forgot.addEventListener("click", () => navigate("/forgot"));
 
   const togglePassword = document.getElementById("toggle-password");
   if (togglePassword) {
@@ -78,9 +78,10 @@ export function attachLoginHandlers() {
       const { response, body } = await loginUser(username, password);
       if (response && response.status === 206) {
         // Show 2FA page
+        navigate("/verify?username=" + body.username);
+        return  ;
       }
       if (body.success) {
-        currentUserId = response?.headers.get("x-user-id") || null;
         socketInstance();
         navigate("/home");
       } else {

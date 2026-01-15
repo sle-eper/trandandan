@@ -1,7 +1,8 @@
 import axios from "axios";
 import { navigate } from "../app";
 import { PlayerSearch } from "./playerSearch";
-import { socketInstance } from "../../../socket_manager/socket";
+// import { socket } from "../login/login";
+import { getSocketInstance } from "../../../socket_manager/socket";
 import {getSocket} from "../../../socket_manager/socket"
 import logo from "../images/pingponglogo.jpg?inline"
 
@@ -247,22 +248,22 @@ export async function navBarLogic() {
     if (result.ok) {
       console.log('Logout successful');
       // localStorage.removeItem("userId");
-      socketInstance()?.disconnect();
+      getSocketInstance()?.disconnect();
       getSocket();
-      localStorage.removeItem("userId")
-      navigate("login");
+      // localStorage.removeItem("userId")
+      navigate("/login");
     }
   });
 
   // ✅ PROFILE NAV
   profile?.addEventListener("click", async () => {
-    navigate("profile");
+    navigate("/profile");
   });
 
   // ✅ CHANGE ACCOUNT
   changeAccountBtn?.addEventListener("click", () => {
     document.body.classList.add("flex", "items-center", "justify-center", "px-6", "md:px-20");
-    navigate("login");
+    navigate("/login");
   });
 
   // ✅ ENABLE 2FA

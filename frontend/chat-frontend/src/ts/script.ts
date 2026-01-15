@@ -1,5 +1,5 @@
 // import { socket } from "../../../auth_frontend/src_auth/login/login";
-import { socketInstance } from "../../../socket_manager/socket";
+import { getSocketInstance } from "../../../socket_manager/socket";
 import { PlayerProfileManager } from "../../../profile_frontend/src/components/FriendRequest";
 import { socketListener } from "./chat_socket";
 import {setupPopupEvents ,onScroll,fetchListOfFriends,resetScrollState} from "./chat_ui_tools";
@@ -78,7 +78,7 @@ export async function showMainUI() {
                 setFriendId("");
             });
           })
-          socketInstance()?.emit("joinToRoom", roomName);
+          getSocketInstance()?.emit("joinToRoom", roomName);
 
           const counterElement: HTMLDivElement = document.getElementById(
             `counter-of-${friendId}`
@@ -102,7 +102,7 @@ export async function showMainUI() {
 
           contentChat += chatZones();
           if (dmZone) dmZone.innerHTML = contentChat;
-          socketInstance()?.emit("get_status", friendId);
+          getSocketInstance()?.emit("get_status", friendId);
             const userAccount = document.querySelectorAll('.user-account');
             userAccount.forEach(element => {
               element.addEventListener('click',()=>{
@@ -125,9 +125,9 @@ export async function showMainUI() {
             ) as HTMLDivElement;
             //When pressed 3 point
             option?.addEventListener("click", async () => {
-              socketInstance()?.emit("get_status",friendId)
+              getSocketInstance()?.emit("get_status",friendId)
               const btn1 = await new Promise<string>((resolve) => {
-                  socketInstance()?.once("blockBtn", (btn) => {
+                  getSocketInstance()?.once("blockBtn", (btn) => {
                       resolve(btn);
                   });
               });
@@ -241,7 +241,7 @@ export async function showMainUI() {
                 textEl.textContent = `Waiting ${remaining}s`;
                 iconEl.classList.add("opacity-0");
   
-                socketInstance()?.emit("challenge", friendId);
+                getSocketInstance()?.emit("challenge", friendId);
   
                 challenge.dataset.intervalId = String(setInterval(() => {
                   remaining--;
@@ -280,17 +280,7 @@ export async function showMainUI() {
 
             //block behaver
             blockValid.addEventListener("click", () => {
-              socketInstance()?.emit("status", { status: "blocked", friendId });
-              //disibale challenge if blocked
-              // if(challenge.classList.contains("pointer-events-none , cursor-not-allowed , opacity-50"))
-              // {
-              //   challenge.classList.add(
-              //     "opacity-50",
-              //     "cursor-not-allowed",
-              //     "pointer-events-none"
-              //   );
-              // }
-              // challenge.removeEventListener("click",()=>{});
+              getSocketInstance()?.emit("status", { status: "blocked", friendId });
               blockOption.classList.add("hidden");
               const popupOption = document.getElementById("popup-option");
               if (popupOption) {
@@ -311,14 +301,7 @@ export async function showMainUI() {
             });
             //unblock behaver
             unblockValid.addEventListener("click", () => {
-              socketInstance()?.emit("status", { status: "accepted", friendId });
-              //enable challenge if unblocked
-              // challenge.classList.remove(
-              //   "opacity-50",
-              //   "cursor-not-allowed",
-              //   "pointer-events-none"
-              // );
-
+              getSocketInstance()?.emit("status", { status: "accepted", friendId });
               unblockOption.classList.add("hidden");
               const popupOption = document.getElementById("popup-option");
               if (popupOption) {

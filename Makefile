@@ -9,6 +9,10 @@ images_ls:
 containers_ls:
 	@docker ps -a
 flash:
-# 	@docker rmi -f $(docker images -q)
-# 	@docker container rm  -f $(docker container ls -a -q)
+fclean:
+	@if [ -n "$$(docker ps -aq)" ]; then docker stop $$(docker ps -aq); fi
+	@if [ -n "$$(docker ps -aq)" ]; then docker rm $$(docker ps -aq); fi
+	@if [ -n "$$(docker images -q)" ]; then docker rmi -f $$(docker images -q); fi
+# 	@docker volume rm $(docker volume ls -q)
+	docker builder prune -f
 re: down  up

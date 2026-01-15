@@ -27,3 +27,15 @@ socket  for request notif database handling
 online status of users  
 handle crash of services 
 profile photo circle shape 
+
+
+
+
+gogo
+
+
+
+///Oouth
+
+
+//open socket in signup
