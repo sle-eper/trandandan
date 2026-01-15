@@ -81,9 +81,7 @@ export function attachLoginHandlers() {
       }
       if (body.success) {
         currentUserId = response?.headers.get("x-user-id") || null;
-        
-        if (currentUserId) localStorage.setItem("userId", currentUserId);
-        // socketListener();
+        socketInstance();
         navigate("/home");
       } else {
         showError(body.message || "Invalid username or password.");
