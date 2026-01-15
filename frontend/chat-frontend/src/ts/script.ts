@@ -1,11 +1,11 @@
 // import { socket } from "../../../auth_frontend/src_auth/login/login";
-import { getSocketInstance } from "../../../socket_manager/socket";
+import { socketInstance } from "../../../socket_manager/socket";
 import { PlayerProfileManager } from "../../../profile_frontend/src/components/FriendRequest";
 import { socketListener } from "./chat_socket";
 import {setupPopupEvents ,onScroll,fetchListOfFriends,resetScrollState} from "./chat_ui_tools";
 // import { currentUserId } from "../../../auth_frontend/src_auth/login/login";
 import { setFriendId, setImInRoom , getFriendId, setCurrentUserId } from "./global_var";
-// const socket = getSocketInstance;
+// const socket = socketInstance;
 
 import {
   chatZones,
@@ -78,7 +78,7 @@ export async function showMainUI() {
                 setFriendId("");
             });
           })
-          getSocketInstance()?.emit("joinToRoom", roomName);
+          socketInstance()?.emit("joinToRoom", roomName);
 
           const counterElement: HTMLDivElement = document.getElementById(
             `counter-of-${friendId}`
@@ -102,7 +102,7 @@ export async function showMainUI() {
 
           contentChat += chatZones();
           if (dmZone) dmZone.innerHTML = contentChat;
-          getSocketInstance()?.emit("get_status", friendId);
+          socketInstance()?.emit("get_status", friendId);
             const userAccount = document.querySelectorAll('.user-account');
             userAccount.forEach(element => {
               element.addEventListener('click',()=>{
@@ -125,9 +125,9 @@ export async function showMainUI() {
             ) as HTMLDivElement;
             //When pressed 3 point
             option?.addEventListener("click", async () => {
-              getSocketInstance()?.emit("get_status",friendId)
+              socketInstance()?.emit("get_status",friendId)
               const btn1 = await new Promise<string>((resolve) => {
-                  getSocketInstance()?.once("blockBtn", (btn) => {
+                  socketInstance()?.once("blockBtn", (btn) => {
                       resolve(btn);
                   });
               });
@@ -241,7 +241,7 @@ export async function showMainUI() {
                 textEl.textContent = `Waiting ${remaining}s`;
                 iconEl.classList.add("opacity-0");
   
-                getSocketInstance()?.emit("challenge", friendId);
+                socketInstance()?.emit("challenge", friendId);
   
                 challenge.dataset.intervalId = String(setInterval(() => {
                   remaining--;
@@ -280,7 +280,7 @@ export async function showMainUI() {
 
             //block behaver
             blockValid.addEventListener("click", () => {
-              getSocketInstance()?.emit("status", { status: "blocked", friendId });
+              socketInstance()?.emit("status", { status: "blocked", friendId });
               //disibale challenge if blocked
               // if(challenge.classList.contains("pointer-events-none , cursor-not-allowed , opacity-50"))
               // {
@@ -311,7 +311,7 @@ export async function showMainUI() {
             });
             //unblock behaver
             unblockValid.addEventListener("click", () => {
-              getSocketInstance()?.emit("status", { status: "accepted", friendId });
+              socketInstance()?.emit("status", { status: "accepted", friendId });
               //enable challenge if unblocked
               // challenge.classList.remove(
               //   "opacity-50",

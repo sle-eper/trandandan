@@ -1,6 +1,6 @@
 // import { currentUserId } from "../../../auth_frontend/src_auth/login/login";
 import { getFriendId,getCurrentUserId } from "./global_var";
-import { getSocketInstance } from "../../../socket_manager/socket"
+import { socketInstance } from "../../../socket_manager/socket"
 import { sendMsg, lastMsg } from "../components/content";
 
 export function moveUp(id: string) {
@@ -93,7 +93,7 @@ export function setupPopupEvents() {
                 const time = getTime();
                 chatZone.innerHTML += sendMsg(value, time);
                 console.log("user", getCurrentUserId(), "friend", friendId);
-                getSocketInstance()?.emit("send_message", { value, userID: getCurrentUserId(), friendId });
+                socketInstance()?.emit("send_message", { value, userID: getCurrentUserId(), friendId });
                 moveUp(friendId);
                 const container = document.getElementById(
                     `container-of-last-msg-of-${friendId}`
@@ -148,7 +148,7 @@ export function addMenuNotification(
         </div>
         `;
     msgNotif.querySelector(".close-btn")?.addEventListener("click", () => {
-        getSocketInstance()?.emit("removeNotif", notifId);
+        socketInstance()?.emit("removeNotif", notifId);
         msgNotif.remove();
 
         if (notification.children.length === 0) {
@@ -177,7 +177,7 @@ export function onScroll() {
     const userID = getCurrentUserId();
     let offset: number = 0;
     if (!firestOne) {
-        getSocketInstance()?.emit("get_messages", { userID, friendId, limit: 20, offset });
+        socketInstance()?.emit("get_messages", { userID, friendId, limit: 20, offset });
     firestOne = true;
     }
     const chatZone = document.getElementById("chat-zone");
@@ -186,7 +186,7 @@ export function onScroll() {
         if (chatZone.scrollTop < 190 && !isFetching) {
         isFetching = true;
         offset += 20;
-        await getSocketInstance()?.emit("get_old_messages", {
+        await socketInstance()?.emit("get_old_messages", {
             userID,
             friendId,
             limit: 20,
@@ -200,9 +200,9 @@ export function onScroll() {
 
 export   function fetchListOfFriends(): Promise<any> {
     return new Promise((resolve) => {
-      getSocketInstance()?.once("friends_list", (friends) => {
+      socketInstance()?.once("friends_list", (friends) => {
         resolve(friends);
       });
-      getSocketInstance()?.emit("get_friends");
+      socketInstance()?.emit("get_friends");
     });
   }

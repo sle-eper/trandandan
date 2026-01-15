@@ -5,7 +5,7 @@ import { renderSidebar } from "./sidebar";
 import { navBarLogic } from "./navbar";
 import { sidebarLogic } from "./sidebar";
 // import { socket } from "../login/login";
-import { getSocketInstance } from "../../../socket_manager/socket";
+import { socketInstance } from "../../../socket_manager/socket";
 import { socketNotificationListener } from "../../../chat-frontend/src/ts/chat_socket";
 
 
@@ -54,7 +54,7 @@ function addNotif(el: any, notification: HTMLElement) {
   `;
 
   msgNotif.querySelector(".close-btn")?.addEventListener("click", () => {
-    getSocketInstance()?.emit("removeNotif", el.id);
+    socketInstance()?.emit("removeNotif", el.id);
     msgNotif.remove();
     const notifmenu = document.getElementById("notification-menu");
     if(notifmenu?.children.length === 0)
@@ -117,11 +117,11 @@ function getnotif(): Promise<any[]> {
       const myId = responseJson.id;
       console.log("user id ",myId);
 
-      getSocketInstance()?.once("notif", (data) => {
+      socketInstance()?.once("notif", (data) => {
         resolve(data);
       });
 
-      getSocketInstance()?.emit("getNotif", myId);
+      socketInstance()?.emit("getNotif", myId);
     } catch (err) {
       reject(err);
     }
