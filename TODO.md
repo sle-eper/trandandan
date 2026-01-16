@@ -27,3 +27,5 @@ socket  for request notif database handling
 online status of users  
 handle crash of services 
 profile photo circle shape 
+password check
+unfriend button

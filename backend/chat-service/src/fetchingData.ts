@@ -5,6 +5,7 @@ const USER_MANAGEMENT_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://user
 
 // Service function to fetch user data
 async function fetchUserData(userId: string) {
+  console.log("Fetching data for user ID:", userId);
   try {
     const response = await axios.get(`${USER_MANAGEMENT_SERVICE_URL}/user/${userId}`, {
       headers: {

@@ -116,13 +116,14 @@ function createPopupNotification(
 }
 
 
-function createNotificationMenuItem(
+export function createNotificationMenuItem(
   notification: HTMLElement,
   from: string,
   friendId: string,
   notifId: string,
   userId: string
 ): void {
+console.log("Creating menu item for notifId:", notifId, "from:", from, "friendId:", friendId, "userId:", userId);
   const menuNotif = document.createElement("div");
   menuNotif.setAttribute('data-notif-id', notifId);
   menuNotif.className = `
@@ -206,7 +207,7 @@ function attachAcceptHandler(
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ friendId, notifId })
+        body: JSON.stringify(friendId)
       });
 
       if (response.ok) {
@@ -214,8 +215,8 @@ function attachAcceptHandler(
         acceptBtn.classList.add('bg-green-500');
         
         
-            socketInstance()?.emit('acceptFriendRequest', notifId, friendId);
-        
+            socketInstance()?.emit('acceptFriendRequest', notifId, friendId, userId);
+          console.error('Error accepting friend request:');
         
         removeNotificationFromUI(notifId);
         
@@ -256,13 +257,13 @@ function attachRejectHandler(
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ friendId, notifId })
+        body: JSON.stringify(friendId)
       }); 
 
       if (response.ok) {
         rejectBtn.innerHTML = '<span class="relative z-10">✓ Declined</span>';
         
-        socketInstance()?.emit('rejectFriendRequest', notifId, friendId);
+        socketInstance()?.emit('rejectFriendRequest', notifId, friendId, userId);
         
         removeNotificationFromUI(notifId);
         
@@ -303,15 +304,14 @@ function attachMenuAcceptHandler(
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ friendId, notifId })
+        body: JSON.stringify( friendId)
       });
 
       if (response.ok) {
         menuAcceptBtn.textContent = '✓ Accepted';
         menuAcceptBtn.classList.add('bg-green-500', 'text-white');
-        
-       
-        socketInstance()?.emit('acceptFriendRequest', notifId, friendId);
+      
+        socketInstance()?.emit('acceptFriendRequest', notifId, friendId, userId);
        
         removeNotificationFromUI(notifId);
         
@@ -354,13 +354,13 @@ function attachMenuRejectHandler(
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ friendId, notifId })
+        body: JSON.stringify(friendId)
       });
 
       if (response.ok) {
         menuRejectBtn.textContent = '✓ Declined';
         
-        socketInstance()?.emit('rejectFriendRequest', notifId, friendId);
+        socketInstance()?.emit('rejectFriendRequest', notifId, friendId, userId);
         
         
         removeNotificationFromUI(notifId);
@@ -390,16 +390,6 @@ function removeNotificationFromUI(notifId: string): void {
     setTimeout(() => el.remove(), 300);
   });
 }
-
-
-socketInstance()?.on('friendRequestAccepted', (data: { friendId: string, friendName: string }) => {
-  console.log('Friend request accepted from:', data.friendName);
- 
-});
-socketInstance()?.on('friendRequestRejected', (data: { friendId: string }) => {
-  console.log('Friend request rejected from:', data.friendId);
-  
-});
 
 socketInstance()?.on('friendRequestCancelled', (data: { notifId: string }) => {
   removeNotificationFromUI(data.notifId);

@@ -7,11 +7,12 @@ import { navigate } from "../../../auth_frontend/src_auth/app.ts";
 // import { socket } from "../../../auth_frontend/src_auth/login/login.ts";
 import { socketInstance } from "../../../socket_manager/socket.ts";
 import { createFriendRequestNotification } from "./RequestHandling.ts";
+import {Toast} from "./ProfileForm.ts";
 // Types
 
 socketInstance()?.on('friendRequestReceived', (from: string, myId: string,friendId: string, notifId: string) => {
  
-  console.log('Friend request received myId:', myId, 'with frienID:', friendId);
+  console.log('Friend request received myId:', myId, 'with frienID:', friendId, 'from:', from, 'notifId:', notifId); ;
   const existing = document.querySelector(`[data-notif-id="${notifId}"]`);
   if (existing) existing.remove();
   
@@ -51,7 +52,7 @@ export class PlayerProfileManager {
       console.log('Initializing current user ID for friendship status check...');
       await this.initialize();
     }
-
+    console.log('Checking friendship status for playerId:', playerId, 'currentUserId:', this.currentUserId);
     if (playerId === this.currentUserId) {
       return {
         isFriend: false,
@@ -92,6 +93,7 @@ export class PlayerProfileManager {
   // Get action buttons HTML based on friendship status
   private getActionButtonsHTML(player: Player, status: FriendshipStatus): string {
     if (status.isCurrentUser) {
+      console.log('Generating action buttons for current user profile...');
       return `
         <button id="edit-profile"
                 class="px-6 py-3 rounded-xl bg-gradient-to-r from-[#FD1D1D] to-[#711F21]
@@ -106,6 +108,13 @@ export class PlayerProfileManager {
 
     if (status.isFriend) {
       return `
+        <button id="unfriend-${player.id}"
+                class="px-6 py-3 rounded-xl bg-white/5 border border-white/10
+                       text-white font-semibold
+                       hover:bg-red-500/20 hover:border-red-500 transition-all duration-300 flex items-center gap-2">
+          <span class="material-symbols-outlined">person_remove</span>
+          <span>Unfriend</span>
+        </button>
        
       `;
     }
@@ -155,7 +164,7 @@ export class PlayerProfileManager {
   }
 
   // Main function to show player profile
-  async showPlayerProfile(playerId: number): Promise<void> {
+  async showPlayerProfile(playerId?: number): Promise<void> {
     const mainContent = document.getElementById('dashboard-content');
     if (!mainContent) return;
 
@@ -177,14 +186,24 @@ export class PlayerProfileManager {
 
     // Fetch player data and friendship status
     let player: Player | null = null;
-    const status  = await this.checkFriendshipStatus(playerId)
-    if (status.isCurrentUser) {
-     player  = await PlayerFriendship.fetchPlayerProfile(this.currentUserId!);
+    let status: FriendshipStatus = { isFriend: false, isPending: false, isCurrentUser: false };
+    if (!playerId && this.currentUserId) {
+      playerId = this.currentUserId;
+      status  = await this.checkFriendshipStatus(playerId);
+      if (status.isCurrentUser) 
+         player = await PlayerFriendship.fetchPlayerProfile(this.currentUserId);
     }
-    else {
-      player = await PlayerFriendship.fetchPlayerProfile(playerId);
+    else if (playerId)
+   { 
+       status  = await this.checkFriendshipStatus(playerId)
+      if (status.isCurrentUser) {
+      player  = await PlayerFriendship.fetchPlayerProfile(this.currentUserId!);
+      }
+      else {
+        player = await PlayerFriendship.fetchPlayerProfile(playerId);
+      }
     }
-
+    console.log('Fetched player data:', player,);
     if (!player) {
       mainContent.innerHTML = `
         <div class="flex items-center justify-center h-full">
@@ -211,16 +230,15 @@ export class PlayerProfileManager {
             
             <!-- Avatar -->
             <div class="relative flex-shrink-0">
-              <div class="w-32 h-32 rounded-2xl bg-gradient-to-br from-[#FD1D1D] to-[#711F21] 
+              <div class="w-32 h-32 rounded-full bg-gradient-to-br from-[#FD1D1D] to-[#711F21] 
                           flex items-center justify-center text-5xl font-bold text-white
                           shadow-lg">
                 ${player.avatar ? 
-                  `<img src="/api/uploads/${player.avatar}" alt="${player.display_name}" class="w-full h-full rounded-2xl object-cover"/>` :
+                  `<img src="/api/uploads/${player.avatar}" alt="${player.display_name}" class="w-full h-full rounded-full object-cover"/>` :
                   this.escapeHtml(player.display_name.charAt(0).toUpperCase())
                 }
               </div>
-              <div class="absolute -bottom-2 -right-2 w-8 h-8 rounded-full border-4 border-[#1a1a1a]
-                          ${player.online_status ? 'bg-green-500' : 'bg-gray-500'}"></div>
+              
             </div>
             
             <!-- Basic Info -->
@@ -355,32 +373,33 @@ export class PlayerProfileManager {
 
       const editBtn = document.getElementById('edit-profile');
       editBtn?.addEventListener('click', () => {
-        if (this.showEditProfileCallback) 
-
-          navigate('/profile');
+        if (this.showEditProfileCallback) {
+          console.log('Edit profile button clicked, rendering edit profile component...');
+          this.showEditProfileCallback.mount('dashboard-content');
+        }
       });
     } else if (status.isFriend) {
-      //const messageBtn = document.getElementById(`send-message-${player.id}`);
-      // const unfriendBtn = document.getElementById(`unfriend-${player.id}`);
+      // const messageBtn = document.getElementById(`send-message-${player.id}`);
+      const unfriendBtn = document.getElementById(`unfriend-${player.id}`);
 
       // messageBtn?.addEventListener('click', () => {
       //   console.log('Send message to player:', player.id);
       //   // Add messaging logic
       // });
 
-      // unfriendBtn?.addEventListener('click', async () => {
-      //   if (confirm(`Are you sure you want to unfriend ${player.display_name}?`)) {
-      //     await this.unfriendUser(player.id);
-      //     // Refresh the profile
-      //     this.showPlayerProfile(player.id);
-      //   }
-      // }
-   // );
+      unfriendBtn?.addEventListener('click', async () => {
+        if (confirm(`Are you sure you want to unfriend ${player.display_name}?`)) {
+          await this.unfriendUser(player.id);
+          this.showPlayerProfile(player.id);
+        }
+      }
+   );
     } else if (status.isPending) {
       const cancelBtn = document.getElementById(`cancel-request-${player.id}`);
-      socketInstance()?.emit('cancelFriendRequest', );
       cancelBtn?.addEventListener('click', async () => {
         await this.cancelFriendRequest(player.id);
+        console.log('Attaching cancel friend request listener for player:', player.id);
+        socketInstance()?.emit('cancelFriendRequest', player.id, String(currentUserId));
        
         this.showPlayerProfile(player.id);
       });
@@ -458,21 +477,21 @@ export class PlayerProfileManager {
     }
   }
 
-  // private async unfriendUser(friendId: number): Promise<void> {
-  //   try {
-  //     const response = await axios.delete(`http://localhost:8080/api/users/friends/${friendId}`, {
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       withCredentials: true,
-  //     });
+  private async unfriendUser(friendId: number): Promise<void> {
+    try {
+      const response = await axios.delete(`/api/users/friends/removeFriend/${friendId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        withCredentials: true,
+      });
       
-  //     console.log('Unfriended user:', response.data);
-  //   } catch (error) {
-  //     console.error('Error unfriending user:', error);
-  //     throw error;
-  //   }
-  // }
+      console.log('Unfriended user:', response.data);
+    } catch (error) {
+      console.error('Error unfriending user:', error);
+      throw error;
+    }
+  }
 
   private escapeHtml(text: string): string {
     const div = document.createElement('div');
@@ -480,5 +499,20 @@ export class PlayerProfileManager {
     return div.innerHTML;
   }
 }
-
+socketInstance()?.on('friendRequestAccepted', async (from : string,myId: string,friendId: string) => {
+  console.log('Friend request accepted:', {from, myId, friendId});
+  
+  const manager = new PlayerProfileManager();
+  await manager.showPlayerProfile(parseInt(myId));
+  Toast.success('Friend request accepted');
+ 
+});
+socketInstance()?.on('friendRequestRejected', async (from : string,myId: string,friendId: string) => {
+  console.log('Friend request rejected:', {from, myId, friendId});
+  
+ 
+  const manager = new PlayerProfileManager();
+  await manager.showPlayerProfile(parseInt(myId));
+  Toast.error('Friend request rejected');
+});
 // Export for easy usage

@@ -11,7 +11,8 @@ import {
   changeDisplayOneNotif,
   checkExistingNotification,
   updateNotificationStatus,
-  deleteNotification
+  deleteNotification,
+  getNotificationID
 } from "./db/database";
 
 import { fetchUserData, getStatusOfTowFriends, changeStatusOfFriends, getFriendsOfUser, updateUserStat } from "./fetchingData";
@@ -285,6 +286,7 @@ server.ready().then(() => {
     socket.on('getNotif', async (id) => {
       try {
         const data = await getNotif(id);
+        console.log("Notifications sent:", data);
         socket.emit("notif", data);
       } catch (err) {
         console.error('Error in getNotif:', err);
@@ -298,12 +300,11 @@ server.ready().then(() => {
         'friendRequest', 
         'pending'
       );
-      
       if (existingRequest) {
         socket.emit('error', 'Friend request already pending');
         return;
       }
-      const notifId = await saveNotif(myId, friendId, 'friendRequest', 'pending') // 30 days
+      const notifId =  saveNotif(myId, friendId, 'friendRequest', 'pending') 
       
       console.log(`Notification ID: ${notifId}`);
       const userSocket = onlineUsers.get(String(friendId));
@@ -314,25 +315,26 @@ server.ready().then(() => {
       if (!UserData) return;
       for (const ids of userSocket) {
 
-        socket.to(ids).emit("friendRequestReceived", {
-          username: UserData.user.username, 
+        socket.to(ids).emit("friendRequestReceived", 
+          UserData.user.username, 
           friendId, 
           myId,
           notifId
-        });
+        );
       }
 
     });
-    socket.on('acceptFriendRequest', async (myId: string, friendId: string, notifId: string) => {
+    socket.on('acceptFriendRequest', async (notifId:string,friendId:string,myId:string) => {
       try {
         if (!friendId || !myId) return;
-        
+        console.log("acceptFriendRequest event triggered", myId, friendId, notifId);
        updateNotificationStatus(notifId, 'accepted');
         const friendSocket = onlineUsers.get(String(friendId));
         if (!friendSocket) return;
         const UserData = await fetchUserData(myId);
         if (!UserData)
           return;
+        
         for (const isd of friendSocket) {
           socket.to(isd).emit("friendRequestAccepted", UserData?.user?.username, myId, friendId);
         }
@@ -340,7 +342,7 @@ server.ready().then(() => {
         console.error('Error in acceptFriendRequest:', err);
       }
     });
-    socket.on('rejectFriendRequest', async (myId: string, friendId: string, notifId: string) => {
+    socket.on('rejectFriendRequest', async (notifId:string,friendId:string,myId:string) => {
       if (!friendId || !myId) return;
       try {
         deleteNotification(notifId);
@@ -350,7 +352,7 @@ server.ready().then(() => {
         if (!UserData)
           return;
         for (const isd of friendSocket) {
-          socket.to(isd).emit("friendRequestRejected", UserData?.user?.username, myId);
+          socket.to(isd).emit("friendRequestRejected", UserData?.user?.username, myId, friendId);
         }
       }
       catch (err) {
@@ -367,10 +369,10 @@ server.ready().then(() => {
       }
     })
 
-    socket.on('cancelFriendRequest', async (notifId: string, receiverId: string,myId: string) => {
-  
-    if (!myId || !receiverId) return;
-
+    socket.on('cancelFriendRequest', async ( receiverId: string,myId: string) => {
+      if (!myId || !receiverId) return;
+      const notifId =  getNotificationID(myId, receiverId, 'friendRequest');
+      console.log("cancelFriendRequest event triggered", myId, receiverId,notifId);
     try {
       
         deleteNotification(notifId);
