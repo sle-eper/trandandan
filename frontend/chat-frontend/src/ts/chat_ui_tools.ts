@@ -162,6 +162,7 @@ export function addMenuNotification(
     });
 
     notification.prepend(msgNotif);
+    console.log("Notification added to menu");
 }
 
 let firestOne: boolean;

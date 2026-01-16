@@ -62,7 +62,7 @@ server.ready().then(() => {
       return;
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.id as string
+    const userId:string = String(decoded.id);
     if (!userId) {
       socket.disconnect();
       return;
@@ -77,6 +77,8 @@ server.ready().then(() => {
     console.log("--------------------------");
     console.log("New client connected, userId:", userId);
     console.log("size of onlineUsers", onlineUsers.size, "---->", onlineUsers);
+
+
     socket.on("send_message", async (data) => {
       try {
         const id = socket.data.userId
@@ -85,6 +87,7 @@ server.ready().then(() => {
         const msg: string = data?.value; //
         if (!friendId || !msg || typeof msg !== 'string' || msg.trim().length === 0 || msg.length > 1000)
           return;
+        // console.log(`Message from ${id} to ${friendId}: ${msg}`);
         const roomName = getRoomName(id, friendId);
         const status: any = await getStatusOfTowFriends(id, friendId);
         if (status) {
@@ -93,11 +96,17 @@ server.ready().then(() => {
           if (status1 === "accepted" && status2 === "accepted") {
             const notifId = await saveNotif(id, friendId, 'msg', msg);
             const friendSocketId = onlineUsers.get(friendId);
+            console.log("friendSocketId:", friendSocketId);
+            console.log("my id :", id , "friend id :", friendId);
+            console.log("typeof my id" , typeof id , "typeof friend id" , typeof friendId);
+            
             const msgId: string = await saveMsg(id, friendId, msg, roomName, "waiting");
             const timeOfMsg: string = await getTimeOfMsg(msgId);
             const UserData = await fetchUserData(id); // get data of user from user-management service
             // console.log(UserData?.user);
             socket.to(roomName).emit("receive_message", msg, msgId, id, timeOfMsg, UserData?.user?.avatar_url);
+            // console.log("friendSocketId:", friendSocketId);
+            // console.log("typeof" , typeof friendId);
             if (friendSocketId) {
               for (const ids of friendSocketId) {
                 socket.to(ids).emit("live", id, roomName, msg, timeOfMsg);
@@ -244,7 +253,7 @@ server.ready().then(() => {
         if (!UserData)
           return;
         for (const isd of friendSocket) {
-          console.log("emitting request_to_play to socket:", isd);
+          // console.log("emitting request_to_play to socket:", isd);
           io.to(isd).emit("request_to_play", UserData?.user?.username, id, notfId);
         }
 
@@ -257,13 +266,17 @@ server.ready().then(() => {
     })
     socket.on('reject_play', async (id, friendId) => {
       try {
+        console.log('reject_play event id',id);
+        console.log('reject_play event friendId',friendId);
         if (!id || !friendId) return;
         const notifId = await saveNotif(id, friendId, 'reject', null);
         const Sockets = onlineUsers.get(friendId);
         if (!Sockets) return;
+        console.log("Sockets:", Sockets);
         const UserData = await fetchUserData(id);
         if (!UserData) return;
         for (const isd of Sockets) {
+          console.log("emitting not_agree to socket:", isd);
           io.to(isd).emit("not_agree", UserData?.user?.username, notifId);
         }
 

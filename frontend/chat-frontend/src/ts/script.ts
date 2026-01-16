@@ -36,7 +36,7 @@ export async function showMainUI() {
   });
   const responseJson = await response.json()
   const userID = responseJson.id as string;
-  setCurrentUserId(userID);
+  setCurrentUserId(userID);//TODO khasha tkon fach ylogi 
   if(!userID){
     console.error("User ID not found. Cannot show main UI.");
     return;

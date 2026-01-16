@@ -8,6 +8,7 @@ import { sidebarLogic } from "./sidebar";
 import { getSocketInstance } from "../../../socket_manager/socket";
 // import { socketInstance } from "../../../socket_manager/socket";
 import { socketNotificationListener } from "../../../chat-frontend/src/ts/chat_socket";
+import { setCurrentUserId } from "../../../chat-frontend/src/ts/global_var";
 
 
 function addNotif(el: any, notification: HTMLElement) {
@@ -137,6 +138,14 @@ function getnotif(): Promise<any[]> {
   {
     nav.innerHTML = renderNavBar();
     socketNotificationListener();
+    const response = await fetch("/auth/verify", {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include", // VERY IMPORTANT FOR Cookies
+          });
+          const responseJson = await response.json()
+          const userID = responseJson.id as string;
+          setCurrentUserId(userID);//TODO khasha tkon fach ylogi 
 
     if (sidebar) sidebar.innerHTML = renderSidebar();
       let notif =  await getnotif()
