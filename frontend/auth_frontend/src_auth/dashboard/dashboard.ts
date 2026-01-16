@@ -5,8 +5,11 @@ import { renderSidebar } from "./sidebar";
 import { navBarLogic } from "./navbar";
 import { sidebarLogic } from "./sidebar";
 // import { socket } from "../login/login";
-import { socketInstance } from "../../../socket_manager/socket";
+import { getSocketInstance } from "../../../socket_manager/socket";
+// import { socketInstance } from "../../../socket_manager/socket";
 import { createNotificationMenuItem } from "../../../profile_frontend/src/components/RequestHandling";
+import { socketNotificationListener } from "../../../chat-frontend/src/ts/chat_socket";
+import { setCurrentUserId } from "../../../chat-frontend/src/ts/global_var";
 
 
 function addNotif(el: any, notification: HTMLElement) {
@@ -50,12 +53,12 @@ function addNotif(el: any, notification: HTMLElement) {
   msgNotif.innerHTML = `
     <div class="flex justify-between">
       <span class="block max-w-70 truncate">${text}</span>
-      <span class="hover:cursor-pointer close-btn">x</span>
+      <span class="hover:cursor-pointer close-btn material-symbols-outlined">close</span>
     </div>
   `;
 
   msgNotif.querySelector(".close-btn")?.addEventListener("click", () => {
-    socketInstance()?.emit("removeNotif", el.id);
+    getSocketInstance()?.emit("removeNotif", el.id);
     msgNotif.remove();
     const notifmenu = document.getElementById("notification-menu");
     if(notifmenu?.children.length === 0)
@@ -113,17 +116,16 @@ function getnotif(): Promise<any[]> {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
       });
-      console.log("response status:", response.status);
+      // console.log("response status:", response.status);
       const responseJson = await response.json();
       const myId = responseJson.id;
-      console.log("user id ",myId);
+      // console.log("user id ",myId);
 
-      socketInstance()?.once("notif", (data: any[]) => {
-        console.log("Notifications received:", data);
+      getSocketInstance()?.once("notif", (data) => {
         resolve(data);
       });
 
-      socketInstance()?.emit("getNotif", myId);
+      getSocketInstance()?.emit("getNotif", myId);
     } catch (err) {
       reject(err);
     }
@@ -137,6 +139,16 @@ function getnotif(): Promise<any[]> {
   if (nav)
   {
     nav.innerHTML = renderNavBar();
+    socketNotificationListener();
+    const response = await fetch("/auth/verify", {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include", // VERY IMPORTANT FOR Cookies
+          });
+          const responseJson = await response.json()
+          const userID = responseJson.id as string;
+          setCurrentUserId(userID);//TODO khasha tkon fach ylogi 
+
     if (sidebar) sidebar.innerHTML = renderSidebar();
       let notif =  await getnotif()
       const notification = document.getElementById("notification-menu");

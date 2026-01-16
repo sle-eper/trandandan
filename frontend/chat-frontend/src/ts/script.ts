@@ -1,5 +1,5 @@
 // import { socket } from "../../../auth_frontend/src_auth/login/login";
-import { socketInstance } from "../../../socket_manager/socket";
+import { getSocketInstance } from "../../../socket_manager/socket";
 import { PlayerProfileManager } from "../../../profile_frontend/src/components/FriendRequest";
 import { socketListener } from "./chat_socket";
 import {setupPopupEvents ,onScroll,fetchListOfFriends,resetScrollState} from "./chat_ui_tools";
@@ -15,6 +15,7 @@ import {
   choseFriend,
   generateBlockButton,
 } from "../components/content";
+import { navigateSilent } from "../../../auth_frontend/src_auth/login/router";
 
 
 
@@ -24,11 +25,13 @@ window.addEventListener("keydown", (e) => {
     setFriendId("");
     const dmZone = document.getElementById("DM");
     if (dmZone) dmZone.innerHTML = choseFriend();
+    navigateSilent(`/chat`);
+
   }
 });
 
-
 export async function showMainUI() {
+  socketListener();
   const response = await fetch("/auth/verify", {
     method: "GET",
     headers: { "Content-Type": "application/json" },
@@ -36,7 +39,7 @@ export async function showMainUI() {
   });
   const responseJson = await response.json()
   const userID = responseJson.id as string;
-  setCurrentUserId(userID);
+  setCurrentUserId(userID);//TODO khasha tkon fach ylogi 
   if(!userID){
     console.error("User ID not found. Cannot show main UI.");
     return;
@@ -45,11 +48,11 @@ export async function showMainUI() {
 
   // let chatZone: HTMLDivElement;
   let dmZone: HTMLElement | null;
+  
   if (chatContent) {
-    socketListener();
     chatContent.classList.add("gap-6", "gap-y-3");
     const friends = await fetchListOfFriends();
-    console.table(friends.waitingMsg);
+    // console.table(friends.waitingMsg);
     chatContent.innerHTML = listOfMsg(friends.friends,friends.waitingMsg,userID);
     if(friends && friends.friends.length > 0)
       chatContent.innerHTML += DM();
@@ -57,6 +60,7 @@ export async function showMainUI() {
     const friendsEvent = document.querySelectorAll(".friend-msg-zone");
     friendsEvent.forEach((friend:any) => {
       friend.addEventListener("click", () => {
+        navigateSilent(`/chat/${friend.dataset.name}`);
         setImInRoom(friend.dataset.roomname);
         setFriendId(friend.dataset.id);
         const friendId = getFriendId()
@@ -78,7 +82,7 @@ export async function showMainUI() {
                 setFriendId("");
             });
           })
-          socketInstance()?.emit("joinToRoom", roomName);
+          getSocketInstance()?.emit("joinToRoom", roomName);
 
           const counterElement: HTMLDivElement = document.getElementById(
             `counter-of-${friendId}`
@@ -102,7 +106,7 @@ export async function showMainUI() {
 
           contentChat += chatZones();
           if (dmZone) dmZone.innerHTML = contentChat;
-          socketInstance()?.emit("get_status", friendId);
+          getSocketInstance()?.emit("get_status", friendId);
             const userAccount = document.querySelectorAll('.user-account');
             userAccount.forEach(element => {
               element.addEventListener('click',()=>{
@@ -125,14 +129,33 @@ export async function showMainUI() {
             ) as HTMLDivElement;
             //When pressed 3 point
             option?.addEventListener("click", async () => {
-              socketInstance()?.emit("get_status",friendId)
+              getSocketInstance()?.emit("get_status",friendId)
               const btn1 = await new Promise<string>((resolve) => {
-                  socketInstance()?.once("blockBtn", (btn) => {
+                  getSocketInstance()?.once("blockBtn", (btn) => {
                       resolve(btn);
                   });
               });
               if(!document.getElementById("block-button") && !document.getElementById("unblock-button"))
                   document.getElementById("popup-option")!.innerHTML += generateBlockButton(btn1);
+              //   const challenge: HTMLButtonElement = document.getElementById(
+              //     "challenge-option"
+              //   ) as HTMLButtonElement;
+              //   challenge.classList.add(
+              //     "opacity-50",
+              //     "cursor-not-allowed",
+              //     "pointer-events-none"
+              //   );
+              // }else{
+              //   const challenge: HTMLButtonElement = document.getElementById(
+              //     "challenge-option"
+              //   ) as HTMLButtonElement;
+              //   challenge.classList.remove(
+              //     "opacity-50",
+              //     "cursor-not-allowed",
+              //     "pointer-events-none"
+              //   );
+              // }
+              // setupPopupEvents();
               if (popupOption.classList.contains("hidden"))
                 popupOption.classList.remove("hidden");
               else 
@@ -165,8 +188,6 @@ export async function showMainUI() {
             const challenge: HTMLButtonElement = document.getElementById(
               "challenge-option"
             ) as HTMLButtonElement;
-            //TODO handel ila blkah may9edarch yel3ab m3ah game 
-
             // to close popup if click out of popup
             window.addEventListener("click", (event) => {
               const target = event.target as HTMLElement;
@@ -196,14 +217,27 @@ export async function showMainUI() {
           if (challenge) {
             const textEl:HTMLParagraphElement = challenge.querySelector("p") as HTMLParagraphElement;
             const iconEl:HTMLSpanElement = challenge.querySelector("span") as HTMLSpanElement;
+            if(btn1 === "blocked")
+            {
+              // const challenge = document.getElementById("challenge-option") as HTMLButtonElement;
+              challenge?.classList.add(
+                "opacity-50",
+                "cursor-not-allowed",
+                "pointer-events-none"
+              );
+            }
             if(!challenge.dataset.click)
             {
               challenge.addEventListener("click", () => {
-                challenge.classList.add(
-                  "opacity-50",
-                  "cursor-not-allowed",
-                  "pointer-events-none"
-                );
+                console.log("challenge clicked");
+                // if(!challenge.classList.contains("pointer-events-none , cursor-not-allowed , opacity-50"))
+                // {
+                //   challenge.classList.add(
+                //     "opacity-50",
+                //     "cursor-not-allowed",
+                //     "pointer-events-none"
+                //   );
+                // }
   
                 let remaining = 10;
                 const originalText = textEl?.textContent;
@@ -211,7 +245,7 @@ export async function showMainUI() {
                 textEl.textContent = `Waiting ${remaining}s`;
                 iconEl.classList.add("opacity-0");
   
-                socketInstance()?.emit("challenge", friendId);
+                getSocketInstance()?.emit("challenge", friendId);
   
                 challenge.dataset.intervalId = String(setInterval(() => {
                   remaining--;
@@ -230,6 +264,7 @@ export async function showMainUI() {
               });
               challenge.dataset.click = 'yes';
             }
+            // setupPopupEvents();
           }
 
             // if chose block button show popup of block option
@@ -249,13 +284,13 @@ export async function showMainUI() {
 
             //block behaver
             blockValid.addEventListener("click", () => {
-              socketInstance()?.emit("status", { status: "blocked", friendId });
+              getSocketInstance()?.emit("status", { status: "blocked", friendId });
               blockOption.classList.add("hidden");
               const popupOption = document.getElementById("popup-option");
               if (popupOption) {
                 popupOption.innerHTML = `
-                                    <div class="flex items-center justify-center w-[70%] rounded-xl border border-[#E63946] mt-5 mb-2 hover:cursor-pointer">
-                                        <p>Challenge</p>
+                                    <div id="challenge-option" class="opacity-50 cursor-not-allowed pointer-events-none flex items-center justify-center w-[70%] rounded-xl border border-[#E63946] mt-5 mb-2 hover:cursor-pointer">
+                                        <p >Challenge</p>
                                         <span class="material-symbols-outlined">swords</span>
                                     </div>
                                     ${generateBlockButton("blocked")}
@@ -270,12 +305,12 @@ export async function showMainUI() {
             });
             //unblock behaver
             unblockValid.addEventListener("click", () => {
-              socketInstance()?.emit("status", { status: "accepted", friendId });
+              getSocketInstance()?.emit("status", { status: "accepted", friendId });
               unblockOption.classList.add("hidden");
               const popupOption = document.getElementById("popup-option");
               if (popupOption) {
                 popupOption.innerHTML = `
-                                    <div class="flex items-center justify-center w-[70%] rounded-xl border border-[#E63946] mt-5 mb-2 hover:cursor-pointer">
+                                    <div id="challenge-option" class="flex items-center justify-center w-[70%] rounded-xl border border-[#E63946] mt-5 mb-2 hover:cursor-pointer">
                                         <p>Challenge</p>
                                         <span class="material-symbols-outlined">swords</span>
                                     </div>

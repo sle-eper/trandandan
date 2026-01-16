@@ -19,7 +19,7 @@ export function showForgotPage(containerId = "login-app") {
 function attachForgotHandlers() {
   const btn = document.getElementById("forgot-btn") as HTMLButtonElement | null;
   const signupLink = document.getElementById("forgot-signup");
-  if (signupLink) signupLink.addEventListener("click", () => navigate("signup"));
+  if (signupLink) signupLink.addEventListener("click", () => navigate("/signup"));
 
   if (!btn) return;
   btn.addEventListener("click",async () => {
@@ -41,6 +41,6 @@ function attachForgotHandlers() {
     console.log("Reset link sent to email             " ,  res);
     //send request to backend 
   
-    navigate("change");
+    navigate("/mailsended");
   });
 }

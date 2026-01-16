@@ -5,19 +5,28 @@ import { ProfileForm}  from './ProfileForm.ts';
 import  { User } from '../User.ts';
 import { navigate } from "../../../auth_frontend/src_auth/app.ts";
 // import { socket } from "../../../auth_frontend/src_auth/login/login.ts";
-import { socketInstance } from "../../../socket_manager/socket.ts";
+import { getSocketInstance } from "../../../socket_manager/socket.ts";
 import { createFriendRequestNotification } from "./RequestHandling.ts";
 import {Toast} from "./ProfileForm.ts";
 // Types
 
-socketInstance()?.on('friendRequestReceived', (from: string, myId: string,friendId: string, notifId: string) => {
+// Socket listener for friend request received
+export const friendRequestReceivedHandler = (from: string, myId: string,friendId: string, notifId: string) => {
  
   console.log('Friend request received myId:', myId, 'with frienID:', friendId, 'from:', from, 'notifId:', notifId); ;
   const existing = document.querySelector(`[data-notif-id="${notifId}"]`);
   if (existing) existing.remove();
   
   createFriendRequestNotification(from, myId, friendId, notifId);
-});
+}
+// getSocketInstance()?.on('friendRequestReceived', (from: string, myId: string,friendId: string, notifId: string) => {
+ 
+//   console.log('Friend request received myId:', myId, 'with frienID:', friendId, 'from:', from, 'notifId:', notifId); ;
+//   const existing = document.querySelector(`[data-notif-id="${notifId}"]`);
+//   if (existing) existing.remove();
+  
+//   createFriendRequestNotification(from, myId, friendId, notifId);
+// });
 
 interface FriendshipStatus {
   isFriend: boolean;
@@ -397,9 +406,9 @@ export class PlayerProfileManager {
     } else if (status.isPending) {
       const cancelBtn = document.getElementById(`cancel-request-${player.id}`);
       cancelBtn?.addEventListener('click', async () => {
-        await this.cancelFriendRequest(player.id);
         console.log('Attaching cancel friend request listener for player:', player.id);
-        socketInstance()?.emit('cancelFriendRequest', player.id, String(currentUserId));
+        await this.cancelFriendRequest(player.id);
+        getSocketInstance()?.emit('cancelFriendRequest', player.id, String(currentUserId));
        
         this.showPlayerProfile(player.id);
       });
@@ -417,7 +426,7 @@ export class PlayerProfileManager {
           
           await this.sendFriendRequest(player.id);
           console.log('Emitting friendRequestSent event via socket...', String(currentUserId), String(player.id));
-          socketInstance()?.emit('friendRequestSent', currentUserId, player.id);
+          getSocketInstance()?.emit('friendRequestSent', currentUserId, player.id);
           // Refresh the profile to show pending state
           this.showPlayerProfile(player.id);
         } catch (error) {
@@ -499,20 +508,39 @@ export class PlayerProfileManager {
     return div.innerHTML;
   }
 }
-socketInstance()?.on('friendRequestAccepted', async (from : string,myId: string,friendId: string) => {
+
+export const socketNotificationListenerHandler = async (from : string,myId: string,friendId: string) => {
   console.log('Friend request accepted:', {from, myId, friendId});
   
   const manager = new PlayerProfileManager();
   await manager.showPlayerProfile(parseInt(myId));
   Toast.success('Friend request accepted');
  
-});
-socketInstance()?.on('friendRequestRejected', async (from : string,myId: string,friendId: string) => {
+}
+
+export const socketNotificationListenerRejectHandler = async (from : string,myId: string,friendId: string) => {
   console.log('Friend request rejected:', {from, myId, friendId});
-  
- 
+
   const manager = new PlayerProfileManager();
   await manager.showPlayerProfile(parseInt(myId));
   Toast.error('Friend request rejected');
-});
+}
+
+
+// getSocketInstance()?.on('socketNotificationListener', async (from : string,myId: string,friendId: string) => {
+//   console.log('Friend request accepted:', {from, myId, friendId});
+  
+//   const manager = new PlayerProfileManager();
+//   await manager.showPlayerProfile(parseInt(myId));
+//   Toast.success('Friend request accepted');
+ 
+// });
+// getSocketInstance()?.on('friendRequestRejected', async (from : string,myId: string,friendId: string) => {
+//   console.log('Friend request rejected:', {from, myId, friendId});
+  
+ 
+//   const manager = new PlayerProfileManager();
+//   await manager.showPlayerProfile(parseInt(myId));
+//   Toast.error('Friend request rejected');
+// });
 // Export for easy usage

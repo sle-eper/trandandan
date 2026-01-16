@@ -9,7 +9,6 @@ import dotenv from 'dotenv'
 import fastifyCookie from '@fastify/cookie';
 import * as authController from './controllers/authController.js';
 import cors from "@fastify/cors";
-import twofRoutes from './Routes/2fRoutes.js';
 
 dotenv.config();
 

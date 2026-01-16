@@ -1,5 +1,5 @@
 // import { currentUserId } from "../../../auth_frontend/src_auth/login/login";
-import { socketInstance } from "../../../socket_manager/socket";
+import { getSocketInstance } from "../../../socket_manager/socket";
 import { lastMsg, receivedMsg,inputMsg, sendMsg } from "../components/content";
 import { moveUp,setupPopupEvents,addMenuNotification } from "./chat_ui_tools";
 import { getImInRoom } from "./global_var";
@@ -15,6 +15,7 @@ export const liveHandler = (id:string, roomName:string, msg:string, timeOfMsg:st
       const counterElement: HTMLDivElement = document.getElementById(
         `counter-of-${id}`
       ) as HTMLDivElement;
+      if(!counterElement) return;
       if (counterElement?.classList.contains("hidden"))
         counterElement?.classList.remove("hidden");
 
@@ -32,7 +33,7 @@ export const liveHandler = (id:string, roomName:string, msg:string, timeOfMsg:st
 export const receiveMessageHandler = (msg:string, msgId:string, friendId:string, timeOfMsg:string, friendImg:string)=>{
     const chatZone = document.getElementById("chat-zone") as HTMLDivElement;
     chatZone?.insertAdjacentHTML("beforeend",receivedMsg(msg, timeOfMsg, friendImg));
-    socketInstance()?.emit("ack_message", msgId);
+    getSocketInstance()?.emit("ack_message", msgId);
     const containerMsg = document.getElementById(`container-of-last-msg-of-${friendId}`);
     if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
 }
@@ -126,12 +127,13 @@ export const request_to_playHandler = (from:string,friendId:string,notifId:strin
       container.appendChild(notif);
 
       notif.querySelector(".accept")?.addEventListener("click", () => {
-        socketInstance()?.emit("accept_play", getCurrentUserId(),friendId );
+        getSocketInstance()?.emit("accept_play", getCurrentUserId(),friendId );
         notif.remove();
       });
 
       notif.querySelector(".reject")?.addEventListener("click", () => {
-        socketInstance()?.emit("reject_play", getCurrentUserId(),friendId);
+        // console.log("reject clicked", friendId);
+        getSocketInstance()?.emit("reject_play", getCurrentUserId(),friendId);
         notif.remove();
       });
       addMenuNotification("🎮 ",`<strong>${from}</strong> wants to play`,notifId);
@@ -143,6 +145,7 @@ export const request_to_playHandler = (from:string,friendId:string,notifId:strin
 }
 
 export const not_agreeHandler = (from:string ,notifId:string) => {
+    console.log("not_agreeHandler called from:", from);
     const container = document.getElementById("play-notification-container");
 
     if (!container) return;

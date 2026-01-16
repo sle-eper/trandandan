@@ -69,7 +69,7 @@ function attachSignupHandlers() {
 
       if (result.success) {
         console.log("-------------------------")//TODO add socket connection here
-        
+        socketInstance();
         navigate("/home"); // ✅ go to login on success
       } else {
         showSignupError(result.message || "Signup failed.");

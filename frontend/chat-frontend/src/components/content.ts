@@ -1,6 +1,5 @@
 import { PlayerProfileManager} from "../../../profile_frontend/src/components/FriendRequest.ts";
-
-
+import { navigateSilent } from "../../../auth_frontend/src_auth/login/router.ts";
 export function lastMsg(status:string,msg:string,friendId:string):string
 {
     if(!msg)
@@ -50,7 +49,7 @@ function  friendCart(friend:any,waitingMsg:object,myId:string):string
 
         // if(friend.online_status === 'online')
 
-
+        // navigateSilent(`/chat/${friend.username}`);
         return `<div id='msg-zone' data-id="${friend.id}" class="flex justify-center py-4 px-2 hover:bg-[#222222] transition-colors duration-300 sm:py-4 sm:px-4 md:py-5">
                     <div  class=" friend-msg-zone flex w-[95%] hover:cursor-pointer" data-id="${friend.id}" data-name = "${friend.username}" data-roomname = "${roomName}"  >
                     <div class="relative">

@@ -14,21 +14,23 @@ export async function createTournament_post(request, reply) {
           }
         );
     if (!existingUser.data) {
-        return reply.code(400).send({
+        return reply.code(404).send({
           success: false,
           message: "User does not exist!",
         });
     }
     const nickname = existingUser.data.display_name;
-    console.log("Creating tournament for user:",existingUser.data);
     const {tournamentname, maxPlayers} = request.body;
     const db = getDatabase();
     console.log(nickname, userid, tournamentname, maxPlayers);
     const tournament = await db.get('SELECT * FROM tournament WHERE name  = ?', [tournamentname]);
     if (tournament) {
         console.log("Tournament Exist");
-        return reply.code(400)
-            .send("Tournament Already Existe")
+        return reply.code(409)
+            .send({
+                success : false, 
+                message: "Tournament Already Exists"
+            });
     }
     
         const result = await db.run(
@@ -41,19 +43,14 @@ export async function createTournament_post(request, reply) {
                 VALUES(?, ?,?)`,
             [nickname, result.lastID, userid]
         );
-        await axios.post("http://chat-service:3000/notify", {
-            userids : [userid],
-            type: "tournamentcreat",
-            data: { tournamentId: result.lastID, room: tournamentname }
-        });
     }
     catch (error) {
         console.log(error);
-        return reply.code(404)
-            .send(error)
+        return reply.code(500)
+            .send({ success: false, message: error.message });
     }
     return reply.code(200)
-        .send("Tournament Created")
+        .send({ success: true, message: "Tournament Created" });
 }
 export async function joinTournament_post(request, reply) {
     const userid = request.headers['x-user-id'];
@@ -196,4 +193,16 @@ export async function startTournament_post(request, reply) {
         console.error("Error notifying chat service:", err);
     }
     return reply.code(200).send({ message: "Tournament started" });
+}
+
+
+export async function listTournaments_get(request, reply) {
+    const db = await getDatabase();
+    try {
+        const tournaments = await db.all('SELECT * FROM tournament');
+        return reply.code(200).send({ success: true, tournaments });
+    } catch (error) {
+        console.log(error);
+        return reply.code(500).send({ success: false, message: error.message });
+    }
 }

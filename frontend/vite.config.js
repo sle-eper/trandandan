@@ -3,12 +3,12 @@ import { defineConfig } from "vite";
 export default defineConfig({
   server: {
     host: true,                   // allow docker access
-    port: 5173,
+    port: 8443,
     strictPort: true,
     allowedHosts: ["frontend", "localhost","nginx"],
-    origin: "http://localhost:5173",  // allow docker hostname
+    origin: "https://localhost:8443",  // allow docker hostname
      cors: {
-      origin: ["http://localhost:5173", "http://frontend:5173"],
+      origin: ["https://localhost:8443", "http://frontend:8443"],
       credentials: true,
     },
   },

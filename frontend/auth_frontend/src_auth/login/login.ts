@@ -2,12 +2,13 @@
 import { loginTemplate, sharedImage } from "./templates";
 import { loginUser } from "./api";
 import { navigate } from "../app";
-
+// import { socketListener, socketNotificationListener } from "../../../chat-frontend/src/ts/chat_socket";
 // import { io } from "socket.io-client";
 // export const socket = io("http://localhost:3000");
 // import { showDashboard } from "../dashboard/dashboard";
 // import { showMainUI } from "../../src/ts/script.ts";
 import {socketInstance} from "../../../socket_manager/socket"
+import { setCurrentUserId } from "../../../chat-frontend/src/ts/global_var";
 function showError(msg: string) {
   const errorBox = document.getElementById("login-error");
   if (!errorBox) return;
@@ -50,8 +51,8 @@ export function attachLoginHandlers() {
 
   if (!form || !btn || !usernameInput || !passwordInput) return;
 
-  if (signup) signup.addEventListener("click", () => navigate("signup"));
-  if (forgot) forgot.addEventListener("click", () => navigate("forgot"));
+  if (signup) signup.addEventListener("click", () => navigate("/signup"));
+  if (forgot) forgot.addEventListener("click", () => navigate("/forgot"));
 
   const togglePassword = document.getElementById("toggle-password");
   if (togglePassword) {
@@ -78,12 +79,19 @@ export function attachLoginHandlers() {
       const { response, body } = await loginUser(username, password);
       if (response && response.status === 206) {
         // Show 2FA page
+        navigate("/verify?username=" + body.username);
+        return  ;
       }
       if (body.success) {
-        currentUserId = response?.headers.get("x-user-id") || null;
-        
-        if (currentUserId) localStorage.setItem("userId", currentUserId);
         socketInstance();
+        // const response = await fetch("/auth/verify", {
+        //     method: "GET",
+        //     headers: { "Content-Type": "application/json" },
+        //     credentials: "include", // VERY IMPORTANT FOR Cookies
+        //   });
+        //   const responseJson = await response.json()
+        //   const userID = responseJson.id as string;
+        //   setCurrentUserId(userID);//TODO khasha tkon fach ylogi 
         navigate("/home");
       } else {
         showError(body.message || "Invalid username or password.");

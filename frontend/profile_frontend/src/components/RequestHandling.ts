@@ -1,7 +1,7 @@
 
 
 // import { socket } from "../../../auth_frontend/src_auth/login/login";
-import { socketInstance } from "../../../socket_manager/socket.ts";
+import { getSocketInstance } from "../../../socket_manager/socket.ts";
 
 // ============================================
 export function createFriendRequestNotification(
@@ -215,7 +215,7 @@ function attachAcceptHandler(
         acceptBtn.classList.add('bg-green-500');
         
         
-            socketInstance()?.emit('acceptFriendRequest', notifId, friendId, userId);
+            getSocketInstance()?.emit('acceptFriendRequest', notifId, friendId, userId);
           console.error('Error accepting friend request:');
         
         removeNotificationFromUI(notifId);
@@ -263,7 +263,7 @@ function attachRejectHandler(
       if (response.ok) {
         rejectBtn.innerHTML = '<span class="relative z-10">✓ Declined</span>';
         
-        socketInstance()?.emit('rejectFriendRequest', notifId, friendId, userId);
+        getSocketInstance()?.emit('rejectFriendRequest', notifId, friendId, userId);
         
         removeNotificationFromUI(notifId);
         
@@ -311,7 +311,7 @@ function attachMenuAcceptHandler(
         menuAcceptBtn.textContent = '✓ Accepted';
         menuAcceptBtn.classList.add('bg-green-500', 'text-white');
       
-        socketInstance()?.emit('acceptFriendRequest', notifId, friendId, userId);
+        getSocketInstance()?.emit('acceptFriendRequest', notifId, friendId, userId);
        
         removeNotificationFromUI(notifId);
         
@@ -360,7 +360,7 @@ function attachMenuRejectHandler(
       if (response.ok) {
         menuRejectBtn.textContent = '✓ Declined';
         
-        socketInstance()?.emit('rejectFriendRequest', notifId, friendId, userId);
+        getSocketInstance()?.emit('rejectFriendRequest', notifId, friendId, userId);
         
         
         removeNotificationFromUI(notifId);
@@ -391,6 +391,10 @@ function removeNotificationFromUI(notifId: string): void {
   });
 }
 
-socketInstance()?.on('friendRequestCancelled', (data: { notifId: string }) => {
+// getSocketInstance()?.on('friendRequestCancelled', (data: { notifId: string }) => {
+//   removeNotificationFromUI(data.notifId);
+// });
+
+export const  friendRequestCancelledHandler = (data: { notifId: string }) => {
   removeNotificationFromUI(data.notifId);
-});
+}
