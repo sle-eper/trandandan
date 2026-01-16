@@ -347,6 +347,12 @@ function generate16PlayerBracket() {
   `;
 }
 let joinedPlayers: string[] = [];
+const friends = [
+  { id: 1, username: "ayoub" },
+  { id: 2, username: "youssef" },
+  { id: 3, username: "hamza" },
+];
+
 
 function tournamentBracketTemplate() {
   return `
@@ -394,9 +400,46 @@ function tournamentBracketTemplate() {
       <div class="flex-1 flex items-center justify-center p-4">
         ${generateBracketHTML(currentTournament.maxPlayers)}
       </div>
+      <!-- Invite Friends Modal -->
+      <div
+        id="invite-modal"
+        class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50"
+      >
+        <div class="bg-neutral-900 w-96 rounded-xl p-4 border border-white/10">
+
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold">Invite Friends</h3>
+            <button id="close-invite-modal" class="text-gray-400 hover:text-white">✕</button>
+          </div>
+
+          <div id="friends-list" class="flex flex-col gap-2 max-h-72 overflow-y-auto">
+            <!-- Friends injected here -->
+          </div>
+
+        </div>
+      </div>
 
     </div>
   `;
+}
+function renderFriendsList(friends: { id: number; username: string }[]) {
+  const list = document.getElementById("friends-list");
+  if (!list) return;
+
+  list.innerHTML = friends
+    .map(
+      (friend) => `
+      <div class="flex items-center justify-between bg-white/5 px-3 py-2 rounded-lg">
+        <span>${friend.username}</span>
+        <button
+          data-id="${friend.id}"
+          class="invite-btn px-3 py-1 text-xs rounded-md bg-blue-600/80 hover:bg-blue-600 transition">
+          Invite
+        </button>
+      </div>
+    `
+    )
+    .join("");
 }
 
 function matchCard(player1: string, score1: string, player2: string, score2: string) {
@@ -629,7 +672,18 @@ function attachListHandlers() {
     });
   });
 }
+function onPlayerJoined(username: string) {
+  joinedPlayers.push(username);
 
+  const playerCount = document.getElementById("player-count");
+  playerCount!.textContent = String(joinedPlayers.length);
+
+  if (joinedPlayers.length === currentTournament.maxPlayers) {
+    document
+      .getElementById("start-tournament-btn")
+      ?.removeAttribute("disabled");
+  }
+}
 
 export function renderTournamentBracket() {
   const main = document.getElementById("dashboard-content");
@@ -641,24 +695,36 @@ export function renderTournamentBracket() {
   const playerCount = document.getElementById("player-count");
 
   addBtn?.addEventListener("click", () => {
-    if (joinedPlayers.length >= currentTournament.maxPlayers) return;
-    console.log("Adding player...");
-    //list friend to request to join the tournament 
-    //click to friend to send request 
-    //send socket event to server to add player to tournament
-    //if accept add to joined players list in backend
+  const modal = document.getElementById("invite-modal");
+  modal?.classList.remove("hidden");
+  modal?.classList.add("flex");
 
-    const newPlayer = `Player ${joinedPlayers.length + 1}`;
-    joinedPlayers.push(newPlayer);
+  renderFriendsList(friends);
+  });
+  document.getElementById("close-invite-modal")?.addEventListener("click", () => {
+    const modal = document.getElementById("invite-modal");
+    modal?.classList.add("hidden");
+    modal?.classList.remove("flex");
+  });
+  document.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement;
 
-    playerCount!.textContent = String(joinedPlayers.length);
+    if (!target.classList.contains("invite-btn")) return;
 
-    // Enable start button only if full
-    if (joinedPlayers.length === currentTournament.maxPlayers) {
-      startBtn?.removeAttribute("disabled");
-    }
+    const friendId = target.getAttribute("data-id");
+    if (!friendId) return;
 
-    console.log("Player added:", newPlayer);
+    target.textContent = "Invited";
+    target.classList.add("opacity-50", "cursor-not-allowed");
+    target.setAttribute("disabled", "true");
+
+    console.log("Invite sent to friend:", friendId);
+
+    // 🔌 SOCKET / API (later)
+    // socket.emit("tournament:invite", {
+    //   tournamentId: currentTournament.id,
+    //   friendId,
+    // });
   });
 
   startBtn?.addEventListener("click", () => {
