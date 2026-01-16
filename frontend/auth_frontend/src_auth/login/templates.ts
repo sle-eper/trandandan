@@ -2,8 +2,8 @@
 import image1 from "../images/pingpong1.jpg?inline"
 import image2 from "../images/pingpong2.jpg?inline"
 import image3 from "../images/pingpong3.jpg?inline"
-
-
+import startSpay  from "../images/startSpay.png?inline";
+import startPingPong  from "../images/startPingpong.png?inline";
 export const loginTemplate = () => `
   <form id="login-form"
     class="bg-black/40 backdrop-blur-md rounded-2xl shadow-lg border border-gray-700
@@ -141,16 +141,19 @@ export const gamesTemplate = () => `
     <!-- Ping Pong -->
     <a href="/game/pong" data-route
       class="group relative w-full h-80 md:h-96 rounded-3xl overflow-hidden cursor-pointer
-             duration-300 hover:scale-[1.02] ring-2 ring-transparent hover:ring-green-500">
-
-      <div class="absolute inset-0 bg-gradient-to-br from-green-900 to-black"></div>
+            duration-300 hover:scale-[1.02] ring-2 ring-transparent hover:ring-red-500">
+      
+      <img src="${startPingPong}" 
+          alt="Spy Game Background" 
+          class="absolute inset-0 w-full h-full object-cover" />
+      <div class="absolute inset-0 bg-gradient-to-br from-red-950/70 to-black/70 z-0"></div>
 
       <div class="absolute inset-0 flex flex-col justify-center items-center z-10 p-4">
-        <div class="bg-green-600/20 p-6 rounded-full mb-4 group-hover:bg-green-500/30">
+        <div class="bg-red-600/20 w-20 h-20 flex items-center justify-center rounded-full mb-4 group-hover:bg-red-500/30">
           <span class="material-symbols-outlined text-6xl text-white">sports_tennis</span>
         </div>
         <h2 class="text-3xl font-bold text-white uppercase">Ping Pong</h2>
-        <p class="text-green-200 mt-2 opacity-0 group-hover:opacity-100 duration-500">
+        <p class="text-red-200 mt-2 opacity-0 group-hover:opacity-100 duration-500">
           Classic Table Tennis
         </p>
       </div>
@@ -159,20 +162,24 @@ export const gamesTemplate = () => `
     <!-- Spy Game -->
     <a href="/game/spy" data-route
       class="group relative w-full h-80 md:h-96 rounded-3xl overflow-hidden cursor-pointer
-             duration-300 hover:scale-[1.02] ring-2 ring-transparent hover:ring-red-500">
+              duration-300 hover:scale-[1.02] ring-2 ring-transparent hover:ring-red-500">
 
-      <div class="absolute inset-0 bg-gradient-to-br from-red-900 to-black"></div>
+      <img src="${startSpay}" 
+          alt="Spy Game Background" 
+          class="absolute inset-0 w-full h-full object-cover" />
+      <div class="absolute inset-0 bg-gradient-to-br from-red-950/70 to-black/70 z-0"></div>
+
 
       <div class="absolute inset-0 flex flex-col justify-center items-center z-10 p-4">
-        <div class="bg-red-600/20 p-6 rounded-full mb-4 group-hover:bg-red-500/30">
+        <div class="bg-red-600/20 w-20 h-20 flex items-center justify-center rounded-full mb-4 group-hover:bg-red-500/30">
           <span class="material-symbols-outlined text-6xl text-white">visibility_off</span>
         </div>
-        <h2 class="text-3xl font-bold text-white uppercase">Spy Game</h2>
-        <p class="text-red-200 mt-2 opacity-0 group-hover:opacity-100 duration-500">
+        <h2 class="text-3xl font-bold text-white uppercaseDrop-shadow-lg">Spy Game</h2>
+        <p class="text-red-200 mt-2 opacity-0 group-hover:opacity-100 duration-500 font-semibold">
           Find the Imposter
         </p>
       </div>
-    </a>
+</a>
 
   </div>
 </div>
