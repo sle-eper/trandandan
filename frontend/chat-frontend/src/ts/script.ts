@@ -50,10 +50,20 @@ export async function showMainUI() {
   let dmZone: HTMLElement | null;
   
   if (chatContent) {
+    chatContent.innerHTML = `
+    <div
+      id="chat-alert-root"
+      class="fixed top-30 left-1/2 -translate-x-1/2 translate-x-10 z-[9999]
+      flex justify-center items-center gap-3 rounded-2xl
+      bg-[#1a1a1a]/90 border border-[#FD1D1D]/40 p-3 hidden"
+    >
+</div>`
+
     chatContent.classList.add("gap-6", "gap-y-3");
     const friends = await fetchListOfFriends();
     // console.table(friends.waitingMsg);
-    chatContent.innerHTML = listOfMsg(friends.friends,friends.waitingMsg,userID);
+
+    chatContent.innerHTML += listOfMsg(friends.friends,friends.waitingMsg,userID);
     if(friends && friends.friends.length > 0)
       chatContent.innerHTML += DM();
     //     //get all of list friends

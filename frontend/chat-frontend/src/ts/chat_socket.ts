@@ -1,7 +1,7 @@
 import { friendRequestReceivedHandler, socketNotificationListenerHandler, socketNotificationListenerRejectHandler } from "../../../profile_frontend/src/components/FriendRequest";
 import { friendRequestCancelledHandler } from "../../../profile_frontend/src/components/RequestHandling";
 import { getSocketInstance } from "../../../socket_manager/socket";
-import { liveHandler ,  receiveMessageHandler,allowMsgHandler,blockOrAcceptedHandler,messages_batchHandler, messages_old_batchHandler, request_to_playHandler, not_agreeHandler, msg_notificationHandler, user_onlineHandler, user_offlineHandler } from "./chat_handlers"
+import { liveHandler ,  receiveMessageHandler,allowMsgHandler,blockOrAcceptedHandler,messages_batchHandler, messages_old_batchHandler, chatErrorHandler ,request_to_playHandler, not_agreeHandler, msg_notificationHandler, user_onlineHandler, user_offlineHandler } from "./chat_handlers"
 
 export function socketListener() {
   const socket = getSocketInstance();
@@ -22,6 +22,7 @@ export function socketListener() {
   socket.on("blockOrAccepted", blockOrAcceptedHandler);
   socket.on("messages_batch", messages_batchHandler);
   socket.on("messages_old_batch", messages_old_batchHandler);
+  socket.on("chat_error", chatErrorHandler);
 }
 
 export function socketNotificationListener() {

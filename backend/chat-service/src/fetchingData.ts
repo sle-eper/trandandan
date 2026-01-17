@@ -14,7 +14,6 @@ async function fetchUserData(userId: string) {
       },
       timeout: 5000 
     });
-    // console.log(response.data)
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -202,6 +201,7 @@ async function getFriendsOfUser(userId: string) {
   }
 }
 async function getStatusOfTowFriends(userId:string,friendId:string):Promise<object> {
+  // console.log("Getting friendship status between", userId, "and", friendId);
   try {
     const res = await axios.get(`${USER_MANAGEMENT_SERVICE_URL}/friendship/status/${userId}/${friendId}`, {
       headers: {
@@ -210,7 +210,10 @@ async function getStatusOfTowFriends(userId:string,friendId:string):Promise<obje
       },
       timeout: 5000 
     });
-    // console.log(res)
+    if (!res.data || !res.data.status1 || !res.data.status2) {
+      throw new Error("Invalid friendship response");
+    }
+    // console.log("res.data", res.data);
     return res.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
