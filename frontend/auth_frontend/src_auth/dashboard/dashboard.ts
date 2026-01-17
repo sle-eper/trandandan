@@ -94,7 +94,7 @@ export async function showDashboard() {
                   bg-gradient-to-br from-[#1a1a1d] to-[#0f0f11]
                   shadow-xl border border-[#2c2c2f]
                   mx-6 mt-4 mb-6 overflow-auto
-                  max-h-[80vh] md:max-h-[87vh] w-full">
+                  max-h-[80vh] md:max-h-[87vh] w-full relative">
 
               <div class="h-full flex flex-col justify-center items-center text-center">
               </div>

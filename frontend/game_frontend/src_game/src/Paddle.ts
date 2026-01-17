@@ -6,7 +6,7 @@ export class Paddle {
     widthPaddle: number = 10;
     heightPaddle: number = 100;
     scroll: number = 0;
-    speed: number = 2;
+    speed: number = 3;
     color: string;
 
     constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, x: number, y: number, color: string = '#0ff') {

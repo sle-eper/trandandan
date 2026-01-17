@@ -13,12 +13,14 @@ export class PongBall {
     speedIncrement: number = 0.2;
     trail: { x: number, y: number }[] = [];
     maxTrail: number = 15;
+    color: string;
 
-    constructor(canvas: HTMLCanvasElement, c: CanvasRenderingContext2D) {
+    constructor(canvas: HTMLCanvasElement, c: CanvasRenderingContext2D, color: string = '#ff4500') {
         this.canvas = canvas;
         this.c = c;
         this.x = canvas.width / 2;
         this.y = canvas.height / 2;
+        this.color = color;
     }
 
     start() {
@@ -44,8 +46,8 @@ export class PongBall {
         this.c.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false);
 
         // Neon Glow
-        this.c.fillStyle = '#ff4500'; // Orange Red
-        this.c.shadowColor = '#ff4500';
+        this.c.fillStyle = this.color;
+        this.c.shadowColor = this.color;
         this.c.shadowBlur = 35;
         this.c.fill();
 

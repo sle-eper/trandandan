@@ -27,6 +27,12 @@ let countdown: CountDown;
 let animationId: number | null = null;
 let winnerName: string | null = null;
 
+// Color State
+let leftPaddleColor = '#ff0000';
+let rightPaddleColor = '#ff8c00';
+let ballColor = '#ff4500';
+let arenaColor = '#100505';
+
 // Define listeners outside to allow proper removal and avoid accumulation
 const handleKeyDown = (e: KeyboardEvent) => {
     if (!gameStarted || gameOver) return;
@@ -90,36 +96,64 @@ const handleKeyUp = (e: KeyboardEvent) => {
 export function initializeGame() {
     console.debug('Initializing game...');
 
-    // Stop previous animation if any
     if (animationId !== null) {
         cancelAnimationFrame(animationId);
         animationId = null;
     }
 
     const container = document.querySelector('.canvas-container') as HTMLElement;
-    if (!container) {
-        console.error('Canvas container not found');
-        return false;
-    }
+    if (!container) return false;
 
-    const canvas = document.createElement('canvas');
-    canvas.id = 'game-canvas';
-    canvas.width = 800;
-    canvas.height = 400;
-
-    // Wrapper for scanline effects
     container.innerHTML = `
-        <div class="game-container-premium">
-            <div class="canvas-wrapper">
-                <div class="scanlines"></div>
-                <div class="vignette"></div>
-                <div class="scanline-moving"></div>
-                <div id="canvas-mount"></div>
+        <div class="relative w-full h-full flex flex-col items-center justify-center rounded-[2rem] overflow-hidden isolate">
+            <!-- HUD Layer -->
+            <div class="absolute top-8 left-0 w-full px-12 flex justify-between items-start z-30 pointer-events-none select-none">
+                <!-- Left Player -->
+                <div class="flex flex-col items-center gap-4 animate-slide-in-left">
+                    <div class="relative group pointer-events-auto">
+                        <div class="absolute -inset-1 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-full blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
+                        <div class="relative w-28 h-28 rounded-full border-2 border-cyan-400/50 shadow-[0_0_30px_rgba(34,211,238,0.4)] overflow-hidden bg-black/40 backdrop-blur-md transition-all duration-500 hover:scale-110 hover:rotate-3 ring-4 ring-cyan-500/20">
+                            <img id="avatar-left" src="" alt="Left Player" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                    <div class="px-6 py-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl shadow-2xl transition-all hover:border-cyan-500/30">
+                        <span id="name-left" class="text-cyan-400 font-black font-mono tracking-[0.2em] text-xs uppercase drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]">Player 1</span>
+                    </div>
+                </div>
+
+                <!-- Right Player -->
+                <div class="flex flex-col items-center gap-4 animate-slide-in-right">
+                    <div class="relative group pointer-events-auto">
+                        <div class="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
+                        <div class="relative w-28 h-28 rounded-full border-2 border-purple-400/50 shadow-[0_0_30px_rgba(168,85,247,0.4)] overflow-hidden bg-black/40 backdrop-blur-md transition-all duration-500 hover:scale-110 hover:-rotate-3 ring-4 ring-purple-500/20">
+                            <img id="avatar-right" src="" alt="Right Player" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                    <div class="px-6 py-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl shadow-2xl transition-all hover:border-purple-500/30">
+                        <span id="name-right" class="text-purple-400 font-black font-mono tracking-[0.2em] text-xs uppercase drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]">Player 2</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Canvas Wrapper -->
+            <div class="relative w-full h-full flex items-center justify-center p-12">
+                <div id="canvas-mount" class="relative z-10 rounded-2xl overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/10 backdrop-blur-2xl transition-transform duration-700"></div>
+                
+                <!-- Inner Ambient Glow -->
+                <div class="absolute inset-0 pointer-events-none z-20 pointer-events-none opacity-40 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)]"></div>
+                <div id="game-info" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 hidden px-12 py-6 bg-black/90 backdrop-blur-2xl border-2 border-white/10 rounded-[2.5rem] text-3xl font-black text-white shadow-[0_0_80px_rgba(0,0,0,0.9)] animate-bounce-in tracking-tighter"></div>
             </div>
         </div>
     `;
 
+    // Attach Lobby Color Listeners (if present in DOM)
+    setupLobbyColorListeners();
+
     const mount = container.querySelector('#canvas-mount');
+    const canvas = document.createElement('canvas');
+    canvas.id = 'game-canvas';
+    canvas.width = 800;
+    canvas.height = 400;
     if (mount) mount.appendChild(canvas);
 
     const ctx = canvas.getContext('2d');
@@ -137,117 +171,157 @@ export function initializeGame() {
     aiMode = false;
     winnerName = null;
 
-    leftPaddle = new Paddle(c, ctxt, 0, (c.height - 100) / 2, '#ff0000');
-    rightPaddle = new Paddle(c, ctxt, (c.width - 10), (c.height - 100) / 2, '#ff8c00');
-    pongBall = new PongBall(c, ctxt);
+    aiMode = false;
+    winnerName = null;
+
+    updateLocalAvatars();
+
+    leftPaddle = new Paddle(c, ctxt, 0, (c.height - 100) / 2, leftPaddleColor);
+    rightPaddle = new Paddle(c, ctxt, (c.width - 10), (c.height - 100) / 2, rightPaddleColor);
+    pongBall = new PongBall(c, ctxt, ballColor);
+    pongBall.radius = 10;
     countdown = new CountDown();
 
     setupSocketListeners();
     setupInputListeners();
     setupMenuButtons();
+    setupVisibilityListener();
     checkUrlForGame();
+
+    updateLocalAvatars();
 
     return true;
 }
 
 function setupSocketListeners() {
-    // Clear previous listeners to avoid duplicates in SPA
-    gameSocket.socket.off('game_start');
-    gameSocket.socket.off('opponent_move');
-    gameSocket.socket.off('ball_update');
-    gameSocket.socket.off('game_over');
+    console.log('[DEBUG] Setting up socket listeners...');
+    const s = gameSocket.socket;
 
-    gameSocket.socket.on('game_start', (game: any) => {
-        console.log('Game starting!', game);
+    s.off('game_start');
+    s.off('waiting_for_opponent');
+    s.off('error');
+    s.off('game_full');
+    s.off('opponent_move');
+    s.off('ball_update');
+    s.off('game_over');
+    s.off('player_left');
+
+    s.on('game_start', (game: any) => {
+        console.log('[DEBUG] game_start received!', game);
         currentGameId = game.id;
         isRemote = true;
 
-        // Improve identification: use userData if available, otherwise fallback to finding by socket ID if server provides it
-        const me = game.players.find((p: any) =>
-            (gameSocket.userData && (p.id === gameSocket.userData.id || p.username === gameSocket.userData.username)) ||
-            (p.socketId === gameSocket.socket.id)
-        );
+        const myId = gameSocket.userData?.id || localStorage.getItem('userId');
+        const me = game.players.find((p: any) => p.socketId === s.id) ||
+            game.players.find((p: any) => myId && String(p.id) === String(myId)) ||
+            game.players.find((p: any) => gameSocket.userData && p.username === gameSocket.userData.username);
 
-        playerSide = me?.side || playerSide; // Stay with previous guess if me not found
+        if (me) {
+            playerSide = me.side;
+            console.log(`[DEBUG] Identified as ${playerSide} player.`);
+        }
+
+        if (game.score) {
+            leftScore = game.score.left;
+            rightScore = game.score.right;
+        }
+        if (game.paddles) {
+            leftPaddle.setY(game.paddles.left);
+            rightPaddle.setY(game.paddles.right);
+        }
+        if (game.ball) {
+            pongBall.syncState(game.ball);
+        }
+
+        updateRemoteAvatars(game.players);
 
         const infoBox = document.getElementById('game-info');
         if (infoBox) {
-            infoBox.innerHTML = `<span class="text-green-400 font-bold">Match Started!</span> Side: ${playerSide}`;
+            infoBox.classList.remove('hidden');
+            infoBox.innerHTML = `Match Started! You are <span class="text-orange-500 font-bold">${playerSide.toUpperCase()}</span>`;
             setTimeout(() => infoBox.classList.add('hidden'), 3000);
         }
 
         countdown.start(() => {
             gameStarted = true;
-            if (playerSide === 'left') pongBall.start();
+            // Only start ball locally if NOT remote
+            if (!isRemote) pongBall.start();
         });
     });
 
-    gameSocket.socket.on('waiting_for_opponent', () => {
-        console.log('Socket event: waiting_for_opponent');
+    s.on('waiting_for_opponent', () => {
         const infoBox = document.getElementById('game-info');
         if (infoBox) {
-            infoBox.innerHTML = `Game ID: <span class="text-yellow-400 font-bold select-all">${currentGameId}</span><br>
-                                 <span class="text-blue-400">Waiting for an opponent to join...</span>`;
+            infoBox.classList.remove('hidden');
+            infoBox.innerHTML = `Game ID: <span class="text-yellow-400 font-bold select-all">${currentGameId}</span><br>Waiting for opponent...`;
         }
     });
 
-    gameSocket.socket.on('error', (msg: string) => {
-        console.error('Socket event: error', msg);
-        const infoBox = document.getElementById('game-info');
-        if (infoBox) {
-            infoBox.innerHTML = `<span class="text-red-500">Error: ${msg}</span>`;
-            setTimeout(() => infoBox.classList.add('hidden'), 5000);
-        }
-    });
-
-    gameSocket.socket.on('game_full', () => {
-        console.warn('Socket event: game_full');
-        const infoBox = document.getElementById('game-info');
-        if (infoBox) {
-            infoBox.innerHTML = `<span class="text-red-500">This game is already full!</span>`;
-        }
-    });
-
-    gameSocket.socket.on('opponent_move', (data: any) => {
+    s.on('opponent_move', (data: any) => {
         if (data.side === 'left') leftPaddle.setY(data.y);
         else rightPaddle.setY(data.y);
     });
 
-    gameSocket.socket.on('ball_update', (data: any) => {
+    s.on('ball_update', (data: any) => {
         if (isRemote) {
-            // If we are on the right, we must sync the ball position from the host
-            if (playerSide === 'right') {
-                pongBall.syncState(data.ball);
-            }
-            // Everyone syncs the score from the authoritative server broadcast
+            pongBall.syncState(data.ball);
             leftScore = data.score.left;
             rightScore = data.score.right;
         }
     });
 
-    gameSocket.socket.on('game_over', (data: any) => {
-        console.log('Game Over received:', data);
+    s.on('goal_scored', (data: any) => {
+        console.log('[DEBUG] Goal Scored!', data);
+        pongBall.syncState(data.ball);
+        leftScore = data.score.left;
+        rightScore = data.score.right;
+        // No countdown, just wait for server to restart ball
+    });
+
+    s.on('game_over', (data: any) => {
         gameOver = true;
         gameStarted = false;
-
-        // Sync final scores from server to ensure loser sees the 11 (or 5)
         if (data.score) {
             leftScore = data.score.left;
             rightScore = data.score.right;
         }
-
         winnerName = data.winner?.username || (leftScore > rightScore ? 'Left Player' : 'Right Player');
         drawWin(winnerName + ' Wins!');
+    });
+
+    s.on('player_left', () => {
+        const infoBox = document.getElementById('game-info');
+        if (infoBox) {
+            infoBox.classList.remove('hidden');
+            infoBox.innerHTML = `<span class="text-orange-500">Opponent left the match.</span>`;
+        }
+        gameStarted = false;
+        gameOver = true;
     });
 }
 
 function setupInputListeners() {
-    // Always remove first to avoid duplicates in SPAs
     window.removeEventListener('keydown', handleKeyDown);
     window.removeEventListener('keyup', handleKeyUp);
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
 }
+
+function setupVisibilityListener() {
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+}
+
+const handleVisibilityChange = () => {
+    if (document.hidden) {
+        if (animationId !== null) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+        }
+    } else {
+        if (!gameOver && !animationId) animate();
+    }
+};
 
 const showGameView = () => {
     const lobby = document.getElementById('game-lobby');
@@ -268,149 +342,71 @@ function setupMenuButtons() {
     }
 
     const btnRemote = document.getElementById('btn-remote');
-    if (btnRemote) {
-        btnRemote.onclick = () => {
-            showGameView();
-            startRemoteGame();
-        };
-    }
+    if (btnRemote) btnRemote.onclick = () => { showGameView(); startRemoteGame(); };
 
     const btnJoin = document.getElementById('btn-join');
-    if (btnJoin) {
-        btnJoin.onclick = () => {
-            // joinMatch handles its own showGameView if successful or starting
-            joinMatch();
-        };
-    }
+    if (btnJoin) btnJoin.onclick = () => joinMatch();
 
     const btnAI = document.getElementById('btn-ai');
-    if (btnAI) {
-        btnAI.onclick = () => {
-            aiMode = true;
-            isRemote = false;
-            showGameView();
-            countdown.start(() => { gameStarted = true; pongBall.start(); });
-        };
-    }
+    if (btnAI) btnAI.onclick = () => {
+        aiMode = true; isRemote = false; showGameView();
+        const infoBox = document.getElementById('game-info');
+        if (infoBox) {
+            infoBox.classList.remove('hidden');
+            infoBox.innerHTML = `<span class="text-purple-400 font-bold">Practice vs AI</span>`;
+            setTimeout(() => infoBox.classList.add('hidden'), 3000);
+        }
+        countdown.start(() => { gameStarted = true; pongBall.start(); });
+    };
 
     const btnFriend = document.getElementById('btn-friend');
-    if (btnFriend) {
-        btnFriend.onclick = () => {
-            aiMode = false;
-            isRemote = false;
-            showGameView();
-            countdown.start(() => { gameStarted = true; pongBall.start(); });
-        };
-    }
+    if (btnFriend) btnFriend.onclick = () => {
+        aiMode = false; isRemote = false; showGameView();
+        const infoBox = document.getElementById('game-info');
+        if (infoBox) {
+            infoBox.classList.remove('hidden');
+            infoBox.innerHTML = `<span class="text-cyan-400 font-bold">Local Multiplayer</span>`;
+            setTimeout(() => infoBox.classList.add('hidden'), 3000);
+        }
+        countdown.start(() => { gameStarted = true; pongBall.start(); });
+    };
 }
 
 async function startRemoteGame() {
-    const infoBox = document.getElementById('game-info');
-    if (infoBox) {
-        infoBox.innerText = 'Creating session...';
-        infoBox.classList.remove('hidden');
-    }
-
     gameSocket.connect();
     const gameId = await gameSocket.createGame();
     if (gameId) {
         currentGameId = gameId;
         isRemote = true;
         playerSide = 'left';
-
-        const emitJoin = () => {
-            console.log('Socket connected, emitting join_game for creator');
-            gameSocket.socket.emit('join_game', { gameId, side: 'left' });
-        };
-
-        if (gameSocket.socket.connected) {
-            emitJoin();
-        } else {
-            gameSocket.socket.once('connect', emitJoin);
-        }
-
-        if (infoBox) {
-            infoBox.innerHTML = `Game Created! ID: <span class="text-yellow-400 font-bold select-all">${gameId}</span><br><small class="text-gray-400">Waiting for opponent...</small>`;
-        }
-    } else if (infoBox) {
-        infoBox.innerText = 'Failed to create game. Check console.';
+        gameSocket.socket.emit('join_game', { gameId, side: 'left' });
     }
 }
 
 async function joinMatch() {
     const input = document.getElementById('join-id') as HTMLInputElement;
     const gameId = input?.value.trim();
-    const infoBox = document.getElementById('game-info');
+    if (!gameId) return;
 
-    if (!gameId) {
-        if (infoBox) {
-            infoBox.innerText = 'Please enter a valid Match ID';
-            infoBox.classList.remove('hidden');
-        }
-        return;
-    }
-
-    if (infoBox) {
-        infoBox.innerText = 'Joining match...';
-        infoBox.classList.remove('hidden');
-    }
-
-    if (infoBox) {
-        infoBox.innerText = 'Connecting to server...';
-        infoBox.classList.remove('hidden');
-    }
-
+    showGameView();
     gameSocket.connect();
-
-    // Attach a one-time listener for connection errors specifically for this join attempt
-    gameSocket.socket.once('connect_error', (err) => {
-        if (infoBox) infoBox.innerHTML = `<span class="text-red-500">Connection Failed: ${err.message}</span>`;
-    });
-
-    const performJoin = () => {
-        const lobby = document.getElementById('game-lobby');
-        const container = document.getElementById('game-container');
-        if (lobby) lobby.classList.add('hidden');
-        if (container) container.classList.remove('hidden');
-
-        if (infoBox) infoBox.innerText = 'Joining match...';
-        currentGameId = gameId;
-        isRemote = true;
-        playerSide = 'right';
-        gameSocket.socket.emit('join_game', { gameId, side: 'right' });
-    };
-
-    if (gameSocket.socket.connected) {
-        performJoin();
-    } else {
-        gameSocket.socket.once('connect', performJoin);
-    }
+    currentGameId = gameId;
+    isRemote = true;
+    playerSide = 'right';
+    gameSocket.socket.emit('join_game', { gameId, side: 'right' });
 }
 
 function checkUrlForGame() {
     const params = new URLSearchParams(window.location.search);
     const gameId = params.get('gameId');
     const sideParam = params.get('side');
-
     if (gameId) {
-        console.log('Automatic join from URL:', gameId, 'Side:', sideParam);
         showGameView();
         gameSocket.connect();
         currentGameId = gameId;
         isRemote = true;
-        // Default to right if joining via URL (acceptor/friend), but respect sideParam if present
         playerSide = (sideParam === 'left' || sideParam === 'right') ? sideParam : 'right';
-
-        const emitJoin = () => {
-            console.log('Emitting join_game from URL with side:', playerSide);
-            gameSocket.socket.emit('join_game', { gameId, side: playerSide });
-        };
-
-        if (gameSocket.socket.connected) {
-            emitJoin();
-        } else {
-            gameSocket.socket.once('connect', emitJoin);
-        }
+        gameSocket.socket.emit('join_game', { gameId, side: playerSide });
     }
 }
 
@@ -418,17 +414,13 @@ export function animate() {
     animationId = requestAnimationFrame(animate);
     if (!ctxt) return;
 
-    // Draw Cyber Background
     drawPremiumBackground();
 
     if (aiMode && gameStarted) {
         const paddleCenter = rightPaddle.y + rightPaddle.heightPaddle / 2;
         const diff = pongBall.y - paddleCenter;
-        if (Math.abs(diff) > 6) {
-            rightPaddle.scroll = diff > 0 ? rightPaddle.speed : -rightPaddle.speed;
-        } else {
-            rightPaddle.scroll = 0;
-        }
+        if (Math.abs(diff) > 6) rightPaddle.scroll = diff > 0 ? rightPaddle.speed : -rightPaddle.speed;
+        else rightPaddle.scroll = 0;
     }
 
     const myPaddle = playerSide === 'left' ? leftPaddle : rightPaddle;
@@ -437,7 +429,6 @@ export function animate() {
     leftPaddle.update();
     rightPaddle.update();
 
-    // If my paddle moved, emit the new position to the server
     if (isRemote && currentGameId && myPaddle.getY() !== oldY) {
         gameSocket.socket.emit('paddle_move', { gameId: currentGameId, y: myPaddle.getY() });
     }
@@ -445,31 +436,13 @@ export function animate() {
     drawScores();
 
     if (gameStarted && !gameOver) {
-        // Only host calculates ball in remote mode, or both in local
-        if (!isRemote || playerSide === 'left') {
+        if (!isRemote) {
             const scorer = pongBall.update(leftPaddle, rightPaddle);
-
             if (scorer) {
                 if (scorer === 'left') leftScore++;
                 else rightScore++;
-
-                if (leftScore >= winningScore || rightScore >= winningScore) {
-                    gameOver = true;
-                    gameStarted = false;
-                } else {
-                    pongBall.resetPositionAndSpeed();
-                    gameStarted = false;
-                    setTimeout(() => { if (!gameOver) { pongBall.start(); gameStarted = true; } }, 1000);
-                }
-            }
-
-            // ALWAYS sync after update/score increment to ensure server sees the final state
-            if (isRemote && currentGameId) {
-                gameSocket.socket.emit('ball_sync', {
-                    gameId: currentGameId,
-                    ball: pongBall.getState(),
-                    score: { left: leftScore, right: rightScore }
-                });
+                if (leftScore >= winningScore || rightScore >= winningScore) { gameOver = true; gameStarted = false; }
+                else { pongBall.resetPositionAndSpeed(); gameStarted = false; setTimeout(() => { if (!gameOver) { pongBall.start(); gameStarted = true; } }, 1000); }
             }
         }
     }
@@ -479,13 +452,8 @@ export function animate() {
     pongBall.draw();
 
     if (gameOver) {
-        if (isRemote) {
-            const displayWinner = winnerName || (leftScore > rightScore ? 'Left Player' : 'Right Player');
-            drawWin(displayWinner + ' Wins!');
-        } else {
-            const winner = leftScore >= winningScore ? 'Left Player' : 'Right Player';
-            drawWin(winner + ' Wins!');
-        }
+        const displayWinner = winnerName || (leftScore > rightScore ? 'Left Player' : 'Right Player');
+        drawWin(displayWinner + ' Wins!');
     }
 }
 
@@ -496,13 +464,8 @@ function drawScores() {
     ctxt.textAlign = 'center';
     ctxt.shadowColor = '#f00';
     ctxt.shadowBlur = 15;
-
-    // Left Score
     ctxt.fillText(String(leftScore), c.width * 0.25, 60);
-    // Right Score
     ctxt.fillText(String(rightScore), c.width * 0.75, 60);
-
-    // Center Line Divider
     ctxt.setLineDash([10, 15]);
     ctxt.strokeStyle = 'rgba(255, 0, 0, 0.15)';
     ctxt.lineWidth = 2;
@@ -515,48 +478,159 @@ function drawScores() {
 
 let bgOffset = 0;
 function drawPremiumBackground() {
-    // Solid base
-    ctxt.fillStyle = '#100505';
+    // Fill with semi-transparency so backdrop-blur is visible
+    ctxt.fillStyle = arenaColor + 'CC'; // ~80% opacity
     ctxt.fillRect(0, 0, c.width, c.height);
-
-    // Animated Grid
-    ctxt.strokeStyle = 'rgba(255, 0, 0, 0.05)';
+    ctxt.strokeStyle = 'rgba(255, 255, 255, 0.05)';
     ctxt.lineWidth = 1;
-
     bgOffset = (bgOffset + 0.5) % 40;
-
-    // Vertical lines
-    for (let x = 0; x <= c.width; x += 40) {
-        ctxt.beginPath();
-        ctxt.moveTo(x, 0);
-        ctxt.lineTo(x, c.height);
-        ctxt.stroke();
-    }
-
-    // Horizontal lines (scrolling)
-    for (let y = 0; y <= c.height + 40; y += 40) {
-        ctxt.beginPath();
-        ctxt.moveTo(0, y + bgOffset);
-        ctxt.lineTo(c.width, y + bgOffset);
-        ctxt.stroke();
-    }
+    for (let x = 0; x <= c.width; x += 40) { ctxt.beginPath(); ctxt.moveTo(x, 0); ctxt.lineTo(x, c.height); ctxt.stroke(); }
+    for (let y = 0; y <= c.height + 40; y += 40) { ctxt.beginPath(); ctxt.moveTo(0, y + bgOffset); ctxt.lineTo(c.width, y + bgOffset); ctxt.stroke(); }
 }
 
 function drawWin(text: string) {
     ctxt.save();
     ctxt.fillStyle = 'rgba(20, 0, 0, 0.9)';
     ctxt.fillRect(0, 0, c.width, c.height);
-
     ctxt.shadowColor = '#f00';
     ctxt.shadowBlur = 30;
     ctxt.fillStyle = '#f00';
     ctxt.font = '60px "Share Tech Mono", monospace';
     ctxt.textAlign = 'center';
     ctxt.fillText(text.toUpperCase(), c.width / 2, c.height / 2);
-
-    ctxt.shadowBlur = 0;
-    ctxt.fillStyle = 'rgba(255, 100, 100, 0.6)';
-    ctxt.font = '20px "Share Tech Mono", monospace';
-    ctxt.fillText('PRESS F5 TO REGENERATE THE HELLFIRE', c.width / 2, c.height / 2 + 80);
     ctxt.restore();
+}
+
+// Avatar Helpers
+async function fetchUserProfile(userId?: string) {
+    try {
+        const url = userId ? `/api/users/user/${userId}` : '/api/users/User';
+        const response = await fetch(url);
+        if (!response.ok) return null;
+        const json = await response.json();
+        return json.user || json; // Unwrap if wrapped in { user: ... }
+    } catch (e) { return null; }
+}
+
+async function updateLocalAvatars() {
+    // Fetch current user via session if possible
+    const profile = await fetchUserProfile();
+    if (!profile) return;
+
+    const avatarImg = document.getElementById('avatar-left') as HTMLImageElement;
+    const nameSpan = document.getElementById('name-left');
+
+    const getValidValue = (v: any) => (v && String(v) !== 'undefined' && String(v) !== 'null') ? v : null;
+
+    // Resolve Avatar URL
+    let avatarSrc = '/api/users/static/avatars/default.png';
+    const rawAvatar = getValidValue(profile.avatar) || getValidValue(profile.avatar_url);
+    if (rawAvatar) {
+        if (rawAvatar.startsWith('http') || rawAvatar.startsWith('/')) {
+            avatarSrc = rawAvatar;
+        } else {
+            avatarSrc = `/api/uploads/${rawAvatar}`;
+        }
+    }
+
+    if (avatarImg) avatarImg.src = avatarSrc;
+    if (nameSpan) {
+        const name = getValidValue(profile.username) || getValidValue(profile.display_name) || getValidValue(profile.name);
+        nameSpan.innerText = name || 'Player 1';
+    }
+}
+
+async function updateRemoteAvatars(players: any[]) {
+    for (const p of players) {
+        const profile = await fetchUserProfile(p.id);
+        if (!profile) continue;
+        const side = p.side === 'left' ? 'left' : 'right';
+        const avatarImg = document.getElementById(`avatar-${side}`) as HTMLImageElement;
+        const nameSpan = document.getElementById(`name-${side}`);
+
+        const getValidValue = (v: any) => (v && String(v) !== 'undefined' && String(v) !== 'null') ? v : null;
+
+        // Resolve Avatar URL
+        let avatarSrc = '/api/users/static/avatars/default.png';
+        const rawAvatar = getValidValue(profile.avatar) || getValidValue(profile.avatar_url);
+        if (rawAvatar) {
+            if (rawAvatar.startsWith('http') || rawAvatar.startsWith('/')) {
+                avatarSrc = rawAvatar;
+            } else {
+                avatarSrc = `/api/uploads/${rawAvatar}`;
+            }
+        }
+
+        if (avatarImg) avatarImg.src = avatarSrc;
+        if (nameSpan) {
+            const name = getValidValue(profile.username) || getValidValue(profile.display_name) || getValidValue(profile.name);
+            nameSpan.innerText = name || (side === 'left' ? 'Player 1' : 'Player 2');
+        }
+    }
+}
+
+// Setup listeners for the Main Menu (Lobby) color pickers
+function setupLobbyColorListeners() {
+    const HELLFIRE_PALETTE = [
+        '#FF0000', // Red
+        '#00FFFF', // Blue
+        '#00FF00', // Green
+        '#FFD700', // Gold
+        '#9D00FF'  // Purple
+    ];
+
+    // Helper to update game state based on input ID
+    const updateGameState = (targetId: string, color: string) => {
+        if (targetId === 'lobby-color-left') {
+            leftPaddleColor = color;
+            if (leftPaddle) leftPaddle.color = color;
+        } else if (targetId === 'lobby-color-right') {
+            rightPaddleColor = color;
+            if (rightPaddle) rightPaddle.color = color;
+        } else if (targetId === 'lobby-color-ball') {
+            ballColor = color;
+            if (pongBall) pongBall.color = color;
+        } else if (targetId === 'lobby-color-arena') {
+            arenaColor = color;
+        }
+    };
+
+    // Attach listeners to Carousel Arrows
+    const arrows = document.querySelectorAll('.color-arrow');
+    arrows.forEach(arrow => {
+        arrow.addEventListener('click', () => {
+            const targetId = arrow.getAttribute('data-target');
+            const direction = arrow.getAttribute('data-dir'); // 'prev' or 'next'
+            if (!targetId || !direction) return;
+
+            // Get current color from the PREVIEW element
+            const previewEl = document.getElementById(`preview-${targetId}`);
+            if (!previewEl) return;
+
+            const currentColor = previewEl.getAttribute('data-color') || '#FF0000';
+            const currentIndex = HELLFIRE_PALETTE.indexOf(currentColor);
+
+            // Calculate next index
+            let nextIndex = 0;
+            if (direction === 'next') {
+                nextIndex = (currentIndex + 1) % HELLFIRE_PALETTE.length;
+            } else {
+                nextIndex = (currentIndex - 1 + HELLFIRE_PALETTE.length) % HELLFIRE_PALETTE.length;
+            }
+
+            const nextColor = HELLFIRE_PALETTE[nextIndex];
+
+            // Update Preview DOM
+            previewEl.setAttribute('data-color', nextColor);
+            previewEl.style.backgroundColor = nextColor;
+            previewEl.style.boxShadow = `0 0 10px ${nextColor}60`;
+
+            // Update hidden input
+            const input = document.getElementById(targetId) as HTMLInputElement;
+            if (input) input.value = nextColor;
+
+            // Update Game Logic
+            updateGameState(targetId, nextColor);
+        });
+    });
 }

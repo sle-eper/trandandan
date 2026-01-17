@@ -29,6 +29,18 @@ await fastify.register(fastifySocketIO, {
 // In-memory state
 const games = new Map(); // gameId -> gameState
 const userSockets = new Map(); // userId/username -> socketId
+const gameIntervals = new Map(); // gameId -> intervalId
+
+// Constants matching frontend
+const CANVAS_WIDTH = 800;
+const CANVAS_HEIGHT = 400;
+const PADDLE_HEIGHT = 100;
+const PADDLE_WIDTH = 10;
+const BALL_SPEED = 4;
+const BALL_RADIUS = 10;
+const TICK_RATE = 16; // ~60fps
+const START_DELAY = 6500; // 6.5s to safe-guard frontend countdown (approx 6s duration)
+const SERVE_DELAY = 1500; // 1.5s for serving after a goal
 
 // Helper: Verify Token or trust Nginx headers
 const getUserFromRequest = (request) => {
@@ -202,6 +214,7 @@ const start = async () => {
                             if (game.players.length === 2) {
                                 game.status = 'playing';
                                 fastify.io.to(gameId).emit('game_start', game);
+                                startGameLoop(gameId);
                             } else {
                                 socket.emit('waiting_for_opponent', game);
                             }
@@ -229,6 +242,16 @@ const start = async () => {
                                     console.log(`[SOCKET] Deleted empty waiting game ${gameId}`);
                                 }
                             }
+                        } else if (game.status === 'playing') {
+                            // If a player leaves during a game, stop the loop and clean up?
+                            // For now, let's just log it. In a real app we might pause or end the match.
+                            const isPlayer = game.players.some(p => p.id === socket.user.id);
+                            if (isPlayer) {
+                                console.log(`[SOCKET] Player left active game ${gameId}. Stopping loop.`);
+                                stopGameLoop(gameId);
+                                // Optional: notify other player
+                                fastify.io.to(gameId).emit('player_left');
+                            }
                         }
                     });
                 });
@@ -245,31 +268,8 @@ const start = async () => {
                     }
                 });
 
-                // Simple ball sync for now - ideally server does logic
-                socket.on('ball_sync', (data) => {
-                    const { gameId, ball, score } = data;
-                    const game = games.get(gameId);
-                    if (game) {
-                        game.ball = ball;
-                        game.score = score;
-                        socket.to(gameId).emit('ball_update', { ball, score });
-
-                        // Check for game over (Updated winning score to 5 to match frontend)
-                        if (score.left >= 5 || score.right >= 5) {
-                            game.status = 'finished';
-                            const winner = score.left >= 5 ? game.players.find(p => p.side === 'left') : game.players.find(p => p.side === 'right');
-                            const loser = score.left >= 5 ? game.players.find(p => p.side === 'right') : game.players.find(p => p.side === 'left');
-
-                            fastify.io.to(gameId).emit('game_over', { winner, score });
-
-                            // Persist result
-                            if (game.players.length === 2) {
-                                saveMatchResult(game, winner, loser);
-                            }
-                            games.delete(gameId);
-                        }
-                    }
-                });
+                // ball_sync is now deprecated as server is authoritative
+                // socket.on('ball_sync', ...)
             });
         });
 
@@ -282,13 +282,11 @@ const start = async () => {
 };
 
 async function saveMatchResult(game, winner, loser) {
+    if (!winner || !loser) return;
     try {
-        const user1 = game.players.find(p => p.side === 'left');
-        const user2 = game.players.find(p => p.side === 'right');
-
         await axios.post(`${process.env.USER_MANAGEMENT_URL}/api/game/result`, {
-            user1_id: user1.id,
-            user2_id: user2.id,
+            user1_id: game.players.find(p => p.side === 'left')?.id,
+            user2_id: game.players.find(p => p.side === 'right')?.id,
             user1_score: game.score.left,
             user2_score: game.score.right,
             winner_id: winner.id,
@@ -298,6 +296,135 @@ async function saveMatchResult(game, winner, loser) {
     } catch (err) {
         console.error('Failed to save match result:', err.message);
     }
+}
+
+// --- Server-Authoritative Logic ---
+
+function startGameLoop(gameId, delay = START_DELAY) {
+    if (gameIntervals.has(gameId)) return;
+
+    const game = games.get(gameId);
+    if (!game) return;
+
+    // Wait for delay/countdown
+    setTimeout(() => {
+        if (!games.has(gameId)) return;
+
+        // Initial ball velocity
+        game.ball.dx = BALL_SPEED * (Math.random() > 0.5 ? 1 : -1);
+        game.ball.dy = (Math.random() * 2 - 1) * BALL_SPEED;
+
+        const intervalId = setInterval(() => {
+            updateGamePhysics(gameId);
+        }, TICK_RATE);
+
+        gameIntervals.set(gameId, intervalId);
+        console.log(`[GAME] Started loop for: ${gameId}`);
+    }, delay);
+}
+
+function stopGameLoop(gameId) {
+    const intervalId = gameIntervals.get(gameId);
+    if (intervalId) {
+        clearInterval(intervalId);
+        gameIntervals.delete(gameId);
+        console.log(`[GAME] Stopped loop for: ${gameId}`);
+    }
+}
+
+function updateGamePhysics(gameId) {
+    const game = games.get(gameId);
+    if (!game || game.status !== 'playing') {
+        stopGameLoop(gameId);
+        return;
+    }
+
+    const ball = game.ball;
+    const paddles = game.paddles;
+
+    // Move Ball
+    ball.x += ball.dx;
+    ball.y += ball.dy;
+
+    // Wall Rebound (Top/Bottom)
+    if (ball.y - BALL_RADIUS <= 0) {
+        ball.y = BALL_RADIUS;
+        ball.dy *= -1;
+    } else if (ball.y + BALL_RADIUS >= CANVAS_HEIGHT) {
+        ball.y = CANVAS_HEIGHT - BALL_RADIUS;
+        ball.dy *= -1;
+    }
+
+    // Paddle Collisions
+    const paddleWidth = PADDLE_WIDTH;
+    const paddleHeight = PADDLE_HEIGHT;
+
+    // Left Paddle Hit
+    if (ball.dx < 0 && ball.x - BALL_RADIUS <= paddleWidth) {
+        // Double check vertical range
+        if (ball.y >= paddles.left && ball.y <= paddles.left + paddleHeight) {
+            ball.dx = Math.abs(ball.dx) * 1.05; // Bounce back & speed up
+            ball.x = paddleWidth + BALL_RADIUS;
+
+            // Add spin (vertical influence)
+            const relativeIntersectY = (paddles.left + (paddleHeight / 2)) - ball.y;
+            const normalizedIntersectY = relativeIntersectY / (paddleHeight / 2);
+            ball.dy = -normalizedIntersectY * Math.abs(ball.dx);
+        }
+    }
+
+    // Right Paddle Hit
+    if (ball.dx > 0 && ball.x + BALL_RADIUS >= CANVAS_WIDTH - paddleWidth) {
+        if (ball.y >= paddles.right && ball.y <= paddles.right + paddleHeight) {
+            ball.dx = -Math.abs(ball.dx) * 1.05; // Bounce back & speed up
+            ball.x = CANVAS_WIDTH - paddleWidth - BALL_RADIUS;
+
+            // Add spin (vertical influence)
+            const relativeIntersectY = (paddles.right + (paddleHeight / 2)) - ball.y;
+            const normalizedIntersectY = relativeIntersectY / (paddleHeight / 2);
+            ball.dy = -normalizedIntersectY * Math.abs(ball.dx);
+        }
+    }
+
+    // Scoring
+    let scored = false;
+    if (ball.x <= 0) {
+        game.score.right++;
+        scored = true;
+    } else if (ball.x >= CANVAS_WIDTH) {
+        game.score.left++;
+        scored = true;
+    }
+
+    if (scored) {
+        ball.x = CANVAS_WIDTH / 2;
+        ball.y = CANVAS_HEIGHT / 2;
+        ball.dx = 0;
+        ball.dy = 0;
+
+        // Broadcast reset state immediately so clients see the ball at center
+        fastify.io.to(gameId).emit('goal_scored', { ball: game.ball, score: game.score });
+
+        // Check for Game Over
+        if (game.score.left >= 5 || game.score.right >= 5) {
+            game.status = 'finished';
+            const winner = game.score.left >= 5 ? game.players.find(p => p.side === 'left') : game.players.find(p => p.side === 'right');
+            const loser = game.score.left >= 5 ? game.players.find(p => p.side === 'right') : game.players.find(p => p.side === 'left');
+
+            fastify.io.to(gameId).emit('game_over', { winner, score: game.score });
+            saveMatchResult(game, winner, loser);
+            stopGameLoop(gameId);
+            games.delete(gameId);
+            return;
+        }
+
+        // Delay briefly before serving (shorter delay than initial start)
+        stopGameLoop(gameId);
+        setTimeout(() => startGameLoop(gameId, SERVE_DELAY), 100);
+    }
+
+    // Broadcast current state to all players in the room
+    fastify.io.to(gameId).emit('ball_update', { ball: game.ball, score: game.score });
 }
 
 start();
