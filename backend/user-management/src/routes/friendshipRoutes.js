@@ -103,5 +103,6 @@ fastify.get('/friendship/status/:userId/:friendId', {
       fastify.get('/friend/check', friendsController.checkFriendshipStatus.bind(friendsController));
       fastify.get('/friend/requestStatus', friendsController.checkPendingRequest.bind(friendsController));
       fastify.delete('/friends/cancelRequest', friendsController.cancelFriendRequest.bind(friendsController));
+      fastify.delete('/friends/removeFriend/:id', friendsController.removeFriend.bind(friendsController));
 }
 export default friendshipRoutes;

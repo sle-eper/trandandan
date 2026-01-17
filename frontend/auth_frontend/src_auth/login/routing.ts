@@ -8,6 +8,7 @@ import { show2FAPage } from "./2FA.ts"
 import { showHome } from "./home.ts";
 import { games } from "./games.ts";
 import { Tournament } from "../../../tournament_frontend/src/create_tournament.ts"
+import { PlayerProfileManager } from "../../../profile_frontend/src/components/FriendRequest.ts";
 // import sss from "../images/ping.png"
 // import { currentUserId }? from "./login.ts"
 export function updateContent(html: string) {
@@ -42,9 +43,10 @@ export function loadProfile() {
   //   <h1 class="text-3xl font-bold">Profile</h1>
   //   <p class="text-gray-400 mt-2">Your account settings.</p>
   // `);
-  const profileForm = new ProfileForm();
-  profileForm.mount('dashboard-content');
-
+  // const profileForm = new ProfileForm();
+  // profileForm.mount('dashboard-content');
+   const profilePage = new PlayerProfileManager();
+   profilePage.showPlayerProfile();
 }
 export function loadGame(type?: string) {
   games(type);

@@ -1,5 +1,5 @@
 #!/bin/bash
-# generate-certs.sh - Minimal version
+
 
 set -e
 

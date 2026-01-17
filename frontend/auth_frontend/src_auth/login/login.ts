@@ -8,6 +8,7 @@ import { navigate } from "../app";
 // import { showDashboard } from "../dashboard/dashboard";
 // import { showMainUI } from "../../src/ts/script.ts";
 import {socketInstance} from "../../../socket_manager/socket"
+import { setCurrentUserId } from "../../../chat-frontend/src/ts/global_var";
 function showError(msg: string) {
   const errorBox = document.getElementById("login-error");
   if (!errorBox) return;
@@ -83,6 +84,14 @@ export function attachLoginHandlers() {
       }
       if (body.success) {
         socketInstance();
+        // const response = await fetch("/auth/verify", {
+        //     method: "GET",
+        //     headers: { "Content-Type": "application/json" },
+        //     credentials: "include", // VERY IMPORTANT FOR Cookies
+        //   });
+        //   const responseJson = await response.json()
+        //   const userID = responseJson.id as string;
+        //   setCurrentUserId(userID);//TODO khasha tkon fach ylogi 
         navigate("/home");
       } else {
         showError(body.message || "Invalid username or password.");

@@ -52,6 +52,7 @@ export function saveNotif(send:string,recv:string,type:string,content:string)
         if(!send||!recv||!type)
             throw new Error("Invalid data in getNotif");
          const result =db.prepare(`INSERT INTO notification(send,recv,type,content) VALUES(?,?,?,?)`).run(send,recv,type,content);
+        
          return String(result.lastInsertRowid);
     }catch(err)
     {
@@ -70,6 +71,8 @@ export async function getNotif(id: string) {
         const result = [];
     
         for (const notif of notifs) {
+            if(notif.type ==='friendRequest' && notif.content ==='accepted')
+                continue;
             try{
                 const users = await fetchUserData(String(notif.send));
                 result.push({...notif,sender_name: users.user.username });
@@ -196,14 +199,15 @@ export function dataOfUser(id:string):any
 export  function checkExistingNotification(senderId: string, receiverId: string, type: string,status: string): boolean {
   try {
      const result =  db.prepare(
-    `SELECT id FROM notification 
-     WHERE send = $1 
-     AND recv = $2 
-     AND type = $3 
-     AND content = $4`,
-    [senderId, receiverId, type, status]
-  ).all();
-  return result.length > 0;
+    `SELECT id FROM notification
+     WHERE send = ? 
+     AND recv = ?
+     AND type = ?
+     AND content = ?`,
+    
+  ).get(senderId, receiverId, type, status)
+
+  return !!result;
   }
     catch (error) {
     console.error("checkExistingNotification error:", error);
@@ -214,7 +218,7 @@ export  function checkExistingNotification(senderId: string, receiverId: string,
 
 export function updateNotificationStatus(notifId: string, status: string): void {
   db.prepare(
-    `UPDATE notification SET status = ? WHERE id = ?`
+    `UPDATE notification SET content = ? WHERE id = ?`
   ).run(status, notifId);
 }
 
@@ -224,7 +228,21 @@ export function deleteNotification(notifId: string): void {
   ).run(notifId);
 }
 
+export function getNotificationID(senderId: string, receiverId: string, type: string): string | null {
+    try {
+        const result = db.prepare(
+            `SELECT id FROM notification
+             WHERE send = ? 
+             AND recv = ?
+             AND type = ?`
+        ).get(senderId, receiverId, type);
 
+        return result ? String(result.id) : null;
+    } catch (error) {
+        console.error("getNotificationID error:", error);
+        throw new Error("Failed to get notification ID");
+    }
+}
 
 
 export { db };

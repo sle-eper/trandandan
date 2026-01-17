@@ -4,7 +4,7 @@ class Friendship {
     }
   
     async sendRequest(userId, friendId) {
-      // Check if friendship already exists
+     
       const existing = await this.db.get(
         'SELECT * FROM friendships WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)',
         [userId, friendId, friendId, userId]
@@ -26,7 +26,7 @@ class Friendship {
       return { success: true, message: 'Friend request sent' };
     }
   
-    // Accept friend request
+
     async acceptRequest(userId, friendId) {
       await this.db.run(
         `UPDATE friendships 
@@ -43,7 +43,7 @@ class Friendship {
       
       return { success: true, message: 'Friend request accepted' };
     }
-    // Reject friend request
+    
     async rejectRequest(userId, friendId) {
       await this.db.run(
         `DELETE FROM friendships 
@@ -53,7 +53,7 @@ class Friendship {
       
       return { success: true, message: 'Friend request rejected' };
     }
-    // Remove friendship
+ 
     async removeFriendship(userId, friendId) {
       await this.db.run(
         `DELETE FROM friendships 
@@ -64,7 +64,7 @@ class Friendship {
       return { success: true, message: 'Friendship removed' };
     }
   
-    // Get friends list with online status
+   
    async getFriends(userId) {
     return await this.db.all(
       `SELECT 
@@ -80,7 +80,7 @@ class Friendship {
     );
   }
   
-    // Get pending friend requests
+    
     async getPendingRequests(userId) {
       return await this.db.all(
         `SELECT 
@@ -97,7 +97,7 @@ class Friendship {
 
 
 
-    // Change friend status (e.g., block, unblock)
+   
     async changeFriendStatus(userId, friendId, status) {
      const result = await this.db.run(
         `UPDATE friendships 
@@ -145,6 +145,19 @@ class Friendship {
         throw new Error('No pending friendship request found to cancel');
       }
       return { success: true, message: 'Friend request cancelled' };
+    }
+
+    async removeFriendship(userId, friendId) {
+      const result = await this.db.run(
+        `DELETE FROM friendships 
+         WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)`,
+        [userId, friendId, friendId, userId]
+      );
+      
+      if (result.changes === 0) {
+        throw new Error('No friendship found to remove');
+      }
+      return { success: true, message: 'Friendship removed' };
     }
 
   }

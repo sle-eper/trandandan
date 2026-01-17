@@ -1,4 +1,5 @@
 import { navigate } from "../../auth_frontend/src_auth/app"
+import { show2FAPage } from "../../auth_frontend/src_auth/login/2FA";
 import * as Socket from "../../socket_manager/socket";
 /* =======================
    TOURNAMENT STATE
@@ -16,6 +17,30 @@ const COLUMN_TOP_PADDING = 32; // px
 /* =======================
    PAGE TEMPLATES
 ======================= */
+
+export function showToast(message: string) {
+  const toast = document.createElement('div');
+  toast.className = `
+    fixed top-6 right-6 z-50
+      bg-[#1a1a1d] text-white
+      pointer-events-auto
+      min-w-[300px] max-w-md
+      px-4 py-3 rounded-xl
+      shadow-2xl border border-white/10
+      flex items-start gap-3
+      transform transition-all duration-300
+  `;
+
+  toast.textContent = message;
+
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.transform = 'translateX(400px)';
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
 function tournamentEntryTemplate() {
   return `
     <div class="w-full h-full flex flex-col justify-center items-center gap-8">
@@ -95,9 +120,8 @@ function tournamentCard(
           View Bracket
         </button>
 
-        ${
-          canJoin
-            ? `
+        ${canJoin
+      ? `
           <button
             class="flex-1 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition text-sm join-tournament-btn"
             data-tournament-id="${id}"
@@ -105,8 +129,8 @@ function tournamentCard(
             Join
           </button>
           `
-            : ""
-        }
+      : ""
+    }
       </div>
 
     </div>
@@ -540,29 +564,7 @@ export function renderCreateTournament() {
     navigate("/tournament");
     Tournament();
   });
-  function showToast(message: string) {
-    const toast = document.createElement('div');
-    toast.className = `
-    fixed top-6 right-6 z-50
-      bg-[#1a1a1d] text-white
-      pointer-events-auto
-      min-w-[300px] max-w-md
-      px-4 py-3 rounded-xl
-      shadow-2xl border border-white/10
-      flex items-start gap-3
-      transform transition-all duration-300
-  `;
 
-    toast.textContent = message;
-
-    document.body.appendChild(toast);
-
-    setTimeout(() => {
-      toast.style.transform = 'translateX(400px)';
-      toast.style.opacity = '0';
-      setTimeout(() => toast.remove(), 300);
-    }, 3000);
-  }
   document.getElementById("create")?.addEventListener("click", async () => {
     const nameInput = document.getElementById("tournament-name-input") as HTMLInputElement;
     const playersSelect = document.getElementById("max-players-select") as HTMLSelectElement;
@@ -619,7 +621,7 @@ function attachEntryHandlers() {
 export async function renderTournamentList() {
   const main = document.getElementById("dashboard-content");
   if (!main) return;
-  const result =await  fetch("/tournament/list", {
+  const result = await fetch("/tournament/list", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -664,7 +666,6 @@ function attachListHandlers() {
         tournamentId,
         room: tournamentName,
       });
-
       socket?.once("tournament:joined", () => {
         console.log("Joined tournament:", tournamentName);
         navigate("/tournament/bracket");
@@ -694,25 +695,41 @@ export async function renderTournamentBracket() {
   const startBtn = document.getElementById("start-tournament-btn");
   const playerCount = document.getElementById("player-count");
 
-  addBtn?.addEventListener("click", async() => {
+  addBtn?.addEventListener("click", async () => {
     console.log("Add Player clicked");
-  const modal = document.getElementById("invite-modal");
-  modal?.classList.remove("hidden");
-  modal?.classList.add("flex");
-    const friends = await fetch("", {
+    const modal = document.getElementById("invite-modal");
+    modal?.classList.remove("hidden");
+    modal?.classList.add("flex");
+    const friends = await fetch("/api/users/getAllUsers", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
     }).then(res => res.json());
-  renderFriendsList(friends);
+    console.log("Friends data:", friends);
+    renderFriendsList(friends.users);
   });
   document.getElementById("close-invite-modal")?.addEventListener("click", () => {
     const modal = document.getElementById("invite-modal");
+    const result = fetch("/tournament/join", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        tournamentname: currentTournament.name,
+      }),
+    }).then(res => res.json());
+    console.log("Join tournament response:", result);
+    result.then(data => {
+      if (data.success) {
+        onPlayerJoined(data.username);
+      }
+    });
     modal?.classList.add("hidden");
     modal?.classList.remove("flex");
   });
-  document.addEventListener("click", (e) => {
+  document.addEventListener("click", async (e) => {
     const target = e.target as HTMLElement;
 
     if (!target.classList.contains("invite-btn")) return;
@@ -723,14 +740,24 @@ export async function renderTournamentBracket() {
     target.textContent = "Invited";
     target.classList.add("opacity-50", "cursor-not-allowed");
     target.setAttribute("disabled", "true");
-
-    console.log("Invite sent to friend:", friendId);
-
-    // 🔌 SOCKET / API (later)
-    // socket.emit("tournament:invite", {
-    //   tournamentId: currentTournament.id,
-    //   friendId,
-    // });
+    const socket = Socket.getSocketInstance();
+    socket?.once("InvitationSended", () => {
+      showToast("Invitation sent!");
+      navigate("/tournament/bracket");
+    });
+    const response = await fetch("/auth/verify", {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include", // VERY IMPORTANT FOR Cookies
+    });
+    const responseJson = await response.json()
+    const userID = responseJson.id as string;
+    socket?.emit("tournament:invite", {
+      tournamentName: currentTournament.name,
+      userId: userID,
+      friendId: friendId,
+    });
+    console.log(`Invited friend ID: ${friendId}`);
   });
 
   startBtn?.addEventListener("click", () => {

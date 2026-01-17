@@ -151,6 +151,14 @@ export function renderLocalMode(player?:number,spy?:number,section?:number):stri
                 }
             }
         </style>
+ <div
+  id="notification-root"
+  class="fixed top-30 left-1/2 -translate-x-1/2 z-[9999]
+         flex justify-center items-center gap-3 rounded-2xl
+         bg-[#1a1a1a]/90 border border-[#FD1D1D]/40 p-3 hidden">
+</div>
+
+
         <div id="local-mode"
             class="relative  h-full flex flex-col justify-center items-center gap-8">
             <div class="w-full flex justify-center items-center">

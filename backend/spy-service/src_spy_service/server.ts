@@ -24,7 +24,6 @@ server.get('/users/:id/history',async(req,res)=>{
     if (!data)
         return res.code(404).send({ message: 'No history found' });
     return res.code(200).send({ data });
-
   }
   catch(err)
   {

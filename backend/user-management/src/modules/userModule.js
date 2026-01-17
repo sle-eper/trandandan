@@ -31,6 +31,13 @@ class UserModule {
         );
     }
 
+    async findById(id) {
+        return this.db.get(
+            'SELECT id, email, username ,avatar_url ,display_name ,password_hash,two_factor_enabled,two_factor_secret FROM users WHERE id = ?',
+            [id]
+        );
+    }
+
     async findByDisplayName(displayName) {
         return await this.db.get(
             'SELECT * FROM users WHERE display_name = ?',

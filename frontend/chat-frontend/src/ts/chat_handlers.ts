@@ -15,6 +15,7 @@ export const liveHandler = (id:string, roomName:string, msg:string, timeOfMsg:st
       const counterElement: HTMLDivElement = document.getElementById(
         `counter-of-${id}`
       ) as HTMLDivElement;
+      if(!counterElement) return;
       if (counterElement?.classList.contains("hidden"))
         counterElement?.classList.remove("hidden");
 
@@ -131,7 +132,7 @@ export const request_to_playHandler = (from:string,friendId:string,notifId:strin
       });
 
       notif.querySelector(".reject")?.addEventListener("click", () => {
-        console.log("reject clicked", friendId);
+        // console.log("reject clicked", friendId);
         getSocketInstance()?.emit("reject_play", getCurrentUserId(),friendId);
         notif.remove();
       });
@@ -144,6 +145,7 @@ export const request_to_playHandler = (from:string,friendId:string,notifId:strin
 }
 
 export const not_agreeHandler = (from:string ,notifId:string) => {
+    console.log("not_agreeHandler called from:", from);
     const container = document.getElementById("play-notification-container");
 
     if (!container) return;

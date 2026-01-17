@@ -7,7 +7,9 @@ import { sidebarLogic } from "./sidebar";
 // import { socket } from "../login/login";
 import { getSocketInstance } from "../../../socket_manager/socket";
 // import { socketInstance } from "../../../socket_manager/socket";
+import { createNotificationMenuItem } from "../../../profile_frontend/src/components/RequestHandling";
 import { socketNotificationListener } from "../../../chat-frontend/src/ts/chat_socket";
+import { setCurrentUserId } from "../../../chat-frontend/src/ts/global_var";
 
 
 function addNotif(el: any, notification: HTMLElement) {
@@ -19,7 +21,7 @@ function addNotif(el: any, notification: HTMLElement) {
                           </span>`
 
   let text = "";
-
+  console.log("Adding notification:", el ,el.type);
   switch (el.type) {
     case "challenge":
       text = `🎮 <strong>${el.sender_name}</strong> wants to play`;
@@ -34,7 +36,8 @@ function addNotif(el: any, notification: HTMLElement) {
       break;
 
     case "friendRequest":
-      text = `🤝 <strong>${el.sender_name}</strong> sent you a friend request`;
+      console.log("Creating menu item for notifId:", el);
+      createNotificationMenuItem(notification, el.sender_name, el.send, el.id, el.recv);
       break;
 
     default:
@@ -137,12 +140,21 @@ function getnotif(): Promise<any[]> {
   {
     nav.innerHTML = renderNavBar();
     socketNotificationListener();
+    const response = await fetch("/auth/verify", {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include", // VERY IMPORTANT FOR Cookies
+          });
+          const responseJson = await response.json()
+          const userID = responseJson.id as string;
+          setCurrentUserId(userID);//TODO khasha tkon fach ylogi 
 
     if (sidebar) sidebar.innerHTML = renderSidebar();
       let notif =  await getnotif()
       const notification = document.getElementById("notification-menu");
       if (!notification) return;
       notif.forEach((el) => {
+       
       if (el.display) {
         addNotif(el, notification);
       }
