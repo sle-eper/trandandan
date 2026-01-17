@@ -249,6 +249,7 @@ export async function navBarLogic() {
       console.log('Logout successful');
       // localStorage.removeItem("userId");
       getSocketInstance()?.disconnect();
+      // getSocketInstance().emit("disconnect");
       getSocket();
       // localStorage.removeItem("userId")
       navigate("/login");

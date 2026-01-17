@@ -1,4 +1,5 @@
 // import { currentUserId } from "../../../auth_frontend/src_auth/login/login";
+import { friendDisconnectHandler } from "../../../profile_frontend/src/components/FriendRequest";
 import { getSocketInstance } from "../../../socket_manager/socket";
 import { lastMsg, receivedMsg,inputMsg, sendMsg } from "../components/content";
 import { moveUp,setupPopupEvents,addMenuNotification } from "./chat_ui_tools";
@@ -230,6 +231,7 @@ export const user_onlineHandler = (userId: string) => {
 };
 
 export const user_offlineHandler = (userId: string) => {
+  console.log("user_offlineHandler called for userId:", userId);
     const elements = document.querySelectorAll(`.online-indicator-${userId}`)
     if(!elements)
         return;
@@ -237,4 +239,5 @@ export const user_offlineHandler = (userId: string) => {
       if(!el.classList.contains("hidden"))
           el.classList.add("hidden");
     });
+    friendDisconnectHandler(Number(userId));
 };

@@ -1,4 +1,4 @@
-import { friendRequestReceivedHandler, socketNotificationListenerHandler, socketNotificationListenerRejectHandler } from "../../../profile_frontend/src/components/FriendRequest";
+import { friendDisconnectHandler, friendRequestReceivedHandler, socketNotificationListenerHandler, socketNotificationListenerRejectHandler,friendConnectHandler } from "../../../profile_frontend/src/components/FriendRequest";
 import { friendRequestCancelledHandler } from "../../../profile_frontend/src/components/RequestHandling";
 import { getSocketInstance } from "../../../socket_manager/socket";
 import { liveHandler ,  receiveMessageHandler,allowMsgHandler,blockOrAcceptedHandler,messages_batchHandler, messages_old_batchHandler, request_to_playHandler, not_agreeHandler, msg_notificationHandler, user_onlineHandler, user_offlineHandler } from "./chat_handlers"
@@ -43,7 +43,9 @@ export function socketNotificationListener() {
   socket.off("friendRequestRejected");
 
   // Add new listeners
+  socket.on("user_online", friendConnectHandler);
   socket.on("user_online", user_onlineHandler);
+  socket.on("user_offline", friendDisconnectHandler);
   socket.on("user_offline", user_offlineHandler);
   socket.on("not_agree", not_agreeHandler);
   socket.on("msg_notification", msg_notificationHandler);
@@ -54,5 +56,6 @@ export function socketNotificationListener() {
   socket.on("friendRequestAccepted", socketNotificationListenerHandler)
   socket.on("friendRequestCancelled", friendRequestCancelledHandler)
   socket.on("friendRequestReceived", friendRequestReceivedHandler)
+
 }
 
