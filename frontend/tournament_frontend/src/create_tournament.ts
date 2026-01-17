@@ -685,7 +685,7 @@ function onPlayerJoined(username: string) {
   }
 }
 
-export function renderTournamentBracket() {
+export async function renderTournamentBracket() {
   const main = document.getElementById("dashboard-content");
   if (!main) return;
   main.innerHTML = tournamentBracketTemplate();
@@ -694,11 +694,17 @@ export function renderTournamentBracket() {
   const startBtn = document.getElementById("start-tournament-btn");
   const playerCount = document.getElementById("player-count");
 
-  addBtn?.addEventListener("click", () => {
+  addBtn?.addEventListener("click", async() => {
+    console.log("Add Player clicked");
   const modal = document.getElementById("invite-modal");
   modal?.classList.remove("hidden");
   modal?.classList.add("flex");
-
+    const friends = await fetch("", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }).then(res => res.json());
   renderFriendsList(friends);
   });
   document.getElementById("close-invite-modal")?.addEventListener("click", () => {
