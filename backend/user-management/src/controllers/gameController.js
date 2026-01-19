@@ -54,3 +54,29 @@ export const getMatchHistory = async (request, reply) => {
         return reply.code(500).send({ error: "Internal Server Error" });
     }
 };
+
+export const getAllMatches = async (request, reply) => {
+    const db = request.server.db;
+
+    try {
+        const history = await db.all(
+            `SELECT 
+                mh.*, 
+                u1.username as user1_username, 
+                u1.display_name as user1_display_name,
+                u2.username as user2_username, 
+                u2.display_name as user2_display_name,
+                uw.username as winner_username,
+                uw.display_name as winner_display_name
+             FROM match_history mh
+             LEFT JOIN users u1 ON mh.user1_id = u1.id
+             LEFT JOIN users u2 ON mh.user2_id = u2.id
+             LEFT JOIN users uw ON mh.winner_id = uw.id
+             ORDER BY mh.played_at DESC`
+        );
+        return history;
+    } catch (error) {
+        request.log.error(error);
+        return reply.code(500).send({ error: "Internal Server Error" });
+    }
+};
