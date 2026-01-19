@@ -21,8 +21,8 @@ services:
   authentication:
     build: ./backend/Auth
     container_name: auth
-    ports: 
-      - "5000:5000" 
+    ports:
+      - "5000:5000"
     env_file:
       - ./backend/.env 
     command: npm start
@@ -42,6 +42,8 @@ services:
       - ./frontend/profile_frontend/src:/app/profile_frontend/src
       - ./frontend/spy_frontend/src_spy:/app/spy_frontend/src_spy
       - ./frontend/tournament_frontend/src:/app/tournament_frontend/src
+      - ./frontend/game_frontend/src_game/src:/app/game_frontend/src_game/src
+      - ./frontend/game_frontend/src_game/css:/app/game_frontend/src_game/css
       - ./frontend/socket_manager:/app/socket_manager
       - /app/node_modules
 
@@ -56,21 +58,35 @@ services:
       - "3003:3003"
     networks:
       - app-network
-    # volumes:
+      # volumes:
       # - ./backend/spy-service/src_spy_service:/app:src_spy_service 
 
   tournament:
     build: ./backend/tournament
     container_name: tournament
-    depends_on :
+    depends_on:
       - authentication
       - user-management
     volumes:
-      - ./backend/tournament/data:/tournament/data 
+      - ./backend/tournament/data:/tournament/data
     ports:
       - "5500:5500"
     networks:
       - app-network
+  game-service:
+    build: ./backend/game-service
+    container_name: game-service
+    ports:
+      - "4000:4000"
+    networks:
+      - app-network
+    depends_on:
+      - user-management
+      - authentication
+    env_file:
+      - ./backend/game-service/.env
+    volumes:
+      - ./backend/game-service/src:/usr/src/app/src
 
   chat-service:
     build: ./backend/chat-service
@@ -90,7 +106,7 @@ services:
     build: ./api-gateway
     container_name: nginx
     ports:
-      - "8443:443"
+      - "443:443"
     volumes:
       - nginx_certs:/etc/nginx/certs
     networks:

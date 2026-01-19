@@ -1,9 +1,8 @@
-import axios from "axios";
 import { navigate } from "../app";
 import { PlayerSearch } from "./playerSearch";
 // import { socket } from "../login/login";
 import { getSocketInstance } from "../../../socket_manager/socket";
-import {getSocket} from "../../../socket_manager/socket"
+import {reSetSocket} from "../../../socket_manager/socket"
 import logo from "../images/pingponglogo.jpg?inline"
 
 
@@ -249,7 +248,7 @@ export async function navBarLogic() {
       console.log('Logout successful');
       // localStorage.removeItem("userId");
       getSocketInstance()?.disconnect();
-      getSocket();
+      reSetSocket();
       // localStorage.removeItem("userId")
       navigate("/login");
     }

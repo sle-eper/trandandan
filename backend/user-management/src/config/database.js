@@ -8,45 +8,45 @@ import fs from 'fs';
 let db = null;
 
 export async function initializeDatabase() {
-    try {
-        const dbPath = path.join(process.cwd(), 'data', 'PINGPONG.db');
-        db = await open({
-            filename:  dbPath,
-            driver: sqlite3.Database
-        });
-        console.log('✅ Connected to SQLite database');
-        await db.exec('PRAGMA foreign_keys = ON;');
-        await createTables();
-        
-        return db;
-    } catch (error) {
-        console.error('❌ Database connection failed:', error);
-        process.exit(1);
-    }
+  try {
+    const dbPath = path.join(process.cwd(), 'data', 'PINGPONG.db');
+    db = await open({
+      filename: dbPath,
+      driver: sqlite3.Database
+    });
+    console.log('✅ Connected to SQLite database');
+    await db.exec('PRAGMA foreign_keys = ON;');
+    await createTables();
 
-  
+    return db;
+  } catch (error) {
+    console.error('❌ Database connection failed:', error);
+    process.exit(1);
+  }
+
+
 }
 
 export function getDatabase() {
-    if (!db) {
-        throw new Error('Database not initialized. Call initializeDatabase() first.');
-    }
-    return db;
+  if (!db) {
+    throw new Error('Database not initialized. Call initializeDatabase() first.');
+  }
+  return db;
 }
 
 export async function closeDatabase() {
-    if (db) {
-      await db.close();
-      console.log('✅ Database connection closed');
-    }
+  if (db) {
+    await db.close();
+    console.log('✅ Database connection closed');
+  }
 }
 
 
-export async  function createTables(){
+export async function createTables() {
 
 
-    try{
-        await db.run(`
+  try {
+    await db.run(`
             CREATE TABLE IF NOT EXISTS users (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               username VARCHAR(50) UNIQUE NOT NULL,
@@ -64,8 +64,8 @@ export async  function createTables(){
               updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
           `);
-          
-          await db.run(`
+
+    await db.run(`
             CREATE TABLE IF NOT EXISTS user_stats (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               user_id INTEGER UNIQUE NOT NULL,
@@ -82,7 +82,7 @@ export async  function createTables(){
               FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             )
           `);
-          await db.run(`
+    await db.run(`
             CREATE TABLE IF NOT EXISTS friendships (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               user_id INTEGER NOT NULL,
@@ -95,9 +95,25 @@ export async  function createTables(){
               UNIQUE(user_id, friend_id)
             )
           `);
-    }catch(error){
-        console.error('❌ Error creating tables:', error);
-        throw error;
-    }
+
+    await db.run(`
+            CREATE TABLE IF NOT EXISTS match_history (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              user1_id INTEGER NOT NULL,
+              user2_id INTEGER NOT NULL,
+              user1_score INTEGER DEFAULT 0,
+              user2_score INTEGER DEFAULT 0,
+              winner_id INTEGER,
+              game_mode VARCHAR(20) DEFAULT 'classic',
+              played_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+              FOREIGN KEY (user1_id) REFERENCES users(id) ON DELETE CASCADE,
+              FOREIGN KEY (user2_id) REFERENCES users(id) ON DELETE CASCADE,
+              FOREIGN KEY (winner_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+          `);
+  } catch (error) {
+    console.error('❌ Error creating tables:', error);
+    throw error;
+  }
 
 }

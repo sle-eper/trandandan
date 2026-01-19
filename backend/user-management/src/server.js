@@ -4,8 +4,9 @@ import { fileURLToPath } from 'url';
 import fastifyStatic from '@fastify/static';
 import fastifyCors from '@fastify/cors';
 import { initializeDatabase, getDatabase, closeDatabase } from './config/database.js'
-import profileRoutes from './routes/profileRoutes.js'; 
+import profileRoutes from './routes/profileRoutes.js';
 import friendshipRoutes from './routes/friendshipRoutes.js';
+import gameRoutes from './routes/gameRoutes.js';
 import multipart from '@fastify/multipart';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -14,7 +15,7 @@ const __dirname = path.dirname(__filename);
 const fastify = Fastify({
     logger: true
 });
-fastify.register(multipart,{
+fastify.register(multipart, {
     limits: {
         fileSize: 5 * 1024 * 1024 // 5 MB limit
     }
@@ -29,8 +30,8 @@ fastify.register(fastifyCors, {
 });
 
 fastify.register(fastifyStatic, {
-  root: '/usr/src/app/public/avatars',  
-  prefix: '/uploads/',
+    root: '/usr/src/app/public/avatars',
+    prefix: '/uploads/',
 });
 
 
@@ -50,26 +51,29 @@ async function start() {
     try {
         console.log('🔄 Initializing database...');
         await initializeDatabase();
-        
+
         console.log('🔄 Getting database instance...');
         const db = getDatabase();
-        
+
         console.log('🔄 Attaching database to Fastify...');
         fastify.decorate('db', db);
         console.log('✅ Database attached, fastify.db exists:', !!fastify.db);
-        
+
         // Register API routes
-      
+
         fastify.register(profileRoutes
-        , { prefix: '/' }
+            , { prefix: '/' }
         );
-        fastify.register(friendshipRoutes, { 
-            prefix: '/' 
+        fastify.register(friendshipRoutes, {
+            prefix: '/'
         });
-       
+        fastify.register(gameRoutes, {
+            prefix: '/'
+        });
+
         console.log('🔄 Starting server...');
         await fastify.listen({ port: 3000, host: '0.0.0.0' });
-        
+
         console.log('✅ Server listening on port 3000');
     } catch (error) {
         fastify.log.error(error, '❌ Error starting server:');
