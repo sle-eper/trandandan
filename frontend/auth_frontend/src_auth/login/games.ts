@@ -14,7 +14,7 @@ export function games(type?: string) {
   // 👇 SPY GAME
   if (type === "spy") {
     main.innerHTML = `<div id="spy-root" class="w-full h-full"></div>`;
-    spyUi("local");
+    spyUi();
     return;
   }
 

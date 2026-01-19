@@ -8,7 +8,7 @@ export function getSocket(){
 
 export function socketInstance(): Socket | null {
 
-  socket = io("http://localhost:3000/", {
+  return socket = io("http://localhost:3000/", {
     withCredentials: true,
     autoConnect: true,
   });

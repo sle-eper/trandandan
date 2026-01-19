@@ -4,7 +4,7 @@ import axios from 'axios';
 import { ChangePasswordModal } from './ChangePassword.ts';
 
 
-class Toast {
+export class Toast {
   private static container: HTMLElement | null = null;
 
   private static createContainer(): void {
@@ -53,13 +53,13 @@ class Toast {
 
     this.container!.appendChild(toast);
 
-    // Animate in
+  
     setTimeout(() => {
       toast.style.transform = 'translateX(0)';
       toast.style.opacity = '1';
     }, 10);
 
-    // Auto remove
+ 
     setTimeout(() => {
       toast.style.transform = 'translateX(400px)';
       toast.style.opacity = '0';
@@ -145,7 +145,7 @@ class Toast {
 
 
 export class ProfileForm {
-    //  private formData: UserProfile;
+    
     private oldProfileData: UserProfile | null = null;
     private userData: UserProfile | null = null;
     private avatarPreview: string = '/api/uploads/default.png';
@@ -180,7 +180,7 @@ export class ProfileForm {
         const email = this.userData?.email || '';
         const displayName = this.userData?.displayName || '';
         const bio = this.userData?.bio || '';
-
+        console.log('Rendering profile form with data:', this.userData);
         return ` 
            <div class="w-full h-full flex items-center justify-center">
   <!-- Main Card - Takes full space -->
@@ -248,24 +248,7 @@ export class ProfileForm {
               <span id="status-text" class="text-sm text-gray-400">${this.isOnline ? 'Online' : 'Offline'}</span>
             </div>
 
-            <!-- Online Status Toggle - Moved here -->
-            <div class="bg-gray-900/30 rounded-xl p-4 border border-gray-700/50 mt-6 w-full">
-              <div class="flex items-center justify-between">
-                <div>
-                  <h3 class="text-sm font-semibold text-gray-300">Status</h3>
-                  <p class="text-xs text-gray-500 mt-0.5">Visibility</p>
-                </div>
-                <label class="relative inline-flex items-center cursor-pointer">
-                  <input 
-                    id="online-toggle"
-                    type="checkbox" 
-                    ${this.isOnline ? 'checked' : ''}
-                    class="sr-only peer"
-                  />
-                  <div class="w-14 h-7 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-red-500"></div>
-                </label>
-              </div>
-            </div>
+           
 
             <!-- Change Password Link - Moved here -->
             <button 
