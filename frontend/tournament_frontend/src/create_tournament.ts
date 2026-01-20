@@ -32,7 +32,6 @@ export function showToast(message: string) {
   `;
 
   toast.textContent = message;
-
   document.body.appendChild(toast);
 
   setTimeout(() => {
