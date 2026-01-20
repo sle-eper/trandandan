@@ -23,7 +23,7 @@ fastify.register(multipart, {
 
 
 fastify.register(fastifyCors, {
-    origin: ['http://localhost:5173', 'http://localhost:3000'],
+    origin: ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:8443', 'https://localhost:8443', 'http://localhost:443', 'https://localhost:443'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization', 'x-user-id', 'x-user']
@@ -70,6 +70,8 @@ async function start() {
         fastify.register(gameRoutes, {
             prefix: '/'
         });
+
+
 
         console.log('🔄 Starting server...');
         await fastify.listen({ port: 3000, host: '0.0.0.0' });

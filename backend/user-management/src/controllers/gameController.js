@@ -40,9 +40,11 @@ export const saveGameResult = async (request, reply) => {
 };
 
 export const getMatchHistory = async (request, reply) => {
-    const { userId } = request.params;
+    const userId = parseInt(request.params.userId);
+    if (isNaN(userId)) {
+        return reply.code(400).send({ error: "Invalid User ID" });
+    }
     const db = request.server.db;
-
     try {
         const history = await db.all(
             `SELECT * FROM match_history WHERE user1_id = ? OR user2_id = ? ORDER BY played_at DESC`,

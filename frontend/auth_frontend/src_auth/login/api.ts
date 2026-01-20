@@ -1,3 +1,5 @@
+import { handleOAuthSuccess } from "./auth_success";
+
 export async function loginUser(username: string, password: string) {
   try {
     const response = await fetch("/api/auth/login", {
@@ -53,4 +55,15 @@ export async function forgotPass(email: string) {
     console.error(err);
     return { success: false };
   }
+}
+export async function fetchMatchHistory(userId: number) {
+  const res = await fetch(`/api/game/history/${userId}`, {
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch match history");
+  }
+  console.log("success");
+  return res.json();
 }
