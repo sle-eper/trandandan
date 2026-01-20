@@ -342,92 +342,82 @@ type HomeTemplateData = {
   userId: number;
 };
 
-export function homeTemplate(data: HomeTemplateData): string {
+export function homeTemplate(data: HomeTemplateData & {
+  losses: number;
+  avgScore: number;
+}): string {
   return `
-  <div class="w-full h-full flex flex-col gap-6">
-
-    <!-- HEADER -->
-    <div>
-      <h1 class="text-3xl font-bold">Dashboard</h1>
-      <p class="text-gray-400 mt-1">Welcome back, Champion!</p>
-    </div>
-
-    <!-- STATS -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+  <div class="w-full h-full flex flex-col gap-6 p-4"> <!-- added padding, reduced gap -->
+    <!-- USER STATS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3"> <!-- reduced gap -->
       ${statCard("Total Matches", data.totalMatches)}
       ${statCard("Wins", data.wins)}
+      ${statCard("Losses", data.losses)}
       ${statCard("Win Rate", data.winRate + "%")}
-      ${statCard("Ranking", "#24")}
+      ${statCard("Avg Score", data.avgScore)}
     </div>
 
-    <!-- MAIN CONTENT -->
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 flex-grow">
+    <!-- MAIN DASHBOARD -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 flex-grow"> <!-- reduced gap -->
 
-      <!-- QUICK PLAY -->
-      <div class="bg-black/40 rounded-2xl border border-white/10 p-6 flex flex-col gap-5">
-        <h2 class="text-xl font-semibold">Quick Play</h2>
+      <!-- PERFORMANCE VISUAL -->
+      <div class="bg-black/40 rounded-2xl border border-white/10 p-4"> <!-- reduced padding -->
+        <h2 class="text-xl font-semibold mb-3">Performance</h2>
 
-        <div class="flex flex-col gap-3">
-          <button class="bg-red-600 hover:bg-red-700 py-3 rounded-lg font-semibold transition">
-            Find Match
-          </button>
+        <canvas id="performanceChart" width="200" height="200"></canvas>
 
-          <button class="border border-white/20 py-3 rounded-lg hover:bg-white/5 transition">
-            Challenge Friend
-          </button>
-        </div>
+        <p class="text-gray-400 text-sm mt-2">
+          Win/Loss ratio based on played matches
+        </p>
 
-        <div class="relative my-2">
-          <div class="border-t border-white/10"></div>
-          <span
-            class="absolute left-1/2 -translate-x-1/2 -top-3
-                   bg-[#111] px-3 text-xs text-gray-400">
-            Competitive
-          </span>
-        </div>
+        <script>
+          (() => {
+            const canvas = document.getElementById("performanceChart");
+            if (!canvas) return;
+            const ctx = canvas.getContext("2d");
 
-        <div
-          class="bg-black/50 border border-[#E63946]/40 rounded-xl p-4
-                 hover:border-[#E63946] transition">
-          <h3 class="text-lg font-semibold mb-1">
-            Tournament Mode
-          </h3>
+            const wins = ${data.wins};
+            const losses = ${data.losses};
+            const total = wins + losses || 1;
 
-          <p class="text-sm text-gray-400 mb-3">
-            Enter ranked tournaments and prove your skills against top players.
-          </p>
+            const winAngle = (wins / total) * Math.PI * 2;
 
-          <button
-            class="w-full bg-gradient-to-r from-[#E63946] to-[#711F21]
-                   hover:opacity-90 py-3 rounded-lg font-semibold transition">
-            Play Tournament
-          </button>
-        </div>
+            ctx.clearRect(0, 0, 200, 200);
+
+            ctx.beginPath();
+            ctx.moveTo(100, 100);
+            ctx.arc(100, 100, 80, 0, winAngle);
+            ctx.fillStyle = "#22c55e";
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(100, 100);
+            ctx.arc(100, 100, 80, winAngle, Math.PI * 2);
+            ctx.fillStyle = "#ef4444";
+            ctx.fill();
+          })();
+        </script>
       </div>
 
-      <!-- RECENT MATCHES -->
-      <div class="bg-black/40 rounded-2xl border border-white/10 p-6">
-        <h2 class="text-xl font-semibold mb-4">Recent Matches</h2>
+      <!-- RECENT GAME SESSIONS -->
+      <div class="xl:col-span-2 bg-black/40 rounded-2xl border border-white/10 p-4"> <!-- reduced padding -->
+        <h2 class="text-xl font-semibold mb-3">Recent Game Sessions</h2>
 
-        <div class="space-y-3">
+        <div class="space-y-2"> <!-- reduced space between rows -->
           ${
             data.matches.length === 0
-              ? `<p class="text-gray-400 text-sm">No matches played yet</p>`
+              ? `<p class="text-gray-400 text-sm">No games played yet</p>`
               : data.matches.map(match => {
                   const isWin = match.winner_id === data.userId;
-
-                  const score =
-                    match.user1_id === data.userId
+                  const score = match.user1_id === data.userId
                       ? `${match.user1_score} - ${match.user2_score}`
                       : `${match.user2_score} - ${match.user1_score}`;
-
-                  const opponentId =
+                  const opponent =
                     match.user1_id === data.userId
                       ? match.user2_id
                       : match.user1_id;
 
-                  return matchRow(
-                    `Player ${opponentId}`,
+                  return matchRow(`Player ${opponent}`,
                     score,
                     new Date(match.played_at).toLocaleDateString(),
                     isWin
@@ -436,22 +426,12 @@ export function homeTemplate(data: HomeTemplateData): string {
           }
         </div>
       </div>
-
-      <!-- FRIENDS -->
-      <div class="bg-black/40 rounded-2xl border border-white/10 p-6">
-        <h2 class="text-xl font-semibold mb-4">Online Friends</h2>
-
-        <div class="space-y-4">
-          ${friendRow("Alex", "Online")}
-          ${friendRow("Jordan", "In-Game")}
-          ${friendRow("Sam", "Online")}
-        </div>
-      </div>
-
     </div>
+
   </div>
   `;
 }
+
 
 
 // src/login/templates.ts
