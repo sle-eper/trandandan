@@ -210,8 +210,7 @@ function attachAcceptHandler(
         acceptBtn.classList.add('bg-green-500');
         
         
-            getSocketInstance()?.emit('acceptFriendRequest', notifId, friendId, userId);
-          console.error('Error accepting friend request:');
+        getSocketInstance()?.emit('acceptFriendRequest', notifId, friendId, userId);
         
         removeNotificationFromUI(notifId);
         

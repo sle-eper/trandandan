@@ -1,6 +1,10 @@
-export async function history(id:string) {
+export async function history() {
     try {
-        const response = await fetch(`http://localhost:3003/users/${id}/history`);
+        const response = await fetch(`/api/spy/users/history`, {
+             method: "GET",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+        } );
         if (!response.ok) {
             return `<p class="text-red-500">No history found</p>`;
         }

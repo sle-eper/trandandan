@@ -183,23 +183,23 @@ export class ProfileForm {
         console.log('Rendering profile form with data:', this.userData);
         return ` 
            <div class="w-full h-full flex items-center justify-center">
-  <!-- Main Card - Takes full space -->
-  <div class="w-full h-full bg-black/40 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700/50 flex flex-col">
-    
-    <!-- Header inside card -->
-    <div class="text-center pt-6 pb-4">
-      <h1 class="text-2xl md:text-3xl font-bold text-white flex items-center justify-center gap-2">
-        <svg class="text-yellow-500" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-          <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-          <path d="M4 22h16"></path>
-          <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
-          <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
-          <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
-        </svg>
-        Profile
-      </h1>
-    </div>
+    <!-- Main Card - Takes full space -->
+    <div class="w-full h-full bg-black/40 backdrop-blur-sm rounded-2xl shadow-2xl  flex flex-col">
+      
+      <!-- Header inside card -->
+      <div class="text-center pt-6 pb-4">
+        <h1 class="text-2xl md:text-3xl font-bold text-white flex items-center justify-center gap-2">
+          <svg class="text-yellow-500" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+            <path d="M4 22h16"></path>
+            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+          </svg>
+          Profile
+        </h1>
+      </div>
 
     <!-- Content wrapper - centered -->
     <div class="flex-1 flex items-center justify-center px-8 pb-6 overflow-hidden">
@@ -218,7 +218,7 @@ export class ProfileForm {
                   class="w-32 h-32 rounded-full border-4 border-red-500 shadow-lg shadow-red-500/50 object-cover"
                 />
                 <div class="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                     <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
                     <circle cx="12" cy="13" r="3"></circle>
                   </svg>
@@ -243,13 +243,7 @@ export class ProfileForm {
             </div>
             
             <h2 class="mt-4 text-xl md:text-2xl font-bold text-white text-center">${displayName || username}</h2>
-            <div class="flex items-center gap-2 mt-2">
-              <div id="status-indicator" class="w-2.5 h-2.5 rounded-full ${this.isOnline ? 'bg-green-500' : 'bg-gray-500'} animate-pulse"></div>
-              <span id="status-text" class="text-sm text-gray-400">${this.isOnline ? 'Online' : 'Offline'}</span>
-            </div>
-
-           
-
+            
             <!-- Change Password Link - Moved here -->
             <button 
               id="change-password-btn"   

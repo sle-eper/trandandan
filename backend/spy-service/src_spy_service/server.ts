@@ -12,10 +12,10 @@ await server.register(cors, {
 
 
 
-server.get('/users/:id/history',async(req,res)=>{
+server.get('/users/history',async(req,res)=>{
   try{
-    const {id}  = req.params as {id:string}
-    const userId = Number(id);
+     
+    const userId = req.headers['x-user-id'];
   
     if (Number.isNaN(userId)) {
         return res.code(400).send({ error: 'Invalid user id' });

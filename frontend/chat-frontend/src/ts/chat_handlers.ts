@@ -1,4 +1,5 @@
 // import { currentUserId } from "../../../auth_frontend/src_auth/login/login";
+import { friendDisconnectHandler } from "../../../profile_frontend/src/components/FriendRequest";
 import { getSocketInstance } from "../../../socket_manager/socket";
 import { lastMsg, receivedMsg,inputMsg, sendMsg } from "../components/content";
 import { moveUp,setupPopupEvents,addMenuNotification } from "./chat_ui_tools";
