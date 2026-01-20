@@ -23,7 +23,7 @@ export function inviteHandlerReceived(data: any) {
 
   notif.innerHTML = `
         <span class="text-sm text-white truncate">
-          🎮 <strong>${data.tournamentName}</strong> want to join 
+          Friend wants you  to join Tournament <strong>${data.tournamentName}</strong>
         </span>
 
         <div class="flex gap-2 shrink-0">
@@ -46,51 +46,85 @@ export function inviteHandlerReceived(data: any) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ tournamentName: data.tournamentName, userId: data.userId }),
+      body: JSON.stringify({ tournamentName: data.tournamentName, userId: data.friendId }),
     });
     console.log("User rejected the tournament invitation.", result);
-    // getSocketInstance()?.emit("accept_play", getCurrentUserId(),friendId );
-    if (!result.ok)
-    {
+    if (!result.ok) {
       showToast(result.statusText || "Failed to join tournament.");
       notif.remove();
-      return; 
+      return;
     }
+    const responseData = await result.json();
+    const socket = Socket.getSocketInstance();
+    if (responseData.message === "Tournament Full")
+    {
+      console.log("Response data::::::::::::::::::::::::::", responseData);
+      socket.emit("tournament:start", { tournamentName: data.tournamentName });
+      showToast("Tournament is full. You have been added to the tournament!");
+      notif.remove();
+      return;
+    }
+    socket.emit("tournament:join", { tournamentName: data.tournamentName });
     showToast("Joined tournament successfully!");
     notif.remove();
   });
 
   notif.querySelector(".reject")?.addEventListener("click", () => {
-
-    // save notif  
-    // console.log("reject clicked", friendId);
-    // getSocketInstance()?.emit("reject_play", getCurrentUserId(),friendId);
     notif.remove();
   });
   addMenuNotification("🎮 ", `<strong>${data.tournamentName}</strong> wants to join`, data.notfId);
   setTimeout(() => {
     notif.remove();
   }, 10000);
-
-
-  // console.log("Tournament invitation received:", data.tournamentName);
-  // console.log("User ID:", data.userId);
-  // const accept = confirm(`You have been invited to join the tournament: ${data.tournamentName}. Do you want to join?`);
-  // const socket = Socket.getSocketInstance();
-  // if (accept) {
-  //   // Logic to join the tournament
-  //   console.log("User accepted the tournament invitation.");
-  //   socket?.emit("tournament:join", { tournamentName: data.tournamentName });
-  //   console.log("Emitted join event for tournament:::::::::::::::::::::",data.userId);
-  //   const result = fetch("/tournament/participant/add", {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify({ tournamentName: data.tournamentName , userId : data.userId}),
-  //   });
-  //   // navigate("/tournament/bracket");
-  // } else {
-  //   console.log("User declined the tournament invitation.");
-  // }
 } 
+
+
+
+export function StartingTournament(data: any) {
+
+  const container = document.getElementById("play-notification-container");
+  if (!container) return;
+
+  if (document.getElementById("play-notification")) return;
+  container.innerHTML = "";
+
+  const notif: HTMLDivElement = document.createElement("div") as HTMLDivElement;
+  notif.id = "play-notification";
+  notif.className = `
+        flex items-center justify-between gap-3
+        w-full px-4 py-2 rounded-2xl
+        bg-[#1a1a1a]/90 border border-[#FD1D1D]/40
+        shadow-lg backdrop-blur-lg
+        animate-slide-in
+      `;
+  notif.innerHTML = `
+        <span class="text-sm text-white truncate">
+          🎮 <strong>${data.tournamentName}</strong> is starting now! 
+        </span>
+
+        <div class="flex gap-2 shrink-0">
+          <button class="accept px-3 py-1 text-xs font-bold rounded-lg
+                        bg-green-500/80 hover:bg-green-500 transition">
+            Accept
+          </button>
+          <button class="reject px-3 py-1 text-xs font-bold rounded-lg
+                        bg-red-500/80 hover:bg-red-500 transition">
+            Reject
+          </button>
+        </div>
+      `;
+  container.appendChild(notif);
+
+  notif.querySelector(".accept")?.addEventListener("click", async () => {
+    navigate(`/tournament/${data.tournamentName}`);
+    notif.remove();
+  });
+
+  notif.querySelector(".reject")?.addEventListener("click", () => {
+    notif.remove();
+  });
+  addMenuNotification("🎮 ", `<strong>${data.tournamentName}</strong> wants to join`, "1");
+  setTimeout(() => {
+    notif.remove();
+  }, 10000);
+} ``

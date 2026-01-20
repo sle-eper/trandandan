@@ -561,7 +561,7 @@ export function renderCreateTournament() {
   `;
 
   document.getElementById("cancel-create-tournament")?.addEventListener("click", () => {
-    navigate("/tournament");
+    navigate("/tournement");
     Tournament();
   });
 
@@ -589,7 +589,7 @@ export function renderCreateTournament() {
         showToast("Tournament created successfully!");
         console.log("Tournament created event received");
         renderTournamentBracket();
-        navigate("/tournament/bracket");
+        navigate("/tournement/bracket");
       });
       socket?.emit("tournament:create", {
         room: currentTournament.name,
@@ -610,11 +610,11 @@ export function Tournament() {
 function attachEntryHandlers() {
   document.getElementById("view-tournaments-btn")?.addEventListener("click", () => {
     renderTournamentList();
-    navigate("/tournament/list");
+    navigate("/tournement/list");
   });
   document.getElementById("create-tournament-btn")?.addEventListener("click", () => {
     renderCreateTournament();
-    navigate("/tournament/create");
+    navigate("/tournement/create");
   });
 }
 
@@ -636,18 +636,34 @@ export async function renderTournamentList() {
 function attachListHandlers() {
   document.getElementById("back-to-entry")?.addEventListener("click", () => {
     Tournament();
-    navigate("/tournament");
+    navigate("/tournement");
   });
 
   // View Bracket
   document.querySelectorAll(".view-bracket-btn").forEach(btn => {
-    btn.addEventListener("click", (e) => {
+    btn.addEventListener("click", async (e) => {
       const target = e.currentTarget as HTMLElement;
       currentTournament.name = target.dataset.tournamentName || "Tournament";
-      currentTournament.maxPlayers = parseInt(target.dataset.maxPlayers || "16");
-
-      renderTournamentBracket();
-      navigate("/tournament/bracket");
+      const partic = await fetch(`/tournament/My/status?tournamentName=${encodeURIComponent(currentTournament.name)}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      console.log("Participant status:", partic);
+      if (partic.ok) {
+        const tournamentstatus = await fetch(`/tournament/check?tournamentName=${encodeURIComponent(currentTournament.name)}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          }
+        });
+        const body = await tournamentstatus.json();
+        console.log("Tournament status:", body);
+        currentTournament.maxPlayers = body.maxPlayers || 16;
+        renderTournamentBracket();
+        navigate(`/tournement/${currentTournament.name}/bracket`);
+      }
     });
   });
 
@@ -659,16 +675,37 @@ function attachListHandlers() {
       const tournamentName = target.dataset.tournamentName;
 
       if (!tournamentId || !tournamentName) return;
-
+      const result = await fetch("/tournament/join", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          tournamentName: tournamentName,
+        }),
+      });
+      const body = await result.json();
+      if (!result.ok) {
+        showToast(body.message || "Error joining tournament.");
+        return;
+      }
       const socket = Socket.getSocketInstance();
-
       socket?.emit("tournament:join", {
         tournamentId,
-        room: tournamentName,
+        tournamentName: tournamentName,
       });
       socket?.once("tournament:joined", () => {
         console.log("Joined tournament:", tournamentName);
-        navigate("/tournament/bracket");
+        showToast("Joined tournament successfully!");
+
+        //start the tournamnet
+        if (body.message === "Tournament Full") {
+          socket?.emit("tournament:start", {
+            tournamentName: tournamentName,
+          });
+        }
+        renderTournamentBracket();
+        navigate("/tournement/bracket");
       });
     });
   });
@@ -711,21 +748,6 @@ export async function renderTournamentBracket() {
   });
   document.getElementById("close-invite-modal")?.addEventListener("click", () => {
     const modal = document.getElementById("invite-modal");
-    const result = fetch("/tournament/join", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        tournamentname: currentTournament.name,
-      }),
-    }).then(res => res.json());
-    console.log("Join tournament response:", result);
-    result.then(data => {
-      if (data.success) {
-        onPlayerJoined(data.username);
-      }
-    });
     modal?.classList.add("hidden");
     modal?.classList.remove("flex");
   });
@@ -743,7 +765,7 @@ export async function renderTournamentBracket() {
     const socket = Socket.getSocketInstance();
     socket?.once("InvitationSended", () => {
       showToast("Invitation sent!");
-      navigate("/tournament/bracket");
+      navigate("/tournement/bracket");
     });
     const response = await fetch("/auth/verify", {
       method: "GET",
@@ -765,18 +787,14 @@ export async function renderTournamentBracket() {
       alert("Not all players have joined yet!");
       return;
     }
-
     console.log("Tournament started with players:", joinedPlayers);
-
-    // 🔌 Socket / API hook
-    // socket.emit("tournament:start", { players: joinedPlayers });
   });
 
   document.getElementById("back-to-tournaments")?.addEventListener("click", () => {
-    navigate("/tournament");
+    navigate("/tournement");
   });
   document.getElementById("back-to-tournaments")?.addEventListener("click", async () => {
     renderTournamentList();
-    navigate("/tournament/list");
+    navigate("/tournement/list");
   });
 }

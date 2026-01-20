@@ -63,7 +63,7 @@ server.ready().then(() => {
       return;
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId:string = String(decoded.id);
+    const userId: string = String(decoded.id);
     if (!userId) {
       socket.disconnect();
       return;
@@ -97,9 +97,9 @@ server.ready().then(() => {
             const notifId = await saveNotif(id, friendId, 'msg', msg);
             const friendSocketId = onlineUsers.get(friendId);
             console.log("friendSocketId:", friendSocketId);
-            console.log("my id :", id , "friend id :", friendId);
-            console.log("typeof my id" , typeof id , "typeof friend id" , typeof friendId);
-            
+            console.log("my id :", id, "friend id :", friendId);
+            console.log("typeof my id", typeof id, "typeof friend id", typeof friendId);
+
             const msgId: string = await saveMsg(id, friendId, msg, roomName, "waiting");
             const timeOfMsg: string = await getTimeOfMsg(msgId);
             const UserData = await fetchUserData(id); // get data of user from user-management service
@@ -266,8 +266,8 @@ server.ready().then(() => {
     })
     socket.on('reject_play', async (id, friendId) => {
       try {
-        console.log('reject_play event id',id);
-        console.log('reject_play event friendId',friendId);
+        console.log('reject_play event id', id);
+        console.log('reject_play event friendId', friendId);
         if (!id || !friendId) return;
         const notifId = await saveNotif(id, friendId, 'reject', null);
         const Sockets = onlineUsers.get(friendId);
@@ -295,47 +295,47 @@ server.ready().then(() => {
     })
     socket.on('friendRequestSent', async (myId: string, friendId: string) => {
       if (!myId || !friendId) return;
-       const existingRequest =  checkExistingNotification(
-        myId, 
-        friendId, 
-        'friendRequest', 
+      const existingRequest = checkExistingNotification(
+        myId,
+        friendId,
+        'friendRequest',
         'pending'
       );
       if (existingRequest) {
         socket.emit('error', 'Friend request already pending');
         return;
       }
-      const notifId =  saveNotif(myId, friendId, 'friendRequest', 'pending') 
-      
+      const notifId = saveNotif(myId, friendId, 'friendRequest', 'pending')
+
       console.log(`Notification ID: ${notifId}`);
       const userSocket = onlineUsers.get(String(friendId));
 
-        if (!userSocket) return;
+      if (!userSocket) return;
 
-        const UserData = await fetchUserData(myId);
-        if (!UserData) return;
-        for (const ids of userSocket) {
+      const UserData = await fetchUserData(myId);
+      if (!UserData) return;
+      for (const ids of userSocket) {
 
-        socket.to(ids).emit("friendRequestReceived", 
-          UserData.user.username, 
-          friendId, 
+        socket.to(ids).emit("friendRequestReceived",
+          UserData.user.username,
+          friendId,
           myId,
           notifId
         );
       }
 
     });
-    socket.on('acceptFriendRequest', async (notifId:string,friendId:string,myId:string) => {
+    socket.on('acceptFriendRequest', async (notifId: string, friendId: string, myId: string) => {
       try {
         if (!friendId || !myId) return;
         console.log("acceptFriendRequest event triggered", myId, friendId, notifId);
-       updateNotificationStatus(notifId, 'accepted');
+        updateNotificationStatus(notifId, 'accepted');
         const friendSocket = onlineUsers.get(String(friendId));
         if (!friendSocket) return;
         const UserData = await fetchUserData(myId);
         if (!UserData)
           return;
-        
+
         for (const isd of friendSocket) {
           socket.to(isd).emit("friendRequestAccepted", UserData?.user?.username, myId, friendId);
         }
@@ -343,7 +343,7 @@ server.ready().then(() => {
         console.error('Error in acceptFriendRequest:', err);
       }
     });
-    socket.on('rejectFriendRequest', async (notifId:string,friendId:string,myId:string) => {
+    socket.on('rejectFriendRequest', async (notifId: string, friendId: string, myId: string) => {
       if (!friendId || !myId) return;
       try {
         deleteNotification(notifId);
@@ -370,12 +370,12 @@ server.ready().then(() => {
       }
     })
 
-    socket.on('cancelFriendRequest', async ( receiverId: string,myId: string) => {
+    socket.on('cancelFriendRequest', async (receiverId: string, myId: string) => {
       if (!myId || !receiverId) return;
-      const notifId =  getNotificationID(myId, receiverId, 'friendRequest');
-      console.log("cancelFriendRequest event triggered", myId, receiverId,notifId);
-    try {
-      
+      const notifId = getNotificationID(myId, receiverId, 'friendRequest');
+      console.log("cancelFriendRequest event triggered", myId, receiverId, notifId);
+      try {
+
         deleteNotification(notifId);
 
         const receiverSocket = onlineUsers.get(String(receiverId));
@@ -419,7 +419,6 @@ server.ready().then(() => {
     socket.on("tournament:create", async (data) => {
       console.log("tournament create event received", data);
       socket.join(data.room);
-      // 4️⃣ Notify creator
       socket.emit("tournament:created", data);
     });
     socket.on("tournament:invite", async (data) => {
@@ -437,15 +436,18 @@ server.ready().then(() => {
       }
       socket.emit("InvitationSended");
     });
-    socket.on("tournament:join", async (data)=>
-    {
+    socket.on("tournament:join", async (data) => {
       socket.join(data.tournamentName);
       console.log(`User ${socket.data.userId} joined tournament ${data.tournamentName}`);
+      socket.emit("tournament:joined", data);
     });
-    socket.on("/tournamentstart", async (data) => {
+    socket.on("tournament:start", async (data) => {
+      console.log("----", data);
+      // const notfId = await saveNotif(data.userId, data.friendId, 'challenge', null);
+      io.in(data.tournamentName).emit("tournament:started", data);
 
     });
-    socket.on("/tournamentleave", async (data) => {
+    socket.on("tournament:leave", async (data) => {
 
     });
   })

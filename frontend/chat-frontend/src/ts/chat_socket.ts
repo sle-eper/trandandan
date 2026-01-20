@@ -45,6 +45,7 @@ export function socketNotificationListener() {
 
 
   socket.off("TournamentInvitation");
+  socket.off("tournament:started");
 
   // Add new listeners
   socket.on("user_online", user_onlineHandler);
@@ -61,5 +62,6 @@ export function socketNotificationListener() {
 
   //tournament events 
   socket.on("TournamentInvitation", Tournament.inviteHandlerReceived);
+  socket.on("tournament:started", Tournament.StartingTournament)
 }
 

@@ -10,4 +10,5 @@ export default async function (fastify) {
     fastify.post('/participant/add', participant.addParticipant_post);//userowner
     fastify.post('/participant/remove', participant.removeParticipant_post);//userowner
     fastify.get('/participant/list', participant.listParticipants_get);
+    fastify.get('/My/status', participant.getMyStatus_get);
 }

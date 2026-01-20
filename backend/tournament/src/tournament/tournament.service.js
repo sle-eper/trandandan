@@ -5,34 +5,34 @@ export async function createTournament_post(request, reply) {
     const userid = request.headers['x-user-id'];
     const username = request.headers['x-user'];
     try {
-    const existingUser = await axios.get(
-          "http://user-management:3000/profile/User",
-          {
-            params: {
-              username,
-            },
-          }
+        const existingUser = await axios.get(
+            "http://user-management:3000/profile/User",
+            {
+                params: {
+                    username,
+                },
+            }
         );
-    if (!existingUser.data) {
-        return reply.code(404).send({
-          success: false,
-          message: "User does not exist!",
-        });
-    }
-    const nickname = existingUser.data.display_name;
-    const {tournamentname, maxPlayers} = request.body;
-    const db = getDatabase();
-    console.log(nickname, userid, tournamentname, maxPlayers);
-    const tournament = await db.get('SELECT * FROM tournament WHERE name  = ?', [tournamentname]);
-    if (tournament) {
-        console.log("Tournament Exist");
-        return reply.code(409)
-            .send({
-                success : false, 
-                message: "Tournament Already Exists"
+        if (!existingUser.data) {
+            return reply.code(404).send({
+                success: false,
+                message: "User does not exist!",
             });
-    }
-    
+        }
+        const nickname = existingUser.data.display_name;
+        const { tournamentname, maxPlayers } = request.body;
+        const db = getDatabase();
+        console.log(nickname, userid, tournamentname, maxPlayers);
+        const tournament = await db.get('SELECT * FROM tournament WHERE name  = ?', [tournamentname]);
+        if (tournament) {
+            console.log("Tournament Exist");
+            return reply.code(409)
+                .send({
+                    success: false,
+                    message: "Tournament Already Exists"
+                });
+        }
+
         const result = await db.run(
             `INSERT INTO tournament (name, ownerId, maxPlayers)
                 VALUES (?, ?, ?)`,
@@ -54,18 +54,27 @@ export async function createTournament_post(request, reply) {
 }
 export async function joinTournament_post(request, reply) {
     const userid = request.headers['x-user-id'];
-    const { nickname, tournamentname } = request.body;
-    console.log("===============", tournamentname, nickname)
+    const username = request.headers['x-user'];
+    const { tournamentName } = request.body;
+    const existingUser = await axios.get(
+        "http://user-management:3000/profile/User",
+        {
+            params: {
+                username,
+            },
+        }
+    );
     const db = await getDatabase();
-    const tournament = await db.get('SELECT * FROM tournament WHERE name  = ?', [tournamentname]);
+    const nickname = existingUser.data.display_name;
+    const tournament = await db.get('SELECT * FROM tournament WHERE name  = ?', [tournamentName]);
     if (!tournament) {
         console.log("Tournament Not Found");
-        reply.code(400)
-            .send("Tournament Not Found")
+        return reply.code(400)
+            .send({ message: "Tournament Not Found" });
     }
     if (Number(tournament.currentPlayers) >= Number(tournament.maxPlayers)) {
-        reply.code(409)
-            .send("Tournament is full");
+        return reply.code(409)
+            .send({ message: "Tournament is full" });
     }
     const participants = await db.all(
         "SELECT * FROM participant WHERE tournamentId = ?",
@@ -73,8 +82,8 @@ export async function joinTournament_post(request, reply) {
     );
     for (let i = 0; i < tournament.currentPlayers; i++) {
         if (String(participants[i].userid) === String(userid)) {
-            reply.code(400)
-                .send("User already In Tournament ")
+            return reply.code(400)
+                .send({ message: "User already In Tournament " })
         }
     }
     try {
@@ -87,13 +96,22 @@ export async function joinTournament_post(request, reply) {
             "UPDATE tournament SET currentPlayers = currentPlayers + 1 WHERE id = ?",
             [tournament.id]
         );
+        const tournamentUpdated = await db.get('SELECT * FROM tournament WHERE name  = ?', [tournamentName]);
+        if (Number(tournamentUpdated.currentPlayers) === Number(tournamentUpdated.maxPlayers)) {
+            await db.run(
+                "UPDATE tournament SET status = 'full' WHERE id = ?",
+                [tournament.id]
+            );
+            return reply.code(200).send({ message: "Tournament Full" })
+
+        }
     }
     catch (error) {
-        reply.code(400)
-            .send(error)
+        return reply.code(400)
+            .send({ message: error.message })
     }
-    reply.code(200)
-        .send("User Added")
+    return reply.code(200)
+        .send({ message: "User Added" })
 }
 
 export async function leaveTournament_get(request, reply) {
@@ -137,24 +155,16 @@ export async function leaveTournament_get(request, reply) {
         .send("User Not Found")
 }
 export async function checkTournament_get(request, reply) {
-    const tournamentid = request.query.tournamentid;
+    const tournamentName = request.query.tournamentName;
     const db = await getDatabase();
-    const tournament = await db.get('SELECT * FROM tournament WHERE id  = ?', [tournamentid]);
+    const tournament = await db.get('SELECT * FROM tournament WHERE name  = ?', [tournamentName]);
     if (!tournament) {
         console.log("Tournament Not Found");
-        reply.code(404)
+        return reply.code(404)
             .send("Tournament Not Found")
     }
-    if (Number(tournament.currentPlayers) === Number(tournament.maxPlayers)) {
-        await db.run(
-            "UPDATE tournament SET status = ? WHERE id = ?",
-            ["started", tournament.id]
-        );
-        console.log("the tournament will start now")
-    }
-    const res = await db.get('SELECT * FROM tournament WHERE id  = ?', [tournamentid]);
-    reply.code(200)
-        .send(res)
+    return reply.code(200)
+        .send(tournament)
 }
 
 
