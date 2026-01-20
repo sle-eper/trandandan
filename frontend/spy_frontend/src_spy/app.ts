@@ -42,7 +42,7 @@ export async function spyUi()
     console.log("response user:", responseJson);
     // const myId =  responseJson.user.id;
     const userName = responseJson.user.username;
-    console.log("user id in spy ui:", myId);
+    // console.log("user id in spy ui:", myId);
     console.log("user name in spy ui:", userName);
     // const url = new URL(window.location.href);
     // const step = url.pathname.split("/").pop();

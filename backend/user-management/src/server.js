@@ -7,6 +7,7 @@ import { initializeDatabase, getDatabase, closeDatabase } from './config/databas
 import profileRoutes from './routes/profileRoutes.js'; 
 import friendshipRoutes from './routes/friendshipRoutes.js';
 import multipart from '@fastify/multipart';
+import rateLimit from '@fastify/rate-limit';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,6 +21,10 @@ fastify.register(multipart,{
     }
 });
 
+await fastify.register(rateLimit, {
+  max: 100,            
+  timeWindow: '1 minute' 
+})
 
 fastify.register(fastifyCors, {
     origin: ['http://localhost:5173', 'http://localhost:3000'],

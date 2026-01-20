@@ -91,6 +91,26 @@ export const messages_old_batchHandler = (messages:any[], friendImg:string) => {
     }
 }
 
+export const chatErrorHandler = (errorMsg:string) => {
+  const container = document.getElementById("chat-alert-root");
+    if (!container) return;
+  container.classList.remove("hidden");
+  container.innerHTML = "";
+
+  const alertDiv:HTMLDivElement = document.createElement("div") as HTMLDivElement;
+  alertDiv.className = `text-[#E63946]`;
+  alertDiv.innerHTML = `
+    <span class="text-sm">
+      ${errorMsg}
+    </span>
+  `;
+  container.appendChild(alertDiv);
+  setTimeout(() => {
+    alertDiv.remove();
+    container.classList.add("hidden");
+  }, 5000); 
+}
+
 export const request_to_playHandler = (from:string,friendId:string,notifId:string) => {
     const container = document.getElementById("play-notification-container");
       if (!container) return;

@@ -37,8 +37,8 @@ function addNotif(el: any, notification: HTMLElement) {
 
     case "friendRequest":
       console.log("Creating menu item for notifId:", el);
-      createNotificationMenuItem(notification, el.sender_name, el.send, el.id, el.recv);
-      break;
+      createNotificationMenuItem(notification ,el.sender_name, el.send, el.id, el.recv);
+      return;
 
     default:
       return;
@@ -154,7 +154,6 @@ function getnotif(): Promise<any[]> {
       const notification = document.getElementById("notification-menu");
       if (!notification) return;
       notif.forEach((el) => {
-       
       if (el.display) {
         addNotif(el, notification);
       }

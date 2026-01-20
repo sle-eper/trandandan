@@ -11,7 +11,7 @@ export function renderNavBar(): string {
   return `
     <nav id="nav-bar"
       class="w-full flex items-center justify-between 
-             px-6 py-2 rounded-3xl sticky top-0 z-50 bg-[#111]">
+            px-6 py-2 rounded-3xl sticky top-0 z-50 bg-[#111]">
 
       <!-- Logo -->
       <div class="flex items-center gap-3 cursor-pointer hover:opacity-90 transition"
@@ -35,16 +35,16 @@ export function renderNavBar(): string {
             id="player-search"
             placeholder="Search for players..."
             class="w-full pl-10 pr-4 py-2 rounded-full
-                   bg-black/10 border border-white/20 backdrop-blur-lg
-                   text-white placeholder-white/50
-                   focus:outline-none focus:border-[#FD1D1D] focus:bg-black/20
-                   transition-all duration-300"
+                  bg-black/10 border border-white/20 backdrop-blur-lg
+                  text-white placeholder-white/50
+                  focus:outline-none focus:border-[#FD1D1D] focus:bg-black/20
+                  transition-all duration-300"
           />
         </div>
         
         <!-- Search Results Dropdown -->
         <div id="search-results" 
-             class="hidden absolute top-full mt-2 w-full rounded-xl
+            class="hidden absolute top-full mt-2 w-full rounded-xl
                     bg-black/90 border border-white/10 shadow-xl backdrop-blur-xl
                     max-h-80 overflow-y-auto">
           <!-- Results will be populated here -->
@@ -61,10 +61,10 @@ export function renderNavBar(): string {
 
         <button id="notification-btn"
           class="w-10 h-10 flex items-center justify-center rounded-full
-                 border border-white/20 bg-white/10 backdrop-blur-lg
-                 transition-all duration-300 hover:scale-110
-                 hover:bg-[#FD1D1D]/20 hover:border-[#FD1D1D]
-                 hover:shadow-[0_0_12px_#FD1D1D,0_0_22px_#711F21]">
+                border border-white/20 bg-white/10 backdrop-blur-lg
+                transition-all duration-300 hover:scale-110
+                hover:bg-[#FD1D1D]/20 hover:border-[#FD1D1D]
+                hover:shadow-[0_0_12px_#FD1D1D,0_0_22px_#711F21]">
           <span id="notif-icon" class="material-symbols-outlined text-white text-[24px]">
             notifications
           </span>
@@ -79,10 +79,10 @@ export function renderNavBar(): string {
 
         <button id="settings-btn"
           class="w-10 h-10 flex items-center justify-center rounded-full
-                 border border-white/20 bg-white/10 backdrop-blur-lg
-                 transition-all duration-300 hover:scale-110
-                 hover:bg-[#FD1D1D]/20 hover:border-[#FD1D1D]
-                 hover:shadow-[0_0_12px_#FD1D1D,0_0_22px_#711F21]">
+                border border-white/20 bg-white/10 backdrop-blur-lg
+                transition-all duration-300 hover:scale-110
+                hover:bg-[#FD1D1D]/20 hover:border-[#FD1D1D]
+                hover:shadow-[0_0_12px_#FD1D1D,0_0_22px_#711F21]">
           <span class="material-symbols-outlined text-white text-[24px]">
             settings
           </span>
@@ -90,9 +90,9 @@ export function renderNavBar(): string {
 
         <div id="settings-menu"
           class="hidden absolute right-0 top-12 w-48 rounded-xl bg-black/70
-                 border border-white/10 shadow-xl backdrop-blur-xl
-                 py-2 opacity-0 translate-y-[-6px]
-                 transition-all duration-200 ease-out">
+                border border-white/10 shadow-xl backdrop-blur-xl
+                py-2 opacity-0 translate-y-[-6px]
+                transition-all duration-200 ease-out">
 
           <button id="change-account"
             class="w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
@@ -102,13 +102,13 @@ export function renderNavBar(): string {
 
           <button id="enable-2fa"
             class="w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
-                   transition rounded-lg">
+                  transition rounded-lg">
             Enable 2FA
           </button>
 
           <button id="sign-out"
             class="w-full text-left px-4 py-2 text-white/90 hover:bg-[#E63946]/20
-                   transition rounded-lg">
+                  transition rounded-lg">
             Sign Out
           </button>
 
@@ -117,10 +117,10 @@ export function renderNavBar(): string {
         <!-- Profile -->
         <button id="profile"
           class="w-10 h-10 flex items-center justify-center rounded-full
-                 border border-white/20 bg-white/10 backdrop-blur-lg
-                 transition-all duration-300 hover:scale-110
-                 hover:bg-[#FD1D1D]/20 hover:border-[#FD1D1D]
-                 hover:shadow-[0_0_15px_#FD1D1D,0_0_25px_#711F21]">
+                border border-white/20 bg-white/10 backdrop-blur-lg
+                transition-all duration-300 hover:scale-110
+                hover:bg-[#FD1D1D]/20 hover:border-[#FD1D1D]
+                hover:shadow-[0_0_15px_#FD1D1D,0_0_25px_#711F21]">
           <span class="material-symbols-outlined text-white text-[26px]">
             account_circle
           </span>
@@ -272,7 +272,7 @@ export async function navBarLogic() {
     navigate("/2FA"); // assuming you have a 2FA page
   });
 
-   const playerSearch = new PlayerSearch(searchInput, searchResults);
+  const playerSearch = new PlayerSearch(searchInput, searchResults);
   await playerSearch.loadPlayersFromAPI();
   playerSearch.initializeEventListeners();
 }
