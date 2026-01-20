@@ -42,7 +42,6 @@ export const saveGameResult = async (request, reply) => {
 export const getMatchHistory = async (request, reply) => {
     const { userId } = request.params;
     const db = request.server.db;
-
     try {
         const history = await db.all(
             `SELECT * FROM match_history WHERE user1_id = ? OR user2_id = ? ORDER BY played_at DESC`,
