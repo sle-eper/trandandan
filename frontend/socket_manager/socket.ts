@@ -7,8 +7,8 @@ export function reSetSocket(){
 }
 
 export function socketInstance(): Socket | null {
-  console.log("############################Creating new socket instance####################");
-  return socket = io("/socket.io/", {
+
+  return socket = io("http://localhost:3000", {
     withCredentials: true,
     autoConnect: true,
     transports: ["websocket"],
