@@ -65,7 +65,7 @@ export async function getNotif(id: string) {
         if(!id)
             throw new Error("Invalid data in getNotif");
         const notifs = db
-            .prepare(`SELECT * FROM notification WHERE recv = ?`)
+            .prepare(`SELECT * FROM notification WHERE recv = ? and display = 1 `)
             .all(id);
     
         const result = [];
@@ -74,7 +74,7 @@ export async function getNotif(id: string) {
             if(notif.type ==='friendRequest' && notif.content ==='accepted')
                 continue;
             try{
-                const users = await fetchUserData(String(notif.send));
+                const users = await fetchUserData(String(notif.send),"getNotif");
                 result.push({...notif,sender_name: users.user.username });
             }catch{
                 result.push({...notif,sender_name: "Unknown user" });
