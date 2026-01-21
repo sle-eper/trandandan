@@ -221,7 +221,7 @@ export class PlayerProfileManager {
       `;
       return;
     }
-
+    
     // If it's the current user and edit component is provided
     // if (status.isCurrentUser && this.showEditProfileCallback) {
     //   console.log('Rendering edit profile component for current user...');
@@ -256,9 +256,12 @@ export class PlayerProfileManager {
               <p class="text-xl text-white/50 mb-4">@${this.escapeHtml(player.name)}</p>
               
               <div class="flex items-center gap-3 mb-6">
-                <span class="px-4 py-2 rounded-full bg-white/5 text-white/70 border border-white/10 text-sm">
-                  ${player.online_status ? '🟢 Online' : '⚫ Offline'}
-                </span>
+                ${!status.isCurrentUser ? 
+                `<span id="online-status-badge-${player.id}" 
+                 class="online-status-badge px-4 py-2 rounded-full ${player.online_status === "online" ? 'bg-green-500/20 text-green-400 border-green-500/30 online' : 'bg-white/5 text-white/70 border-white/10 offline'} border text-sm">
+                ${player.online_status === "online" ? '🟢 Online' : '⚫ Offline'}
+              </span>` : ''
+  }
                 ${player.best_score ? 
                   `<span class="px-4 py-2 rounded-full bg-[#FD1D1D]/20 text-[#FD1D1D] border border-[#FD1D1D]/30 text-sm font-semibold">
                     ⭐ ${player.best_score} Best Score
@@ -526,6 +529,28 @@ export const socketNotificationListenerRejectHandler = async (from : string,myId
   Toast.error('Friend request rejected');
 }
 
+export const friendDisconnectHandler = async (playerId: number) => {
+  console.log('Handling friend disconnect for playerId:', playerId);
+  const statusBadge = document.getElementById(`online-status-badge-${playerId}`);
+  console.log('Found status badgeeeee:',statusBadge );
+  if (statusBadge) {
+    statusBadge.textContent = '⚫ Offline';
+    statusBadge.classList.remove('online', 'bg-green-500/20', 'text-green-400', 'border-green-500/30');
+    statusBadge.classList.add('offline', 'bg-white/5', 'text-white/70', 'border-white/10');
+  }
+
+}
+export const friendConnectHandler = async (playerId: number) => {
+  console.log('Handling friend connect for playerId:', playerId);
+  const statusBadge = document.getElementById(`online-status-badge-${playerId}`);
+  console.log('Found status badge:',statusBadge );
+  if (statusBadge) {
+    statusBadge.textContent = '🟢 Online';
+    statusBadge.classList.remove('offline', 'bg-white/5', 'text-white/70', 'border-white/10');
+    statusBadge.classList.add( 'online','bg-green-500/20', 'text-green-400', 'border-green-500/30');
+  }
+
+}
 
 // getSocketInstance()?.on('socketNotificationListener', async (from : string,myId: string,friendId: string) => {
 //   console.log('Friend request accepted:', {from, myId, friendId});

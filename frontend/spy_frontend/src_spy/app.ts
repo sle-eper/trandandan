@@ -22,18 +22,19 @@ export async function spyUi()
 {
     
     const main = document.getElementById("dashboard-content")
-    const response = await fetch("/auth/verify", {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-        });
-        // console.log("response status:", response.status);
-        let myId: string;
-        const responseJson = await response.json()
-        myId =  responseJson.id;
-        const userName = responseJson.username;
-        // console.log(responseJson)
-        
+    const response = await fetch("/api/users/User", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+    });
+    const responseJson = await response.json()
+    console.log("response user:", responseJson);
+    const myId =  responseJson.user.id;
+    const userName = responseJson.user.username;
+    // console.log("user id in spy ui:", myId);
+    // console.log("user name in spy ui:", userName);
+    // const url = new URL(window.location.href);
+    // const step = url.pathname.split("/").pop();
     if(main)
     {
        //show game mode
@@ -110,7 +111,7 @@ export async function spyUi()
                     const historySection = document.getElementById("historySection")
                     if(historySection)
                         historySection.remove()
-                    main.innerHTML += await history(myId)
+                    main.innerHTML += await history()
                     const historySection2 = document.getElementById("historySection")
                     historySection2?.classList.remove('hidden');
                     // navigateSilent("/game/spy/history")
@@ -600,18 +601,20 @@ export async function spyUi()
                     {
                         // console.log(correctChoice)
                         spaysNumberlit3arfo = 0;
-                        if(value.toLocaleLowerCase() === correctChoice)
+                        if(value.trim().toLocaleLowerCase() === correctChoice)
                         {
                             if(player1.spay === true)
                             {
                                 try{
-                                    const response = await fetch('http://localhost:3003/history',{
+                                    const response = await fetch('/api/spy/history',{
                                         method: "POST",
                                         headers: {
                                             "Content-Type": "application/json",
                                         },
                                         body: JSON.stringify({ user_id: myId,role:'spy',result:'win'}),
+                                        credentials: "include",
                                     })
+                                    
                                     if(!response.ok)
                                     {
                                         showNotifError("Failed to save game history");
@@ -623,11 +626,12 @@ export async function spyUi()
                                 }
                             }else{
                                 try{
-                                    const response = await fetch('http://localhost:3003/history',{
+                                    const response = await fetch('/api/spy/history',{
                                         method: "POST",
                                         headers: {
                                             "Content-Type": "application/json",
                                         },
+                                        credentials: "include",
                                         body: JSON.stringify({ user_id: myId,role:'investigator',result:'lose'}),
                                     })
                                     if(!response.ok)
@@ -647,11 +651,12 @@ export async function spyUi()
                             if(player1.spay === true)
                             {
                                 try{
-                                    const response = await fetch('http://localhost:3003/history',{
+                                    const response = await fetch('/api/spy/history',{
                                         method: "POST",
                                         headers: {
                                             "Content-Type": "application/json",
                                         },
+                                        credentials: "include",
                                         body: JSON.stringify({ user_id: myId,role:'spy',result:'lose'}),
                                     })
                                     if(!response.ok)
@@ -665,11 +670,12 @@ export async function spyUi()
                                 }
                             }else{
                                 try{
-                                    const response = await fetch('http://localhost:3003/history',{
+                                    const response = await fetch('/api/spy/history',{
                                         method: "POST",
                                         headers: {
                                             "Content-Type": "application/json",
                                         },
+                                        credentials: "include",
                                         body: JSON.stringify({ user_id: myId,role:'investigator',result:'win'}),
                                     })
                                     if(!response.ok)
@@ -709,7 +715,7 @@ export async function spyUi()
                     {
                         spaysNumberlit3arfo++
                         select.classList.add('hidden')
-                        result.innerHTML = `<div class="text-2xl font-bold  font-['Share_Tech_Mono'] tracking-wide text-center">${section.name} ${spaysNumber - spaysNumberlit3arfo === 0 ? '': ` , is spy but but there are still ${spaysNumber - spaysNumberlit3arfo}`}`
+                        result.innerHTML = `<div class="text-2xl font-bold  font-['Share_Tech_Mono'] tracking-wide text-center">${section.name} ${spaysNumber - spaysNumberlit3arfo === 0 ? '': ` , is spy but there are still ${spaysNumber - spaysNumberlit3arfo}`}`
                     }
                     else
                     {
@@ -733,11 +739,12 @@ export async function spyUi()
                         if(player1.spay === true)
                         {
                             try{
-                                const response = await fetch('http://localhost:3003/history',{
+                                const response = await fetch('/api/spy/history',{
                                     method: "POST",
                                     headers: {
                                         "Content-Type": "application/json",
                                     },
+                                    credentials: "include",
                                     body: JSON.stringify({ user_id: myId,role:'spy',result:'win'}),
                                     })
                                     if(!response.ok)
@@ -751,11 +758,12 @@ export async function spyUi()
                             }
                         }else{
                             try{
-                                const response = await fetch('http://localhost:3003/history',{
+                                const response = await fetch('/api/spy/history',{
                                 method: "POST",
                                 headers: {
                                     "Content-Type": "application/json",
                                 },
+                                credentials: "include",
                                 body: JSON.stringify({ user_id: myId,role:'investigator',result:'lose'}),
                                 })
                                 if(!response.ok)
@@ -778,11 +786,12 @@ export async function spyUi()
                         if(player1.spay === false)
                         {
                             try{
-                                const response = await fetch('http://localhost:3003/history',{//TODO https
+                                const response = await fetch('/api/spy/history',{//TODO https
                                     method: "POST",
                                     headers: {
                                         "Content-Type": "application/json",
                                     },
+                                    credentials: "include",
                                     body: JSON.stringify({ user_id: myId,role:'investigator',result:'win'}),
                                     })
                                 if(!response.ok)
@@ -798,11 +807,12 @@ export async function spyUi()
                         else
                         {
                             try{
-                                const response = await fetch('http://localhost:3003/history',{
+                                const response = await fetch('/api/spy/history',{
                                 method: "POST",
                                 headers: {
                                     "Content-Type": "application/json",
                                 },
+                                credentials: "include",
                                 body: JSON.stringify({ user_id: myId,role:'spy',result:'lose'}),
                                 })
                                 if(!response.ok)

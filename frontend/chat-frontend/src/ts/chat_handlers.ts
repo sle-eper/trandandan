@@ -1,4 +1,5 @@
 // import { currentUserId } from "../../../auth_frontend/src_auth/login/login";
+import { friendDisconnectHandler } from "../../../profile_frontend/src/components/FriendRequest";
 import { getSocketInstance } from "../../../socket_manager/socket";
 import { lastMsg, receivedMsg,inputMsg, sendMsg } from "../components/content";
 import { moveUp,setupPopupEvents,addMenuNotification } from "./chat_ui_tools";
@@ -40,16 +41,48 @@ export const receiveMessageHandler = (msg:string, msgId:string, friendId:string,
 
 export const allowMsgHandler = (allow: boolean,status:string) => {
     const msg = document.getElementById("x");
-    if (msg && allow) msg.innerHTML = inputMsg("accepted",status);
-    else if (msg && !allow) msg.innerHTML = inputMsg("blocked",status);
+    const challenge = document.getElementById("challenge-option") as HTMLButtonElement;
+    if (msg && allow){
+      msg.innerHTML = inputMsg("accepted",status);
+      challenge?.classList.remove(
+        "opacity-50",
+        "cursor-not-allowed",
+        "pointer-events-none"
+      );
+    }
+    else if (msg && !allow){
+      msg.innerHTML = inputMsg("blocked",status);
+      challenge?.classList.add(
+        "opacity-50",
+        "cursor-not-allowed",
+        "pointer-events-none"
+      );
+    }
+      
     setupPopupEvents();
 }
 
 export const blockOrAcceptedHandler = (roomName: string, statusGlobal: string,status:string) => {
+    console.log(statusGlobal,status);
     const dm = document.getElementById("DM");
     if (dm && dm.dataset.roomName == roomName) {
       const msg = document.getElementById("x");
+      const challenge = document.getElementById("challenge-option") as HTMLButtonElement;
       if (msg) msg.innerHTML = inputMsg(statusGlobal,status);
+      if(statusGlobal === 'blocked')
+      {
+        challenge?.classList.add(
+          "opacity-50",
+          "cursor-not-allowed",
+          "pointer-events-none"
+        );
+      }else if (statusGlobal === 'accepted'){
+          challenge?.classList.remove(
+          "opacity-50",
+          "cursor-not-allowed",
+          "pointer-events-none"
+        );
+      }
       setupPopupEvents();
     }
 }
@@ -250,6 +283,7 @@ export const user_onlineHandler = (userId: string) => {
 };
 
 export const user_offlineHandler = (userId: string) => {
+  console.log("user_offlineHandler called for userId:", userId);
     const elements = document.querySelectorAll(`.online-indicator-${userId}`)
     if(!elements)
         return;
@@ -257,4 +291,5 @@ export const user_offlineHandler = (userId: string) => {
       if(!el.classList.contains("hidden"))
           el.classList.add("hidden");
     });
+    friendDisconnectHandler(Number(userId));
 };

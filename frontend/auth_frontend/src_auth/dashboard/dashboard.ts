@@ -148,7 +148,6 @@ function getnotif(): Promise<any[]> {
           const responseJson = await response.json()
           const userID = responseJson.id as string;
           setCurrentUserId(userID);//TODO khasha tkon fach ylogi 
-
     if (sidebar) sidebar.innerHTML = renderSidebar();
       let notif =  await getnotif()
       const notification = document.getElementById("notification-menu");

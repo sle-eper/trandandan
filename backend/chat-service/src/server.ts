@@ -79,7 +79,7 @@ server.ready().then(() => {
     console.log("New client connected, userId:", userId);
     console.log("size of onlineUsers", onlineUsers.size, "---->", onlineUsers);
 
-
+    //###############################chat events##############################################
     socket.on("send_message", async (data) => {
       try {
         const id = socket.data.userId
@@ -164,7 +164,7 @@ server.ready().then(() => {
       try {
         const id = socket.data.userId
         if (!id || !friendId) return;
-        const roomName = getRoomName(id, friendId);
+        // const roomName = getRoomName(id, friendId);
         const status: any = await getStatusOfTowFriends(id, friendId);
         if (status) {
           const status1: string = status?.status1?.status;
@@ -223,7 +223,6 @@ server.ready().then(() => {
         socket.emit("chat_error", "Failed to acknowledge message");
       }
     });
-
     socket.on("joinToRoom", (roomName: string) => {
       try {
         if (!roomName) return;
@@ -237,7 +236,6 @@ server.ready().then(() => {
         socket.emit("chat_error", "Failed to join room");
       }
     });
-
     socket.on('challenge', async (friendId) => {
       try {
         if (!friendId) return;
@@ -258,6 +256,7 @@ server.ready().then(() => {
         socket.emit("chat_error", "Failed to send challenge");
       }
     })
+    //###############################notification events###########################################
     socket.on('accept_play', async (id, friendId) => {
       console.log(id, friendId);
     })
@@ -320,7 +319,7 @@ server.ready().then(() => {
     socket.on('acceptFriendRequest', async (notifId:string,friendId:string,myId:string) => {
       try {
         if (!friendId || !myId) return;
-       updateNotificationStatus(notifId, 'accepted');
+        updateNotificationStatus(notifId, 'accepted');
         const friendSocket = onlineUsers.get(String(friendId));
         if (!friendSocket) return;
         const UserData = await fetchUserData(myId);
@@ -360,7 +359,6 @@ server.ready().then(() => {
         console.error('Error in removeNotif:', err);
       }
     })
-
     socket.on('cancelFriendRequest', async ( receiverId: string,myId: string) => {
       if (!myId || !receiverId) return;
       const notifId =  getNotificationID(myId, receiverId, 'friendRequest');

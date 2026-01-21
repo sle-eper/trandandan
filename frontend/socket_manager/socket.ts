@@ -5,14 +5,16 @@ let socket: Socket | null = null;
 export function getSocket(){
   socket = null;
 }
-
-export function socketInstance(): Socket | null {
-
-  return socket = io("http://localhost:3000/", {
-    withCredentials: true,
-    autoConnect: true,
-  });
+export function socketInstance(): Socket {
+  if (!socket) {
+    socket = io("http://localhost:3000/", {
+      withCredentials: true,
+      autoConnect: true,
+    });
+  }
+  return socket;
 }
+
 export function getSocketInstance(): Socket | null {
   // get current url
   const currentPath = window.location.pathname;

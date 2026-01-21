@@ -180,7 +180,7 @@ export async function navBarLogic() {
   // Toggle settings menu
   notifBtn?.addEventListener("click",()=>{
     if(!notifmenu || notifmenu.children.length === 0) return;
-    console.log("notif clicked",notifmenu);
+    // console.log("notif clicked",notifmenu);
     const isOpen = notifmenu.classList.contains("opacity-100");
     if (isOpen) {
       closeNotifMenu();
@@ -249,6 +249,7 @@ export async function navBarLogic() {
       console.log('Logout successful');
       // localStorage.removeItem("userId");
       getSocketInstance()?.disconnect();
+      // getSocketInstance().emit("disconnect");
       getSocket();
       // localStorage.removeItem("userId")
       navigate("/login");
