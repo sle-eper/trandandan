@@ -50,12 +50,11 @@ function  friendCart(friend:any,waitingMsg:object,myId:string):string
         // if(friend.online_status === 'online')
 
         // navigateSilent(`/chat/${friend.username}`);
-        return `<div id='msg-zone' data-id="${friend.id}" class="flex justify-center py-4 px-2 hover:bg-[#222222] transition-colors duration-300 sm:py-4 sm:px-4 md:py-5">
+        return `<div id='msg-zone' data-id="${friend.id}" class="flex justify-center  px-2 hover:bg-[#222222] transition-colors duration-300 py-5">
                     <div  class=" friend-msg-zone flex w-[95%] hover:cursor-pointer" data-id="${friend.id}" data-name = "${friend.username}" data-roomname = "${roomName}"  >
                     <div class="relative">
-                        <div class=" w-10 h-10 
-                                
-                                md:w-12 md:h-12
+                        <div class=" 
+                                w-12 h-12
                                 bg-cover bg-center rounded-full" 
                             style="
                                 background-image : url('/api/uploads/${friend.avatar_url}');

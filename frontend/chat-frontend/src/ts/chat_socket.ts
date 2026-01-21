@@ -6,10 +6,6 @@ import {renderConnectionError} from "./chat_ui_tools"
 export function socketListener() {
   const socket = getSocketInstance();
   if (!socket) return;
-
-  const container = document.getElementById("dashboard-content");
-  if(!container)return;
-
   // Remove old listeners to prevent duplicates
   socket.off("disconnect");
   socket.off("connect_error");
@@ -32,6 +28,8 @@ export function socketListener() {
   socket.on("chat_error", chatErrorHandler);
 
   socket.on("connect_error", () => {
+    const container = document.getElementById("dashboard-content");
+    if(!container)return;
     renderConnectionError(container)
   });
   
