@@ -121,8 +121,19 @@ export function initializeGame() {
                     </div>
                 </div>
 
-                <!-- Right Player -->
-                <div class="flex flex-col items-center gap-4 animate-slide-in-right">
+            <!-- Score Display -->
+            <div class="flex items-center gap-8">
+                <div class="px-8 py-4 rounded-2xl bg-black/60 border-2 border-cyan-500/30 backdrop-blur-xl shadow-2xl">
+                    <span id="score-left" class="text-5xl font-black text-cyan-400 font-mono drop-shadow-[0_0_15px_rgba(34,211,238,0.8)] tracking-wider">0</span>
+                </div>
+                <div class="text-4xl font-black text-white/20">-</div>
+                <div class="px-8 py-4 rounded-2xl bg-black/60 border-2 border-purple-500/30 backdrop-blur-xl shadow-2xl">
+                    <span id="score-right" class="text-5xl font-black text-purple-400 font-mono drop-shadow-[0_0_15px_rgba(168,85,247,0.8)] tracking-wider">0</span>
+                </div>
+            </div>
+
+            <!-- Right Player -->
+            <div class="flex flex-col items-center gap-4 animate-slide-in-right">
                     <div class="relative group pointer-events-auto">
                         <div class="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
                         <div class="relative w-28 h-28 rounded-full border-2 border-purple-400/50 shadow-[0_0_30px_rgba(168,85,247,0.4)] overflow-hidden bg-black/40 backdrop-blur-md transition-all duration-500 hover:scale-110 hover:-rotate-3 ring-4 ring-purple-500/20">
@@ -224,6 +235,12 @@ function setupSocketListeners() {
         if (game.score) {
             leftScore = game.score.left;
             rightScore = game.score.right;
+            console.log('[DEBUG] Score synced from game_start:', { left: leftScore, right: rightScore });
+            // Immediately update HTML score display
+            const scoreLeftEl = document.getElementById('score-left');
+            const scoreRightEl = document.getElementById('score-right');
+            if (scoreLeftEl) scoreLeftEl.textContent = String(leftScore);
+            if (scoreRightEl) scoreRightEl.textContent = String(rightScore);
         }
         if (game.paddles) {
             leftPaddle.setY(game.paddles.left);
@@ -267,6 +284,11 @@ function setupSocketListeners() {
             pongBall.syncState(data.ball);
             leftScore = data.score.left;
             rightScore = data.score.right;
+            // Update HTML immediately
+            const scoreLeftEl = document.getElementById('score-left');
+            const scoreRightEl = document.getElementById('score-right');
+            if (scoreLeftEl) scoreLeftEl.textContent = String(leftScore);
+            if (scoreRightEl) scoreRightEl.textContent = String(rightScore);
         }
     });
 
@@ -275,6 +297,12 @@ function setupSocketListeners() {
         pongBall.syncState(data.ball);
         leftScore = data.score.left;
         rightScore = data.score.right;
+        console.log('[DEBUG] Score updated via goal_scored:', { left: leftScore, right: rightScore });
+        // Update HTML immediately
+        const scoreLeftEl = document.getElementById('score-left');
+        const scoreRightEl = document.getElementById('score-right');
+        if (scoreLeftEl) scoreLeftEl.textContent = String(leftScore);
+        if (scoreRightEl) scoreRightEl.textContent = String(rightScore);
         // No countdown, just wait for server to restart ball
     });
 
@@ -458,14 +486,15 @@ export function animate() {
 }
 
 function drawScores() {
+    // Update HTML score displays
+    const scoreLeftEl = document.getElementById('score-left');
+    const scoreRightEl = document.getElementById('score-right');
+
+    if (scoreLeftEl) scoreLeftEl.textContent = String(leftScore);
+    if (scoreRightEl) scoreRightEl.textContent = String(rightScore);
+
+    // Draw center line on canvas
     ctxt.save();
-    ctxt.fillStyle = 'rgba(255, 0, 0, 0.9)';
-    ctxt.font = '700 40px "Share Tech Mono", monospace';
-    ctxt.textAlign = 'center';
-    ctxt.shadowColor = '#f00';
-    ctxt.shadowBlur = 15;
-    ctxt.fillText(String(leftScore), c.width * 0.25, 60);
-    ctxt.fillText(String(rightScore), c.width * 0.75, 60);
     ctxt.setLineDash([10, 15]);
     ctxt.strokeStyle = 'rgba(255, 0, 0, 0.15)';
     ctxt.lineWidth = 2;
