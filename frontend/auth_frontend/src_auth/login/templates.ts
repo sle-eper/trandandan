@@ -295,7 +295,7 @@ export const verifyTemplate = () => `
     </div>
   </div>
 `;
-function statCard(title: string, value: string) {
+function statCard(title: string, value: string | number) {
   return `
     <div class="bg-black/40 rounded-xl border border-white/10 p-5">
       <p class="text-gray-400 text-sm">${title}</p>
@@ -303,6 +303,7 @@ function statCard(title: string, value: string) {
     </div>
   `;
 }
+
 
 function matchRow(name: string, score: string, time: string, win: boolean) {
   return `
@@ -333,7 +334,15 @@ function friendRow(name: string, status: string) {
   `;
 }
 
-export function homeTemplate(): string {
+type HomeTemplateData = {
+  totalMatches: number;
+  wins: number;
+  winRate: number;
+  matches: any[];
+  userId: number;
+};
+
+export function homeTemplate(data: HomeTemplateData): string {
   return `
   <div class="w-full h-full flex flex-col gap-6">
 
@@ -345,12 +354,10 @@ export function homeTemplate(): string {
 
     <!-- STATS -->
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-
-      ${statCard("Total Matches", "142")}
-      ${statCard("Wins", "98")}
-      ${statCard("Win Rate", "69%")}
+      ${statCard("Total Matches", data.totalMatches)}
+      ${statCard("Wins", data.wins)}
+      ${statCard("Win Rate", data.winRate + "%")}
       ${statCard("Ranking", "#24")}
-
     </div>
 
     <!-- MAIN CONTENT -->
@@ -358,62 +365,75 @@ export function homeTemplate(): string {
 
       <!-- QUICK PLAY -->
       <div class="bg-black/40 rounded-2xl border border-white/10 p-6 flex flex-col gap-5">
-  <h2 class="text-xl font-semibold">Quick Play</h2>
+        <h2 class="text-xl font-semibold">Quick Play</h2>
 
-    <!-- NORMAL PLAY -->
-    <div class="flex flex-col gap-3">
-      <button
-        class="bg-red-600 hover:bg-red-700 py-3 rounded-lg font-semibold transition">
-      Find Match
-      </button>
+        <div class="flex flex-col gap-3">
+          <button class="bg-red-600 hover:bg-red-700 py-3 rounded-lg font-semibold transition">
+            Find Match
+          </button>
 
-      <button
-        class="border border-white/20 py-3 rounded-lg hover:bg-white/5 transition">
-       Challenge Friend
-      </button>
-    </div>
+          <button class="border border-white/20 py-3 rounded-lg hover:bg-white/5 transition">
+            Challenge Friend
+          </button>
+        </div>
 
-    <!-- DIVIDER -->
-    <div class="relative my-2">
-      <div class="border-t border-white/10"></div>
-      <span
-        class="absolute left-1/2 -translate-x-1/2 -top-3
-              bg-[#111] px-3 text-xs text-gray-400">
-        Competitive
-      </span>
-    </div>
+        <div class="relative my-2">
+          <div class="border-t border-white/10"></div>
+          <span
+            class="absolute left-1/2 -translate-x-1/2 -top-3
+                   bg-[#111] px-3 text-xs text-gray-400">
+            Competitive
+          </span>
+        </div>
 
-    <!-- TOURNAMENT BLOCK -->
-    <div
-      class="bg-black/50 border border-[#E63946]/40 rounded-xl p-4
-            hover:border-[#E63946] transition">
-      <h3 class="text-lg font-semibold mb-1 flex items-center gap-2">
-       Tournament Mode
-      </h3>
+        <div
+          class="bg-black/50 border border-[#E63946]/40 rounded-xl p-4
+                 hover:border-[#E63946] transition">
+          <h3 class="text-lg font-semibold mb-1">
+            Tournament Mode
+          </h3>
 
-      <p class="text-sm text-gray-400 mb-3">
-        Enter ranked tournaments and prove your skills against top players.
-      </p>
+          <p class="text-sm text-gray-400 mb-3">
+            Enter ranked tournaments and prove your skills against top players.
+          </p>
 
-      <button
-        class="w-full bg-gradient-to-r from-[#E63946] to-[#711F21]
-              hover:opacity-90 py-3 rounded-lg font-semibold transition">
-        Play Tournament
-      </button>
-    </div>
-  </div>
-
-
+          <button
+            class="w-full bg-gradient-to-r from-[#E63946] to-[#711F21]
+                   hover:opacity-90 py-3 rounded-lg font-semibold transition">
+            Play Tournament
+          </button>
+        </div>
+      </div>
 
       <!-- RECENT MATCHES -->
       <div class="bg-black/40 rounded-2xl border border-white/10 p-6">
         <h2 class="text-xl font-semibold mb-4">Recent Matches</h2>
 
         <div class="space-y-3">
-          ${matchRow("Player42", "11 - 7", "2h ago", true)}
-          ${matchRow("PongMaster", "9 - 11", "5h ago", false)}
-          ${matchRow("NeoPlayer", "11 - 3", "1d ago", true)}
-          ${matchRow("SpeedDemon", "11 - 9", "2d ago", true)}
+          ${
+            data.matches.length === 0
+              ? `<p class="text-gray-400 text-sm">No matches played yet</p>`
+              : data.matches.map(match => {
+                  const isWin = match.winner_id === data.userId;
+
+                  const score =
+                    match.user1_id === data.userId
+                      ? `${match.user1_score} - ${match.user2_score}`
+                      : `${match.user2_score} - ${match.user1_score}`;
+
+                  const opponentId =
+                    match.user1_id === data.userId
+                      ? match.user2_id
+                      : match.user1_id;
+
+                  return matchRow(
+                    `Player ${opponentId}`,
+                    score,
+                    new Date(match.played_at).toLocaleDateString(),
+                    isWin
+                  );
+                }).join("")
+          }
         </div>
       </div>
 
