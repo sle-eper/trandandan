@@ -404,10 +404,10 @@ function tournamentBracketTemplate() {
 
           <button
             id="start-tournament-btn"
-            class="px-4 py-2 bg-green-600/80 rounded-xl text-sm
-                   hover:bg-green-600 transition disabled:opacity-40 disabled:cursor-not-allowed"
+            class="px-4 py-2 bg-red-600/80 rounded-xl text-sm
+                   hover:bg-red-600 transition disabled:opacity-40 disabled:cursor-not-allowed"
             disabled>
-            ▶ Start Tournament
+            Start Tournament
           </button>
 
           <button
@@ -456,7 +456,7 @@ function renderFriendsList(friends: { id: number; username: string }[]) {
         <span>${friend.username}</span>
         <button
           data-id="${friend.id}"
-          class="invite-btn px-3 py-1 text-xs rounded-md bg-blue-600/80 hover:bg-blue-600 transition">
+          class="invite-btn px-3 py-1 text-xs rounded-md bg-red-600 hover:bg-red-600 transition">
           Invite
         </button>
       </div>

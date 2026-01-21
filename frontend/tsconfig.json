@@ -3,10 +3,15 @@
     "target": "ESNext",
     "useDefineForClassFields": true,
     "module": "ESNext",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": ["vite/client"],
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "types": [
+      "vite/client"
+    ],
     "skipLibCheck": true,
-
     /* Bundler mode */
     "moduleResolution": "Node",
     "esModuleInterop": true,
@@ -15,7 +20,6 @@
     "moduleDetection": "force",
     "noEmit": true,
     "forceConsistentCasingInFileNames": true,
-
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
@@ -24,5 +28,12 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["auth_frontend/**/*.ts"]
+  "include": [
+    "auth_frontend/**/*.ts",
+    "game_frontend/**/*.ts",
+    "chat-frontend/**/*.ts",
+    "profile_frontend/**/*.ts",
+    "spy_frontend/**/*.ts",
+    "tournament_frontend/**/*.ts"
+  ]
 }

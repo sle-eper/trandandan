@@ -261,15 +261,21 @@ export function sendMsg(msg:string,time:string):string{
         <span id="text-received-time " class="text-xs text-[#888] mt-1 self-end">${time}</span>
     </div>
     </div>`
-    // <img src="${img}" alt="" class="h-10 w-10 rounded-full mt-2 ml-2">
-            
+    
 }
+// <img src="${img}" alt="" class="h-10 w-10 rounded-full mt-2 ml-2">
 
 
+// <img src='/api/uploads/${img}' alt="" class="h-10 w-10 rounded-full mt-2 mr-2">
 export function receivedMsg(msg:string,time:string,img:string):string{
 
     return `<div id="sent-msg" class="flex mt-5 md:w-[30vw] w-[80vw]  justify-start pl-5 ">
-                <img src='/api/uploads/${img}' alt="" class="h-10 w-10 rounded-full mt-2 mr-2">
+                <div class="h-10 w-10  bg-cover bg-center rounded-full mt-2 mr-2" 
+                        style="
+                            background-image : url('/api/uploads/${img}');
+                            aspect-ratio: 1/1;
+                        ">
+                </div>
                 <div id="content-sent" class="max-w-[80%] flex flex-col">
                     <div  class="border-2 border-[#E63946] rounded-xl p-3  ">
                         <span class="text-[#F5F5F5]  break-all">

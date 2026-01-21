@@ -55,48 +55,32 @@ function createPopupNotification(
   popupNotif.id = "play-notification";
   popupNotif.setAttribute('data-notif-id', notifId);
   popupNotif.className = `
-    flex items-center justify-between gap-4
-    w-full max-w-md px-5 py-3 rounded-xl
-    bg-gradient-to-r from-gray-900/95 to-gray-800/95
-    border border-red-500/30
-    shadow-2xl shadow-red-500/20 backdrop-blur-xl
-    transition-all duration-300 ease-out
-    hover:border-red-500/50 hover:shadow-red-500/30
+    flex items-center justify-between gap-3
+      w-full px-4 py-2 rounded-2xl
+      bg-[#1a1a1a]/90 border border-[#FD1D1D]/40
+      shadow-lg backdrop-blur-lg
+      animate-slide-in
   `;
 
   popupNotif.innerHTML = `
-    <div class="flex items-center gap-3 flex-1 min-w-0">
-      <div class="flex-shrink-0 w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
-        <svg class="w-5 h-5 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-          <circle cx="9" cy="7" r="4"></circle>
-          <line x1="19" y1="8" x2="19" y2="14"></line>
-          <line x1="22" y1="11" x2="16" y2="11"></line>
-        </svg>
-      </div>
-      
-      <div class="flex-1 min-w-0">
-        <p class="text-sm font-semibold text-white truncate">Friend Request</p>
-        <p class="text-xs text-gray-400 truncate">
-          <strong class="text-red-400">${from}</strong> wants to connect
-        </p>
-      </div>
-    </div>
+    
+    <span class="text-sm truncate">
+      🤝 <strong>${from}</strong> rejected your play request
+    </span>
 
     <div class="flex gap-2 shrink-0">
-      <button class="accept-btn group relative px-4 py-2 text-xs font-bold rounded-lg
-                overflow-hidden transition-all duration-200
-                bg-green-500/20 hover:bg-green-500 text-green-400 hover:text-white
-                border border-green-500/30 hover:border-green-500
-                hover:shadow-lg hover:shadow-green-500/50 hover:scale-105">
-        <span class="relative z-10">✓</span>
+      <button
+        class="accept-btn px-3 py-1.5 text-xs font-bold rounded
+              bg-green-500/20 text-green-400
+              hover:bg-green-500 hover:text-white transition">
+        Accept
       </button>
-      <button class="reject-btn group relative px-4 py-2 text-xs font-bold rounded-lg
-                overflow-hidden transition-all duration-200
-                bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white
-                border border-red-500/30 hover:border-red-500
-                hover:shadow-lg hover:shadow-red-500/50 hover:scale-105">
-        <span class="relative z-10">✕</span>
+
+      <button
+        class="reject-btn px-3 py-1.5 text-xs font-bold rounded
+              bg-red-500/20 text-red-400
+              hover:bg-red-500 hover:text-white transition">
+        Decline
       </button>
     </div>
   `;
@@ -123,59 +107,70 @@ export function createNotificationMenuItem(
   notifId: string,
   userId: string
 ): void {
-console.log("Creating menu item for notifId:", notifId, "from:", from, "friendId:", friendId, "userId:", userId);
+// console.log("Creating menu item for notifId:", notifId, "from:", from, "friendId:", friendId, "userId:", userId);
+  const notifIcon = document.getElementById("notif-icon");
+  if(!notifIcon)return;
+   notifIcon.innerHTML = `<span class=" text-[#E63946]  material-symbols-outlined">
+                          notifications_unread
+                          </span>`
   const menuNotif = document.createElement("div");
   menuNotif.setAttribute('data-notif-id', notifId);
   menuNotif.className = `
-    group relative w-full px-4 py-3 
-    bg-gray-900/40 hover:bg-red-500/10
-    border-l-4 border-red-500/50 hover:border-red-500
-    transition-all duration-200
-    cursor-pointer
+    w-full px-4 py-2 text-white/90
+    hover:bg-[#E63946]/20 transition
+    rounded-lg
   `;
   
   menuNotif.innerHTML = `
-    <div class="flex items-start gap-3">
-      <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-red-500/30 to-red-600/30 
-                  flex items-center justify-center border border-red-500/40 group-hover:border-red-500/60 transition">
-        <svg class="w-5 h-5 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-          <circle cx="9" cy="7" r="4"></circle>
-          <line x1="19" y1="8" x2="19" y2="14"></line>
-          <line x1="22" y1="11" x2="16" y2="11"></line>
-        </svg>
-      </div>
+    <div class="flex justify-between items-center mb-2">
+      <p class="text-xs text-gray-400">
+        🤝 <strong class="text-red-400 font-semibold">${from}</strong>
+        sent you a friend request
+      </p>
 
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center justify-between gap-2 mb-1">
-          <p class="text-sm font-semibold text-white">Friend Request</p>
-          <span class="text-[10px] text-gray-500">now</span>
-        </div>
-        <p class="text-xs text-gray-400 mb-3">
-          <strong class="text-red-400 font-semibold">${from}</strong> sent you a friend request
-        </p>
+      <span
+        class="close-btn material-symbols-outlined text-gray-400
+              hover:text-white cursor-pointer text-sm">
+        close
+      </span>
+    </div>
 
-        <div class="flex gap-2">
-          <button class="menu-accept-btn flex-1 px-3 py-1.5 text-xs font-bold rounded-lg
-                    bg-green-500/20 hover:bg-green-500 text-green-400 hover:text-white
-                    border border-green-500/30 hover:border-green-500
-                    transition-all duration-200 hover:scale-105">
+    <div class="flex gap-2">
+          <button
+            class="menu-accept-btn px-3 py-1.5 text-xs font-bold rounded
+                  bg-green-500/20 text-green-400
+                  hover:bg-green-500 hover:text-white transition">
             Accept
           </button>
-          <button class="menu-reject-btn flex-1 px-3 py-1.5 text-xs font-bold rounded-lg
-                    bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white
-                    border border-red-500/30 hover:border-red-500
-                    transition-all duration-200 hover:scale-105">
+
+          <button
+            class="menu-reject-btn px-3 py-1.5 text-xs font-bold rounded
+                  bg-red-500/20 text-red-400
+                  hover:bg-red-500 hover:text-white transition">
             Decline
           </button>
         </div>
-      </div>
-    </div>
   `;
+
 
   notification.prepend(menuNotif);
 
- 
+  menuNotif.querySelector(".close-btn")?.addEventListener("click", () => {
+    getSocketInstance()?.emit("removeNotif", notifId);
+    menuNotif.remove();
+    const container = document.getElementById("notification-menu");
+    if(!container)return;
+    if(container.children.length === 0)
+    {
+      if(container.classList.contains("hidden")) return;
+        container.classList.add("opacity-0");
+        container.classList.add("hidden")
+        notifIcon.innerHTML = `<span class="  material-symbols-outlined">
+                            notifications
+                            </span>`
+    }
+  });
+
   const menuAcceptBtn = menuNotif.querySelector(".menu-accept-btn") as HTMLButtonElement;
   const menuRejectBtn = menuNotif.querySelector(".menu-reject-btn") as HTMLButtonElement;
 
@@ -215,8 +210,7 @@ function attachAcceptHandler(
         acceptBtn.classList.add('bg-green-500');
         
         
-            getSocketInstance()?.emit('acceptFriendRequest', notifId, friendId, userId);
-          console.error('Error accepting friend request:');
+        getSocketInstance()?.emit('acceptFriendRequest', notifId, friendId, userId);
         
         removeNotificationFromUI(notifId);
         
@@ -300,6 +294,7 @@ function attachMenuAcceptHandler(
       menuRejectBtn?.setAttribute('disabled', 'true');
       menuAcceptBtn.textContent = 'Accepting...';
       
+      
       const response = await fetch('/api/users/friends/accept', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -312,8 +307,21 @@ function attachMenuAcceptHandler(
         menuAcceptBtn.classList.add('bg-green-500', 'text-white');
       
         getSocketInstance()?.emit('acceptFriendRequest', notifId, friendId, userId);
-       
         removeNotificationFromUI(notifId);
+
+            // const container = document.getElementById("notification-menu");
+            // if(!container)return;
+            // console.log(`******************************${container.children.length }********************************************`);
+            // if(container.children.length === 0)
+            // {
+            //   // console.log("ssssssssssssssssssssssss")
+            // //   if(container.classList.contains("hidden")) return;
+            // //     container.classList.add("opacity-0");
+            // //     container.classList.add("hidden")
+            // //     // notifIcon.innerHTML = `<span class="  material-symbols-outlined">
+            // //     //                     notifications
+            // //     //                     </span>`
+            // }
         
       } else {
         throw new Error('Failed to accept');
@@ -364,6 +372,18 @@ function attachMenuRejectHandler(
         
         
         removeNotificationFromUI(notifId);
+
+          // const container = document.getElementById("notification-menu");
+          // if(!container)return;
+          // if(container.children.length === 0)
+          // {
+          //   if(container.classList.contains("hidden")) return;
+          //     container.classList.add("opacity-0");
+          //     container.classList.add("hidden")
+          //     // notifIcon.innerHTML = `<span class="  material-symbols-outlined">
+          //     //                     notifications
+          //     //                     </span>`
+          // }
         
       } else {
         throw new Error('Failed to reject');
@@ -383,12 +403,31 @@ function attachMenuRejectHandler(
 
 
 function removeNotificationFromUI(notifId: string): void {
+  const notifIcon = document.getElementById("notif-icon");
+  if(!notifIcon)
+      return;
+
   const elements = document.querySelectorAll(`[data-notif-id="${notifId}"]`);
   elements.forEach(el => {
     (el as HTMLElement).style.opacity = '0';
     (el as HTMLElement).style.transform = 'translateX(20px)';
-    setTimeout(() => el.remove(), 300);
+    el.remove();
   });
+
+    const container = document.getElementById("notification-menu");
+    if(!container)return;
+    // console.log(`******************************${container.children.length }********************************************`);
+    if(container.children.length === 0)
+    {
+      // console.log("ssssssssssssssssssssssss")
+      if(container.classList.contains("hidden")) return;
+        container.classList.add("opacity-0");
+        container.classList.add("hidden")
+        notifIcon.innerHTML = `<span class="  material-symbols-outlined">
+                            notifications
+                            </span>`
+    }
+        
 }
 
 // getSocketInstance()?.on('friendRequestCancelled', (data: { notifId: string }) => {

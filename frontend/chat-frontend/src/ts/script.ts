@@ -15,7 +15,7 @@ import {
   choseFriend,
   generateBlockButton,
 } from "../components/content";
-import { navigateSilent } from "../../../auth_frontend/src_auth/login/router";
+import { navigate } from "../../../auth_frontend/src_auth/login/router";
 
 
 
@@ -25,7 +25,7 @@ window.addEventListener("keydown", (e) => {
     setFriendId("");
     const dmZone = document.getElementById("DM");
     if (dmZone) dmZone.innerHTML = choseFriend();
-    navigateSilent(`/chat`);
+    navigate(`/chat`);
 
   }
 });
@@ -50,17 +50,27 @@ export async function showMainUI() {
   let dmZone: HTMLElement | null;
   
   if (chatContent) {
+    chatContent.innerHTML = `
+    <div
+      id="chat-alert-root"
+      class="fixed top-30 left-1/2 -translate-x-1/2 translate-x-10 z-[9999]
+      flex justify-center items-center gap-3 rounded-2xl
+      bg-[#1a1a1a]/90 border border-[#FD1D1D]/40 p-3 hidden"
+    >
+</div>`
+
     chatContent.classList.add("gap-6", "gap-y-3");
     const friends = await fetchListOfFriends();
     // console.table(friends.waitingMsg);
-    chatContent.innerHTML = listOfMsg(friends.friends,friends.waitingMsg,userID);
+
+    chatContent.innerHTML += listOfMsg(friends.friends,friends.waitingMsg,userID);
     if(friends && friends.friends.length > 0)
       chatContent.innerHTML += DM();
     //     //get all of list friends
     const friendsEvent = document.querySelectorAll(".friend-msg-zone");
     friendsEvent.forEach((friend:any) => {
       friend.addEventListener("click", () => {
-        navigateSilent(`/chat/${friend.dataset.name}`);
+        navigate(`/chat/${friend.dataset.name}`);
         setImInRoom(friend.dataset.roomname);
         setFriendId(friend.dataset.id);
         const friendId = getFriendId()
