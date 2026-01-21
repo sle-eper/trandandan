@@ -12,6 +12,24 @@ export function moveUp(id: string) {
     if (target) container?.prepend(target);
 }
 
+export function renderConnectionError(container: HTMLElement) {
+  container.innerHTML = `
+    <div class="text-[#F5F5F5] flex flex-col justify-center items-center h-full gap-2">
+      <div class="border border-[#ff4d4d] rounded-full h-15 w-15 flex justify-center items-center">
+        <span class="material-symbols-outlined text-[#ff4d4d]">error</span>
+      </div>
+
+      <h1 class="text-xl font-semibold">Connection error</h1>
+
+      <h2 class="text-[#888] text-center">
+        Unable to connect to the chat server.<br />
+        Please try again.
+      </h2>
+    </div>
+  `;
+}
+
+
 export function setupPopupEvents() {
     //Ai
     const friendId = getFriendId();

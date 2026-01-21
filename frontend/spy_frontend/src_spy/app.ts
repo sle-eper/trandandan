@@ -22,17 +22,6 @@ export async function spyUi()
 {
     
     const main = document.getElementById("dashboard-content")
-    // const response = await fetch("/auth/verify", {
-    //         method: "GET",
-    //         headers: { "Content-Type": "application/json" },
-    //         credentials: "include",
-    //     });
-        // console.log("response status:", response.status);
-        // let myId: string;
-        // const responseJson = await response.json()
-        // myId =  responseJson.id;
-        // const userName = responseJson.username;
-        // console.log(responseJson)
     const response = await fetch("/api/users/User", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
@@ -40,10 +29,10 @@ export async function spyUi()
     });
     const responseJson = await response.json()
     console.log("response user:", responseJson);
-    // const myId =  responseJson.user.id;
+    const myId =  responseJson.user.id;
     const userName = responseJson.user.username;
     // console.log("user id in spy ui:", myId);
-    console.log("user name in spy ui:", userName);
+    // console.log("user name in spy ui:", userName);
     // const url = new URL(window.location.href);
     // const step = url.pathname.split("/").pop();
     if(main)
@@ -612,7 +601,7 @@ export async function spyUi()
                     {
                         // console.log(correctChoice)
                         spaysNumberlit3arfo = 0;
-                        if(value.toLocaleLowerCase() === correctChoice)
+                        if(value.trim().toLocaleLowerCase() === correctChoice)
                         {
                             if(player1.spay === true)
                             {
@@ -726,7 +715,7 @@ export async function spyUi()
                     {
                         spaysNumberlit3arfo++
                         select.classList.add('hidden')
-                        result.innerHTML = `<div class="text-2xl font-bold  font-['Share_Tech_Mono'] tracking-wide text-center">${section.name} ${spaysNumber - spaysNumberlit3arfo === 0 ? '': ` , is spy but but there are still ${spaysNumber - spaysNumberlit3arfo}`}`
+                        result.innerHTML = `<div class="text-2xl font-bold  font-['Share_Tech_Mono'] tracking-wide text-center">${section.name} ${spaysNumber - spaysNumberlit3arfo === 0 ? '': ` , is spy but there are still ${spaysNumber - spaysNumberlit3arfo}`}`
                     }
                     else
                     {

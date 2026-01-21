@@ -31,6 +31,8 @@ window.addEventListener("keydown", (e) => {
 });
 
 export async function showMainUI() {
+  const chatContent = document.getElementById("dashboard-content");
+  if(!chatContent)return
   socketListener();
   const response = await fetch("/auth/verify", {
     method: "GET",
@@ -44,7 +46,6 @@ export async function showMainUI() {
     console.error("User ID not found. Cannot show main UI.");
     return;
   }
-  const chatContent = document.getElementById("dashboard-content");
 
   // let chatZone: HTMLDivElement;
   let dmZone: HTMLElement | null;
@@ -147,9 +148,12 @@ export async function showMainUI() {
               });
               if(!document.getElementById("block-button") && !document.getElementById("unblock-button"))
                   document.getElementById("popup-option")!.innerHTML += generateBlockButton(btn1);
-              //   const challenge: HTMLButtonElement = document.getElementById(
-              //     "challenge-option"
-              //   ) as HTMLButtonElement;
+
+
+
+                // const challenge: HTMLButtonElement = document.getElementById(
+                //   "challenge-option"
+                // ) as HTMLButtonElement;
               //   challenge.classList.add(
               //     "opacity-50",
               //     "cursor-not-allowed",
@@ -165,7 +169,7 @@ export async function showMainUI() {
               //     "pointer-events-none"
               //   );
               // }
-              // setupPopupEvents();
+              setupPopupEvents();
               if (popupOption.classList.contains("hidden"))
                 popupOption.classList.remove("hidden");
               else 
@@ -227,15 +231,15 @@ export async function showMainUI() {
           if (challenge) {
             const textEl:HTMLParagraphElement = challenge.querySelector("p") as HTMLParagraphElement;
             const iconEl:HTMLSpanElement = challenge.querySelector("span") as HTMLSpanElement;
-            if(btn1 === "blocked")
-            {
-              // const challenge = document.getElementById("challenge-option") as HTMLButtonElement;
-              challenge?.classList.add(
-                "opacity-50",
-                "cursor-not-allowed",
-                "pointer-events-none"
-              );
-            }
+            // if(btn1 === "blocked")
+            // {
+            //   // const challenge = document.getElementById("challenge-option") as HTMLButtonElement;
+            //   challenge?.classList.add(
+            //     "opacity-50",
+            //     "cursor-not-allowed",
+            //     "pointer-events-none"
+            //   );
+            // }
             if(!challenge.dataset.click)
             {
               challenge.addEventListener("click", () => {

@@ -79,7 +79,7 @@ server.ready().then(() => {
     console.log("New client connected, userId:", userId);
     console.log("size of onlineUsers", onlineUsers.size, "---->", onlineUsers);
 
-
+    //###############################chat events##############################################
     socket.on("send_message", async (data) => {
       try {
         const id = socket.data.userId
@@ -164,7 +164,7 @@ server.ready().then(() => {
       try {
         const id = socket.data.userId
         if (!id || !friendId) return;
-        const roomName = getRoomName(id, friendId);
+        // const roomName = getRoomName(id, friendId);
         const status: any = await getStatusOfTowFriends(id, friendId);
         if (status) {
           const status1: string = status?.status1?.status;
@@ -223,7 +223,6 @@ server.ready().then(() => {
         socket.emit("chat_error", "Failed to acknowledge message");
       }
     });
-
     socket.on("joinToRoom", (roomName: string) => {
       try {
         if (!roomName) return;

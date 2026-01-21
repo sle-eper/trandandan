@@ -128,32 +128,46 @@ export const signupTemplate = () => `
     </p>
   </div>
 `;
-export const gamesTemplate = () => `
-<div class="min-h-screen w-full flex flex-col justify-center items-center p-6">
 
-  <h1 class="text-4xl md:text-5xl font-bold text-white mb-12 flex items-center gap-4">
-    <span class="material-symbols-outlined text-5xl text-yellow-500">gamepad</span>
-    Choose a game
+export const gamesTemplate = () => `
+<div class="h-full w-full flex flex-col items-center px-4 py-4 md:py-6 overflow-hidden">
+
+  <!-- Title -->
+  <h1 class="text-3xl md:text-5xl font-bold text-white mb-6 md:mb-12 flex items-center gap-3">
+    <span class="material-symbols-outlined text-4xl md:text-5xl text-yellow-500">
+      gamepad
+    </span>
+    games
   </h1>
 
-  <div class="flex flex-col md:flex-row gap-8 w-full max-w-4xl">
+  <!-- Games container -->
+  <div class="flex flex-col md:flex-row gap-4 md:gap-8 w-full max-w-4xl flex-1">
 
     <!-- Ping Pong -->
     <a href="/game/pong" data-route
-      class="group relative w-full h-80 md:h-96 rounded-3xl overflow-hidden cursor-pointer
-            duration-300 hover:scale-[1.02] ring-2 ring-transparent hover:ring-red-500">
-      
-      <img src="${startPingPong}" 
-          alt="Spy Game Background" 
-          class="absolute inset-0 w-full h-full object-cover" />
-      <div class="absolute inset-0 bg-gradient-to-br from-red-950/70 to-black/70 z-0"></div>
+      class="group relative w-full h-36 sm:h-44 md:h-96 rounded-3xl overflow-hidden cursor-pointer
+            transition duration-300 hover:scale-[1.02]
+            ring-2 ring-transparent hover:ring-red-500">
 
-      <div class="absolute inset-0 flex flex-col justify-center items-center z-10 p-4">
-        <div class="bg-red-600/20 w-20 h-20 flex items-center justify-center rounded-full mb-4 group-hover:bg-red-500/30">
-          <span class="material-symbols-outlined text-6xl text-white">sports_tennis</span>
+      <img src="${startPingPong}"
+        alt="Ping Pong Game Background"
+        class="absolute inset-0 w-full h-full object-cover" />
+
+      <div class="absolute inset-0 bg-gradient-to-br from-red-950/70 to-black/70"></div>
+
+      <div class="absolute inset-0 flex flex-col justify-center items-center p-4 text-center">
+        <div class="bg-red-600/20 w-16 h-16 md:w-20 md:h-20 flex items-center justify-center rounded-full mb-3 md:mb-4
+                    transition group-hover:bg-red-500/30">
+          <span class="material-symbols-outlined text-4xl md:text-6xl text-white">
+            sports_tennis
+          </span>
         </div>
-        <h2 class="text-3xl font-bold text-white uppercase">Ping Pong</h2>
-        <p class="text-red-200 mt-2 opacity-0 group-hover:opacity-100 duration-500">
+
+        <h2 class="text-xl md:text-3xl font-bold text-white uppercase">
+          Ping Pong
+        </h2>
+
+        <p class="text-red-200 mt-1 md:mt-2 opacity-0 group-hover:opacity-100 transition duration-500">
           Classic Table Tennis
         </p>
       </div>
@@ -161,29 +175,38 @@ export const gamesTemplate = () => `
 
     <!-- Spy Game -->
     <a href="/game/spy" data-route
-      class="group relative w-full h-80 md:h-96 rounded-3xl overflow-hidden cursor-pointer
-              duration-300 hover:scale-[1.02] ring-2 ring-transparent hover:ring-red-500">
+      class="group relative w-full h-36 sm:h-44 md:h-96 rounded-3xl overflow-hidden cursor-pointer
+             transition duration-300 hover:scale-[1.02]
+             ring-2 ring-transparent hover:ring-red-500">
 
-      <img src="${startSpay}" 
-          alt="Spy Game Background" 
-          class="absolute inset-0 w-full h-full object-cover" />
-      <div class="absolute inset-0 bg-gradient-to-br from-red-950/70 to-black/70 z-0"></div>
+      <img src="${startSpay}"
+        alt="Spy Game Background"
+        class="absolute inset-0 w-full h-full object-cover" />
 
+      <div class="absolute inset-0 bg-gradient-to-br from-red-950/70 to-black/70"></div>
 
-      <div class="absolute inset-0 flex flex-col justify-center items-center z-10 p-4">
-        <div class="bg-red-600/20 w-20 h-20 flex items-center justify-center rounded-full mb-4 group-hover:bg-red-500/30">
-          <span class="material-symbols-outlined text-6xl text-white">visibility_off</span>
+      <div class="absolute inset-0 flex flex-col justify-center items-center p-4 text-center">
+        <div class="bg-red-600/20 w-16 h-16 md:w-20 md:h-20 flex items-center justify-center rounded-full mb-3 md:mb-4
+                    transition group-hover:bg-red-500/30">
+          <span class="material-symbols-outlined text-4xl md:text-6xl text-white">
+            visibility_off
+          </span>
         </div>
-        <h2 class="text-3xl font-bold text-white uppercaseDrop-shadow-lg">Spy Game</h2>
-        <p class="text-red-200 mt-2 opacity-0 group-hover:opacity-100 duration-500 font-semibold">
+
+        <h2 class="text-xl md:text-3xl font-bold text-white uppercase">
+          Spy Game
+        </h2>
+
+        <p class="text-red-200 mt-1 md:mt-2 opacity-0 group-hover:opacity-100 transition duration-500 font-semibold">
           Find the Imposter
         </p>
       </div>
-</a>
+    </a>
 
   </div>
 </div>
 `;
+
 
 
 export const forgotTemplate = () => `

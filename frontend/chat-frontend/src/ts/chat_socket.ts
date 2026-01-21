@@ -2,12 +2,19 @@ import { friendDisconnectHandler, friendRequestReceivedHandler, socketNotificati
 import { friendRequestCancelledHandler } from "../../../profile_frontend/src/components/RequestHandling";
 import { getSocketInstance } from "../../../socket_manager/socket";
 import { liveHandler, receiveMessageHandler, allowMsgHandler, blockOrAcceptedHandler, messages_batchHandler, messages_old_batchHandler, chatErrorHandler, request_to_playHandler, not_agreeHandler, msg_notificationHandler, user_onlineHandler, user_offlineHandler, start_gameHandler } from "./chat_handlers"
-
+import {renderConnectionError} from "./chat_ui_tools"
 export function socketListener() {
   const socket = getSocketInstance();
   if (!socket) return;
 
+  const container = document.getElementById("dashboard-content");
+  if(!container)return;
+
   // Remove old listeners to prevent duplicates
+  socket.off("disconnect");
+  socket.off("connect_error");
+
+
   socket.off("live");
   socket.off("receive_message");
   socket.off("allowMsg");
@@ -23,6 +30,11 @@ export function socketListener() {
   socket.on("messages_batch", messages_batchHandler);
   socket.on("messages_old_batch", messages_old_batchHandler);
   socket.on("chat_error", chatErrorHandler);
+
+  socket.on("connect_error", () => {
+    renderConnectionError(container)
+  });
+  
 }
 
 export function socketNotificationListener() {
