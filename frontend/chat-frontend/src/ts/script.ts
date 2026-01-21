@@ -32,9 +32,10 @@ window.addEventListener("keydown", (e) => {
 });
 
 export async function showMainUI() {
+  console.log("hhhhhhhhhhhhhhhhhhhhhhhh");
+  socketListener();
   const chatContent = document.getElementById("dashboard-content") as HTMLElement;
   if(!chatContent)return
-    socketListener();
     const response = await fetch("/auth/verify", {
       method: "GET",
       headers: { "Content-Type": "application/json" },
@@ -77,14 +78,14 @@ export async function showMainUI() {
                 dm.classList.remove("hidden")
                 listContainer?.classList.add("hidden")
               }
-            requestAnimationFrame(()=>{
-              document.getElementById("back-btn")?.addEventListener("click", () => {
-                  dm?.classList.add("hidden");
-                  listContainer?.classList.remove("hidden");
-                  setImInRoom("");
-                  setFriendId("");
-              });
-            })
+            // requestAnimationFrame(()=>{
+            //   document.getElementById("back-btn")?.addEventListener("click", () => {
+            //       dm?.classList.add("hidden");
+            //       listContainer?.classList.remove("hidden");
+            //       setImInRoom("");
+            //       setFriendId("");
+            //   });
+            // })
             getSocketInstance()?.emit("joinToRoom", roomName);
   
             const counterElement: HTMLDivElement = document.getElementById(

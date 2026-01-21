@@ -51,9 +51,9 @@ export function saveNotif(send:string,recv:string,type:string,content:string)
     try{
         if(!send||!recv||!type)
             throw new Error("Invalid data in getNotif");
-         const result =db.prepare(`INSERT INTO notification(send,recv,type,content) VALUES(?,?,?,?)`).run(send,recv,type,content);
+        const result =db.prepare(`INSERT INTO notification(send,recv,type,content) VALUES(?,?,?,?)`).run(send,recv,type,content);
         
-         return String(result.lastInsertRowid);
+        return String(result.lastInsertRowid);
     }catch(err)
     {
         console.error("DB saveNotif error:", err);
@@ -69,16 +69,23 @@ export async function getNotif(id: string) {
             .all(id);
     
         const result = [];
+        const userCache = new Map<string, string>();
     
         for (const notif of notifs) {
             if(notif.type ==='friendRequest' && notif.content ==='accepted')
                 continue;
-            try{
-                const users = await fetchUserData(String(notif.send),"getNotif");
-                result.push({...notif,sender_name: users.user.username });
-            }catch{
-                result.push({...notif,sender_name: "Unknown user" });
+            if(!userCache.has(String(notif.send)))
+            {
+                try{
+                    const userData = await fetchUserData(String(notif.send));
+                    userCache.set(notif.send, userData.user.username);
+                    // result.push({...notif,sender_name: users.user.username });
+                }catch{
+                    userCache.set(notif.send, "Unknown user");
+                    // result.push({...notif,sender_name: "Unknown user" });
+                }
             }
+            result.push({...notif,sender_name: userCache.get(notif.send) });
         }
         // console.log(result);
         return result;
