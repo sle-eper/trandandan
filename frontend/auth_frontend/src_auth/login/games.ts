@@ -75,7 +75,7 @@ export function games(type?: string) {
           </div>
 
           <!-- Customization Section -->
-          <div class="w-full max-w-5xl px-4 grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="w-full max-w-5xl px-4 mt-8 grid grid-cols-1 md:grid-cols-4 gap-4">
              ${(() => {
         const createColorCarousel = (idPrefix: string, defaultHex: string, label: string) => `
                         <div class="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 transition-all group flex flex-col items-center gap-3 backdrop-blur-sm">

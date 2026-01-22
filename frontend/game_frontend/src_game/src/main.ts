@@ -147,7 +147,7 @@ export function initializeGame() {
             </div>
 
             <!-- Canvas Wrapper -->
-            <div class="relative w-full h-full flex items-center justify-center p-12">
+            <div class="relative w-full h-full flex items-center justify-center p-12 pt-48">
                 <div id="canvas-mount" class="relative z-10 rounded-2xl overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/10 backdrop-blur-2xl transition-transform duration-700"></div>
                 
                 <!-- Inner Ambient Glow -->
