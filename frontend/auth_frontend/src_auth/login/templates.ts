@@ -295,14 +295,14 @@ export const verifyTemplate = () => `
     </div>
   </div>
 `;
-function statCard(title: string, value: string | number) {
-  return `
-    <div class="bg-black/40 rounded-xl border border-white/10 p-5">
-      <p class="text-gray-400 text-sm">${title}</p>
-      <p class="text-3xl font-bold mt-2">${value}</p>
-    </div>
-  `;
-}
+// function statCard(title: string, value: string | number) {
+//   return `
+//     <div class="bg-black/40 rounded-xl border border-white/10 p-5">
+//       <p class="text-gray-400 text-sm">${title}</p>
+//       <p class="text-3xl font-bold mt-2">${value}</p>
+//     </div>
+//   `;
+// }
 
 
 function matchRow(name: string, score: string, time: string, win: boolean) {
@@ -334,104 +334,204 @@ function friendRow(name: string, status: string) {
   `;
 }
 
-type HomeTemplateData = {
+// type HomeTemplateData = {
+//   totalMatches: number;
+//   wins: number;
+//   winRate: number;
+//   matches: any[];
+//   userId: number;
+// };
+
+export function homeTemplate(data: {
   totalMatches: number;
   wins: number;
+  losses: number;
   winRate: number;
+  avgScore: number;
+  highScore: number;
+  currentStreak: number;
+  longestStreak: number;
+  recentForm: string;
   matches: any[];
   userId: number;
-};
-
-export function homeTemplate(data: HomeTemplateData & {
-  losses: number;
-  avgScore: number;
 }): string {
   return `
-  <div class="w-full h-full flex flex-col gap-6 p-4"> <!-- added padding, reduced gap -->
-    <!-- USER STATS -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3"> <!-- reduced gap -->
-      ${statCard("Total Matches", data.totalMatches)}
-      ${statCard("Wins", data.wins)}
-      ${statCard("Losses", data.losses)}
-      ${statCard("Win Rate", data.winRate + "%")}
-      ${statCard("Avg Score", data.avgScore)}
+  <div class="w-full h-full flex flex-col gap-2 overflow-hidden">
+    
+    <!-- HEADER SECTION -->
+    <div class="flex-shrink-0">
+      <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+        Gaming Dashboard
+      </h1>
     </div>
 
-    <!-- MAIN DASHBOARD -->
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 flex-grow"> <!-- reduced gap -->
+    <!-- KEY METRICS -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 flex-shrink-0">
+      ${statCard("Total Matches", data.totalMatches, "", "blue")}
+      ${statCard("Wins", data.wins, "", "green")}
+      ${statCard("Losses", data.losses, "", "red")}
+      ${statCard("Win Rate", data.winRate + "%", "", "purple")}
+      ${statCard("Avg Score", data.avgScore, "", "yellow")}
+    </div>
 
-      <!-- PERFORMANCE VISUAL -->
-      <div class="bg-black/40 rounded-2xl border border-white/10 p-4"> <!-- reduced padding -->
-        <h2 class="text-xl font-semibold mb-3">Performance</h2>
+    <!-- MAIN CONTENT GRID -->
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-3 flex-1 min-h-0 overflow-hidden">
 
-        <canvas id="performanceChart" width="200" height="200"></canvas>
+      
+      <!-- LEFT COLUMN: Performance Charts -->
+      <div class="flex flex-col gap-3 min-h-0 overflow-hidden">
+        
+        <!-- Win/Loss Pie Chart -->
+        <div class="bg-black/40 rounded-xl border border-white/10 p-2 backdrop-blur-sm flex-shrink-0">
+          <h3 class="text-sm font-semibold mb-1">
+            Win/Loss Distribution
+          </h3>
+          <div class="flex justify-center items-center">
+            <canvas id="performanceChart" width="220" height="180"></canvas>
+          </div>
+          <div class="flex justify-center gap-4 mt-1 text-xs">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-green-500"></span>
+              <span class="text-gray-300">Wins: ${data.wins}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-red-500"></span>
+              <span class="text-gray-300">Losses: ${data.losses}</span>
+            </div>
+          </div>
+        </div>
+      <!-- MIDDLE COLUMN: Match History & Win/Loss Pattern -->
+      <div class="xl:col-span-2 flex flex-col gap-3 min-h-0 overflow-hidden">
+        
+        <!-- Recent Match History -->
+        <div class="bg-black/40 rounded-xl border border-white/10 p-3 backdrop-blur-sm flex flex-col min-h-0 flex-1 overflow-hidden">
+          <h3 class="text-sm font-semibold mb-2 flex-shrink-0">
+            Detailed Match History
+          </h3>
+          
+          <div class="overflow-y-auto flex-1 space-y-2 pr-1 custom-scrollbar">
+            ${
+              data.matches.length === 0
+                ? `<div class="text-center py-8">
+                    <p class="text-gray-400 text-lg mb-2">No matches played yet</p>
+                    <p class="text-gray-500 text-sm">Start playing to see your statistics!</p>
+                   </div>`
+                : data.matches.map(match => {
+                    const isWin = match.winner_id === data.userId;
+                    const myScore = match.user1_id === data.userId ? match.user1_score : match.user2_score;
+                    const opponentScore = match.user1_id === data.userId ? match.user2_score : match.user1_score;
+                    const opponent = match.user1_id === data.userId ? match.user2_id : match.user1_id;
+                    const date = new Date(match.played_at);
+                    const scoreDiff = Math.abs(myScore - opponentScore);
 
-        <p class="text-gray-400 text-sm mt-2">
-          Win/Loss ratio based on played matches
-        </p>
+                    return `
+                      <div class="p-3 rounded-lg transition-all duration-200 hover:scale-[1.01]
+                        ${isWin 
+                          ? 'bg-green-500/10 border border-green-500/30 hover:bg-green-500/20' 
+                          : 'bg-red-500/10 border border-red-500/30 hover:bg-red-500/20'}">
+                        
+                        <div class="flex items-center justify-between mb-2">
+                          <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm
+                              ${isWin ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}">
+                              ${isWin ? '✓' : '✗'}
+                            </div>
+                            <div>
+                              <div class="font-semibold text-sm ${isWin ? 'text-green-400' : 'text-red-400'}">
+                                ${isWin ? 'Victory' : 'Defeat'}
+                              </div>
+                              <div class="text-xs text-gray-500">
+                                vs Player ${opponent}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div class="text-right">
+                            <div class="text-xl font-bold">
+                              <span class="${isWin ? 'text-green-400' : 'text-white'}">${myScore}</span>
+                              <span class="text-gray-600 mx-1">:</span>
+                              <span class="${!isWin ? 'text-red-400' : 'text-white'}">${opponentScore}</span>
+                            </div>
+                            <div class="text-xs text-gray-500">
+                              ${isWin ? '+' : '-'}${scoreDiff} pts
+                            </div>
+                          </div>
+                        </div>
 
-        <script>
-          (() => {
-            const canvas = document.getElementById("performanceChart");
-            if (!canvas) return;
-            const ctx = canvas.getContext("2d");
-
-            const wins = ${data.wins};
-            const losses = ${data.losses};
-            const total = wins + losses || 1;
-
-            const winAngle = (wins / total) * Math.PI * 2;
-
-            ctx.clearRect(0, 0, 200, 200);
-
-            ctx.beginPath();
-            ctx.moveTo(100, 100);
-            ctx.arc(100, 100, 80, 0, winAngle);
-            ctx.fillStyle = "#22c55e";
-            ctx.fill();
-
-            ctx.beginPath();
-            ctx.moveTo(100, 100);
-            ctx.arc(100, 100, 80, winAngle, Math.PI * 2);
-            ctx.fillStyle = "#ef4444";
-            ctx.fill();
-          })();
-        </script>
-      </div>
-
-      <!-- RECENT GAME SESSIONS -->
-      <div class="xl:col-span-2 bg-black/40 rounded-2xl border border-white/10 p-4"> <!-- reduced padding -->
-        <h2 class="text-xl font-semibold mb-3">Recent Game Sessions</h2>
-
-        <div class="space-y-2"> <!-- reduced space between rows -->
-          ${
-            data.matches.length === 0
-              ? `<p class="text-gray-400 text-sm">No games played yet</p>`
-              : data.matches.map(match => {
-                  const isWin = match.winner_id === data.userId;
-                  const score = match.user1_id === data.userId
-                      ? `${match.user1_score} - ${match.user2_score}`
-                      : `${match.user2_score} - ${match.user1_score}`;
-                  const opponent =
-                    match.user1_id === data.userId
-                      ? match.user2_id
-                      : match.user1_id;
-
-                  return matchRow(`Player ${opponent}`,
-                    score,
-                    new Date(match.played_at).toLocaleDateString(),
-                    isWin
-                  );
-                }).join("")
-          }
+                        <div class="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-white/5">
+                          <span>${date.toLocaleDateString()} at ${date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</span>
+                          <span class="px-2 py-1 rounded text-xs ${myScore > opponentScore * 1.5 ? 'bg-yellow-500/20 text-yellow-400' : 'bg-gray-500/20 text-gray-400'}">
+                            ${myScore > opponentScore * 1.5 ? 'Dominant' : scoreDiff <= 2 ? 'Close Match' : 'Standard'}
+                          </span>
+                        </div>
+                      </div>
+                    `;
+                  }).join("")
+            }
+          </div>
         </div>
       </div>
     </div>
-
   </div>
+
+  <style>
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  </style>
   `;
 }
 
+function statCard(label: string, value: number | string, icon: string, color: string): string {
+  const colorClasses = {
+    blue: 'from-blue-500/20 to-blue-600/20 border-blue-500/30',
+    green: 'from-green-500/20 to-green-600/20 border-green-500/30',
+    red: 'from-red-500/20 to-red-600/20 border-red-500/30',
+    purple: 'from-purple-500/20 to-purple-600/20 border-purple-500/30',
+    yellow: 'from-yellow-500/20 to-yellow-600/20 border-yellow-500/30',
+    orange: 'from-orange-500/20 to-orange-600/20 border-orange-500/30',
+  }[color] || 'from-gray-500/20 to-gray-600/20 border-gray-500/30';
+
+  return `
+    <div class="bg-gradient-to-br ${colorClasses} rounded-lg border p-2 backdrop-blur-sm
+      hover:scale-105 transition-transform duration-200 cursor-default">
+      <div class="text-xl font-bold mb-0.5">${value}</div>
+      <div class="text-xs text-gray-400">${label}</div>
+    </div>
+  `;
+}
+// function statCard(label: string, value: number | string, icon: string, color: string): string {
+//   const colorClasses = {
+//     blue: 'from-blue-500/20 to-blue-600/20 border-blue-500/30',
+//     green: 'from-green-500/20 to-green-600/20 border-green-500/30',
+//     red: 'from-red-500/20 to-red-600/20 border-red-500/30',
+//     purple: 'from-purple-500/20 to-purple-600/20 border-purple-500/30',
+//     yellow: 'from-yellow-500/20 to-yellow-600/20 border-yellow-500/30',
+//     orange: 'from-orange-500/20 to-orange-600/20 border-orange-500/30',
+//   }[color] || 'from-gray-500/20 to-gray-600/20 border-gray-500/30';
+
+//   return `
+//     <div class="bg-gradient-to-br ${colorClasses} rounded-xl border p-4 backdrop-blur-sm
+//       hover:scale-105 transition-transform duration-200 cursor-default">
+//       <div class="flex items-start justify-between mb-2">
+//         <span class="text-2xl">${icon}</span>
+//       </div>
+//       <div class="text-3xl font-bold mb-1">${value}</div>
+//       <div class="text-sm text-gray-400">${label}</div>
+//     </div>
+//   `;
+// }
 
 
 // src/login/templates.ts
