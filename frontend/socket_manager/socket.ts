@@ -7,7 +7,6 @@ export function reSetSocket(){
 }
 
 export function socketInstance(): Socket | null {
-
   return socket = io("http://localhost:3000", {
     withCredentials: true,
     autoConnect: true,
