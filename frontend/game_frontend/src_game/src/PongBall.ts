@@ -8,7 +8,7 @@ export class PongBall {
     incrementWidth: number = 0;
     incrementHeight: number = 0;
     radius: number = 15;
-    initialSpeed: number = 1.2;
+    initialSpeed: number = 9;
     speed: number = this.initialSpeed;
     speedIncrement: number = 0.2;
     trail: { x: number, y: number }[] = [];

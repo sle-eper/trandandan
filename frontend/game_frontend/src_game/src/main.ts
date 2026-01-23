@@ -111,37 +111,37 @@ export function initializeGame() {
                 <!-- Left Player -->
                 <div class="flex flex-col items-center gap-4 animate-slide-in-left">
                     <div class="relative group pointer-events-auto">
-                        <div class="absolute -inset-1 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-full blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
-                        <div class="relative w-28 h-28 rounded-full border-2 border-cyan-400/50 shadow-[0_0_30px_rgba(34,211,238,0.4)] overflow-hidden bg-black/40 backdrop-blur-md transition-all duration-500 hover:scale-110 hover:rotate-3 ring-4 ring-cyan-500/20">
+                        <div class="absolute -inset-1 bg-gradient-to-r from-red-600 to-orange-600 rounded-full blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
+                        <div class="relative w-28 h-28 rounded-full border-2 border-red-400/50 shadow-[0_0_30px_rgba(239,68,68,0.4)] overflow-hidden bg-black/40 backdrop-blur-md transition-all duration-500 hover:scale-110 hover:rotate-3 ring-4 ring-red-500/20">
                             <img id="avatar-left" src="" alt="Left Player" class="w-full h-full object-cover">
                         </div>
                     </div>
-                    <div class="px-6 py-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl shadow-2xl transition-all hover:border-cyan-500/30">
-                        <span id="name-left" class="text-cyan-400 font-black font-mono tracking-[0.2em] text-xs uppercase drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]">Player 1</span>
+                    <div class="px-6 py-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl shadow-2xl transition-all hover:border-red-500/30">
+                        <span id="name-left" class="text-red-400 font-black font-mono tracking-[0.2em] text-xs uppercase drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]">Player 1</span>
                     </div>
                 </div>
 
             <!-- Score Display -->
             <div class="flex items-center gap-8">
-                <div class="px-8 py-4 rounded-2xl bg-black/60 border-2 border-cyan-500/30 backdrop-blur-xl shadow-2xl">
-                    <span id="score-left" class="text-5xl font-black text-cyan-400 font-mono drop-shadow-[0_0_15px_rgba(34,211,238,0.8)] tracking-wider">0</span>
+                <div class="px-8 py-4 rounded-2xl bg-black/60 border-2 border-red-500/30 backdrop-blur-xl shadow-2xl">
+                    <span id="score-left" class="text-5xl font-black text-red-500 font-mono drop-shadow-[0_0_15px_rgba(239,68,68,0.8)] tracking-wider">0</span>
                 </div>
                 <div class="text-4xl font-black text-white/20">-</div>
-                <div class="px-8 py-4 rounded-2xl bg-black/60 border-2 border-purple-500/30 backdrop-blur-xl shadow-2xl">
-                    <span id="score-right" class="text-5xl font-black text-purple-400 font-mono drop-shadow-[0_0_15px_rgba(168,85,247,0.8)] tracking-wider">0</span>
+                <div class="px-8 py-4 rounded-2xl bg-black/60 border-2 border-red-600/30 backdrop-blur-xl shadow-2xl">
+                    <span id="score-right" class="text-5xl font-black text-red-600 font-mono drop-shadow-[0_0_15px_rgba(220,38,38,0.8)] tracking-wider">0</span>
                 </div>
             </div>
 
             <!-- Right Player -->
             <div class="flex flex-col items-center gap-4 animate-slide-in-right">
                     <div class="relative group pointer-events-auto">
-                        <div class="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
-                        <div class="relative w-28 h-28 rounded-full border-2 border-purple-400/50 shadow-[0_0_30px_rgba(168,85,247,0.4)] overflow-hidden bg-black/40 backdrop-blur-md transition-all duration-500 hover:scale-110 hover:-rotate-3 ring-4 ring-purple-500/20">
+                        <div class="absolute -inset-1 bg-gradient-to-r from-red-600 to-orange-600 rounded-full blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
+                        <div class="relative w-28 h-28 rounded-full border-2 border-red-400/50 shadow-[0_0_30px_rgba(239,68,68,0.4)] overflow-hidden bg-black/40 backdrop-blur-md transition-all duration-500 hover:scale-110 hover:-rotate-3 ring-4 ring-red-500/20">
                             <img id="avatar-right" src="" alt="Right Player" class="w-full h-full object-cover">
                         </div>
                     </div>
-                    <div class="px-6 py-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl shadow-2xl transition-all hover:border-purple-500/30">
-                        <span id="name-right" class="text-purple-400 font-black font-mono tracking-[0.2em] text-xs uppercase drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]">Player 2</span>
+                    <div class="px-6 py-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl shadow-2xl transition-all hover:border-red-500/30">
+                        <span id="name-right" class="text-red-400 font-black font-mono tracking-[0.2em] text-xs uppercase drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]">Player 2</span>
                     </div>
                 </div>
             </div>
@@ -153,6 +153,12 @@ export function initializeGame() {
                 <!-- Inner Ambient Glow -->
                 <div class="absolute inset-0 pointer-events-none z-20 pointer-events-none opacity-40 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)]"></div>
                 <div id="game-info" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 hidden px-12 py-6 bg-black/90 backdrop-blur-2xl border-2 border-white/10 rounded-[2.5rem] text-3xl font-black text-white shadow-[0_0_80px_rgba(0,0,0,0.9)] animate-bounce-in tracking-tighter"></div>
+                
+                <!-- Return to Lobby Button -->
+                <button id="btn-return-lobby" class="absolute top-[75%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 hidden px-10 py-4 bg-red-500/10 hover:bg-red-500/20 border-2 border-red-500/50 hover:border-red-500 rounded-2xl text-red-500 font-extrabold tracking-widest uppercase text-sm backdrop-blur-xl transition-all hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(239,68,68,0.2)] hover:shadow-[0_0_50px_rgba(239,68,68,0.4)] flex items-center gap-3 group animate-bounce-in">
+                    <span class="material-symbols-outlined text-red-500/50 group-hover:text-red-400 transition-colors">home</span>
+                    Return to Lobby
+                </button>
             </div>
         </div>
     `;
@@ -182,8 +188,9 @@ export function initializeGame() {
     aiMode = false;
     winnerName = null;
 
-    aiMode = false;
-    winnerName = null;
+    // Hide Return to Lobby button
+    const btnLobby = document.getElementById('btn-return-lobby');
+    if (btnLobby) btnLobby.classList.add('hidden');
 
     updateLocalAvatars();
 
@@ -356,6 +363,45 @@ const showGameView = () => {
     const container = document.getElementById('game-container');
     if (lobby) lobby.classList.add('hidden');
     if (container) container.classList.remove('hidden');
+
+    // Reset game state for a new match
+    gameOver = false;
+    gameStarted = false;
+    leftScore = 0;
+    rightScore = 0;
+    if (pongBall) pongBall.resetPositionAndSpeed();
+
+    // Hide the return to lobby button
+    const btnLobby = document.getElementById('btn-return-lobby');
+    if (btnLobby) btnLobby.classList.add('hidden');
+
+    // Resume animation if it was stopped
+    if (!animationId) animate();
+};
+
+const showLobbyView = () => {
+    const lobby = document.getElementById('game-lobby');
+    const container = document.getElementById('game-container');
+    if (lobby) lobby.classList.remove('hidden');
+    if (container) container.classList.add('hidden');
+
+    // Stop the game loop and clean up
+    gameStarted = false;
+    gameOver = true;
+    if (animationId !== null) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+    }
+
+    // Reset scores
+    leftScore = 0;
+    rightScore = 0;
+
+    // Disconnect socket if remote
+    if (isRemote) {
+        // We could emit a 'leave_game' if needed, but the server usually handles disconnect
+        // For now, just stop local state
+    }
 };
 
 function setupMenuButtons() {
@@ -381,7 +427,7 @@ function setupMenuButtons() {
         const infoBox = document.getElementById('game-info');
         if (infoBox) {
             infoBox.classList.remove('hidden');
-            infoBox.innerHTML = `<span class="text-purple-400 font-bold">Practice vs AI</span>`;
+            infoBox.innerHTML = `<span class="text-red-500 font-bold">Practice vs AI</span>`;
             setTimeout(() => infoBox.classList.add('hidden'), 3000);
         }
         countdown.start(() => { gameStarted = true; pongBall.start(); });
@@ -393,11 +439,18 @@ function setupMenuButtons() {
         const infoBox = document.getElementById('game-info');
         if (infoBox) {
             infoBox.classList.remove('hidden');
-            infoBox.innerHTML = `<span class="text-cyan-400 font-bold">Local Multiplayer</span>`;
+            infoBox.innerHTML = `<span class="text-red-500 font-bold">Local Multiplayer</span>`;
             setTimeout(() => infoBox.classList.add('hidden'), 3000);
         }
         countdown.start(() => { gameStarted = true; pongBall.start(); });
     };
+
+    const btnReturnLobby = document.getElementById('btn-return-lobby');
+    if (btnReturnLobby) {
+        btnReturnLobby.onclick = () => {
+            showLobbyView();
+        };
+    }
 }
 
 async function startRemoteGame() {
@@ -482,6 +535,10 @@ export function animate() {
     if (gameOver) {
         const displayWinner = winnerName || (leftScore > rightScore ? 'Left Player' : 'Right Player');
         drawWin(displayWinner + ' Wins!');
+
+        // Show Return to Lobby button
+        const btnLobby = document.getElementById('btn-return-lobby');
+        if (btnLobby) btnLobby.classList.remove('hidden');
     }
 }
 
