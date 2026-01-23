@@ -1,219 +1,361 @@
-import { homeTemplate } from "./templates";
-import { fetchMatchHistory } from "./api.ts";
+import {
+  homeTemplate,
+  matchDetailTemplate,
+  type MatchData,
+  type DashboardData,
+} from "./templates";
+import {fetchMatchHistory} from "./api";
+// Mock API function - replace with your actual API
+// async function fetchMatchHistory(userId: number): Promise<MatchData[]> {
+//   // Simulated match data for demo
+//   return [
+//     { id: 1, user1_id: userId, user2_id: 4, user1_score: 5, user2_score: 4, winner_id: userId, played_at: new Date().toISOString(), duration: 145 },
+//     { id: 2, user1_id: userId, user2_id: 4, user1_score: 5, user2_score: 2, winner_id: userId, played_at: new Date(Date.now() - 3600000).toISOString(), duration: 98 },
+//     { id: 3, user1_id: 4, user2_id: userId, user1_score: 5, user2_score: 3, winner_id: 4, played_at: new Date(Date.now() - 86400000).toISOString(), duration: 167 },
+//     { id: 4, user1_id: userId, user2_id: 4, user1_score: 4, user2_score: 5, winner_id: 4, played_at: new Date(Date.now() - 86400000 * 2).toISOString(), duration: 203 },
+//     { id: 5, user1_id: userId, user2_id: 10, user1_score: 5, user2_score: 3, winner_id: userId, played_at: new Date(Date.now() - 86400000 * 3).toISOString(), duration: 122 },
+//     { id: 6, user1_id: 10, user2_id: userId, user1_score: 0, user2_score: 5, winner_id: userId, played_at: new Date(Date.now() - 86400000 * 4).toISOString(), duration: 78 },
+//     { id: 7, user1_id: userId, user2_id: 7, user1_score: 5, user2_score: 4, winner_id: userId, played_at: new Date(Date.now() - 86400000 * 5).toISOString(), duration: 189 },
+//     { id: 8, user1_id: 3, user2_id: userId, user1_score: 5, user2_score: 2, winner_id: 3, played_at: new Date(Date.now() - 86400000 * 6).toISOString(), duration: 134 },
+//   ];
+// }
 
-function drawPerformanceChart(wins: number, losses: number) {
-  const canvas = document.getElementById("performanceChart");
-  if (!(canvas instanceof HTMLCanvasElement)) return;
+let currentMatches: MatchData[] = [];
+let currentUserId: number = 1;
+
+// Expose functions to window for onclick handlers
+declare global {
+  interface Window {
+    showMatchDetail: (index: number) => void;
+    closeMatchDetail: () => void;
+  }
+}
+
+window.showMatchDetail = (index: number) => {
+  const modal = document.getElementById("match-detail-modal");
+  const content = document.getElementById("match-detail-content");
+  if (!modal || !content || !currentMatches[index]) return;
+
+  content.innerHTML = matchDetailTemplate(currentMatches[index], currentUserId);
+  modal.classList.remove("hidden");
+};
+
+window.closeMatchDetail = () => {
+  const modal = document.getElementById("match-detail-modal");
+  if (modal) modal.classList.add("hidden");
+};
+
+function drawPerformanceChart(wins: number, losses: number): void {
+  const canvas = document.getElementById("performanceChart") as HTMLCanvasElement | null;
+  if (!canvas) return;
 
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
   const cx = canvas.width / 2;
   const cy = canvas.height / 2;
-  const radius = 60;
-  const depth = 30;
+  const radius = 55;
+  const lineWidth = 12;
+
   const total = wins + losses || 1;
   const winAngle = (wins / total) * Math.PI * 2;
 
-  const winPercent = Math.round((wins / total) * 100);
-  const lossPercent = 100 - winPercent;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  let hovered: "win" | "loss" | null = null;
+  // Background circle
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(239, 68, 68, 0.3)";
+  ctx.lineWidth = lineWidth;
+  ctx.stroke();
 
-  function drawSlice(start: number, end: number, color: string, r: number, yOffset: number) {
-    ctx.beginPath();
-    ctx.moveTo(cx, cy + yOffset);
-    ctx.arc(cx, cy + yOffset, r, start, end);
-    ctx.closePath();
-    ctx.fillStyle = color;
-    ctx.fill();
-  }
+  // Win arc
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, -Math.PI / 2, -Math.PI / 2 + winAngle);
+  ctx.strokeStyle = "#10b981";
+  ctx.lineWidth = lineWidth;
+  ctx.lineCap = "round";
+  ctx.stroke();
 
-  function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Depth layers with gradient
-    for (let i = depth; i > 0; i--) {
-      const opacity = 0.15 + (i / depth) * 0.25;
-      drawSlice(0, winAngle, `rgba(34,197,94,${opacity})`, radius, i);
-      drawSlice(winAngle, Math.PI * 2, `rgba(239,68,68,${opacity})`, radius, i);
-    }
-
-    // Top pie slices
-    drawSlice(0, winAngle, "#22c55e", hovered === "win" ? radius + 5 : radius, 0);
-    drawSlice(winAngle, Math.PI * 2, "#ef4444", hovered === "loss" ? radius + 5 : radius, 0);
-
-    // Edge highlight
-    ctx.strokeStyle = "rgba(255,255,255,0.3)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Center text
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 32px sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(`${winPercent}%`, cx, cy - 10);
-    ctx.font = "14px sans-serif";
-    ctx.fillStyle = "#9ca3af";
-    ctx.fillText("Win Rate", cx, cy + 15);
-
-    // Floating text on hover
-    if (hovered) {
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 20px sans-serif";
-      ctx.fillText(
-        hovered === "win" ? `${wins} Wins` : `${losses} Losses`,
-        cx,
-        cy - radius - 30
-      );
-    }
-  }
-
-  draw();
-
-  canvas.onmousemove = (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left - cx;
-    const y = e.clientY - rect.top - cy;
-    const dist = Math.sqrt(x * x + y * y);
-    
-    if (dist > radius + 12) {
-      hovered = null;
-      draw();
-      return;
-    }
-
-    let angle = Math.atan2(y, x);
-    if (angle < 0) angle += Math.PI * 2;
-    hovered = angle <= winAngle ? "win" : "loss";
-    draw();
-  };
-
-  canvas.onmouseleave = () => {
-    hovered = null;
-    draw();
-  };
+  // Center text
+  const winRate = Math.round((wins / total) * 100);
+  ctx.fillStyle = "#fff";
+  ctx.font = "bold 20px system-ui";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(`${winRate}%`, cx, cy);
 }
 
-function drawScoreTrendChart(matches: any[], userId: number) {
-  const canvas = document.getElementById("scoreTrendChart");
-  if (!(canvas instanceof HTMLCanvasElement)) return;
+function drawPerformanceLineChart(matches: MatchData[], userId: number): void {
+  const canvas = document.getElementById("performanceLineChart") as HTMLCanvasElement | null;
+  if (!canvas) return;
 
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const recentMatches = matches.slice(0, 10).reverse();
-  if (recentMatches.length === 0) return;
+  if (matches.length < 2) {
+    ctx.fillStyle = "rgba(255,255,255,0.3)";
+    ctx.font = "12px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText("Need more matches for chart", canvas.width / 2, canvas.height / 2);
+    return;
+  }
 
-  const padding = 35;
-  const width = canvas.width - padding * 2;
-  const height = canvas.height - padding * 2;
+  const padding = { top: 20, right: 20, bottom: 30, left: 30 };
+  const chartWidth = canvas.width - padding.left - padding.right;
+  const chartHeight = canvas.height - padding.top - padding.bottom;
 
-  const scores = recentMatches.map((m: any) => 
-    m.user1_id === userId ? m.user1_score : m.user2_score
+  // Group matches by day and calculate cumulative wins
+  const sortedMatches = [...matches].sort((a, b) => 
+    new Date(a.played_at).getTime() - new Date(b.played_at).getTime()
   );
-  const maxScore = Math.max(...scores, 10);
+
+  const dataPoints: { x: number; wins: number; losses: number }[] = [];
+  let cumulativeWins = 0;
+  let cumulativeLosses = 0;
+
+  sortedMatches.forEach((match, i) => {
+    if (match.winner_id === userId) {
+      cumulativeWins++;
+    } else {
+      cumulativeLosses++;
+    }
+    dataPoints.push({ x: i, wins: cumulativeWins, losses: cumulativeLosses });
+  });
+
+  const maxY = Math.max(...dataPoints.map(d => Math.max(d.wins, d.losses))) || 1;
+  const xStep = chartWidth / (dataPoints.length - 1 || 1);
 
   // Draw grid lines
-  ctx.strokeStyle = "rgba(255,255,255,0.1)";
+  ctx.strokeStyle = "rgba(255,255,255,0.05)";
   ctx.lineWidth = 1;
-  for (let i = 0; i <= 5; i++) {
-    const y = padding + (height * i) / 5;
+  for (let i = 0; i <= 4; i++) {
+    const y = padding.top + (chartHeight / 4) * i;
     ctx.beginPath();
-    ctx.moveTo(padding, y);
-    ctx.lineTo(padding + width, y);
+    ctx.moveTo(padding.left, y);
+    ctx.lineTo(padding.left + chartWidth, y);
     ctx.stroke();
   }
 
-  // Draw line
-  ctx.strokeStyle = "#3b82f6";
-  ctx.lineWidth = 3;
+  // Draw wins line (gradient fill)
+  const gradient = ctx.createLinearGradient(0, padding.top, 0, padding.top + chartHeight);
+  gradient.addColorStop(0, "rgba(16, 185, 129, 0.3)");
+  gradient.addColorStop(1, "rgba(16, 185, 129, 0)");
+
   ctx.beginPath();
+  ctx.moveTo(padding.left, padding.top + chartHeight);
+  dataPoints.forEach((point, i) => {
+    const x = padding.left + i * xStep;
+    const y = padding.top + chartHeight - (point.wins / maxY) * chartHeight;
+    ctx.lineTo(x, y);
+  });
+  ctx.lineTo(padding.left + (dataPoints.length - 1) * xStep, padding.top + chartHeight);
+  ctx.closePath();
+  ctx.fillStyle = gradient;
+  ctx.fill();
 
-  recentMatches.forEach((match: any, i: number) => {
-    const myScore = match.user1_id === userId ? match.user1_score : match.user2_score;
-    const x = padding + (width * i) / (recentMatches.length - 1 || 1);
-    const y = padding + height - (height * myScore) / maxScore;
-
+  // Draw wins line
+  ctx.beginPath();
+  dataPoints.forEach((point, i) => {
+    const x = padding.left + i * xStep;
+    const y = padding.top + chartHeight - (point.wins / maxY) * chartHeight;
     if (i === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
   });
+  ctx.strokeStyle = "#10b981";
+  ctx.lineWidth = 2;
   ctx.stroke();
 
-  // Draw points
-  recentMatches.forEach((match: any, i: number) => {
-    const myScore = match.user1_id === userId ? match.user1_score : match.user2_score;
-    const isWin = match.winner_id === userId;
-    const x = padding + (width * i) / (recentMatches.length - 1 || 1);
-    const y = padding + height - (height * myScore) / maxScore;
+  // Draw losses line
+  ctx.beginPath();
+  dataPoints.forEach((point, i) => {
+    const x = padding.left + i * xStep;
+    const y = padding.top + chartHeight - (point.losses / maxY) * chartHeight;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = "#ef4444";
+  ctx.lineWidth = 2;
+  ctx.stroke();
 
-    ctx.fillStyle = isWin ? "#22c55e" : "#ef4444";
+  // Draw dots
+  dataPoints.forEach((point, i) => {
+    const x = padding.left + i * xStep;
+    const yWin = padding.top + chartHeight - (point.wins / maxY) * chartHeight;
+    const yLoss = padding.top + chartHeight - (point.losses / maxY) * chartHeight;
+
     ctx.beginPath();
-    ctx.arc(x, y, 6, 0, Math.PI * 2);
+    ctx.arc(x, yWin, 3, 0, Math.PI * 2);
+    ctx.fillStyle = "#10b981";
     ctx.fill();
 
-    ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(x, yLoss, 3, 0, Math.PI * 2);
+    ctx.fillStyle = "#ef4444";
+    ctx.fill();
   });
 
-  // Labels
-  ctx.fillStyle = "#9ca3af";
-  ctx.font = "12px sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("Recent Matches →", canvas.width / 2, canvas.height - 10);
+  // Legend
+  ctx.fillStyle = "#10b981";
+  ctx.fillRect(padding.left, canvas.height - 12, 8, 8);
+  ctx.fillStyle = "rgba(255,255,255,0.6)";
+  ctx.font = "10px system-ui";
+  ctx.fillText("Wins", padding.left + 12, canvas.height - 5);
+
+  ctx.fillStyle = "#ef4444";
+  ctx.fillRect(padding.left + 50, canvas.height - 12, 8, 8);
+  ctx.fillStyle = "rgba(255,255,255,0.6)";
+  ctx.fillText("Losses", padding.left + 62, canvas.height - 5);
 }
 
-function drawWinStreakChart(matches: any[], userId: number) {
-  const canvas = document.getElementById("winStreakChart");
-  if (!(canvas instanceof HTMLCanvasElement)) return;
+function drawScoreDistributionChart(matches: MatchData[], userId: number): void {
+  const canvas = document.getElementById("scoreDistChart") as HTMLCanvasElement | null;
+  if (!canvas) return;
 
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  if (matches.length === 0) return;
+  if (matches.length === 0) {
+    ctx.fillStyle = "rgba(255,255,255,0.3)";
+    ctx.font = "12px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText("No data available", canvas.width / 2, canvas.height / 2);
+    return;
+  }
 
-  const recentMatches = matches.slice(0, 15).reverse();
-  const barWidth = (canvas.width - 20) / recentMatches.length;
-  const maxHeight = canvas.height - 40;
+  const padding = { top: 20, right: 20, bottom: 30, left: 30 };
+  const chartWidth = canvas.width - padding.left - padding.right;
+  const chartHeight = canvas.height - padding.top - padding.bottom;
 
-  recentMatches.forEach((match: any, i: number) => {
-    const isWin = match.winner_id === userId;
-    const x = 10 + i * barWidth;
-    const height = maxHeight * 0.6;
-    const y = canvas.height - 30 - height;
-
-    ctx.fillStyle = isWin ? "#22c55e" : "#ef4444";
-    ctx.fillRect(x, y, barWidth - 4, height);
-
-    // Add subtle gradient
-    const gradient = ctx.createLinearGradient(x, y, x, y + height);
-    gradient.addColorStop(0, isWin ? "rgba(34,197,94,0.8)" : "rgba(239,68,68,0.8)");
-    gradient.addColorStop(1, isWin ? "rgba(34,197,94,0.3)" : "rgba(239,68,68,0.3)");
-    ctx.fillStyle = gradient;
-    ctx.fillRect(x, y, barWidth - 4, height);
+  // Count score frequencies
+  const scoreCounts: Record<number, number> = {};
+  matches.forEach(match => {
+    const score = match.user1_id === userId ? match.user1_score : match.user2_score;
+    scoreCounts[score] = (scoreCounts[score] || 0) + 1;
   });
 
-  ctx.fillStyle = "#9ca3af";
-  ctx.font = "12px sans-serif";
+  const scores = Object.keys(scoreCounts).map(Number).sort((a, b) => a - b);
+  const maxCount = Math.max(...Object.values(scoreCounts)) || 1;
+  const barWidth = Math.min(30, chartWidth / (scores.length * 1.5));
+  const gap = barWidth * 0.5;
+
+  scores.forEach((score, i) => {
+    const count = scoreCounts[score];
+    const barHeight = (count / maxCount) * chartHeight;
+    const x = padding.left + i * (barWidth + gap) + (chartWidth - scores.length * (barWidth + gap) + gap) / 2;
+    const y = padding.top + chartHeight - barHeight;
+
+    // Bar gradient
+    const gradient = ctx.createLinearGradient(x, y, x, y + barHeight);
+    gradient.addColorStop(0, "#8b5cf6");
+    gradient.addColorStop(1, "#6366f1");
+
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.roundRect(x, y, barWidth, barHeight, [4, 4, 0, 0]);
+    ctx.fill();
+
+    // Score label
+    ctx.fillStyle = "rgba(255,255,255,0.6)";
+    ctx.font = "10px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText(String(score), x + barWidth / 2, padding.top + chartHeight + 15);
+
+    // Count on top
+    ctx.fillStyle = "rgba(255,255,255,0.8)";
+    ctx.fillText(String(count), x + barWidth / 2, y - 5);
+  });
+
+  // X-axis label
+  ctx.fillStyle = "rgba(255,255,255,0.4)";
+  ctx.font = "10px system-ui";
   ctx.textAlign = "center";
-  ctx.fillText("Match History", canvas.width / 2, canvas.height - 10);
+  ctx.fillText("Your Scores", canvas.width / 2, canvas.height - 2);
 }
 
-export async function showHome() {
+function calculateStats(matches: MatchData[], userId: number): Omit<DashboardData, 'matches' | 'userId'> {
+  const totalMatches = matches.length;
+  const wins = matches.filter(m => m.winner_id === userId).length;
+  const losses = totalMatches - wins;
+  const winRate = totalMatches ? Math.round((wins / totalMatches) * 100) : 0;
+
+  let totalScore = 0;
+  let totalConceded = 0;
+  let totalDuration = 0;
+
+  matches.forEach(m => {
+    const myScore = m.user1_id === userId ? m.user1_score : m.user2_score;
+    const oppScore = m.user1_id === userId ? m.user2_score : m.user1_score;
+    totalScore += myScore;
+    totalConceded += oppScore;
+    totalDuration += m.duration || 120;
+  });
+
+  const avgScore = totalMatches ? totalScore / totalMatches : 0;
+  const avgMatchDuration = totalMatches ? Math.round(totalDuration / totalMatches) : 0;
+
+  // Calculate streaks
+  let currentStreak = 0;
+  let bestStreak = 0;
+  let tempStreak = 0;
+
+  const sortedMatches = [...matches].sort((a, b) => 
+    new Date(b.played_at).getTime() - new Date(a.played_at).getTime()
+  );
+
+  for (const match of sortedMatches) {
+    if (match.winner_id === userId) {
+      if (currentStreak >= 0) currentStreak++;
+      else break;
+    } else {
+      if (currentStreak > 0) break;
+      currentStreak--;
+    }
+  }
+
+  // Best win streak
+  for (const match of sortedMatches) {
+    if (match.winner_id === userId) {
+      tempStreak++;
+      bestStreak = Math.max(bestStreak, tempStreak);
+    } else {
+      tempStreak = 0;
+    }
+  }
+
+  return {
+    totalMatches,
+    wins,
+    losses,
+    winRate,
+    avgScore,
+    currentStreak: Math.max(0, currentStreak),
+    bestStreak,
+    totalPointsScored: totalScore,
+    totalPointsConceded: totalConceded,
+    avgMatchDuration,
+  };
+}
+
+export async function showHome(): Promise<void> {
   const content = document.getElementById("dashboard-content");
   if (!content) return;
 
-  content.innerHTML = `<p class="text-gray-400">Loading...</p>`;
+  content.innerHTML = `
+    <div class="flex items-center justify-center h-full">
+      <div class="flex flex-col items-center gap-3">
+        <div class="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+        <p class="text-gray-400 text-sm">Loading dashboard...</p>
+      </div>
+    </div>
+  `;
 
   try {
+
     const response = await fetch("/auth/verify", {
       method: "GET",
       headers: { "Content-Type": "application/json" },
@@ -224,77 +366,45 @@ export async function showHome() {
     const userId: number = responseJson.id;
 
     const matches = await fetchMatchHistory(userId);
-    const totalMatches = matches.length;
-    const wins = matches.filter((m: any) => m.winner_id === userId).length;
-    const losses = totalMatches - wins;
+    currentMatches = matches;
 
-    const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
+    const stats = calculateStats(matches, userId);
 
-    const avgScore = totalMatches
-      ? Math.round(
-          matches.reduce((sum: number, m: any) => {
-            const myScore = m.user1_id === userId ? m.user1_score : m.user2_score;
-            return sum + myScore;
-          }, 0) / totalMatches
-        )
-      : 0;
-
-    // Calculate win streak
-    let currentStreak = 0;
-    let longestStreak = 0;
-    let tempStreak = 0;
-    
-    for (const match of matches) {
-      if (match.winner_id === userId) {
-        tempStreak++;
-        longestStreak = Math.max(longestStreak, tempStreak);
-      } else {
-        tempStreak = 0;
-      }
-    }
-
-    // Current streak (from most recent)
-    for (const match of matches) {
-      if (match.winner_id === userId) {
-        currentStreak++;
-      } else {
-        break;
-      }
-    }
-
-    // Calculate high score
-    const highScore = totalMatches
-      ? Math.max(
-          ...matches.map((m: any) =>
-            m.user1_id === userId ? m.user1_score : m.user2_score
-          )
-        )
-      : 0;
-
-    // Recent form (last 5 matches)
-    const recentForm = matches.slice(0, 5).map((m: any) => 
-      m.winner_id === userId ? "W" : "L"
-    ).join("");
-
-    content.innerHTML = homeTemplate({
-      totalMatches,
-      wins,
-      winRate,
-      losses,
-      avgScore,
-      highScore,
-      currentStreak,
-      longestStreak,
-      recentForm,
+    const dashboardData: DashboardData = {
+      ...stats,
       matches: matches.slice(0, 10),
       userId,
+    };
+
+    content.innerHTML = homeTemplate(dashboardData);
+
+    // Draw all charts
+    requestAnimationFrame(() => {
+      drawPerformanceChart(stats.wins, stats.losses);
+      drawPerformanceLineChart(matches, userId);
+      drawScoreDistributionChart(matches, userId);
     });
 
-    drawPerformanceChart(wins, losses);
-    drawWinStreakChart(matches, userId);
+    // Close modal on backdrop click
+    const modal = document.getElementById("match-detail-modal");
+    modal?.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        window.closeMatchDetail();
+      }
+    });
 
-  } catch (err) {
-    console.error(err);
-    content.innerHTML = `<p class="text-red-500">Failed to load dashboard</p>`;
+  } catch (e) {
+    console.error(e);
+    content.innerHTML = `
+      <div class="flex flex-col items-center justify-center h-full gap-3">
+        <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+        <p class="text-red-400">Failed to load dashboard</p>
+        <button onclick="window.location.reload()" class="px-4 py-2 text-sm bg-white/10 hover:bg-white/20 rounded-lg transition">
+          Retry
+        </button>
+      </div>
+    `;
   }
 }
