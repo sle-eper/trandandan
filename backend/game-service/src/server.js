@@ -271,6 +271,42 @@ const start = async () => {
                     }
                 });
 
+                socket.on('request_rematch', (data) => {
+                    const { gameId } = data;
+                    let game = games.get(gameId);
+
+                    if (game && (game.status === 'finished' || game.status === 'playing')) {
+                        if (!game.rematchRequests) game.rematchRequests = new Set();
+                        game.rematchRequests.add(socket.user.id);
+
+                        console.log(`[REMATCH] Request from ${socket.user.username} for game ${gameId}. Total: ${game.rematchRequests.size}`);
+
+                        // Notify the other player
+                        socket.to(gameId).emit('rematch_requested', { from: socket.user.username });
+
+                        if (game.rematchRequests.size === 2) {
+                            console.log(`[REMATCH] Both players agreed for game ${gameId}. Restarting!`);
+
+                            if (game.rematchTimeout) clearTimeout(game.rematchTimeout);
+
+                            // Reset state
+                            game.status = 'playing';
+                            game.score = { left: 0, right: 0 };
+                            game.ball = { x: 400, y: 200, dx: 0, dy: 0 };
+                            game.paddles = { left: 150, right: 150 };
+                            game.rematchRequests = new Set();
+
+                            // Broadcast reset state to all clients
+                            gameNamespace.to(gameId).emit('game_start', game);
+
+                            stopGameLoop(gameId);
+                            startGameLoop(gameId);
+                        }
+                    } else {
+                        console.log(`[REMATCH] Game ${gameId} not found or invalid status`);
+                    }
+                });
+
                 // ball_sync is now deprecated as server is authoritative
                 // socket.on('ball_sync', ...)
             });
@@ -417,7 +453,16 @@ function updateGamePhysics(gameId) {
             gameNamespace.to(gameId).emit('game_over', { winner, score: game.score });
             saveMatchResult(game, winner, loser);
             stopGameLoop(gameId);
-            games.delete(gameId);
+
+            // Wait some time before deleting the game to allow for rematch requests
+            // If they don't rematch within 60 seconds, delete it.
+            game.rematchTimeout = setTimeout(() => {
+                if (games.has(gameId) && games.get(gameId).status === 'finished') {
+                    games.delete(gameId);
+                    console.log(`[GAME] Cleaned up finished game: ${gameId}`);
+                }
+            }, 60000);
+
             return;
         }
 

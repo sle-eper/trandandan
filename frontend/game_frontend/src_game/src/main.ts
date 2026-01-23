@@ -154,11 +154,17 @@ export function initializeGame() {
                 <div class="absolute inset-0 pointer-events-none z-20 pointer-events-none opacity-40 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)]"></div>
                 <div id="game-info" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 hidden px-12 py-6 bg-black/90 backdrop-blur-2xl border-2 border-white/10 rounded-[2.5rem] text-3xl font-black text-white shadow-[0_0_80px_rgba(0,0,0,0.9)] animate-bounce-in tracking-tighter"></div>
                 
-                <!-- Return to Lobby Button -->
-                <button id="btn-return-lobby" class="absolute top-[75%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 hidden px-10 py-4 bg-red-500/10 hover:bg-red-500/20 border-2 border-red-500/50 hover:border-red-500 rounded-2xl text-red-500 font-extrabold tracking-widest uppercase text-sm backdrop-blur-xl transition-all hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(239,68,68,0.2)] hover:shadow-[0_0_50px_rgba(239,68,68,0.4)] flex items-center gap-3 group animate-bounce-in">
-                    <span class="material-symbols-outlined text-red-500/50 group-hover:text-red-400 transition-colors">home</span>
-                    Return to Lobby
-                </button>
+                <!-- End Game Controls -->
+                <div id="end-game-controls" class="absolute top-[75%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 hidden flex items-center gap-6 animate-bounce-in">
+                    <button id="btn-rematch" class="px-10 py-4 bg-orange-500/10 hover:bg-orange-500/20 border-2 border-orange-500/50 hover:border-orange-500 rounded-2xl text-orange-500 font-extrabold tracking-widest uppercase text-sm backdrop-blur-xl transition-all hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(251,146,60,0.2)] hover:shadow-[0_0_50px_rgba(251,146,60,0.4)] flex items-center gap-3 group">
+                        <span class="material-symbols-outlined text-orange-500/50 group-hover:text-orange-400 transition-colors">replay</span>
+                        Rematch
+                    </button>
+                    <button id="btn-return-lobby" class="px-10 py-4 bg-red-500/10 hover:bg-red-500/20 border-2 border-red-500/50 hover:border-red-500 rounded-2xl text-red-500 font-extrabold tracking-widest uppercase text-sm backdrop-blur-xl transition-all hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(239,68,68,0.2)] hover:shadow-[0_0_50px_rgba(239,68,68,0.4)] flex items-center gap-3 group">
+                        <span class="material-symbols-outlined text-red-500/50 group-hover:text-red-400 transition-colors">home</span>
+                        Lobby
+                    </button>
+                </div>
             </div>
         </div>
     `;
@@ -188,9 +194,9 @@ export function initializeGame() {
     aiMode = false;
     winnerName = null;
 
-    // Hide Return to Lobby button
-    const btnLobby = document.getElementById('btn-return-lobby');
-    if (btnLobby) btnLobby.classList.add('hidden');
+    // Hide End Game Controls
+    const endControls = document.getElementById('end-game-controls');
+    if (endControls) endControls.classList.add('hidden');
 
     updateLocalAvatars();
 
@@ -226,6 +232,8 @@ function setupSocketListeners() {
 
     s.on('game_start', (game: any) => {
         console.log('[DEBUG] game_start received!', game);
+        gameOver = false;
+        gameStarted = false;
         currentGameId = game.id;
         isRemote = true;
 
@@ -248,6 +256,16 @@ function setupSocketListeners() {
             const scoreRightEl = document.getElementById('score-right');
             if (scoreLeftEl) scoreLeftEl.textContent = String(leftScore);
             if (scoreRightEl) scoreRightEl.textContent = String(rightScore);
+
+            // If it's a rematch (score is 0), show a special message
+            if (leftScore === 0 && rightScore === 0) {
+                const infoBox = document.getElementById('game-info');
+                if (infoBox) {
+                    infoBox.classList.remove('hidden');
+                    infoBox.innerHTML = `<span class="text-green-500 font-bold">REMATCH ACCEPTED!</span>`;
+                    setTimeout(() => infoBox.classList.add('hidden'), 2000);
+                }
+            }
         }
         if (game.paddles) {
             leftPaddle.setY(game.paddles.left);
@@ -271,6 +289,19 @@ function setupSocketListeners() {
             // Only start ball locally if NOT remote
             if (!isRemote) pongBall.start();
         });
+
+        // Hide End Game Controls if they were visible
+        const endControls = document.getElementById('end-game-controls');
+        if (endControls) endControls.classList.add('hidden');
+    });
+
+    s.on('rematch_requested', (data: any) => {
+        const infoBox = document.getElementById('game-info');
+        if (infoBox) {
+            infoBox.classList.remove('hidden');
+            infoBox.innerHTML = `<span class="text-orange-400 font-bold">${data.from}</span> wants a rematch!`;
+            // Keep it visible for a bit or until game starts
+        }
     });
 
     s.on('waiting_for_opponent', () => {
@@ -279,9 +310,7 @@ function setupSocketListeners() {
             infoBox.classList.remove('hidden');
             infoBox.innerHTML = `Game ID: <span class="text-yellow-400 font-bold select-all">${currentGameId}</span><br>Waiting for opponent...`;
         }
-        // Show Return to Lobby button so user can cancel
-        // const btnLobby = document.getElementById('btn-return-lobby');
-        // if (btnLobby) btnLobby.classList.remove('hidden');
+
     });
 
     s.on('opponent_move', (data: any) => {
@@ -382,9 +411,9 @@ const showGameView = () => {
     rightScore = 0;
     if (pongBall) pongBall.resetPositionAndSpeed();
 
-    // Hide the return to lobby button
-    const btnLobby = document.getElementById('btn-return-lobby');
-    if (btnLobby) btnLobby.classList.add('hidden');
+    // Hide End Game Controls
+    const endControls = document.getElementById('end-game-controls');
+    if (endControls) endControls.classList.add('hidden');
 
     // Resume animation if it was stopped
     if (!animationId) animate();
@@ -460,6 +489,55 @@ function setupMenuButtons() {
     if (btnReturnLobby) {
         btnReturnLobby.onclick = () => {
             showLobbyView();
+        };
+    }
+
+    const btnRematch = document.getElementById('btn-rematch');
+    if (btnRematch) {
+        btnRematch.onclick = () => {
+            console.log('[DEBUG] Rematch button clicked. isRemote:', isRemote, 'gameId:', currentGameId);
+            if (isRemote && currentGameId) {
+                // Remote Rematch
+                console.log('[DEBUG] Emitting request_rematch for', currentGameId);
+                gameSocket.socket.emit('request_rematch', { gameId: currentGameId });
+
+                // Visual feedback
+                btnRematch.classList.add('opacity-50', 'pointer-events-none');
+                const btnText = btnRematch.childNodes[2]; // Text node after span icon
+                if (btnText) btnText.textContent = ' Waiting...';
+
+                return;
+            }
+
+            const endControls = document.getElementById('end-game-controls');
+            if (endControls) endControls.classList.add('hidden');
+
+            // Reset game state
+            gameOver = false;
+            gameStarted = false;
+            leftScore = 0;
+            rightScore = 0;
+
+            // Reset positions
+            leftPaddle.setY((c.height - 100) / 2);
+            rightPaddle.setY((c.height - 100) / 2);
+            pongBall.resetPositionAndSpeed();
+
+            // Re-identify mode info
+            const infoBox = document.getElementById('game-info');
+            if (infoBox) {
+                infoBox.classList.remove('hidden');
+                infoBox.innerHTML = aiMode ?
+                    `<span class="text-red-500 font-bold">Practice vs AI</span>` :
+                    `<span class="text-red-500 font-bold">Local Multiplayer</span>`;
+                setTimeout(() => infoBox.classList.add('hidden'), 3000);
+            }
+
+            // Start countdown again
+            countdown.start(() => {
+                gameStarted = true;
+                pongBall.start();
+            });
         };
     }
 }
@@ -547,9 +625,20 @@ export function animate() {
         const displayWinner = winnerName || (leftScore > rightScore ? 'Left Player' : 'Right Player');
         drawWin(displayWinner + ' Wins!');
 
-        // Show Return to Lobby button
-        const btnLobby = document.getElementById('btn-return-lobby');
-        if (btnLobby) btnLobby.classList.remove('hidden');
+        // Show End Game Controls
+        const endControls = document.getElementById('end-game-controls');
+        if (endControls) {
+            endControls.classList.remove('hidden');
+
+            // Reset button state (in case of rematch)
+            const btnRematch = document.getElementById('btn-rematch');
+            if (btnRematch) {
+                btnRematch.classList.remove('opacity-50', 'pointer-events-none');
+                const btnText = btnRematch.childNodes[2];
+                if (btnText) btnText.textContent = ' Rematch';
+                btnRematch.classList.remove('hidden');
+            }
+        }
     }
 }
 
