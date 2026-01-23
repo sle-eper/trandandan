@@ -30,6 +30,7 @@ await fastify.register(fastifySocketIO, {
 const games = new Map(); // gameId -> gameState
 const userSockets = new Map(); // userId/username -> socketId
 const gameIntervals = new Map(); // gameId -> intervalId
+let gameNamespace;
 
 // Constants matching frontend
 const CANVAS_WIDTH = 800;
@@ -101,7 +102,7 @@ fastify.post('/api/game/invite', async (request, reply) => {
 
     const targetSocketId = userSockets.get(targetUsername);
     if (targetSocketId) {
-        fastify.io.to(targetSocketId).emit('game_invite', {
+        gameNamespace.to(targetSocketId).emit('game_invite', {
             from: user.username,
             gameId: gameId
         });
@@ -126,8 +127,10 @@ const start = async () => {
         fastify.ready(err => {
             if (err) throw err;
 
+            gameNamespace = fastify.io.of('/game');
+
             // Auth Middleware for Sockets
-            fastify.io.use((socket, next) => {
+            gameNamespace.use((socket, next) => {
                 const user = getUserFromRequest(socket.handshake);
                 if (!user) return next(new Error('Authentication error'));
 
@@ -135,8 +138,8 @@ const start = async () => {
                 next();
             });
 
-            fastify.io.on('connection', (socket) => {
-                fastify.log.info(`User connected: ${socket.user.username} (${socket.id})`);
+            gameNamespace.on('connection', (socket) => {
+                fastify.log.info(`User connected to /game: ${socket.user.username} (${socket.id})`);
 
                 socket.emit('user_info', socket.user);
 
@@ -213,7 +216,7 @@ const start = async () => {
 
                             if (game.players.length === 2) {
                                 game.status = 'playing';
-                                fastify.io.to(gameId).emit('game_start', game);
+                                gameNamespace.to(gameId).emit('game_start', game);
                                 startGameLoop(gameId);
                             } else {
                                 socket.emit('waiting_for_opponent', game);
@@ -250,7 +253,7 @@ const start = async () => {
                                 console.log(`[SOCKET] Player left active game ${gameId}. Stopping loop.`);
                                 stopGameLoop(gameId);
                                 // Optional: notify other player
-                                fastify.io.to(gameId).emit('player_left');
+                                gameNamespace.to(gameId).emit('player_left');
                             }
                         }
                     });
@@ -403,7 +406,7 @@ function updateGamePhysics(gameId) {
         ball.dy = 0;
 
         // Broadcast reset state immediately so clients see the ball at center
-        fastify.io.to(gameId).emit('goal_scored', { ball: game.ball, score: game.score });
+        gameNamespace.to(gameId).emit('goal_scored', { ball: game.ball, score: game.score });
 
         // Check for Game Over
         if (game.score.left >= 5 || game.score.right >= 5) {
@@ -411,7 +414,7 @@ function updateGamePhysics(gameId) {
             const winner = game.score.left >= 5 ? game.players.find(p => p.side === 'left') : game.players.find(p => p.side === 'right');
             const loser = game.score.left >= 5 ? game.players.find(p => p.side === 'right') : game.players.find(p => p.side === 'left');
 
-            fastify.io.to(gameId).emit('game_over', { winner, score: game.score });
+            gameNamespace.to(gameId).emit('game_over', { winner, score: game.score });
             saveMatchResult(game, winner, loser);
             stopGameLoop(gameId);
             games.delete(gameId);
@@ -424,7 +427,7 @@ function updateGamePhysics(gameId) {
     }
 
     // Broadcast current state to all players in the room
-    fastify.io.to(gameId).emit('ball_update', { ball: game.ball, score: game.score });
+    gameNamespace.to(gameId).emit('ball_update', { ball: game.ball, score: game.score });
 }
 
 start();

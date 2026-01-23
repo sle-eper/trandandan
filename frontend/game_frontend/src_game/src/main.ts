@@ -279,6 +279,9 @@ function setupSocketListeners() {
             infoBox.classList.remove('hidden');
             infoBox.innerHTML = `Game ID: <span class="text-yellow-400 font-bold select-all">${currentGameId}</span><br>Waiting for opponent...`;
         }
+        // Show Return to Lobby button so user can cancel
+        // const btnLobby = document.getElementById('btn-return-lobby');
+        // if (btnLobby) btnLobby.classList.remove('hidden');
     });
 
     s.on('opponent_move', (data: any) => {
@@ -322,6 +325,10 @@ function setupSocketListeners() {
         }
         winnerName = data.winner?.username || (leftScore > rightScore ? 'Left Player' : 'Right Player');
         drawWin(winnerName + ' Wins!');
+
+        // Show Return to Lobby button
+        const btnLobby = document.getElementById('btn-return-lobby');
+        if (btnLobby) btnLobby.classList.remove('hidden');
     });
 
     s.on('player_left', () => {
@@ -332,6 +339,10 @@ function setupSocketListeners() {
         }
         gameStarted = false;
         gameOver = true;
+
+        // Show Return to Lobby button
+        const btnLobby = document.getElementById('btn-return-lobby');
+        if (btnLobby) btnLobby.classList.remove('hidden');
     });
 }
 
@@ -399,8 +410,8 @@ const showLobbyView = () => {
 
     // Disconnect socket if remote
     if (isRemote) {
-        // We could emit a 'leave_game' if needed, but the server usually handles disconnect
-        // For now, just stop local state
+        gameSocket.disconnect();
+        isRemote = false;
     }
 };
 

@@ -9,8 +9,8 @@ class GameSocketService {
         // The path /socket.io is handled by the gateway
         const token = this.getCookie('token'); // Assuming token is in a cookie
 
-        this.socket = io({
-            path: '/socket.io',
+        this.socket = io('/game', {
+            path: '/game-socket/',
             auth: { token: token },
             autoConnect: false,
             transports: ['websocket'],
