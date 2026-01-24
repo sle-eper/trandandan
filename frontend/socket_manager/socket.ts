@@ -7,12 +7,17 @@ export function reSetSocket(){
 }
 
 export function socketInstance(): Socket {
-  return io("https://localhost:8443", {
-    path: "/socket.io",
-    withCredentials: true,
-    transports: ["websocket"],
-  });
+  if (!socket) {
+    socket = io("https://localhost:8443", {
+      path: "/socket.io",
+      withCredentials: true,
+      transports: ["websocket"],
+      autoConnect: true,
+    });
+  }
+  return socket;
 }
+
 
 export function getSocketInstance(): Socket | null {
   // get current url

@@ -102,6 +102,7 @@ export async function joinTournament_post(request, reply) {
                 "UPDATE tournament SET status = 'full' WHERE id = ?",
                 [tournament.id]
             );
+            console.log("==== Tournament Full ====", tournamentUpdated);
             return reply.code(200).send({ message: "Tournament Full", tournament : tournamentUpdated });
 
         }

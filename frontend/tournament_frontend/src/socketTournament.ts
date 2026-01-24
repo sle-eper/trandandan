@@ -116,7 +116,8 @@ export function StartingTournament(data: any) {
   container.appendChild(notif);
 
   notif.querySelector(".accept")?.addEventListener("click", async () => {
-    renderTournamentBracket();
+    console.log("Navigating to tournament bracket...", data);
+    renderTournamentBracket(data.tournamentName, data.maxPlayers);
     navigate(`/tournament/bracket/${data.tournamentName}?maxPlayers=${data.maxPlayers}`);
     notif.remove();
   });

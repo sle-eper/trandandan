@@ -98,6 +98,7 @@ export async function listParticipants_get(request, reply) {
     const ownerid = request.headers['x-user-id'];
     const { tournamentname } = request.query;
     const db = await getDatabase();
+    console.log("tournament id:", tournamentname);
     const tournament = await db.get('SELECT * FROM tournament WHERE name  = ?', [tournamentname]);
     // if (!(Number(tournament.ownerid) === Number(ownerid))) {
     //     console.log("Forbidden");

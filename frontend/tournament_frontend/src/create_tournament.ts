@@ -137,17 +137,15 @@ function tournamentCard(
 }
 
 
-function generateBracketHTML(maxPlayers: number) {
+function generateBracketHTML(maxPlayers: number, participants?: any) {
   if (maxPlayers === 4) {
-    return generate4PlayerBracket();
+    return generate4PlayerBracket(participants);
   } else if (maxPlayers === 8) {
-    return generate8PlayerBracket();
-  } else {
-    return generate16PlayerBracket();
+    return generate8PlayerBracket(participants);
   }
 }
 
-function generate4PlayerBracket() {
+function generate4PlayerBracket(Participants?: any) {
   return `
     <div class="w-full h-full flex items-center justify-center gap-12">
 
@@ -159,12 +157,12 @@ function generate4PlayerBracket() {
 
         <!-- SF 1 -->
         <div class="absolute left-0" style="top: 48px;">
-          ${matchCard("Player 1", "TBD", "Player 2", "TBD")}
+          ${matchCard(Participants[0].nickname || "TBD", "TBD", Participants[1].nickname || "TBD", "TBD")}
         </div>
 
         <!-- SF 2 -->
         <div class="absolute left-0" style="top: 168px;">
-          ${matchCard("Player 3", "TBD", "Player 4", "TBD")}
+          ${matchCard(Participants[2].nickname || "TBD", "TBD", Participants[3].nickname || "TBD", "TBD")}
         </div>
       </div>
 
@@ -190,7 +188,7 @@ function generate4PlayerBracket() {
   `;
 }
 
-function generate8PlayerBracket() {
+function generate8PlayerBracket(participants?: any) {
   return `
     <div class="w-full h-full flex items-center justify-center gap-10">
 
@@ -202,22 +200,22 @@ function generate8PlayerBracket() {
 
         <!-- QF 1 -->
         <div class="absolute left-0" style="top: 48px;">
-          ${matchCard("Player 1", "TBD", "Player 2", "TBD")}
+          ${matchCard(participants[0].nickname || "TBD", "TBD", participants[1].nickname || "TBD", "TBD")}
         </div>
 
         <!-- QF 2 -->
         <div class="absolute left-0" style="top: 168px;">
-          ${matchCard("Player 3", "TBD", "Player 4", "TBD")}
+          ${matchCard(participants[2].nickname || "TBD", "TBD", participants[3].nickname || "TBD", "TBD")}
         </div>
 
         <!-- QF 3 -->
         <div class="absolute left-0" style="top: 288px;">
-          ${matchCard("Player 5", "TBD", "Player 6", "TBD")}
+          ${matchCard(participants[4].nickname || "TBD", "TBD", participants[5].nickname || "TBD", "TBD")}
         </div>
 
         <!-- QF 4 -->
         <div class="absolute left-0" style="top: 408px;">
-          ${matchCard("Player 7", "TBD", "Player 8", "TBD")}
+          ${matchCard(participants[6].nickname || "TBD", "TBD", participants[7].nickname || "TBD", "TBD")}
         </div>
       </div>
 
@@ -377,7 +375,7 @@ const friends = [
 ];
 
 
-function tournamentBracketTemplate() {
+function tournamentBracketTemplate(maxPlayers: number, participants: any) {
   return `
     <div class="w-full h-full flex flex-col">
       
@@ -421,7 +419,7 @@ function tournamentBracketTemplate() {
 
       <!-- Bracket Container -->
       <div class="flex-1 flex items-center justify-center p-4">
-        ${generateBracketHTML(currentTournament.maxPlayers)}
+        ${generateBracketHTML(Number(maxPlayers), participants)}
       </div>
       <!-- Invite Friends Modal -->
       <div
@@ -587,7 +585,7 @@ export function renderCreateTournament() {
       socket?.once("tournament:created", () => {
         showToast("Tournament created successfully!");
         console.log("Tournament created event received");
-        renderTournamentBracket();
+        renderTournamentBracket(currentTournament.name, currentTournament.maxPlayers);
         navigate(`/tournement/bracket/${currentTournament.name}?maxPlayers=${currentTournament.maxPlayers}`);
       });
       socket?.emit("tournament:create", {
@@ -660,7 +658,7 @@ function attachListHandlers() {
         const body = await tournamentstatus.json();
         console.log("Tournament status:", body);
         currentTournament.maxPlayers = body.maxPlayers || 16;
-        renderTournamentBracket();
+        renderTournamentBracket(currentTournament.name, currentTournament.maxPlayers);
         navigate(`/tournament/bracket/${currentTournament.name}?maxPlayers=${currentTournament.maxPlayers}`);
       }
     });
@@ -699,11 +697,13 @@ function attachListHandlers() {
 
         //start the tournamnet
         if (body.message === "Tournament Full") {
+          console.log("Starting tournament as it is full", body.tournament.maxPlayers);
           socket?.emit("tournament:start", {
             tournamentName: tournamentName,
+            maxPlayers: body.tournament.maxPlayers,
           });
         }
-        renderTournamentBracket();
+        renderTournamentBracket(currentTournament.name, currentTournament.maxPlayers);
         navigate(`/tournament/bracket/tournamentName=${tournamentName}?maxPlayers=${body.tournament.maxPlayers}`);
       });
     });
@@ -722,15 +722,20 @@ function onPlayerJoined(username: string) {
   }
 }
 
-export async function renderTournamentBracket() {
+export async function renderTournamentBracket(tournamentName?: string, maxPlayers?: number) {
   const main = document.getElementById("dashboard-content");
   if (!main) return;
-  main.innerHTML = tournamentBracketTemplate();
-  const urlParams = new URLSearchParams(window.location.search);
-  const tournamentName = urlParams.get('tournamentName')||  currentTournament.name;
-  const maxPlayers = urlParams.get('maxPlayers') || String(currentTournament.maxPlayers);
-  console.log("Current Tournament from URL:", tournamentName);
-  console.log("Max Players from URL:", maxPlayers);
+  const Players = Number(maxPlayers) || 16;
+  console.log("{Debug}", tournamentName,"----" , maxPlayers);
+  const Participant = await fetch(`/tournament/participant/list?tournamentname=${encodeURIComponent(tournamentName || '')}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  const body = await Participant.json();
+  console.log("Participants data:", body);
+  main.innerHTML = tournamentBracketTemplate(Players, body);
   const addBtn = document.getElementById("add-player-btn");
   const startBtn = document.getElementById("start-tournament-btn");
   const playerCount = document.getElementById("player-count");
