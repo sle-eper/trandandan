@@ -176,10 +176,16 @@ export async function navBarLogic() {
   const changeAccountBtn = document.getElementById("change-account");
   const enable2FABtn = document.getElementById("enable-2fa");
 
+  // Check if elements exist before adding listeners
+  if (!btn || !notifBtn || !notifmenu || !menu) {
+    console.error("NavBar elements not found!");
+    return;
+  }
+
   // Toggle settings menu
-  notifBtn?.addEventListener("click",()=>{
-    if(!notifmenu || notifmenu.children.length === 0) return;
-    console.log("notif clicked",notifmenu);
+  notifBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if(notifmenu.children.length === 0) return;
     const isOpen = notifmenu.classList.contains("opacity-100");
     if (isOpen) {
       closeNotifMenu();
@@ -191,16 +197,16 @@ export async function navBarLogic() {
     }
     setNotifIcon(false);
   })
-  btn?.addEventListener("click", () => {
-    if (!menu) return;
 
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
     const isHidden = menu.classList.contains("hidden");
 
     if (isHidden) {
       // OPEN MENU
       menu.classList.remove("hidden");
-      if(!notifmenu?.classList.contains("hidden"))
-          notifmenu?.classList.add("hidden");
+      if(!notifmenu.classList.contains("hidden"))
+          notifmenu.classList.add("hidden");
       setTimeout(() => {
         menu.classList.remove("opacity-0", "translate-y-[-6px]");
         menu.classList.add("opacity-100", "translate-y-0");
@@ -215,62 +221,83 @@ export async function navBarLogic() {
 
   // Close when clicking outside
   document.addEventListener("click", (e) => {
-    if (!btn?.contains(e.target as Node) && !menu?.contains(e.target as Node)) {
-      menu?.classList.add("opacity-0", "translate-y-[-6px]");
-      menu?.classList.remove("opacity-100", "translate-y-0");
-      setTimeout(() => menu?.classList.add("hidden"), 150);
+    const target = e.target as Node;
+    if (btn && notifBtn && menu && notifmenu) {
+      if (!btn.contains(target) && !notifBtn.contains(target) && !menu.contains(target) && !notifmenu.contains(target)) {
+        menu.classList.add("opacity-0", "translate-y-[-6px]");
+        menu.classList.remove("opacity-100", "translate-y-0");
+        setTimeout(() => menu.classList.add("hidden"), 150);
+        
+        if (!notifmenu.classList.contains("hidden")) {
+          notifmenu.classList.add("hidden");
+        }
+      }
     }
-  });
+  }, true);
 
-  document.getElementById("home-logo")?.addEventListener("click", () => {
+  const homeLogoBtn = document.getElementById("home-logo");
+  if (homeLogoBtn) {
+    homeLogoBtn.addEventListener("click", () => {
       navigate("/home");
     });
-  const logo = document.getElementById("home-logo");
-
-  logo?.setAttribute("tabindex", "0");
-
-  logo?.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      navigate("/home");
-    }
-  });
-
+    homeLogoBtn.setAttribute("tabindex", "0");
+    homeLogoBtn.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        navigate("/home");
+      }
+    });
+  }
 
   // ✅ SIGN OUT BUTTON
-  signOutBtn?.addEventListener("click", async () => {
-    document.body.classList.add("flex", "items-center", "justify-center", "px-6", "md:px-20");
-    //here the request have to send to the backend to destroy the session
-    const result = await fetch('/api/auth/logout', {
-      method: 'POST',
-      credentials: 'include', // include cookies
+  if (signOutBtn) {
+    signOutBtn.addEventListener("click", async () => {
+      document.body.classList.add("flex", "items-center", "justify-center", "px-6", "md:px-20");
+      try {
+        const result = await fetch('/api/auth/logout', {
+          method: 'POST',
+          credentials: 'include',
+        });
+        if (result.ok) {
+          console.log('Logout successful');
+          const socket = getSocketInstance();
+          if (socket) {
+            socket.disconnect();
+          }
+          reSetSocket();
+          navigate("/login");
+        }
+      } catch (error) {
+        console.error("Logout error:", error);
+      }
     });
-    if (result.ok) {
-      console.log('Logout successful');
-      // localStorage.removeItem("userId");
-      getSocketInstance()?.disconnect();
-      reSetSocket();
-      // localStorage.removeItem("userId")
-      navigate("/login");
-    }
-  });
+  }
 
   // ✅ PROFILE NAV
-  profile?.addEventListener("click", async () => {
-    navigate("/profile");
-  });
+  if (profile) {
+    profile.addEventListener("click", async () => {
+      navigate("/profile");
+    });
+  }
 
   // ✅ CHANGE ACCOUNT
-  changeAccountBtn?.addEventListener("click", () => {
-    document.body.classList.add("flex", "items-center", "justify-center", "px-6", "md:px-20");
-    navigate("/login");
-  });
+  if (changeAccountBtn) {
+    changeAccountBtn.addEventListener("click", () => {
+      document.body.classList.add("flex", "items-center", "justify-center", "px-6", "md:px-20");
+      navigate("/login");
+    });
+  }
 
   // ✅ ENABLE 2FA
-  enable2FABtn?.addEventListener("click", () => {
-    navigate("/2FA"); // assuming you have a 2FA page
-  });
+  if (enable2FABtn) {
+    enable2FABtn.addEventListener("click", () => {
+      navigate("/2FA");
+    });
+  }
 
-  const playerSearch = new PlayerSearch(searchInput, searchResults);
-  await playerSearch.loadPlayersFromAPI();
-  playerSearch.initializeEventListeners();
+  // Initialize player search only if elements exist
+  if (searchInput && searchResults) {
+    const playerSearch = new PlayerSearch(searchInput, searchResults);
+    await playerSearch.loadPlayersFromAPI();
+    playerSearch.initializeEventListeners();
+  }
 }

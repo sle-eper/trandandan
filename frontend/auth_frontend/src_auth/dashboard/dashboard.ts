@@ -107,7 +107,7 @@ export async function showDashboard() {
       </div>
     `;
 
-function getnotif(): Promise<any[]> {
+function getnotif(): Promise<any[]> {//TODO nkhedmha bla promise
   return new Promise(async (resolve, reject) => {
     try {
       const response = await fetch("/auth/verify", {
@@ -134,29 +134,39 @@ function getnotif(): Promise<any[]> {
   // Render sidebar + navbar
   const nav = document.getElementById("navbar");
   const sidebar = document.getElementById("sidebar");
+  
   if (sidebar) sidebar.innerHTML = renderSidebar();
-  if (nav) {
-    nav.innerHTML = renderNavBar();
-    socketNotificationListener();
-    const response = await fetch("/auth/verify", {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include", // VERY IMPORTANT FOR Cookies
-          });
-          const responseJson = await response.json()
-          const userID = responseJson.id as string;
-          setCurrentUserId(userID);//TODO khasha tkon fach ylogi 
+  if (nav) nav.innerHTML = renderNavBar();
 
-    if (sidebar) sidebar.innerHTML = renderSidebar();
+  // Verify user and set up socket listeners
+  try {
+    const response = await fetch("/auth/verify", {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include", // VERY IMPORTANT FOR Cookies
+    });
+    const responseJson = await response.json()
+    const userID = responseJson.id as string;
+    setCurrentUserId(userID);
+    
+    // Initialize socket notification listener
+    socketNotificationListener();
+    
+    // Get notifications and display them
     let notif = await getnotif()
     const notification = document.getElementById("notification-menu");
-    if (!notification) return;
-    notif.forEach((el) => {
-      if (el.display) {
-        addNotif(el, notification);
-      }
-    });
+    if (notification) {
+      notif.forEach((el) => {
+        if (el.display) {
+          addNotif(el, notification);
+        }
+      });
+    }
+  } catch (error) {
+    console.error("Error initializing dashboard:", error);
   }
+
+  // Apply logic handlers after everything is rendered
   navBarLogic();
   sidebarLogic();
 }

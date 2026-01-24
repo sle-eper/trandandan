@@ -8,7 +8,113 @@ import { navigate } from "../../../auth_frontend/src_auth/app.ts";
 import { getSocketInstance } from "../../../socket_manager/socket.ts";
 import { createFriendRequestNotification } from "./RequestHandling.ts";
 import {Toast} from "./ProfileForm.ts";
-// Types
+
+
+const dialogStyles = `
+.confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.confirm-dialog {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 350px;
+  width: 90%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.confirm-message {
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.confirm-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.confirm-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.confirm-btn-cancel {
+  background: #e0e0e0;
+  color: #333;
+}
+
+.confirm-btn-confirm {
+  background: #dc3545;
+  color: white;
+}
+`;
+
+// Simple confirm function
+function simpleConfirm(message: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-overlay';
+    
+    const dialog = document.createElement('div');
+    dialog.className = 'confirm-dialog';
+    
+    const messageEl = document.createElement('div');
+    messageEl.className = 'confirm-message';
+    messageEl.textContent = message;
+    
+    const buttonsEl = document.createElement('div');
+    buttonsEl.className = 'confirm-buttons';
+    
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'confirm-btn confirm-btn-cancel';
+    cancelBtn.textContent = 'Cancel';
+    
+    const confirmBtn = document.createElement('button');
+    confirmBtn.className = 'confirm-btn confirm-btn-confirm';
+    confirmBtn.textContent = 'OK';
+    
+    const cleanup = () => overlay.remove();
+    
+    cancelBtn.onclick = () => {
+      cleanup();
+      resolve(false);
+    };
+    
+    confirmBtn.onclick = () => {
+      cleanup();
+      resolve(true);
+    };
+    
+    overlay.onclick = (e) => {
+      if (e.target === overlay) {
+        cleanup();
+        resolve(false);
+      }
+    };
+    
+    buttonsEl.appendChild(cancelBtn);
+    buttonsEl.appendChild(confirmBtn);
+    dialog.appendChild(messageEl);
+    dialog.appendChild(buttonsEl);
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+  });
+}
+
 
 // Socket listener for friend request received
 export const friendRequestReceivedHandler = (from: string, myId: string,friendId: string, notifId: string) => {
@@ -19,14 +125,7 @@ export const friendRequestReceivedHandler = (from: string, myId: string,friendId
   
   createFriendRequestNotification(from, myId, friendId, notifId);
 }
-// getSocketInstance()?.on('friendRequestReceived', (from: string, myId: string,friendId: string, notifId: string) => {
- 
-//   console.log('Friend request received myId:', myId, 'with frienID:', friendId, 'from:', from, 'notifId:', notifId); ;
-//   const existing = document.querySelector(`[data-notif-id="${notifId}"]`);
-//   if (existing) existing.remove();
-  
-//   createFriendRequestNotification(from, myId, friendId, notifId);
-// });
+
 
 interface FriendshipStatus {
   isFriend: boolean;
@@ -162,13 +261,6 @@ export class PlayerProfileManager {
         <span>Send Friend Request</span>
       </button>
       
-      <button id="send-message-${player.id}"
-              class="px-6 py-3 rounded-xl bg-white/5 border border-white/10
-                     text-white font-semibold
-                     hover:bg-white/10 transition-all duration-300 flex items-center gap-2">
-        <span class="material-symbols-outlined">chat</span>
-        <span>Message</span>
-      </button>
     `;
   }
 
@@ -221,7 +313,7 @@ export class PlayerProfileManager {
       `;
       return;
     }
-
+    
     // If it's the current user and edit component is provided
     // if (status.isCurrentUser && this.showEditProfileCallback) {
     //   console.log('Rendering edit profile component for current user...');
@@ -256,9 +348,12 @@ export class PlayerProfileManager {
               <p class="text-xl text-white/50 mb-4">@${this.escapeHtml(player.name)}</p>
               
               <div class="flex items-center gap-3 mb-6">
-                <span class="px-4 py-2 rounded-full bg-white/5 text-white/70 border border-white/10 text-sm">
-                  ${player.online_status ? '🟢 Online' : '⚫ Offline'}
-                </span>
+                ${!status.isCurrentUser ? 
+                `<span id="online-status-badge-${player.id}" 
+                 class="online-status-badge px-4 py-2 rounded-full ${player.online_status === "online" ? 'bg-green-500/20 text-green-400 border-green-500/30 online' : 'bg-white/5 text-white/70 border-white/10 offline'} border text-sm">
+                ${player.online_status === "online" ? '🟢 Online' : '⚫ Offline'}
+              </span>` : ''
+  }
                 ${player.best_score ? 
                   `<span class="px-4 py-2 rounded-full bg-[#FD1D1D]/20 text-[#FD1D1D] border border-[#FD1D1D]/30 text-sm font-semibold">
                     ⭐ ${player.best_score} Best Score
@@ -396,13 +491,13 @@ export class PlayerProfileManager {
       //   // Add messaging logic
       // });
 
-      unfriendBtn?.addEventListener('click', async () => {
-        if (confirm(`Are you sure you want to unfriend ${player.display_name}?`)) {
-          await this.unfriendUser(player.id);
-          this.showPlayerProfile(player.id);
-        }
+     unfriendBtn?.addEventListener('click', async () => {
+      if (await simpleConfirm(`Are you sure you want to unfriend ${player.display_name}?`)) {
+        await this.unfriendUser(player.id);
+        this.showPlayerProfile(player.id);
       }
-   );
+    });
+   
     } else if (status.isPending) {
       const cancelBtn = document.getElementById(`cancel-request-${player.id}`);
       cancelBtn?.addEventListener('click', async () => {
@@ -526,6 +621,28 @@ export const socketNotificationListenerRejectHandler = async (from : string,myId
   Toast.error('Friend request rejected');
 }
 
+export const friendDisconnectHandler = async (playerId: number) => {
+  console.log('Handling friend disconnect for playerId:', playerId);
+  const statusBadge = document.getElementById(`online-status-badge-${playerId}`);
+  console.log('Found status badgeeeee:',statusBadge );
+  if (statusBadge) {
+    statusBadge.textContent = '⚫ Offline';
+    statusBadge.classList.remove('online', 'bg-green-500/20', 'text-green-400', 'border-green-500/30');
+    statusBadge.classList.add('offline', 'bg-white/5', 'text-white/70', 'border-white/10');
+  }
+
+}
+export const friendConnectHandler = async (playerId: number) => {
+  console.log('Handling friend connect for playerId:', playerId);
+  const statusBadge = document.getElementById(`online-status-badge-${playerId}`);
+  console.log('Found status badge:',statusBadge );
+  if (statusBadge) {
+    statusBadge.textContent = '🟢 Online';
+    statusBadge.classList.remove('offline', 'bg-white/5', 'text-white/70', 'border-white/10');
+    statusBadge.classList.add( 'online','bg-green-500/20', 'text-green-400', 'border-green-500/30');
+  }
+
+}
 
 // getSocketInstance()?.on('socketNotificationListener', async (from : string,myId: string,friendId: string) => {
 //   console.log('Friend request accepted:', {from, myId, friendId});

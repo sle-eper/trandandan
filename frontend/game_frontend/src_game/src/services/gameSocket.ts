@@ -34,12 +34,16 @@ class GameSocketService {
             console.log('Game Socket Disconnected');
         });
 
+        // Game invites are handled by the main app, not here
+        // This prevents unwanted tab opening/navigation
+        /*
         this.socket.on('game_invite', (data: any) => {
             console.log('Received Game Invite:', data);
             if (confirm(`Game Invite from ${data.from}. Accept?`)) {
                 window.location.href = `/game?gameId=${data.gameId}`;
             }
         });
+        */
     }
 
     private getCookie(name: string): string | null {

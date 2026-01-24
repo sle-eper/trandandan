@@ -6,7 +6,7 @@ interface Player {
   name: string;
   email: string;
   display_name: string;
-  online_status: boolean;
+  online_status: string | boolean;
   avatar?: string;
   bio?: string;
   matches_played?: number;

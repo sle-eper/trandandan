@@ -1,5 +1,3 @@
-import { PlayerProfileManager} from "../../../profile_frontend/src/components/FriendRequest.ts";
-import { navigateSilent } from "../../../auth_frontend/src_auth/login/router.ts";
 export function lastMsg(status:string,msg:string,friendId:string):string
 {
     if(!msg)
@@ -50,12 +48,11 @@ function  friendCart(friend:any,waitingMsg:object,myId:string):string
         // if(friend.online_status === 'online')
 
         // navigateSilent(`/chat/${friend.username}`);
-        return `<div id='msg-zone' data-id="${friend.id}" class="flex justify-center py-4 px-2 hover:bg-[#222222] transition-colors duration-300 sm:py-4 sm:px-4 md:py-5">
+        return `<div id='msg-zone' data-id="${friend.id}" class="flex justify-center  px-2 hover:bg-[#222222] transition-colors duration-300 py-5">
                     <div  class=" friend-msg-zone flex w-[95%] hover:cursor-pointer" data-id="${friend.id}" data-name = "${friend.username}" data-roomname = "${roomName}"  >
                     <div class="relative">
-                        <div class=" w-10 h-10 
-                                
-                                md:w-12 md:h-12
+                        <div class=" 
+                                w-12 h-12
                                 bg-cover bg-center rounded-full" 
                             style="
                                 background-image : url('/api/uploads/${friend.avatar_url}');
@@ -67,17 +64,17 @@ function  friendCart(friend:any,waitingMsg:object,myId:string):string
                         </span>
 
                     </div>
-                    <div class="ml-3 sm:ml-4 w-full flex flex-col justify-center">
+                    <div class="ml-4 w-full flex flex-col justify-center">
                         <div class="flex justify-between">
-                            <span class="font-semibold text-[#F5F5F5] text-sm sm:text-base md:text-lg">${friend.username}</span>
+                            <span class="font-semibold text-[#F5F5F5] text-lg">${friend.username}</span>
                             <span>${unreadMsgNumber(unreadMsg,friend.id)}</span>
                         </div>
                         <div class="flex justify-between items-center ">
                             <div id='container-of-last-msg-of-${friend.id}'
-                                class="text-xs sm:text-sm md:text-base text-gray-300">
+                                class="text-base text-gray-300">
                                 ${lastMsg(status,friend.msg,friend.id)} 
                             </div>
-                            <span id='time-of-msg-${friend.id}' class="text-[10px] sm:text-xs md:text-sm text-[#888]">${ msgTime(friend.display_time)}</span>
+                            <span id='time-of-msg-${friend.id}' class="text-sm text-[#888]">${ msgTime(friend.display_time)}</span>
                         </div>
                         </div>
                     </div>
@@ -125,7 +122,7 @@ export function listOfMsg(friends:any,waitingMsg:object,myId:string): string //d
                     background-color: #181818;
                 }
             </style>
-        <div id="list-of-msg-container" class="w-full md:w-[27%]  md:min-w-[270px] h-full md:block block rounded-2xl bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A]  overflow-hidden" >
+        <div id="list-of-msg-container" class="w-[27%] min-w-[270px] h-full block rounded-2xl bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A] overflow-hidden" >
             <div class="sticky top-0 z-10 bg-[#181818] p-6">
                 <h1 class="font-bold text-[#F5F5F5]">chat</h1>
             </div>
@@ -156,9 +153,6 @@ export function profileNav(img:string,userAccount:string,id:string,onlineStatus:
     return`
         <div id="profile-nav" class="flex h-[10%] items-center p-5 justify-between relative ">
             <div class="flex items-center gap-6">
-                <div id="back-btn" class="flex justify-center items-center md:hidden p-2 text-[#E63946]   hover:cursor-pointer hover:bg-[#222222]  rounded-full">
-                    <span class="material-symbols-outlined ">arrow_back_ios</span>
-                </div>
                 <div class="relative user-account">
                     <div class=" hover:cursor-pointer h-10 w-10  bg-cover bg-center rounded-full" 
                         style="
@@ -236,7 +230,7 @@ export function inputMsg(status:string,myStatus:string):string //done
                     ></textarea>
                     <button id="send-button"
                         class="bg-gradient-to-br from-[#E63946] to-[#8A1C1C] hover:from-[#FF4D4D]
-                        hover:to-[#A02020] rounded-xl w-[8vw] md:w-[3vw] h-[80%] mr-2 ml-4 flex justify-center items-center">
+                        hover:to-[#A02020] rounded-xl w-[3vw] h-[80%] mr-2 ml-4 flex justify-center items-center">
                         <span class="material-symbols-outlined text-white">send</span>
                     </button>
                 </div>`
@@ -251,7 +245,7 @@ function escapeHTML(str: string): string {
 }
 
 export function sendMsg(msg:string,time:string):string{
-    return `<div id="received-msg" class="flex mt-5  md:w-[30vw] w-[60vw]  justify-end ml-auto pr-5 ">
+    return `<div id="received-msg" class="flex mt-5 w-[30vw] justify-end ml-auto pr-5 ">
     <div id="content-received" class="flex flex-col ">
         <div class=" bg-[#E63946] rounded-xl p-3 ">
         <span class="text-[#F5F5F5]  break-all">
@@ -261,15 +255,21 @@ export function sendMsg(msg:string,time:string):string{
         <span id="text-received-time " class="text-xs text-[#888] mt-1 self-end">${time}</span>
     </div>
     </div>`
-    // <img src="${img}" alt="" class="h-10 w-10 rounded-full mt-2 ml-2">
-            
+    
 }
+// <img src="${img}" alt="" class="h-10 w-10 rounded-full mt-2 ml-2">
 
 
+// <img src='/api/uploads/${img}' alt="" class="h-10 w-10 rounded-full mt-2 mr-2">
 export function receivedMsg(msg:string,time:string,img:string):string{
 
-    return `<div id="sent-msg" class="flex mt-5 md:w-[30vw] w-[80vw]  justify-start pl-5 ">
-                <img src='/api/uploads/${img}' alt="" class="h-10 w-10 rounded-full mt-2 mr-2">
+    return `<div id="sent-msg" class="flex mt-5 w-[30vw] justify-start pl-5 ">
+                <div class="h-10 w-10  bg-cover bg-center rounded-full mt-2 mr-2" 
+                        style="
+                            background-image : url('/api/uploads/${img}');
+                            aspect-ratio: 1/1;
+                        ">
+                </div>
                 <div id="content-sent" class="max-w-[80%] flex flex-col">
                     <div  class="border-2 border-[#E63946] rounded-xl p-3  ">
                         <span class="text-[#F5F5F5]  break-all">
@@ -313,7 +313,7 @@ export function chatZones():string{
 
 export function DM():string{
     return`
-            <div id="DM" class="hidden  h-full w-full flex  rounded-2xl p-4 md:flex flex-col bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A] " data-roomname="">
+            <div id="DM" class="h-full w-full flex rounded-2xl p-4 flex-col bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A] " data-roomname="">
             ${choseFriend()}
             </div>`;
 }

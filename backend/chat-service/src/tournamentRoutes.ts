@@ -16,7 +16,7 @@ async function tournamentCreate(request, reply) {
         }
     }
     reply.code(200).send({ message: 'Tournament create notification sent' });
-}
+} 
 
 
 export default async function (fastify) {
