@@ -9,7 +9,7 @@ export function socketInstance(): Socket {
   if (!socket) {
     socket = io("http://localhost:3000/", {
       withCredentials: true,
-      autoConnect: true,
+      // autoConnect: true,
       transports: ["websocket"],
     });
   }

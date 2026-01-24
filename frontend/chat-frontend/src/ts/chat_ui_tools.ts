@@ -14,6 +14,13 @@ export function moveUp(id: string) {
 
 export function renderConnectionError(container: HTMLElement) {
   container.innerHTML = `
+        <div
+            id="chat-alert-root"
+            class="fixed top-30 left-1/2 -translate-x-1/2  z-[9999]
+            flex justify-center items-center gap-3 rounded-2xl
+            bg-[#1a1a1a]/90 border border-[#FD1D1D]/40 p-3 hidden"
+        >
+      </div>
     <div class="text-[#F5F5F5] flex flex-col justify-center items-center h-full gap-2">
       <div class="border border-[#ff4d4d] rounded-full h-15 w-15 flex justify-center items-center">
         <span class="material-symbols-outlined text-[#ff4d4d]">error</span>
