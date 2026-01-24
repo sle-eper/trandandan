@@ -22,10 +22,10 @@ fastify.register(multipart, {
     }
 });
 
-// await fastify.register(rateLimit, {
-//   max: 100,            
-//   timeWindow: '1 minute' 
-// })
+await fastify.register(rateLimit, {
+  max: 100,            
+  timeWindow: '1 minute' 
+})
 
 fastify.register(fastifyCors, {
     origin: ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:8443', 'https://localhost:8443', 'http://localhost:443', 'https://localhost:443'],

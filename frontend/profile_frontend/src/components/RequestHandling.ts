@@ -1,6 +1,6 @@
 import { getSocketInstance } from "../../../socket_manager/socket.ts";
 
-// ============================================
+
 export function createFriendRequestNotification(
   from: string, 
   userId: string, 
@@ -388,10 +388,8 @@ function removeNotificationFromUI(notifId: string): void {
 
     const container = document.getElementById("notification-menu");
     if(!container)return;
-    // console.log(`******************************${container.children.length }********************************************`);
     if(container.children.length === 0)
     {
-      // console.log("ssssssssssssssssssssssss")
       if(container.classList.contains("hidden")) return;
         container.classList.add("opacity-0");
         container.classList.add("hidden")
@@ -401,10 +399,6 @@ function removeNotificationFromUI(notifId: string): void {
     }
         
 }
-
-// getSocketInstance()?.on('friendRequestCancelled', (data: { notifId: string }) => {
-//   removeNotificationFromUI(data.notifId);
-// });
 
 export const  friendRequestCancelledHandler = (data: { notifId: string }) => {
   removeNotificationFromUI(data.notifId);

@@ -40,20 +40,52 @@ export const receiveMessageHandler = (msg:string, msgId:string, friendId:string,
     if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
 }
 
-export const allowMsgHandler = (allow: boolean, status: string) => {
-  const msg = document.getElementById("x");
-  if (msg && allow) msg.innerHTML = inputMsg("accepted", status);
-  else if (msg && !allow) msg.innerHTML = inputMsg("blocked", status);
-  setupPopupEvents();
+export const allowMsgHandler = (allow: boolean,status:string) => {
+    const msg = document.getElementById("x");
+    const challenge = document.getElementById("challenge-option") as HTMLButtonElement;
+    if (msg && allow){
+      msg.innerHTML = inputMsg("accepted",status);
+      challenge?.classList.remove(
+        "opacity-50",
+        "cursor-not-allowed",
+        "pointer-events-none"
+      );
+    }
+    else if (msg && !allow){
+      msg.innerHTML = inputMsg("blocked",status);
+      challenge?.classList.add(
+        "opacity-50",
+        "cursor-not-allowed",
+        "pointer-events-none"
+      );
+    }
+      
+    setupPopupEvents();
 }
 
-export const blockOrAcceptedHandler = (roomName: string, statusGlobal: string, status: string) => {
-  const dm = document.getElementById("DM");
-  if (dm && dm.dataset.roomName == roomName) {
-    const msg = document.getElementById("x");
-    if (msg) msg.innerHTML = inputMsg(statusGlobal, status);
-    setupPopupEvents();
-  }
+export const blockOrAcceptedHandler = (roomName: string, statusGlobal: string,status:string) => {
+    console.log(statusGlobal,status);
+    const dm = document.getElementById("DM");
+    if (dm && dm.dataset.roomName == roomName) {
+      const msg = document.getElementById("x");
+      const challenge = document.getElementById("challenge-option") as HTMLButtonElement;
+      if (msg) msg.innerHTML = inputMsg(statusGlobal,status);
+      if(statusGlobal === 'blocked')
+      {
+        challenge?.classList.add(
+          "opacity-50",
+          "cursor-not-allowed",
+          "pointer-events-none"
+        );
+      }else if (statusGlobal === 'accepted'){
+          challenge?.classList.remove(
+          "opacity-50",
+          "cursor-not-allowed",
+          "pointer-events-none"
+        );
+      }
+      setupPopupEvents();
+    }
 }
 
 export const messages_batchHandler = (messages: any[], friendImg: string) => {

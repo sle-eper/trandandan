@@ -52,9 +52,7 @@ class UserModule {
         );
     }
 
-    // async isDisplayNameAvailable(displayName){
-
-    // }
+   
 
     async getProfile(userId) {
         return await this.db.get(
@@ -78,7 +76,7 @@ class UserModule {
             [
                 user.email,
                 user.username,
-                user.password,   // ✅ FIX
+                user.password,  
                 user.display_name || user.username
             ]
         );
@@ -170,7 +168,7 @@ class UserModule {
             [searchPattern]
         );
     }
-    // add this methods for 2FA
+   
     async setTwoFactorSecret(userId, secret) {
         console.log("Setting 2FA secret in DB for userId:", userId);
         await this.db.run(

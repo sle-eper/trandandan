@@ -156,11 +156,10 @@ export class ProfileForm {
     try {
    
       this.userData = await User.fetchUserProfile();
-      // console.log('Loaded user data:', `http://localhost:8080/uploads/default.png`, this.userData)
       if (this.userData) {
         this.oldProfileData = JSON.parse(JSON.stringify(this.userData));
         this.avatarPreview = this.userData.avatarUrl || this.avatarPreview;
-        console.log('online status:', this.userData.onlineStatus);
+        
         if (this.userData.onlineStatus !== 'offline') {
           this.isOnline = true;
         } else {
@@ -180,9 +179,9 @@ export class ProfileForm {
         const email = this.userData?.email || '';
         const displayName = this.userData?.displayName || '';
         const bio = this.userData?.bio || '';
-        console.log('Rendering profile form with data:', this.userData);
+     
         return ` 
-           <div class="w-full h-full flex items-center justify-center">
+        <div class="w-full h-full flex items-center justify-center ">
     <!-- Main Card - Takes full space -->
     <div class="w-full h-full bg-black/40 backdrop-blur-sm rounded-2xl shadow-2xl  flex flex-col">
       
@@ -361,7 +360,6 @@ export class ProfileForm {
 
     private attachEventListeners(): void {
     const avatarInput = document.getElementById('avatar-upload') as HTMLInputElement;
-    const onlineToggle = document.getElementById('online-toggle') as HTMLInputElement;
     const saveBtn = document.getElementById('save-btn');
     const cancelBtn = document.getElementById('cancel-btn');
     const changePasswordBtn = document.getElementById('change-password-btn');
@@ -375,9 +373,6 @@ export class ProfileForm {
 
     if (avatarInput) {
       avatarInput.addEventListener('change', this.handleAvatarChange.bind(this));
-    }
-    if (onlineToggle) {
-      onlineToggle.addEventListener('change', this.handleStatusToggle.bind(this));
     }
     if (saveBtn) {
       saveBtn.addEventListener('click', this.handleSave.bind(this));
@@ -420,30 +415,14 @@ export class ProfileForm {
     reader.readAsDataURL(file);
   }
 
-  private handleStatusToggle(event: Event): void {
-    const checkbox = event.target as HTMLInputElement;
-    this.isOnline = checkbox.checked;
-    
-    const indicator = document.getElementById('status-indicator');
-    const statusText = document.getElementById('status-text');
-    
-    if (indicator && statusText) {
-      if (this.isOnline) {
-        indicator.className = 'w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse';
-        statusText.textContent = 'Online';
-      } else {
-        indicator.className = 'w-2.5 h-2.5 rounded-full bg-gray-500 animate-pulse';
-        statusText.textContent = 'Offline';
-      }
-    }
-  }
+   
 
-  private hasChanges(oldData: UserProfile | null, newData: UserProfile): Partial<UserProfile> | null {
+  private hasChanges(oldData: UserProfile | null, newData: UserProfile ): Partial<UserProfile> | null {
     if (!oldData) {
       return newData;
     }
 
-    const changed: Partial<UserProfile> = {};
+    const changed: Partial<UserProfile>  = {};
 
     for (const key in newData) {
       const k = key as keyof UserProfile;
@@ -509,7 +488,7 @@ export class ProfileForm {
     }
 
     if (this.selectedAvatarFile) {
-      console.log('Uploading new avatar...');
+      
       const uploadedAvatarPath = await this.uploadAvatar(this.selectedAvatarFile);
       
       if (!uploadedAvatarPath) {
@@ -527,7 +506,7 @@ export class ProfileForm {
       }
     }
     if (changedData) {
-      console.log('Saving profile with changes:', changedData);
+      
       const success = await User.saveUserProfile(changedData);
       
       if (success) {
@@ -571,11 +550,7 @@ export class ProfileForm {
       console.error(`Container with id "${containerId}" not found`);
       return;
     }
-
-    // Fetch user data
     await this.loadUserData();
-    
-    // Render with actual data
     container.innerHTML = this.render();
     this.attachEventListeners();
   }
