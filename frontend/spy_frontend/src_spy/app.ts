@@ -7,8 +7,6 @@ import {PlayerAndSpaySelection} from "./component/PlayerAndSpaySelection.ts"
 import { findingSpy } from './component/findingSpy.ts';
 import { displayCard } from './component/localMode.ts';
 import { history } from './component/history.ts';
-// import { navigateSilent } from '../../auth_frontend/src_auth/login/router.ts';
-//TODO responsive design mam9adech 
 // //start og game 
 let correctChoice:string;
 
@@ -31,39 +29,9 @@ export async function spyUi()
     console.log("response user:", responseJson);
     const myId =  responseJson.user.id;
     const userName = responseJson.user.username;
-    // console.log("user id in spy ui:", myId);
-    // console.log("user name in spy ui:", userName);
-    // const url = new URL(window.location.href);
-    // const step = url.pathname.split("/").pop();
+;
     if(main)
     {
-       //show game mode
-        // if (step === "history") {
-        //     main.innerHTML = await history(myId);
-        //     return;
-        // }
-
-        // if (step === "players") {
-        //     main.innerHTML =
-        //     renderLocalMode() +
-        //     PlayerAndSpaySelection("players", 7);
-        //     return;
-        // }
-
-        // if (step === "spies") {
-        //     main.innerHTML =
-        //         renderLocalMode() +
-        //         PlayerAndSpaySelection("spies", 1);
-        //     return;
-        // }
-
-        // if (step === "sections") {
-        //     main.innerHTML =
-        //         renderLocalMode() +
-        //         renderSection();
-        //     return;
-        // }
-
         /* ===================== DEFAULT (MAIN SPY PAGE) ===================== */
         function showNotifError(message:string)
         {

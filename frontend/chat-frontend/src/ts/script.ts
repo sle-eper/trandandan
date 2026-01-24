@@ -15,7 +15,7 @@ import {
 import { navigate } from "../../../auth_frontend/src_auth/login/router";
 
 
-
+//TODO esc hebila 
 window.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     setImInRoom("");
@@ -23,7 +23,6 @@ window.addEventListener("keydown", (e) => {
     const dmZone = document.getElementById("DM");
     if (dmZone) dmZone.innerHTML = choseFriend();
     navigate(`/chat`);
-
   }
 });
 

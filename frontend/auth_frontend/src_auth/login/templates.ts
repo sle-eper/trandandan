@@ -130,7 +130,7 @@ export const signupTemplate = () => `
 `;
 
 export const gamesTemplate = () => `
-<div class="h-full w-full flex flex-col items-center px-4 py-4 md:py-6 overflow-hidden">
+<div class="h-full w-full flex flex-col items-center px-4 py-4 overflow-hidden">
 
   <!-- Title -->
   <h1 class="text-3xl md:text-5xl font-bold text-white mb-6 md:mb-12 flex items-center gap-3">
@@ -141,7 +141,7 @@ export const gamesTemplate = () => `
   </h1>
 
   <!-- Games container -->
-  <div class="flex flex-col md:flex-row gap-4 md:gap-8 w-full max-w-4xl flex-1">
+  <div class="flex flex-col md:flex-row gap-4 md:gap-8 w-full max-w-4xl flex-1 justify-center items-center">
 
     <!-- Ping Pong -->
     <a href="/game/pong" data-route
