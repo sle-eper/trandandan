@@ -6,10 +6,10 @@ export function reSetSocket(){
   socket = null;
 }
 
-export function socketInstance(): Socket | null {
-  return socket = io("http://localhost:3000", {
+export function socketInstance(): Socket {
+  return io("https://localhost:8443", {
+    path: "/socket.io",
     withCredentials: true,
-    autoConnect: true,
     transports: ["websocket"],
   });
 }

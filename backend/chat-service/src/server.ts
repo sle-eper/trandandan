@@ -60,6 +60,7 @@ server.ready().then(() => {
     try{
       const cookies = cookie.parse(socket.handshake.headers.cookie ?? "");
       const token = cookies.token;
+      console.log("------------------------", token)
       if (!token) {
         socket.disconnect();
         return;
