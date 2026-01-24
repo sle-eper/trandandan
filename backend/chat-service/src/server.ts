@@ -32,27 +32,21 @@ server.register(fastifyIO, {
 });
 
 export const onlineUsers = new Map<string, Set<string>>();
-let UserData ;
-
-// server.get('/online/:id', (req, res) => {
-//   const { id } = req.params as { id: string }
-//   if (onlineUsers.has(id)) {
-//     res.code(200).send({
-//       online: true,
-//       socketIds: Array.from(onlineUsers.get(id))
-//     });
-//   } else
-//     res.code(200).send({
-//       online: false,
-//       socketIds: []
-//     });
-
-// })
+// let UserData ;
 const getRoomName = (id1: string, id2: string): string => {
   return [id1, id2].sort().join("_");
 };
 
-// const chat = server.
+
+// socket.on ==> m3a nefs socket
+// socket.emit ===> m3a nefs socket 
+// socket.broadcast.emit ===> m3a kelchi ila had socket 
+// io.emit ===> kolchi 
+// io.to(socketId).emit ===> had socket bedabet 
+// socket.to(room).emit ===> kolchi f room ila hada 
+// io.to(room).emit ===> kolchi li f room 
+
+
 
 server.ready().then(() => {
   const io = (server as any).io;
@@ -70,8 +64,8 @@ server.ready().then(() => {
         socket.disconnect();
         return;
       }
-      UserData = await fetchUserData(userId);
-      if(!UserData)
+      socket.data.user = await fetchUserData(userId);
+      if(!socket.data.user)
       {
         socket.disconnect();
         return;
@@ -113,11 +107,12 @@ server.ready().then(() => {
             const msgId: string = await saveMsg(id, friendId, msg, roomName, "waiting");
             const timeOfMsg: string = await getTimeOfMsg(msgId);
             // const UserData = await fetchUserData(id); // get data of user from user-management service
-            socket.to(roomName).emit("receive_message", msg, msgId, id, timeOfMsg, UserData?.user?.avatar_url);
+            if(!socket.data.user)return
+            socket.to(roomName).emit("receive_message", msg, msgId, id, timeOfMsg, socket.data.user.avatar_url);
             if (friendSocketId) {
               for (const ids of friendSocketId) {
                 socket.to(ids).emit("live", id, roomName, msg, timeOfMsg);
-                socket.to(ids).emit("msg_notification", UserData?.user?.username, msg, notifId);
+                socket.to(ids).emit("msg_notification", socket.data.user.username, msg, notifId);
               }
             }
           }
@@ -139,6 +134,7 @@ server.ready().then(() => {
         await changeDisplay(userID)
         const messages = await getAllMsg(roomName, limit, offset);
         const UserData = await fetchUserData(data.friendId);
+        if(!UserData || !messages)return;
         socket.emit('messages_batch', messages.reverse(), UserData?.user?.avatar_url);
       } catch (err) {
         console.error('Error in get_messages:', err);
@@ -156,6 +152,7 @@ server.ready().then(() => {
         await changeDisplay(userID)
         const messages = await getAllMsg(roomName, limit, offset);
         const UserData = await fetchUserData(data.friendId);
+        if(!messages || !UserData) return;
         socket.emit('messages_old_batch', messages, UserData?.user?.avatar_url);
       } catch (err) {
         console.error('Error in get_old_messages:', err);
@@ -261,10 +258,9 @@ server.ready().then(() => {
         const friendSocket = onlineUsers.get(friendId);
         if (!friendSocket) return;
         // const UserData = await fetchUserData(id);
-        if (!UserData)
-          return;
+        if(!socket.data.user)return
         for (const isd of friendSocket) {
-          io.to(isd).emit("request_to_play", UserData?.user?.username, id, notfId);
+          io.to(isd).emit("request_to_play", socket.data.user.username, id, notfId);
         }
 
       } catch (err) {
@@ -305,11 +301,11 @@ server.ready().then(() => {
         const friendId = String(friendIdInput);
         const notifId = await saveNotif(id, friendId, 'reject', null);
         const Sockets = onlineUsers.get(friendId);
-        if (!Sockets) return;
+        if (!Sockets||!socket.data.user) return;
         // const UserData = await fetchUserData(id);
-        if (!UserData) return;
+        // if (!UserData) return;
         for (const isd of Sockets) {
-          io.to(isd).emit("not_agree", UserData?.user?.username, notifId);
+          io.to(isd).emit("not_agree", socket.data.user.username, notifId);
         }
 
       } catch (err) {
@@ -344,11 +340,12 @@ server.ready().then(() => {
       if (!userSocket) return;
       
       // const UserData = await fetchUserData(myId);
-      if (!UserData) return;
+      // if (!UserData) return;
+      if(!socket.data.user)return
       for (const ids of userSocket) {
 
         socket.to(ids).emit("friendRequestReceived",
-          UserData.user.username,
+          socket.data.user.username,
           friendId,
           myId,
           notifId
@@ -364,11 +361,11 @@ server.ready().then(() => {
         if (!friendSocket) return;
         
         // const UserData = await fetchUserData(myId);
-        if (!UserData)
-          return;
-
+        // if (!UserData)
+        //   return;
+        if(!socket.data.user)return
         for (const isd of friendSocket) {
-          socket.to(isd).emit("friendRequestAccepted", UserData?.user?.username, myId, friendId);
+          socket.to(isd).emit("friendRequestAccepted", socket.data.user.username, myId, friendId);
         }
       } catch (err) {
         console.error('Error in acceptFriendRequest:', err);
@@ -381,10 +378,11 @@ server.ready().then(() => {
         const friendSocket = onlineUsers.get(String(friendId));
         if (!friendSocket) return;
         // const UserData = await fetchUserData(myId);
-        if (!UserData)
-          return;
+        // if (!UserData)
+        //   return;
+        if(!socket.data.user)return
         for (const isd of friendSocket) {
-          socket.to(isd).emit("friendRequestRejected", UserData?.user?.username, myId, friendId);
+          socket.to(isd).emit("friendRequestRejected", socket.data.user.username, myId, friendId);
         }
       }
       catch (err) {
