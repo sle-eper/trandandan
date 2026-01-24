@@ -103,7 +103,7 @@ export async function joinTournament_post(request, reply) {
                 [tournament.id]
             );
             console.log("==== Tournament Full ====", tournamentUpdated);
-            return reply.code(200).send({ message: "Tournament Full", tournament : tournamentUpdated });
+            return reply.code(200).send({ message: "Tournament Full", tournament: tournamentUpdated });
 
         }
     }
@@ -216,4 +216,23 @@ export async function listTournaments_get(request, reply) {
         console.log(error);
         return reply.code(500).send({ success: false, message: error.message });
     }
+}
+
+
+
+export async function matchmaking_get(request, reply) {
+    const { tournamentName } = request.query;
+    console.log("we have to matchmaking the participants of tournament:", tournamentName);
+    const db = await getDatabase();
+    const tournament = await db.get('SELECT * FROM tournament WHERE name  = ?', [tournamentName]);
+    if (!tournament) {
+        console.log("Tournament Not Found");
+        return reply.code(400)
+            .send({ message: "Tournament Not Found" });
+    }
+    const participants = await db.all(
+        "SELECT * FROM participant WHERE tournamentId = ?",
+        [tournament.id]
+    );
+    
 }
