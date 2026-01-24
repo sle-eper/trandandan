@@ -13,6 +13,7 @@ export function socketInstance(): Socket | null {
     transports: ["websocket"],
   });
 }
+
 export function getSocketInstance(): Socket | null {
   // get current url
   const currentPath = window.location.pathname;

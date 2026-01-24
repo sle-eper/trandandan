@@ -1,7 +1,7 @@
 import * as Socket from "../../socket_manager/socket";
 import { navigate } from "../../auth_frontend/src_auth/app"
 import { addMenuNotification } from "../../chat-frontend/src/ts/chat_ui_tools";
-import { showToast } from "./create_tournament";
+import { renderTournamentBracket, showToast } from "./create_tournament";
 
 export function inviteHandlerReceived(data: any) {
 
@@ -59,7 +59,7 @@ export function inviteHandlerReceived(data: any) {
     if (responseData.message === "Tournament Full")
     {
       console.log("Response data::::::::::::::::::::::::::", responseData);
-      socket.emit("tournament:start", { tournamentName: data.tournamentName });
+      socket.emit("tournament:start", { tournamentName: data.tournamentName, maxPlayers: 4 });
       showToast("Tournament is full. You have been added to the tournament!");
       notif.remove();
       return;
@@ -116,7 +116,8 @@ export function StartingTournament(data: any) {
   container.appendChild(notif);
 
   notif.querySelector(".accept")?.addEventListener("click", async () => {
-    navigate(`/tournament/${data.tournamentName}`);
+    renderTournamentBracket();
+    navigate(`/tournament/bracket/${data.tournamentName}?maxPlayers=${data.maxPlayers}`);
     notif.remove();
   });
 
@@ -126,5 +127,5 @@ export function StartingTournament(data: any) {
   addMenuNotification("🎮 ", `<strong>${data.tournamentName}</strong> wants to join`, "1");
   setTimeout(() => {
     notif.remove();
-  }, 10000);
+  }, 40000);
 } ``

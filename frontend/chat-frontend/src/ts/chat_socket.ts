@@ -7,11 +7,15 @@ import * as Tournament from "../../../tournament_frontend/src/socketTournament";
 import { start_gameHandler, chatErrorHandler } from "./chat_handlers";
 import { liveHandler, receiveMessageHandler, allowMsgHandler, blockOrAcceptedHandler, messages_batchHandler, messages_old_batchHandler, request_to_playHandler, not_agreeHandler, msg_notificationHandler, user_onlineHandler, user_offlineHandler } from "./chat_handlers"
 
+import {renderConnectionError} from "./chat_ui_tools"
 export function socketListener() {
   const socket = getSocketInstance();
   if (!socket) return;
-
   // Remove old listeners to prevent duplicates
+  socket.off("disconnect");
+  socket.off("connect_error");
+
+
   socket.off("live");
   socket.off("receive_message");
   socket.off("allowMsg");
@@ -27,6 +31,13 @@ export function socketListener() {
   socket.on("messages_batch", messages_batchHandler);
   socket.on("messages_old_batch", messages_old_batchHandler);
   socket.on("chat_error", chatErrorHandler);
+
+  socket.on("connect_error", () => {
+    const container = document.getElementById("dashboard-content");
+    if(!container)return;
+    renderConnectionError(container)
+  });
+  
 }
 
 export function socketNotificationListener() {

@@ -4,9 +4,22 @@
 
 export function renderSidebar(): string {
   return `
-    <div id="layout" class="hidden md:flex justify-center items-center h-[calc(90vh-3rem)] w-30">
-      <aside id="sidebar" class="bg-red-600 h-[65%] w-[50%] rounded-3xl">
-        <nav class="flex flex-col justify-around h-full items-center">
+    <div id="layout" class="fixed bottom-0 left-0 w-full h-16
+    flex justify-center items-center
+    md:static md:h-[calc(90vh-3rem)] md:w-30">
+      <aside
+          id="sidebar"
+          class="
+            bg-red-600
+            h-[65%] w-[90%] mt-6
+            rounded-full
+            md:rounded-3xl
+            md:h-[65%] md:w-[50%]
+          "
+        >
+
+        <nav class="flex flex-row md:flex-col justify-around h-full items-center">
+
 
           <a href="/home" data-route>
             <span id="btn-home" class="material-symbols-outlined 

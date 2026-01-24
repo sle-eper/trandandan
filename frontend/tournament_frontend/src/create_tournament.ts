@@ -588,7 +588,7 @@ export function renderCreateTournament() {
         showToast("Tournament created successfully!");
         console.log("Tournament created event received");
         renderTournamentBracket();
-        navigate("/tournement/bracket");
+        navigate(`/tournement/bracket/${currentTournament.name}?maxPlayers=${currentTournament.maxPlayers}`);
       });
       socket?.emit("tournament:create", {
         room: currentTournament.name,
@@ -609,7 +609,7 @@ export function Tournament() {
 function attachEntryHandlers() {
   document.getElementById("view-tournaments-btn")?.addEventListener("click", () => {
     renderTournamentList();
-    navigate("/tournement/list");
+    navigate(`/tournement/list`);
   });
   document.getElementById("create-tournament-btn")?.addEventListener("click", () => {
     renderCreateTournament();
@@ -661,7 +661,7 @@ function attachListHandlers() {
         console.log("Tournament status:", body);
         currentTournament.maxPlayers = body.maxPlayers || 16;
         renderTournamentBracket();
-        navigate(`/tournement/${currentTournament.name}/bracket`);
+        navigate(`/tournament/bracket/${currentTournament.name}?maxPlayers=${currentTournament.maxPlayers}`);
       }
     });
   });
@@ -671,8 +671,8 @@ function attachListHandlers() {
     btn.addEventListener("click", async (e) => {
       const target = e.currentTarget as HTMLElement;
       const tournamentId = target.dataset.tournamentId;
-      const tournamentName = target.dataset.tournamentName;
-
+      const tournamentName = target.dataset.tournamentName ;
+      const maxPlayers = target.dataset.maxPlayers ? parseInt(target.dataset.maxPlayers) : 16;
       if (!tournamentId || !tournamentName) return;
       const result = await fetch("/tournament/join", {
         method: "POST",
@@ -704,7 +704,7 @@ function attachListHandlers() {
           });
         }
         renderTournamentBracket();
-        navigate("/tournement/bracket");
+        navigate(`/tournament/bracket/tournamentName=${tournamentName}?maxPlayers=${body.tournament.maxPlayers}`);
       });
     });
   });
@@ -726,7 +726,11 @@ export async function renderTournamentBracket() {
   const main = document.getElementById("dashboard-content");
   if (!main) return;
   main.innerHTML = tournamentBracketTemplate();
-
+  const urlParams = new URLSearchParams(window.location.search);
+  const tournamentName = urlParams.get('tournamentName')||  currentTournament.name;
+  const maxPlayers = urlParams.get('maxPlayers') || String(currentTournament.maxPlayers);
+  console.log("Current Tournament from URL:", tournamentName);
+  console.log("Max Players from URL:", maxPlayers);
   const addBtn = document.getElementById("add-player-btn");
   const startBtn = document.getElementById("start-tournament-btn");
   const playerCount = document.getElementById("player-count");
@@ -764,7 +768,7 @@ export async function renderTournamentBracket() {
     const socket = Socket.getSocketInstance();
     socket?.once("InvitationSended", () => {
       showToast("Invitation sent!");
-      navigate("/tournement/bracket");
+      navigate(`/tournament/bracket/tournamentName=${tournamentName}?maxPlayers=${maxPlayers}`);
     });
     const response = await fetch("/auth/verify", {
       method: "GET",
@@ -774,7 +778,7 @@ export async function renderTournamentBracket() {
     const responseJson = await response.json()
     const userID = responseJson.id as string;
     socket?.emit("tournament:invite", {
-      tournamentName: currentTournament.name,
+      tournamentName: tournamentName,
       userId: userID,
       friendId: friendId,
     });
@@ -782,7 +786,7 @@ export async function renderTournamentBracket() {
   });
 
   startBtn?.addEventListener("click", () => {
-    if (joinedPlayers.length !== currentTournament.maxPlayers) {
+    if (joinedPlayers.length !== Number(maxPlayers)) {
       alert("Not all players have joined yet!");
       return;
     }
@@ -794,6 +798,6 @@ export async function renderTournamentBracket() {
   });
   document.getElementById("back-to-tournaments")?.addEventListener("click", async () => {
     renderTournamentList();
-    navigate("/tournement/list");
+    navigate(`/tournement/list`);
   });
 }

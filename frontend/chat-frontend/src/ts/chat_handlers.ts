@@ -6,6 +6,7 @@ import { moveUp,setupPopupEvents,addMenuNotification } from "./chat_ui_tools";
 import { getImInRoom } from "./global_var";
 import { getCurrentUserId } from "./global_var";
 import { navigate } from "../../../auth_frontend/src_auth/login/router";
+import {renderConnectionError} from "./chat_ui_tools"
 
 export const liveHandler = (id:string, roomName:string, msg:string, timeOfMsg:string)=>{
     moveUp(id);
@@ -40,20 +41,52 @@ export const receiveMessageHandler = (msg:string, msgId:string, friendId:string,
     if (containerMsg) containerMsg.innerHTML = lastMsg("seen", msg, friendId);
 }
 
-export const allowMsgHandler = (allow: boolean, status: string) => {
-  const msg = document.getElementById("x");
-  if (msg && allow) msg.innerHTML = inputMsg("accepted", status);
-  else if (msg && !allow) msg.innerHTML = inputMsg("blocked", status);
-  setupPopupEvents();
+export const allowMsgHandler = (allow: boolean,status:string) => {
+    const msg = document.getElementById("x");
+    const challenge = document.getElementById("challenge-option") as HTMLButtonElement;
+    if (msg && allow){
+      msg.innerHTML = inputMsg("accepted",status);
+      challenge?.classList.remove(
+        "opacity-50",
+        "cursor-not-allowed",
+        "pointer-events-none"
+      );
+    }
+    else if (msg && !allow){
+      msg.innerHTML = inputMsg("blocked",status);
+      challenge?.classList.add(
+        "opacity-50",
+        "cursor-not-allowed",
+        "pointer-events-none"
+      );
+    }
+      
+    setupPopupEvents();
 }
 
-export const blockOrAcceptedHandler = (roomName: string, statusGlobal: string, status: string) => {
-  const dm = document.getElementById("DM");
-  if (dm && dm.dataset.roomName == roomName) {
-    const msg = document.getElementById("x");
-    if (msg) msg.innerHTML = inputMsg(statusGlobal, status);
-    setupPopupEvents();
-  }
+export const blockOrAcceptedHandler = (roomName: string, statusGlobal: string,status:string) => {
+    console.log(statusGlobal,status);
+    const dm = document.getElementById("DM");
+    if (dm && dm.dataset.roomName == roomName) {
+      const msg = document.getElementById("x");
+      const challenge = document.getElementById("challenge-option") as HTMLButtonElement;
+      if (msg) msg.innerHTML = inputMsg(statusGlobal,status);
+      if(statusGlobal === 'blocked')
+      {
+        challenge?.classList.add(
+          "opacity-50",
+          "cursor-not-allowed",
+          "pointer-events-none"
+        );
+      }else if (statusGlobal === 'accepted'){
+          challenge?.classList.remove(
+          "opacity-50",
+          "cursor-not-allowed",
+          "pointer-events-none"
+        );
+      }
+      setupPopupEvents();
+    }
 }
 
 export const messages_batchHandler = (messages: any[], friendImg: string) => {
@@ -92,25 +125,37 @@ export const messages_old_batchHandler = (messages: any[], friendImg: string) =>
   }
 }
 
-export const chatErrorHandler = (errorMsg:string) => {
-  const container = document.getElementById("chat-alert-root");
-    if (!container) return;
-  container.classList.remove("hidden");
-  container.innerHTML = "";
+export const chatErrorHandler = (errorMsg: string) => {
 
-  const alertDiv:HTMLDivElement = document.createElement("div") as HTMLDivElement;
-  alertDiv.className = `text-[#E63946]`;
-  alertDiv.innerHTML = `
-    <span class="text-sm">
-      ${errorMsg}
-    </span>
-  `;
-  container.appendChild(alertDiv);
-  setTimeout(() => {
-    alertDiv.remove();
-    container.classList.add("hidden");
-  }, 5000); 
-}
+   const dashboardContent = document.getElementById("dashboard-content");
+  if (dashboardContent) {
+    renderConnectionError(dashboardContent as HTMLElement);
+  }
+  
+  const alertContainer = document.getElementById("chat-alert-root");
+  if (alertContainer) {
+    alertContainer.classList.remove("hidden");
+    alertContainer.innerHTML = "";
+
+    const alertDiv = document.createElement("div");
+    alertDiv.className = "text-[#E63946]";
+    alertDiv.innerHTML = `
+      <span class="text-sm">
+        ${errorMsg}
+      </span>
+    `;
+
+    alertContainer.appendChild(alertDiv);
+
+    setTimeout(() => {
+      alertDiv.remove();
+      alertContainer.classList.add("hidden");
+    }, 5000);
+  }
+
+
+};
+
 
 export const request_to_playHandler = (from:string,friendId:string,notifId:string) => {
     const container = document.getElementById("play-notification-container");
