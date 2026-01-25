@@ -137,16 +137,17 @@ function tournamentCard(
 }
 
 
-function generateBracketHTML(maxPlayers: number, participants?: any) {
+function generateBracketHTML(maxPlayers: number, participants?: any, flag?: number) {
   if (maxPlayers === 4) {
-    return generate4PlayerBracket(participants);
+    return generate4PlayerBracket(participants, flag);
   } else if (maxPlayers === 8) {
-    return generate8PlayerBracket(participants);
+    return generate8PlayerBracket(participants, flag);
   }
 }
 
-function generate4PlayerBracket(Participants?: any) {
-  return `
+function generate4PlayerBracket(Participants?: any, flag?:number) {
+  if (flag === 1){
+    return `
     <div class="w-full h-full flex items-center justify-center gap-12">
 
       <!-- Semi-Finals -->
@@ -186,9 +187,54 @@ function generate4PlayerBracket(Participants?: any) {
 
     </div>
   `;
+  }
+  else
+  {
+    return `
+    <div class="w-full h-full flex items-center justify-center gap-12">
+
+      <!-- Semi-Finals -->
+      <div class="relative w-44" style="height: 280px;">
+        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
+          Semi-Final
+        </h3>
+
+        <!-- SF 1 -->
+        <div class="absolute left-0" style="top: 48px;">
+          ${matchCard(Participants[0].nickname || "TBD", "TBD", "Loser0", "TBD")}
+        </div>
+
+        <!-- SF 2 -->
+        <div class="absolute left-0" style="top: 168px;">
+          ${matchCard(Participants[1].nickname || "TBD", "TBD", "Loser1", "TBD")}
+        </div>
+      </div>
+
+      <!-- Connector Lines SF → F -->
+      <div class="flex flex-col justify-center">
+        <svg width="60" height="280" class="text-white/20">
+          ${connectorPair(60, 110, 60, 3)}
+        </svg>
+      </div>
+
+      <!-- Final -->
+      <div class="relative w-44" style="height: 280px;">
+        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
+          Final
+        </h3>
+
+        <div class="absolute left-0" style="top: 108px;">
+          ${matchCard(Participants[0].nickname || "TBD", "TBD", Participants[1].nickname || "TBD", "TBD")}
+        </div>
+      </div>
+
+    </div>
+  `;
+  }
 }
 
-function generate8PlayerBracket(participants?: any) {
+function generate8PlayerBracket(participants?: any, flag?:number) {
+  if (flag === 1){
   return `
     <div class="w-full h-full flex items-center justify-center gap-10">
 
@@ -262,111 +308,163 @@ function generate8PlayerBracket(participants?: any) {
 
     </div>
   `;
-}
+  }
+  else if (flag === 2)
+  {
+`
+    <div class="w-full h-full flex items-center justify-center gap-10">
 
+      <!-- Quarter-Finals -->
+      <div class="relative w-44" style="height: 480px;">
+        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
+          Quarter-Final
+        </h3>
 
-function generate16PlayerBracket() {
-  return `
-    <div class="w-full h-full flex items-center justify-center gap-8">
-      
-      <!-- Round of 16 -->
-      <div class="flex flex-col gap-2">
-        <h3 class="text-xs text-gray-400 uppercase tracking-wider mb-4 text-center">Round of 16</h3>
-        <div class="flex flex-col gap-10 pt-8">
-          ${matchCard("Player 1", "3", "Player 2", "1")}
-          ${matchCard("Player 3", "TBD", "Player 4", "TBD")}
-          ${matchCard("Player 5", "TBD", "Player 6", "TBD")}
-          ${matchCard("Player 7", "TBD", "Player 8", "TBD")}
-          ${matchCard("Player 9", "TBD", "Player 10", "TBD")}
-          ${matchCard("Player 11", "TBD", "Player 12", "TBD")}
-          ${matchCard("Player 13", "TBD", "Player 14", "TBD")}
-          ${matchCard("Player 15", "TBD", "Player 16", "TBD")}
+        <!-- QF 1 -->
+        <div class="absolute left-0" style="top: 48px;">
+          ${matchCard(participants[0].nickname || "TBD", "TBD","Loser0", "TBD")}
+        </div>
+
+        <!-- QF 2 -->
+        <div class="absolute left-0" style="top: 168px;">
+          ${matchCard(participants[1].nickname || "TBD", "TBD","Loser1", "TBD")}
+        </div>
+
+        <!-- QF 3 -->
+        <div class="absolute left-0" style="top: 288px;">
+          ${matchCard(participants[2].nickname || "TBD", "TBD","Loser2", "TBD")}
+        </div>
+
+        <!-- QF 4 -->
+        <div class="absolute left-0" style="top: 408px;">
+          ${matchCard(participants[3].nickname || "TBD", "TBD","Loser3", "TBD")}
         </div>
       </div>
 
-      <!-- Connector Lines R16 → QF -->
-      <div>
-        <svg width="50" height="860" class="text-white/20">
-          ${connectorPair(50, 100, 50, 2)}
-          ${connectorPair(50, 100, 280, 2)}
-          ${connectorPair(50, 100, 510, 2)}
-          ${connectorPair(50, 100, 730, 2)}
-        </svg>
-
-      </div>
-
-  <!-- Quarter-Finals -->
-    <div class="relative w-44" style="height: 860px;">
-      <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
-        Quarter-Final
-      </h3>
-
-      <div class="absolute left-0" style="top: 98px;">
-        ${matchCard("Player 1", "TBD", "TBD", "TBD")}
-      </div>
-
-      <div class="absolute left-0" style="top: 328px;">
-        ${matchCard("TBD", "TBD", "TBD", "TBD")}
-      </div>
-
-      <div class="absolute left-0" style="top: 558px;">
-        ${matchCard("TBD", "TBD", "TBD", "TBD")}
-      </div>
-
-      <div class="absolute left-0" style="top: 778px;">
-        ${matchCard("TBD", "TBD", "TBD", "TBD")}
-      </div>
-    </div>
-
-
-
-
       <!-- Connector Lines QF → SF -->
       <div class="flex flex-col justify-center">
-        <svg width="50" height="860" class="text-white/20">
-          ${connectorPair(50, 224, 106, 2.5)}
-          ${connectorPair(50, 224, 566, 2.5)}
+        <svg width="60" height="480" class="text-white/20">
+          ${connectorPair(60, 120, 48, 2)}
+          ${connectorPair(60, 120, 308, 2)}
         </svg>
       </div>
 
       <!-- Semi-Finals -->
-      <div class="relative w-44" style="height: 860px;">
+      <div class="relative w-44" style="height: 480px;">
         <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
           Semi-Final
         </h3>
 
-        <!-- SF 1 -->
-        <div class="absolute left-0" style="top: 212px;">
-          ${matchCard("TBD", "TBD", "TBD", "TBD")}
+        <div class="absolute left-0" style="top: 108px;">
+          ${matchCard(participants[0].nickname || "TBD", "TBD", "Loser0", "TBD")}
         </div>
 
-        <!-- SF 2 -->
-        <div class="absolute left-0" style="top: 672px;">
-          ${matchCard("TBD", "TBD", "TBD", "TBD")}
+        <div class="absolute left-0" style="top: 368px;">
+          ${matchCard(participants[1].nickname || "TBD", "TBD", "Loser1", "TBD")}
         </div>
       </div>
 
       <!-- Connector Lines SF → F -->
       <div class="flex flex-col justify-center">
-        <svg width="50" height="860" class="text-white/20">
-          ${connectorPair(50, 460, 220, 3)}
+        <svg width="60" height="480" class="text-white/20">
+          ${connectorPair(60, 260, 108, 3)}
         </svg>
       </div>
 
       <!-- Final -->
-      <div class="relative w-44" style="height: 860px;">
+      <div class="relative w-44" style="height: 480px;">
         <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
           Final
         </h3>
 
-        <div class="absolute left-0" style="top: 450px;">
+        <div class="absolute left-0" style="top: 228px;">
           ${matchCard("TBD", "TBD", "TBD", "TBD")}
         </div>
       </div>
 
     </div>
   `;
+  }
+  else
+  {
+    `
+    <div class="w-full h-full flex items-center justify-center gap-10">
+
+      <!-- Quarter-Finals -->
+      <div class="relative w-44" style="height: 480px;">
+        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
+          Quarter-Final
+        </h3>
+
+        <!-- QF 1 -->
+        <div class="absolute left-0" style="top: 48px;">
+          ${matchCard(participants[0].nickname || "TBD", "TBD", "Loser0", "TBD")}
+        </div>
+
+        <!-- QF 2 -->
+        <div class="absolute left-0" style="top: 168px;">
+          ${matchCard(participants[1].nickname || "TBD", "TBD", "Loser1", "TBD")}
+        </div>
+
+        <!-- QF 3 -->
+        <div class="absolute left-0" style="top: 288px;">
+          ${matchCard(participants[2].nickname || "TBD", "TBD", "Loser2", "TBD")}
+        </div>
+
+        <!-- QF 4 -->
+        <div class="absolute left-0" style="top: 408px;">
+          ${matchCard(participants[3].nickname || "TBD", "TBD", "Loser3", "TBD")}
+        </div>
+      </div>
+
+      <!-- Connector Lines QF → SF -->
+      <div class="flex flex-col justify-center">
+        <svg width="60" height="480" class="text-white/20">
+          ${connectorPair(60, 120, 48, 2)}
+          ${connectorPair(60, 120, 308, 2)}
+        </svg>
+      </div>
+
+      <!-- Semi-Finals -->
+      <div class="relative w-44" style="height: 480px;">
+        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
+          Semi-Final
+        </h3>
+
+        <div class="absolute left-0" style="top: 108px;">
+          ${matchCard(participants[0].nickname || "TBD", "TBD", "Loser0", "TBD")}
+        </div>
+
+        <div class="absolute left-0" style="top: 368px;">
+          ${matchCard(participants[1].nickname || "TBD", "TBD", "Loser1", "TBD")}
+        </div>
+      </div>
+
+      <!-- Connector Lines SF → F -->
+      <div class="flex flex-col justify-center">
+        <svg width="60" height="480" class="text-white/20">
+          ${connectorPair(60, 260, 108, 3)}
+        </svg>
+      </div>
+
+      <!-- Final -->
+      <div class="relative w-44" style="height: 480px;">
+        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
+          Final
+        </h3>
+
+        <div class="absolute left-0" style="top: 228px;">
+          ${matchCard(participants[0].nickname || "TBD", "TBD",participants[1].nickname || "TBD", "TBD")}
+        </div>
+      </div>
+
+    </div>
+  `;
+  }
 }
+
+
+
 let joinedPlayers: string[] = [];
 const friends = [
   { id: 1, username: "ayoub" },
@@ -375,7 +473,7 @@ const friends = [
 ];
 
 
-function tournamentBracketTemplate(maxPlayers: number, participants: any) {
+function tournamentBracketTemplate(maxPlayers: number, participants: any, flag?: number) {
   return `
     <div class="w-full h-full flex flex-col">
       
@@ -419,7 +517,7 @@ function tournamentBracketTemplate(maxPlayers: number, participants: any) {
 
       <!-- Bracket Container -->
       <div class="flex-1 flex items-center justify-center p-4">
-        ${generateBracketHTML(Number(maxPlayers), participants)}
+        ${generateBracketHTML(Number(maxPlayers), participants, flag)}
       </div>
       <!-- Invite Friends Modal -->
       <div
@@ -686,6 +784,12 @@ function attachListHandlers() {
         showToast(body.message || "Error joining tournament.");
         return;
       }
+      const Me = await fetch("/auth/verify", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+      console.log
       const socket = Socket.getSocketInstance();
       socket?.emit("tournament:join", {
         tournamentId,
@@ -698,7 +802,7 @@ function attachListHandlers() {
         //start the tournamnet
         if (body.message === "Tournament Full") {
           console.log("Starting tournament as it is full", body.tournament.maxPlayers);
-          socket?.emit("tournament:start", {
+          socket?.emit("matchmaking:start", {
             tournamentName: tournamentName,
             maxPlayers: body.tournament.maxPlayers,
           });
@@ -722,7 +826,7 @@ function onPlayerJoined(username: string) {
   }
 }
 
-export async function renderTournamentBracket(tournamentName?: string, maxPlayers?: number) {
+export async function renderTournamentBracket(tournamentName?: string, maxPlayers?: number, flag?:number) {
   const main = document.getElementById("dashboard-content");
   if (!main) return;
   const Players = Number(maxPlayers) || 16;
@@ -734,8 +838,7 @@ export async function renderTournamentBracket(tournamentName?: string, maxPlayer
     },
   });
   const body = await Participant.json();
-  console.log("Participants data:", body);
-  main.innerHTML = tournamentBracketTemplate(Players, body);
+  main.innerHTML = tournamentBracketTemplate(Players, body, flag);
   const addBtn = document.getElementById("add-player-btn");
   const startBtn = document.getElementById("start-tournament-btn");
   const playerCount = document.getElementById("player-count");

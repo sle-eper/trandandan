@@ -222,17 +222,77 @@ export async function listTournaments_get(request, reply) {
 
 export async function matchmaking_get(request, reply) {
     const { tournamentName } = request.query;
-    console.log("we have to matchmaking the participants of tournament:", tournamentName);
-    const db = await getDatabase();
-    const tournament = await db.get('SELECT * FROM tournament WHERE name  = ?', [tournamentName]);
-    if (!tournament) {
-        console.log("Tournament Not Found");
-        return reply.code(400)
-            .send({ message: "Tournament Not Found" });
+    try {
+
+        console.log("we have to matchmaking the participants of tournament:", tournamentName);
+        const db = await getDatabase();
+        const tournament = await db.get('SELECT * FROM tournament WHERE name = ?', [tournamentName]);
+
+        if (!tournament) {
+            console.log("Tournament Not Found");
+            return reply.code(400).send({ message: "Tournament Not Found" });
+        }
+
+        const participants = await db.all(
+            "SELECT * FROM participant WHERE tournamentId = ?",
+            [tournament.id]
+        );
+
+        if (participants.length < 2) {
+            return reply.code(400).send({ message: "Not enough participants for matchmaking" });
+        }
+
+        // Get statistics for each participant
+        const participantStats = [
+            {
+                participant: participants[0],
+                stats: { wins: 10, losses: 2 }
+            },
+            {
+                participant: participants[1],
+                stats: { wins: 3, losses: 7 }
+            },
+            {
+                participant: participants[2],
+                stats: { wins: 6, losses: 4 }
+            },
+            {
+                participant: participants[3],
+                stats: { wins: 8, losses: 1 }
+            }
+        ];
+
+        participantStats.sort((a, b) => {
+            const aWinRate = a.stats.wins / (a.stats.wins + a.stats.losses || 1);
+            const bWinRate = b.stats.wins / (b.stats.wins + b.stats.losses || 1);
+            return bWinRate - aWinRate;
+        });
+        const matches = [];
+        for (let i = 0; i < participantStats.length - 1; i += 2) {
+            matches.push({
+                player1: participantStats[i].participant,
+                player1Stats: participantStats[i].stats,
+                player2: participantStats[i + 1].participant,
+                player2Stats: participantStats[i + 1].stats,
+                tournamentId: tournament.id
+            });
+        }
+        if (participantStats.length % 2 !== 0) {
+            matches.push({
+                player1: participantStats[participantStats.length - 1].participant,
+                player1Stats: participantStats[participantStats.length - 1].stats,
+                player2Stats: null,
+                tournamentId: tournament.id
+            });
+        }
+        console.log("Matchmaking result:", matches);
+        return reply.send({
+            tournament: tournament.name,
+            matches
+        });
     }
-    const participants = await db.all(
-        "SELECT * FROM participant WHERE tournamentId = ?",
-        [tournament.id]
-    );
-    
+    catch (error) {
+        console.log("Error during matchmaking:", error);
+        return reply.code(500).send({ message: "Internal Server Error" });
+    }
 }

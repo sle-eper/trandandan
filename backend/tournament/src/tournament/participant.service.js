@@ -95,22 +95,28 @@ export async function removeParticipant_post(request, reply) {
         .send("the user not in the tournament ")
 }
 export async function listParticipants_get(request, reply) {
-    const ownerid = request.headers['x-user-id'];
-    const { tournamentname } = request.query;
-    const db = await getDatabase();
-    console.log("tournament id:", tournamentname);
-    const tournament = await db.get('SELECT * FROM tournament WHERE name  = ?', [tournamentname]);
-    // if (!(Number(tournament.ownerid) === Number(ownerid))) {
-    //     console.log("Forbidden");
-    //     return reply.code(403)
-    //     .send("Forbidden")
-    // }
-    const participants = await db.all(
-        "SELECT * FROM participant WHERE tournamentId = ?",
-        [tournament.id]
-    );
-    return reply.code(200)
-        .send(participants)
+    try {
+        const ownerid = request.headers['x-user-id'];
+        const { tournamentname } = request.query;
+        const db = await getDatabase();
+        console.log("tournament id:", tournamentname);
+        const tournament = await db.get('SELECT * FROM tournament WHERE name  = ?', [tournamentname]);
+        if (!tournament) {
+            console.log("Forbidden");
+            return reply.code(404)
+            .send("Not Found")
+        }
+        const participants = await db.all(
+            "SELECT * FROM participant WHERE tournamentId = ?",
+            [tournament.id]
+        );
+        return reply.code(200)
+            .send(participants)
+    }
+    catch (error) {
+        console.log(error);
+        return reply.code(500)
+    }
 }
 
 
