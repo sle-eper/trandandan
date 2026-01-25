@@ -82,3 +82,26 @@ export const getAllMatches = async (request, reply) => {
         return reply.code(500).send({ error: "Internal Server Error" });
     }
 };
+
+export const getUserStats = async (request, reply) => {
+    const userId = parseInt(request.params.userId);
+    if (isNaN(userId)) {
+        return reply.code(400).send({ error: "Invalid User ID" });
+    }
+    const db = request.server.db;
+    try {
+        const stats = await db.get(
+            `SELECT * FROM user_stats WHERE user_id = ?`,
+            [userId]
+        );
+
+        if (!stats) {
+            return reply.code(404).send({ error: "Stats not found for this user" });
+        }
+
+        return { success: true, stats };
+    } catch (error) {
+        request.log.error(error);
+        return reply.code(500).send({ error: "Internal Server Error" });
+    }
+};
