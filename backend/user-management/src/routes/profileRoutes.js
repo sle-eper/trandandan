@@ -8,38 +8,38 @@ async function profileRoutes(fastify, options) {
   fastify.get('/profile/User', profileController.getUserBYemailorUsername.bind(profileController));
 
   fastify.post('/profile/create',
-  {
+    {
       schema: {
-    body: {
-      type: 'object',
-      required: ['username', 'email', 'displayName'],
-      properties: {
-        username: {
-          type: 'string',
-          minLength: 3,
-          maxLength: 50,
-          pattern: '^[a-zA-Z0-9_ ]+$'
-        },
-        email: {
-          type: 'string',
-          format: 'email',
-          maxLength: 100
-        },
-        displayName: {
-          type: 'string',
-          minLength: 2,
-          maxLength: 50
-        },
-        password: {
-          type: 'string',
-          minLength: 8,
-          maxLength: 128
+        body: {
+          type: 'object',
+          required: ['username', 'email', 'displayName'],
+          properties: {
+            username: {
+              type: 'string',
+              minLength: 3,
+              maxLength: 50,
+              pattern: '^[a-zA-Z0-9_ ]+$'
+            },
+            email: {
+              type: 'string',
+              format: 'email',
+              maxLength: 100
+            },
+            displayName: {
+              type: 'string',
+              minLength: 2,
+              maxLength: 50
+            },
+            password: {
+              type: 'string',
+              minLength: 8,
+              maxLength: 128
+            }
+          }
         }
       }
     }
-  }
-}
-, profileController.setUser.bind(profileController));
+    , profileController.setUser.bind(profileController));
 
   // Protected routes (require authentication)
   fastify.get('/profile', profileController.getMyProfile.bind(profileController));
@@ -73,7 +73,7 @@ async function profileRoutes(fastify, options) {
             type: 'string',
             enum: ['online', 'offline']
           }
-          
+
         },
         additionalProperties: false
       }
@@ -99,15 +99,17 @@ async function profileRoutes(fastify, options) {
     },
   }, profileController.searchUsers.bind(profileController));
 
-    fastify.get('/user/:id', profileController.getUser.bind(profileController));
-    fastify.get('/User', profileController.getById.bind(profileController));
-    fastify.post('/User/changePassword', profileController.changePassword.bind(profileController));
-    fastify.get('/getAllUsers', profileController.getAllUsers.bind(profileController));
+  fastify.get('/user/:id', profileController.getUser.bind(profileController));
+  fastify.get('/User', profileController.getById.bind(profileController));
+  fastify.post('/User/changePassword', profileController.changePassword.bind(profileController));
+  fastify.get('/getAllUsers', profileController.getAllUsers.bind(profileController));
 
 
-  
-    fastify.put('/user/:id/status', profileController.updateStatus.bind(profileController));
-  
+
+
+  fastify.put('/user/:id/status', profileController.updateStatus.bind(profileController));
+  fastify.get('/user/:id/stats', profileController.getUserStats.bind(profileController));
+
 
   fastify.get('/User/two-factor-status', profileController.getTwoFactorStatus.bind(profileController));
 

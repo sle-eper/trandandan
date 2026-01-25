@@ -36,7 +36,7 @@ async function handleOAuthCallback() {
         }
 
         const data = await response.json();
-        console.log("-----------------------------------------------", data)
+        console.log("-----------------------------------------------data", data)
         if (response.ok) {
             // Initialize socket connection
             console.log("Initializing socket after OAuth...");
