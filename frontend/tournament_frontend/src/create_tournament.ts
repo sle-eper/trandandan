@@ -807,8 +807,6 @@ function attachListHandlers() {
             maxPlayers: body.tournament.maxPlayers,
           });
         }
-        renderTournamentBracket(currentTournament.name, currentTournament.maxPlayers);
-        navigate(`/tournament/bracket/tournamentName=${tournamentName}?maxPlayers=${body.tournament.maxPlayers}`);
       });
     });
   });

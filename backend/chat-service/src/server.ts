@@ -471,7 +471,6 @@ server.ready().then(() => {
       socket.emit("tournament:joined", data);
     });
     socket.on("matchmaking:start", async (data) => {
-      console.log("Matchmaking started for tournament:======", data);
       const participantsMatching = await fetch(`http://tournament:5500/tournament/matchmaking?tournamentName=${encodeURIComponent(data.tournamentName)}`, {
         method: 'GET',
         headers: {
@@ -487,24 +486,19 @@ server.ready().then(() => {
         //if not reject and make the other player win by default
         //then send to game service to start game
         const player1 = match.player1;
-        console.log("Starting match between:", match.player1, "and", match.player2);
         const player2 = match.player2;
         const gameId = Math.random().toString(36).substring(2, 9);
         const player1Sockets = onlineUsers.get(String(player1.userid));
         const player2Sockets = onlineUsers.get(String(player2.userid));
-        console.log("size of onlineUsers", onlineUsers.size, "---->", onlineUsers);
-        console.log("********************", player1Sockets, player2Sockets);
 
         if (player1Sockets) {
           for (const sid of player1Sockets) {
-            console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++==");
             io.to(sid).emit("start_gameTournament", { gameId, userId: player1.userid, tournamentName: data.tournamentName, maxPlayers: data.maxPlayers });
 
           }
         }
         if (player2Sockets) {
           for (const sid of player2Sockets) {
-            console.log("++++++++Doumaya+++++++++++++++++++++++++++++++++++++++++++==");
             io.to(sid).emit("start_gameTournament", { gameId, userId: player2.userid });
           }
         }
@@ -516,8 +510,6 @@ server.ready().then(() => {
       const room = io.sockets.adapter.rooms.get(data.gameId);
       console.log("room after joining:::::::::::::::::::", room);
       if (room && room.size === 2) {
-        //wait for second player
-        console.log("Go to game");
         const sidArray = Array.from(room);
         const sid1 = sidArray[0];
         const sid2 = sidArray[1];
@@ -528,7 +520,14 @@ server.ready().then(() => {
       else {
         console.log("Waiting for opponent to join...");
         //wait 10 seconds max
-        //no one joined i win by default
+        setTimeout(() => {
+        }, 10000);
+        if(room && room.size == 1) {
+          const sidArray = Array.from(room);
+          const sid = sidArray[0];
+          //wait 5 seconds then send
+          io.to(sid).emit("match:ended", { result: 'won', message: 'Opponent did not join in time. You win by default.' });
+        }
       }
     })
     socket.on("Tournament:leave", async (data) => {
@@ -548,7 +547,7 @@ server.ready().then(() => {
         }, 5000);
       }
     })
-
+    //hna khask tsift lih match result
     socket.on("match:result", async (data) => {
       console.log("Match result received:", data);
       //process the result and update tournament bracket
@@ -560,6 +559,7 @@ server.ready().then(() => {
 
       if (loserSockets) {
         for (const sid of loserSockets) {
+          
           io.to(sid).emit("match:ended", { result: 'lost' });
         }
       }

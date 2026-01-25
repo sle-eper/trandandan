@@ -241,26 +241,19 @@ export async function matchmaking_get(request, reply) {
         if (participants.length < 2) {
             return reply.code(400).send({ message: "Not enough participants for matchmaking" });
         }
+        const participantStats = [];
+        for (let partic of participants) {
 
-        // Get statistics for each participant
-        const participantStats = [
-            {
-                participant: participants[0],
-                stats: { wins: 10, losses: 2 }
-            },
-            {
-                participant: participants[1],
-                stats: { wins: 3, losses: 7 }
-            },
-            {
-                participant: participants[2],
-                stats: { wins: 6, losses: 4 }
-            },
-            {
-                participant: participants[3],
-                stats: { wins: 8, losses: 1 }
-            }
-        ];
+            const axiosstats = await axios.get(
+                `http://user-management:3000/api/game/stats/${partic.userid}`
+            );
+            const stats = axiosstats.data;
+            participantStats.push({
+                participant: partic,
+                stats: { wins: stats.wins, losses: stats.losses }
+            });
+
+        }
 
         participantStats.sort((a, b) => {
             const aWinRate = a.stats.wins / (a.stats.wins + a.stats.losses || 1);
@@ -285,7 +278,6 @@ export async function matchmaking_get(request, reply) {
                 tournamentId: tournament.id
             });
         }
-        console.log("Matchmaking result:", matches);
         return reply.send({
             tournament: tournament.name,
             matches
