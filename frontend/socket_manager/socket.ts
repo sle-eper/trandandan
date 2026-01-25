@@ -11,6 +11,7 @@ export function socketInstance(): Socket {
     socket = io("https://localhost:8443", {
       path: "/socket.io",
       withCredentials: true,
+      // autoConnect: true,
       transports: ["websocket"],
       autoConnect: true,
     });

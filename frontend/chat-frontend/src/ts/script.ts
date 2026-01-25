@@ -1,12 +1,8 @@
-// import { socket } from "../../../auth_frontend/src_auth/login/login";
 import { getSocketInstance } from "../../../socket_manager/socket";
 import { PlayerProfileManager } from "../../../profile_frontend/src/components/FriendRequest";
 import { socketListener } from "./chat_socket";
 import {setupPopupEvents ,onScroll,fetchListOfFriends,resetScrollState} from "./chat_ui_tools";
-// import { currentUserId } from "../../../auth_frontend/src_auth/login/login";
 import { setFriendId, setImInRoom , getFriendId, setCurrentUserId } from "./global_var";
-import {renderConnectionError} from "./chat_ui_tools"
-// const socket = socketInstance;
 
 import {
   chatZones,
@@ -32,7 +28,6 @@ window.addEventListener("keydown", (e) => {
 });
 
 export async function showMainUI() {
-  console.log("hhhhhhhhhhhhhhhhhhhhhhhh");
   socketListener();
   const chatContent = document.getElementById("dashboard-content") as HTMLElement;
   if(!chatContent)return
@@ -53,7 +48,7 @@ export async function showMainUI() {
     let dmZone: HTMLElement | null;
     
     if (chatContent) {
-      chatContent.classList.add("gap-6", "gap-y-3");
+      chatContent.classList.add("gap-6");
       const friends = await fetchListOfFriends();
       // console.table(friends.waitingMsg);
   
@@ -72,20 +67,13 @@ export async function showMainUI() {
           if (friendFind) {
             const roomName: string = [userID, friendFind.id].sort().join("_");
             const dm = document.getElementById("DM");
-            const listContainer = document.getElementById("list-of-msg-container");
+            // const listContainer = document.getElementById("list-of-msg-container");
             if (dm){
                 dm.dataset.roomName = roomName;
                 dm.classList.remove("hidden")
-                listContainer?.classList.add("hidden")
+                // listContainer?.classList.add("hidden")
               }
-            // requestAnimationFrame(()=>{
-            //   document.getElementById("back-btn")?.addEventListener("click", () => {
-            //       dm?.classList.add("hidden");
-            //       listContainer?.classList.remove("hidden");
-            //       setImInRoom("");
-            //       setFriendId("");
-            //   });
-            // })
+            
             getSocketInstance()?.emit("joinToRoom", roomName);
   
             const counterElement: HTMLDivElement = document.getElementById(
@@ -141,33 +129,12 @@ export async function showMainUI() {
                 });
                 if(!document.getElementById("block-button") && !document.getElementById("unblock-button"))
                     document.getElementById("popup-option")!.innerHTML += generateBlockButton(btn1);
-  
-  
-  
-                  // const challenge: HTMLButtonElement = document.getElementById(
-                  //   "challenge-option"
-                  // ) as HTMLButtonElement;
-                //   challenge.classList.add(
-                //     "opacity-50",
-                //     "cursor-not-allowed",
-                //     "pointer-events-none"
-                //   );
-                // }else{
-                //   const challenge: HTMLButtonElement = document.getElementById(
-                //     "challenge-option"
-                //   ) as HTMLButtonElement;
-                //   challenge.classList.remove(
-                //     "opacity-50",
-                //     "cursor-not-allowed",
-                //     "pointer-events-none"
-                //   );
-                // }
-                setupPopupEvents();
-                if (popupOption.classList.contains("hidden"))
-                  popupOption.classList.remove("hidden");
-                else 
-                  popupOption.classList.add("hidden");
-  
+              setupPopupEvents();
+              if (popupOption.classList.contains("hidden"))
+                popupOption.classList.remove("hidden");
+              else 
+                popupOption.classList.add("hidden");
+
               const blockButton = document.getElementById(
                 "block-button"
               ) as HTMLDivElement;
@@ -224,28 +191,10 @@ export async function showMainUI() {
             if (challenge) {
               const textEl:HTMLParagraphElement = challenge.querySelector("p") as HTMLParagraphElement;
               const iconEl:HTMLSpanElement = challenge.querySelector("span") as HTMLSpanElement;
-              // if(btn1 === "blocked")
-              // {
-              //   // const challenge = document.getElementById("challenge-option") as HTMLButtonElement;
-              //   challenge?.classList.add(
-              //     "opacity-50",
-              //     "cursor-not-allowed",
-              //     "pointer-events-none"
-              //   );
-              // }
               if(!challenge.dataset.click)
               {
                 challenge.addEventListener("click", () => {
                   console.log("challenge clicked");
-                  // if(!challenge.classList.contains("pointer-events-none , cursor-not-allowed , opacity-50"))
-                  // {
-                  //   challenge.classList.add(
-                  //     "opacity-50",
-                  //     "cursor-not-allowed",
-                  //     "pointer-events-none"
-                  //   );
-                  // }
-    
                   let remaining = 10;
                   const originalText = textEl?.textContent;
     
@@ -271,10 +220,8 @@ export async function showMainUI() {
                 });
                 challenge.dataset.click = 'yes';
               }
-              // setupPopupEvents();
             }
   
-              // if chose block button show popup of block option
               if (blockButton) {
                 blockButton.addEventListener("click", () => {
                   popupOption.classList.remove("hidden");
