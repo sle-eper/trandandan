@@ -122,11 +122,15 @@ export function listOfMsg(friends:any,waitingMsg:object,myId:string): string //d
                     background-color: #181818;
                 }
             </style>
-        <div id="list-of-msg-container" class="w-[27%] min-w-[270px] h-full block rounded-2xl bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)] border border-[#2A2A2A] overflow-hidden" >
+        <div id="list-of-msg-container"
+            class="w-[27%] min-w-[270px] h-full flex flex-col
+            rounded-2xl bg-[#181818] shadow-[0_0_25px_rgba(0,0,0,0.6)]
+            border border-[#2A2A2A] overflow-hidden">
             <div class="sticky top-0 z-10 bg-[#181818] p-6">
                 <h1 class="font-bold text-[#F5F5F5]">chat</h1>
             </div>
-            <div class="h-full overflow-y-auto" id="list-of-msg">
+            <div id="list-of-msg"
+                class="flex-1 overflow-y-auto">
                 ${friendCards}
             </div>
         </div>`;
