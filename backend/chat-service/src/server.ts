@@ -54,6 +54,7 @@ server.ready().then(() => {
     try{
       const cookies = cookie.parse(socket.handshake.headers.cookie ?? "");
       const token = cookies.token;
+      console.log("------------------------", token)
       if (!token) {
         socket.disconnect();
         return;
@@ -425,7 +426,6 @@ server.ready().then(() => {
           onlineUsers.get(id).delete(socket.id);
           if (onlineUsers.get(id)!.size === 0) {
             onlineUsers.delete(id);
-            console.log("--------------------------");
             console.log("size of onlineUsers", onlineUsers.size, "---->", onlineUsers);
             socket.broadcast.emit("user_offline", id);
             updateUserStat(id, "offline");
@@ -448,23 +448,35 @@ server.ready().then(() => {
     socket.on("tournament:create", async (data) => {
       // console.log("tournament create event received", data);
       socket.join(data.room);
-
-      // 4️⃣ Notify creator
       socket.emit("tournament:created", data);
     });
-
-
-
-
-    socket.on("/tournamentjoin", async (data) => {
-      // console.log("tournament join event received", data);
-      socket.join(data.room);
-      // console.log(`User joined ${data.room}`);
+    socket.on("tournament:invite", async (data) => {
+      const friendSocket = onlineUsers.get(data.friendId);
+      const notfId = await saveNotif(data.userId, data.friendId, 'challenge', null);
+      if (friendSocket) {
+        for (const isd of friendSocket) {
+          io.to(isd).emit("TournamentInvitation", {
+            tournamentName: data.tournamentName,
+            userId: data.userId,
+            friendId: data.friendId,
+            notfId: notfId
+          });
+        }
+      }
+      socket.emit("InvitationSended");
     });
-    socket.on("/tournamentstart", async (data) => {
+    socket.on("tournament:join", async (data) => {
+      socket.join(data.tournamentName);
+      console.log(`User ${socket.data.userId} joined tournament ${data.tournamentName}`);
+      socket.emit("tournament:joined", data);
+    });
+    socket.on("tournament:start", async (data) => {
+      console.log("----", data);
+      // const notfId = await saveNotif(data.userId, data.friendId, 'challenge', null);
+      io.in(data.tournamentName).emit("tournament:started", data);
 
     });
-    socket.on("/tournamentleave", async (data) => {
+    socket.on("tournament:leave", async (data) => {
 
     });
   })

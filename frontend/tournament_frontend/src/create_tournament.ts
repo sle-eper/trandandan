@@ -1,4 +1,5 @@
 import { navigate } from "../../auth_frontend/src_auth/app"
+import { show2FAPage } from "../../auth_frontend/src_auth/login/2FA";
 import * as Socket from "../../socket_manager/socket";
 /* =======================
    TOURNAMENT STATE
@@ -16,6 +17,29 @@ const COLUMN_TOP_PADDING = 32; // px
 /* =======================
    PAGE TEMPLATES
 ======================= */
+
+export function showToast(message: string) {
+  const toast = document.createElement('div');
+  toast.className = `
+    fixed top-6 right-6 z-50
+      bg-[#1a1a1d] text-white
+      pointer-events-auto
+      min-w-[300px] max-w-md
+      px-4 py-3 rounded-xl
+      shadow-2xl border border-white/10
+      flex items-start gap-3
+      transform transition-all duration-300
+  `;
+
+  toast.textContent = message;
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.transform = 'translateX(400px)';
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
 function tournamentEntryTemplate() {
   return `
     <div class="w-full h-full flex flex-col justify-center items-center gap-8">
@@ -95,9 +119,8 @@ function tournamentCard(
           View Bracket
         </button>
 
-        ${
-          canJoin
-            ? `
+        ${canJoin
+      ? `
           <button
             class="flex-1 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition text-sm join-tournament-btn"
             data-tournament-id="${id}"
@@ -105,8 +128,8 @@ function tournamentCard(
             Join
           </button>
           `
-            : ""
-        }
+      : ""
+    }
       </div>
 
     </div>
@@ -114,17 +137,17 @@ function tournamentCard(
 }
 
 
-function generateBracketHTML(maxPlayers: number) {
+function generateBracketHTML(maxPlayers: number, participants: any[] = []) {
   if (maxPlayers === 4) {
-    return generate4PlayerBracket();
+    return generate4PlayerBracket(participants);
   } else if (maxPlayers === 8) {
-    return generate8PlayerBracket();
-  } else {
-    return generate16PlayerBracket();
+    return generate8PlayerBracket(participants);
   }
+  return "";
 }
 
-function generate4PlayerBracket() {
+
+function generate4PlayerBracket(Participants?: any) {
   return `
     <div class="w-full h-full flex items-center justify-center gap-12">
 
@@ -136,12 +159,12 @@ function generate4PlayerBracket() {
 
         <!-- SF 1 -->
         <div class="absolute left-0" style="top: 48px;">
-          ${matchCard("Player 1", "TBD", "Player 2", "TBD")}
+          ${matchCard(Participants[0].nickname || "TBD", "TBD", Participants[1].nickname || "TBD", "TBD")}
         </div>
 
         <!-- SF 2 -->
         <div class="absolute left-0" style="top: 168px;">
-          ${matchCard("Player 3", "TBD", "Player 4", "TBD")}
+          ${matchCard(Participants[2].nickname || "TBD", "TBD", Participants[3].nickname || "TBD", "TBD")}
         </div>
       </div>
 
@@ -167,7 +190,7 @@ function generate4PlayerBracket() {
   `;
 }
 
-function generate8PlayerBracket() {
+function generate8PlayerBracket(participants?: any) {
   return `
     <div class="w-full h-full flex items-center justify-center gap-10">
 
@@ -179,22 +202,22 @@ function generate8PlayerBracket() {
 
         <!-- QF 1 -->
         <div class="absolute left-0" style="top: 48px;">
-          ${matchCard("Player 1", "TBD", "Player 2", "TBD")}
+          ${matchCard(participants[0].nickname || "TBD", "TBD", participants[1].nickname || "TBD", "TBD")}
         </div>
 
         <!-- QF 2 -->
         <div class="absolute left-0" style="top: 168px;">
-          ${matchCard("Player 3", "TBD", "Player 4", "TBD")}
+          ${matchCard(participants[2].nickname || "TBD", "TBD", participants[3].nickname || "TBD", "TBD")}
         </div>
 
         <!-- QF 3 -->
         <div class="absolute left-0" style="top: 288px;">
-          ${matchCard("Player 5", "TBD", "Player 6", "TBD")}
+          ${matchCard(participants[4].nickname || "TBD", "TBD", participants[5].nickname || "TBD", "TBD")}
         </div>
 
         <!-- QF 4 -->
         <div class="absolute left-0" style="top: 408px;">
-          ${matchCard("Player 7", "TBD", "Player 8", "TBD")}
+          ${matchCard(participants[6].nickname || "TBD", "TBD", participants[7].nickname || "TBD", "TBD")}
         </div>
       </div>
 
@@ -354,7 +377,7 @@ const friends = [
 ];
 
 
-function tournamentBracketTemplate() {
+function tournamentBracketTemplate(maxPlayers: number, participants: any) {
   return `
     <div class="w-full h-full flex flex-col">
       
@@ -378,15 +401,6 @@ function tournamentBracketTemplate() {
             class="px-4 py-2 bg-white/10 rounded-xl text-sm hover:bg-white/20 transition">
             + Add Player
           </button>
-
-          <button
-            id="start-tournament-btn"
-            class="px-4 py-2 bg-red-600/80 rounded-xl text-sm
-                   hover:bg-red-600 transition disabled:opacity-40 disabled:cursor-not-allowed"
-            disabled>
-            Start Tournament
-          </button>
-
           <button
             id="back-to-tournaments"
             class="px-4 py-2 bg-white/10 rounded-xl text-sm hover:bg-white/20 transition">
@@ -398,7 +412,7 @@ function tournamentBracketTemplate() {
 
       <!-- Bracket Container -->
       <div class="flex-1 flex items-center justify-center p-4">
-        ${generateBracketHTML(currentTournament.maxPlayers)}
+        ${generateBracketHTML(Number(maxPlayers), participants)}
       </div>
       <!-- Invite Friends Modal -->
       <div
@@ -425,7 +439,6 @@ function tournamentBracketTemplate() {
 function renderFriendsList(friends: { id: number; username: string }[]) {
   const list = document.getElementById("friends-list");
   if (!list) return;
-
   list.innerHTML = friends
     .map(
       (friend) => `
@@ -508,14 +521,9 @@ export function renderCreateTournament() {
             <label class="text-sm text-gray-400">
               Max Players
             </label>
-            <select
-              id="max-players-select"
-              class="w-full mt-1 px-4 py-2 rounded-xl
-                     bg-black/40 border border-white/10
-                     outline-none focus:border-red-500">
+            <select id="max-players-select" ...>
               <option value="4">4</option>
               <option value="8">8</option>
-              <option value="16" selected>16</option>
             </select>
           </div>
           <div class="flex gap-3 mt-6">
@@ -537,32 +545,10 @@ export function renderCreateTournament() {
   `;
 
   document.getElementById("cancel-create-tournament")?.addEventListener("click", () => {
-    navigate("/tournament");
+    navigate("/tournement");
     Tournament();
   });
-  function showToast(message: string) {
-    const toast = document.createElement('div');
-    toast.className = `
-    fixed top-6 right-6 z-50
-      bg-[#1a1a1d] text-white
-      pointer-events-auto
-      min-w-[300px] max-w-md
-      px-4 py-3 rounded-xl
-      shadow-2xl border border-white/10
-      flex items-start gap-3
-      transform transition-all duration-300
-  `;
 
-    toast.textContent = message;
-
-    document.body.appendChild(toast);
-
-    setTimeout(() => {
-      toast.style.transform = 'translateX(400px)';
-      toast.style.opacity = '0';
-      setTimeout(() => toast.remove(), 300);
-    }, 3000);
-  }
   document.getElementById("create")?.addEventListener("click", async () => {
     const nameInput = document.getElementById("tournament-name-input") as HTMLInputElement;
     const playersSelect = document.getElementById("max-players-select") as HTMLSelectElement;
@@ -581,14 +567,20 @@ export function renderCreateTournament() {
     })
     const body = await result.json();
     if (result.ok) {
-      const socket = Socket.getSocketInstance();
+      showToast("Tournament created successfully!");
 
-      socket?.once("tournament:created", () => {
-        showToast("Tournament created successfully!");
-        console.log("Tournament created event received");
-        renderTournamentBracket();
-        navigate("/tournament/bracket");
-      });
+      // 🔥 SHOW BRACKET IMMEDIATELY
+      renderTournamentBracket(
+        currentTournament.name,
+        currentTournament.maxPlayers
+      );
+
+      navigate(
+        `/tournement/bracket/${currentTournament.name}?maxPlayers=${currentTournament.maxPlayers}`
+      );
+
+      // still notify backend
+      const socket = Socket.getSocketInstance();
       socket?.emit("tournament:create", {
         room: currentTournament.name,
       });
@@ -608,18 +600,18 @@ export function Tournament() {
 function attachEntryHandlers() {
   document.getElementById("view-tournaments-btn")?.addEventListener("click", () => {
     renderTournamentList();
-    navigate("/tournament/list");
+    navigate(`/tournement/list`);
   });
   document.getElementById("create-tournament-btn")?.addEventListener("click", () => {
     renderCreateTournament();
-    navigate("/tournament/create");
+    navigate("/tournement/create");
   });
 }
 
 export async function renderTournamentList() {
   const main = document.getElementById("dashboard-content");
   if (!main) return;
-  const result =await  fetch("/tournament/list", {
+  const result = await fetch("/tournament/list", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -634,18 +626,34 @@ export async function renderTournamentList() {
 function attachListHandlers() {
   document.getElementById("back-to-entry")?.addEventListener("click", () => {
     Tournament();
-    navigate("/tournament");
+    navigate("/tournement");
   });
 
   // View Bracket
   document.querySelectorAll(".view-bracket-btn").forEach(btn => {
-    btn.addEventListener("click", (e) => {
+    btn.addEventListener("click", async (e) => {
       const target = e.currentTarget as HTMLElement;
       currentTournament.name = target.dataset.tournamentName || "Tournament";
-      currentTournament.maxPlayers = parseInt(target.dataset.maxPlayers || "16");
-
-      renderTournamentBracket();
-      navigate("/tournament/bracket");
+      const partic = await fetch(`/tournament/My/status?tournamentName=${encodeURIComponent(currentTournament.name)}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      console.log("Participant status:", partic);
+      if (partic.ok) {
+        const tournamentstatus = await fetch(`/tournament/check?tournamentName=${encodeURIComponent(currentTournament.name)}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          }
+        });
+        const body = await tournamentstatus.json();
+        console.log("Tournament status:", body);
+        currentTournament.maxPlayers = body.maxPlayers || 16;
+        renderTournamentBracket(currentTournament.name, currentTournament.maxPlayers);
+        navigate(`/tournament/bracket/${currentTournament.name}?maxPlayers=${currentTournament.maxPlayers}`);
+      }
     });
   });
 
@@ -654,20 +662,42 @@ function attachListHandlers() {
     btn.addEventListener("click", async (e) => {
       const target = e.currentTarget as HTMLElement;
       const tournamentId = target.dataset.tournamentId;
-      const tournamentName = target.dataset.tournamentName;
-
+      const tournamentName = target.dataset.tournamentName ;
+      const maxPlayers = target.dataset.maxPlayers ? parseInt(target.dataset.maxPlayers) : 16;
       if (!tournamentId || !tournamentName) return;
-
+      const result = await fetch("/tournament/join", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          tournamentName: tournamentName,
+        }),
+      });
+      const body = await result.json();
+      if (!result.ok) {
+        showToast(body.message || "Error joining tournament.");
+        return;
+      }
       const socket = Socket.getSocketInstance();
-
       socket?.emit("tournament:join", {
         tournamentId,
-        room: tournamentName,
+        tournamentName: tournamentName,
       });
-
       socket?.once("tournament:joined", () => {
         console.log("Joined tournament:", tournamentName);
-        navigate("/tournament/bracket");
+        showToast("Joined tournament successfully!");
+
+        //start the tournamnet
+        if (body.message === "Tournament Full") {
+          console.log("Starting tournament as it is full", body.tournament.maxPlayers);
+          socket?.emit("tournament:start", {
+            tournamentName: tournamentName,
+            maxPlayers: body.tournament.maxPlayers,
+          });
+        }
+        renderTournamentBracket(currentTournament.name, currentTournament.maxPlayers);
+        navigate(`/tournament/bracket/tournamentName=${tournamentName}?maxPlayers=${body.tournament.maxPlayers}`);
       });
     });
   });
@@ -685,28 +715,49 @@ function onPlayerJoined(username: string) {
   }
 }
 
-export function renderTournamentBracket() {
+export async function renderTournamentBracket(tournamentName?: string, maxPlayers?: number) {
   const main = document.getElementById("dashboard-content");
   if (!main) return;
-  main.innerHTML = tournamentBracketTemplate();
+  const Players = Number(maxPlayers) || 16;
+  console.log("{Debug}", tournamentName,"----" , maxPlayers);
+  const Participant = await fetch(
+  `/tournament/participant/list?tournamentname=${encodeURIComponent(tournamentName || "")}`,
+  {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  }
+);
+
+const body = await Participant.json();
+
+// ✅ IMPORTANT: extract the array
+const participants = body.participants || [];
+
+main.innerHTML = tournamentBracketTemplate(Players, participants);
 
   const addBtn = document.getElementById("add-player-btn");
-  const startBtn = document.getElementById("start-tournament-btn");
   const playerCount = document.getElementById("player-count");
 
-  addBtn?.addEventListener("click", () => {
-  const modal = document.getElementById("invite-modal");
-  modal?.classList.remove("hidden");
-  modal?.classList.add("flex");
-
-  renderFriendsList(friends);
+  addBtn?.addEventListener("click", async () => {
+    console.log("Add Player clicked");
+    const modal = document.getElementById("invite-modal");
+    modal?.classList.remove("hidden");
+    modal?.classList.add("flex");
+    const friends = await fetch("/api/users/getAllUsers", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }).then(res => res.json());
+    console.log("Friends data:", friends);
+    renderFriendsList(friends.users);
   });
   document.getElementById("close-invite-modal")?.addEventListener("click", () => {
     const modal = document.getElementById("invite-modal");
     modal?.classList.add("hidden");
     modal?.classList.remove("flex");
   });
-  document.addEventListener("click", (e) => {
+  document.addEventListener("click", async (e) => {
     const target = e.target as HTMLElement;
 
     if (!target.classList.contains("invite-btn")) return;
@@ -717,33 +768,31 @@ export function renderTournamentBracket() {
     target.textContent = "Invited";
     target.classList.add("opacity-50", "cursor-not-allowed");
     target.setAttribute("disabled", "true");
-
-    console.log("Invite sent to friend:", friendId);
-
-    // 🔌 SOCKET / API (later)
-    // socket.emit("tournament:invite", {
-    //   tournamentId: currentTournament.id,
-    //   friendId,
-    // });
-  });
-
-  startBtn?.addEventListener("click", () => {
-    if (joinedPlayers.length !== currentTournament.maxPlayers) {
-      alert("Not all players have joined yet!");
-      return;
-    }
-
-    console.log("Tournament started with players:", joinedPlayers);
-
-    // 🔌 Socket / API hook
-    // socket.emit("tournament:start", { players: joinedPlayers });
+    const socket = Socket.getSocketInstance();
+    socket?.once("InvitationSended", () => {
+      showToast("Invitation sent!");
+      navigate(`/tournament/bracket/tournamentName=${tournamentName}?maxPlayers=${maxPlayers}`);
+    });
+    const response = await fetch("/auth/verify", {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include", // VERY IMPORTANT FOR Cookies
+    });
+    const responseJson = await response.json()
+    const userID = responseJson.id as string;
+    socket?.emit("tournament:invite", {
+      tournamentName: tournamentName,
+      userId: userID,
+      friendId: friendId,
+    });
+    console.log(`Invited friend ID: ${friendId}`);
   });
 
   document.getElementById("back-to-tournaments")?.addEventListener("click", () => {
-    navigate("/tournament");
+    navigate("/tournement");
   });
   document.getElementById("back-to-tournaments")?.addEventListener("click", async () => {
     renderTournamentList();
-    navigate("/tournament/list");
+    navigate(`/tournement/list`);
   });
 }

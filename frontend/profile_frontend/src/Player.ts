@@ -58,7 +58,7 @@ export class PlayerFriendship {
 // Check friendship status
   static async checkFriendshipStatus(friendId: number): Promise<boolean>   {
   try {
-    // Check if already friends
+   
         const response = await axios.get('/api/users/friend/check', {
         headers: {
             'Content-Type': 'application/json',

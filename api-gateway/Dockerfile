@@ -17,10 +17,9 @@ RUN mkdir -p /etc/nginx/certs
 COPY ssl_script.sh /docker-entrypoint.d/01-generate-certs.sh
 RUN chmod +x /docker-entrypoint.d/01-generate-certs.sh
 
-# Remove default server
 RUN rm -f /etc/nginx/conf.d/default.conf
 
-# Copy your API Gateway config
+
 COPY ./api-gateway.conf /etc/nginx/conf.d/
 
 

@@ -9,112 +9,61 @@ import { getSocketInstance } from "../../../socket_manager/socket.ts";
 import { createFriendRequestNotification } from "./RequestHandling.ts";
 import {Toast} from "./ProfileForm.ts";
 
-
-const dialogStyles = `
-.confirm-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.confirm-dialog {
-  background: white;
-  border-radius: 8px;
-  padding: 20px;
-  max-width: 350px;
-  width: 90%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.confirm-message {
-  font-size: 16px;
-  margin-bottom: 20px;
-}
-
-.confirm-buttons {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-}
-
-.confirm-btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.confirm-btn-cancel {
-  background: #e0e0e0;
-  color: #333;
-}
-
-.confirm-btn-confirm {
-  background: #dc3545;
-  color: white;
-}
-`;
-
-// Simple confirm function
 function simpleConfirm(message: string): Promise<boolean> {
+  console.log('Displaying confirmation dialog with message:', message);
   return new Promise((resolve) => {
+  
     const overlay = document.createElement('div');
-    overlay.className = 'confirm-overlay';
+    overlay.className = 'fixed inset-0 bg-black/60 flex items-center justify-center z-[1000]';
     
+  
     const dialog = document.createElement('div');
-    dialog.className = 'confirm-dialog';
+    dialog.className = 'bg-[#1a1a1a] rounded-2xl border border-white/10 p-8 max-w-md w-11/12 shadow-xl';
     
-    const messageEl = document.createElement('div');
-    messageEl.className = 'confirm-message';
-    messageEl.textContent = message;
+   
+    const msg = document.createElement('div');
+    msg.className = 'text-white text-lg mb-6';
+    msg.textContent = message;
     
-    const buttonsEl = document.createElement('div');
-    buttonsEl.className = 'confirm-buttons';
     
+    const buttons = document.createElement('div');
+    buttons.className = 'flex gap-3 justify-end';
+    
+  
     const cancelBtn = document.createElement('button');
-    cancelBtn.className = 'confirm-btn confirm-btn-cancel';
+    cancelBtn.className = 'px-6 py-2.5 bg-white/10 text-white rounded-lg border border-white/20 hover:bg-white/20 transition-colors cursor-pointer';
     cancelBtn.textContent = 'Cancel';
-    
-    const confirmBtn = document.createElement('button');
-    confirmBtn.className = 'confirm-btn confirm-btn-confirm';
-    confirmBtn.textContent = 'OK';
-    
-    const cleanup = () => overlay.remove();
-    
-    cancelBtn.onclick = () => {
-      cleanup();
+    cancelBtn.addEventListener('click', () => {
+      document.body.removeChild(overlay);
       resolve(false);
-    };
+    });
     
-    confirmBtn.onclick = () => {
-      cleanup();
+   
+    const confirmBtn = document.createElement('button');
+    confirmBtn.className = 'px-6 py-2.5 bg-gradient-to-br from-[#FD1D1D] to-[#711F21] text-white rounded-lg hover:from-[#ff3333] hover:to-[#8a2527] transition-all cursor-pointer shadow-lg';
+    confirmBtn.textContent = 'Confirm';
+    confirmBtn.addEventListener('click', () => {
+      document.body.removeChild(overlay);
       resolve(true);
-    };
+    });
     
-    overlay.onclick = (e) => {
+  
+    overlay.addEventListener('click', (e) => {
       if (e.target === overlay) {
-        cleanup();
+        document.body.removeChild(overlay);
         resolve(false);
       }
-    };
+    });
     
-    buttonsEl.appendChild(cancelBtn);
-    buttonsEl.appendChild(confirmBtn);
-    dialog.appendChild(messageEl);
-    dialog.appendChild(buttonsEl);
+   
+    buttons.appendChild(cancelBtn);
+    buttons.appendChild(confirmBtn);
+    dialog.appendChild(msg);
+    dialog.appendChild(buttons);
     overlay.appendChild(dialog);
     document.body.appendChild(overlay);
   });
 }
-
 
 // Socket listener for friend request received
 export const friendRequestReceivedHandler = (from: string, myId: string,friendId: string, notifId: string) => {
@@ -142,7 +91,7 @@ export class PlayerProfileManager {
     this.showEditProfileCallback = new ProfileForm();
   }
 
-  // Initialize with current user ID
+  
   async initialize(): Promise<void> {
     const currentUser = await User.fetchUserProfile();
     console.log('Current user profile in PlayerProfileManager:', currentUser);
@@ -483,16 +432,12 @@ export class PlayerProfileManager {
         }
       });
     } else if (status.isFriend) {
-      // const messageBtn = document.getElementById(`send-message-${player.id}`);
-      const unfriendBtn = document.getElementById(`unfriend-${player.id}`);
-
-      // messageBtn?.addEventListener('click', () => {
-      //   console.log('Send message to player:', player.id);
-      //   // Add messaging logic
-      // });
-
+      
+     const unfriendBtn = document.getElementById(`unfriend-${player.id}`);
      unfriendBtn?.addEventListener('click', async () => {
-      if (await simpleConfirm(`Are you sure you want to unfriend ${player.display_name}?`)) {
+      const confirmed = await simpleConfirm(`Are you sure you want to unfriend ${player.display_name}?`)
+      console.log('Unfriend button clicked for player:', player.id, 'Confirmed:', confirmed);
+      if (confirmed) {
         await this.unfriendUser(player.id);
         this.showPlayerProfile(player.id);
       }
@@ -644,20 +589,4 @@ export const friendConnectHandler = async (playerId: number) => {
 
 }
 
-// getSocketInstance()?.on('socketNotificationListener', async (from : string,myId: string,friendId: string) => {
-//   console.log('Friend request accepted:', {from, myId, friendId});
-  
-//   const manager = new PlayerProfileManager();
-//   await manager.showPlayerProfile(parseInt(myId));
-//   Toast.success('Friend request accepted');
- 
-// });
-// getSocketInstance()?.on('friendRequestRejected', async (from : string,myId: string,friendId: string) => {
-//   console.log('Friend request rejected:', {from, myId, friendId});
-  
- 
-//   const manager = new PlayerProfileManager();
-//   await manager.showPlayerProfile(parseInt(myId));
-//   Toast.error('Friend request rejected');
-// });
-// Export for easy usage
+

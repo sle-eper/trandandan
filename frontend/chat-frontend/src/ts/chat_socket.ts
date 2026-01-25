@@ -1,7 +1,12 @@
 import { friendDisconnectHandler, friendRequestReceivedHandler, socketNotificationListenerHandler, socketNotificationListenerRejectHandler,friendConnectHandler } from "../../../profile_frontend/src/components/FriendRequest";
 import { friendRequestCancelledHandler } from "../../../profile_frontend/src/components/RequestHandling";
 import { getSocketInstance } from "../../../socket_manager/socket";
-import { liveHandler, receiveMessageHandler, allowMsgHandler, blockOrAcceptedHandler, messages_batchHandler, messages_old_batchHandler, chatErrorHandler, request_to_playHandler, not_agreeHandler, msg_notificationHandler, user_onlineHandler, user_offlineHandler, start_gameHandler } from "./chat_handlers"
+// import { Tournament } from "../../../tournament_frontend/src/creat/e_tournament";
+// import { liveHandler ,  receiveMessageHandler,allowMsgHandler,blockOrAcceptedHandler,messages_batchHandler, messages_old_batchHandler, request_to_playHandler, not_agreeHandler, msg_notificationHandler, user_onlineHandler, user_offlineHandler } from "./chat_handlers"
+import * as Tournament from "../../../tournament_frontend/src/socketTournament";
+import { start_gameHandler, chatErrorHandler } from "./chat_handlers";
+import { liveHandler, receiveMessageHandler, allowMsgHandler, blockOrAcceptedHandler, messages_batchHandler, messages_old_batchHandler, request_to_playHandler, not_agreeHandler, msg_notificationHandler, user_onlineHandler, user_offlineHandler } from "./chat_handlers"
+
 import {renderConnectionError} from "./chat_ui_tools"
 export function socketListener() {
   const socket = getSocketInstance();
@@ -54,6 +59,10 @@ export function socketNotificationListener() {
   socket.off("friendRequestRejected");
   socket.off("start_game");
 
+
+  socket.off("TournamentInvitation");
+  socket.off("tournament:started");
+
   // Add new listeners
   socket.on("user_online", friendConnectHandler);
   socket.on("user_online", user_onlineHandler);
@@ -70,5 +79,8 @@ export function socketNotificationListener() {
   socket.on("friendRequestCancelled", friendRequestCancelledHandler)
   socket.on("friendRequestReceived", friendRequestReceivedHandler)
 
+  //tournament events 
+  socket.on("TournamentInvitation", Tournament.inviteHandlerReceived);
+  socket.on("tournament:started", Tournament.StartingTournament)
 }
 
