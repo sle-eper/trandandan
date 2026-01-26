@@ -25,11 +25,11 @@ function msgTime(send_at:string):string
 export function unreadMsgNumber(nbr:number,friendId:string):string
 {
     if(nbr == 0)
-        return `<div id="counter-of-${friendId}" class=" hidden text-[#F5F5F5] text-sm flex items-center justify-center rounded-full h-5 w-5 bg-[#E63946]">${nbr}</div>`
+        return `<div id="counter-of-${friendId}" class=" hidden text-[#F5F5F5] text-sm flex items-center justify-center rounded-full h-5 w-5 bg-[#9B1C1C]">${nbr}</div>`
     if(nbr <= 9)
-        return `<div id="counter-of-${friendId}" class="text-[#F5F5F5] text-sm flex items-center justify-center rounded-full h-5 w-5 bg-[#E63946]">${nbr}</div>`
+        return `<div id="counter-of-${friendId}" class="text-[#F5F5F5] text-sm flex items-center justify-center rounded-full h-5 w-5 bg-[#9B1C1C]">${nbr}</div>`
     else
-        return `<div id="counter-of-${friendId}" class="text-[#F5F5F5] text-sm flex items-center justify-center rounded-full h-5 w-5 bg-[#E63946]">+9</div>`
+        return `<div id="counter-of-${friendId}" class="text-[#F5F5F5] text-sm flex items-center justify-center rounded-full h-5 w-5 bg-[#9B1C1C]">+9</div>`
 }
 
 
@@ -48,7 +48,7 @@ function  friendCart(friend:any,waitingMsg:object,myId:string):string
         // if(friend.online_status === 'online')
 
         // navigateSilent(`/chat/${friend.username}`);
-        return `<div id='msg-zone' data-id="${friend.id}" class="flex justify-center  px-2 hover:bg-[#222222] transition-colors duration-300 py-5">
+        return `<div id='msg-zone' data-id="${friend.id}" class="flex justify-center  px-2 hover:bg-[#E63946]/20 transition-colors duration-300 py-5">
                     <div  class=" friend-msg-zone flex w-[95%] hover:cursor-pointer" data-id="${friend.id}" data-name = "${friend.username}" data-roomname = "${roomName}"  >
                     <div class="relative">
                         <div class=" 
@@ -115,7 +115,7 @@ export function listOfMsg(friends:any,waitingMsg:object,myId:string): string //d
                     width: 2px;
                 }
                 #list-of-msg::-webkit-scrollbar-thumb {
-                    background-color: #E63946;
+                    background-color: #9B1C1C;
                     border-radius: 10px;
                 }
                 #list-of-msg::-webkit-scrollbar-track {
@@ -139,12 +139,12 @@ export function listOfMsg(friends:any,waitingMsg:object,myId:string): string //d
 export function generateBlockButton(status:string):string
 {
     if(status === 'accepted'){
-        return `<div id="block-button" class="block-button-class flex items-center justify-center w-[70%] rounded-xl  bg-[#E63946] mb-5 hover:cursor-pointer">
+        return `<div id="block-button" class="block-button-class flex items-center justify-center w-[70%] rounded-xl  bg-[#9B1C1C] mb-5 hover:cursor-pointer">
                         <p class="block-button-class">Block</p>
                         <span class="block-button-class material-symbols-outlined">block</span>
                     </div>`
     }else{
-        return `<div id="unblock-button" class="unblock-button-class flex items-center justify-center w-[70%] rounded-xl  bg-[#E63946] mb-5 hover:cursor-pointer">
+        return `<div id="unblock-button" class="unblock-button-class flex items-center justify-center w-[70%] rounded-xl  bg-[#9B1C1C] mb-5 hover:cursor-pointer">
                         <p class="unblock-button-class">unblock</p>
                         <span class="unblock-button-class material-symbols-outlined">lock_open_right</span>
                     </div>`
@@ -169,35 +169,35 @@ export function profileNav(img:string,userAccount:string,id:string,onlineStatus:
                     </span>
                 </div>
                 
-                <span class='font-semibold text-[#F5F5F5] hover:cursor-pointer hover:text-[#E63946] user-account'>${userAccount}</span>
+                <span class='font-semibold text-[#F5F5F5] hover:cursor-pointer hover:text-[#9B1C1C] user-account'>${userAccount}</span>
             </div>
 
-            <span id="more_vert" class="material-symbols-outlined text-[#E63946]  hover:cursor-pointer hover:bg-[#222222]  rounded-xl ">more_vert</span>
+            <span id="more_vert" class="material-symbols-outlined text-[#9B1C1C]  hover:cursor-pointer hover:bg-[#222222]  rounded-xl ">more_vert</span>
 
-            <div id="popup-option" class="hidden text-white flex flex-col items-center  w-50 bg-[#181818] absolute right-6 top-12 rounded-xl border border-[#E63946] shadow-[0_0_25px_rgba(0,0,0,0.6)]">
-                <div id="challenge-option" class="flex items-center justify-center w-[70%] rounded-xl border border-[#E63946] mt-5 mb-2 hover:cursor-pointer">
+            <div id="popup-option" class="hidden text-white flex flex-col items-center  w-50 bg-[#181818] absolute right-6 top-12 rounded-xl border border-[#9B1C1C] shadow-[0_0_25px_rgba(0,0,0,0.6)]">
+                <div id="challenge-option" class="flex items-center justify-center w-[70%] rounded-xl border border-[#9B1C1C] mt-5 mb-2 hover:cursor-pointer">
                     <p>Challenge</p>
                     <span class="material-symbols-outlined">swords</span>
                 </div>
             </div>
 
-            <div id="block-option" class="hidden text-white text-sm flex flex-col items-center  w-50 bg-[#181818] absolute right-6 top-12 rounded-xl border border-[#E63946] shadow-[0_0_25px_rgba(0,0,0,0.6)]">
+            <div id="block-option" class="hidden text-white text-sm flex flex-col items-center  w-50 bg-[#181818] absolute right-6 top-12 rounded-xl border border-[#9B1C1C] shadow-[0_0_25px_rgba(0,0,0,0.6)]">
                 <p class="p-4" >If this account is blocked, you will not be able to send or receive messages from it</p>
                 <div class="flex items-center w-full justify-around mb-2">
-                    <button id="blocked-valid" class="rounded-xl bg-[#E63946] w-[40%]">Yes</button>
-                    <button id="blocked-unvalid" class="rounded-xl border border-[#E63946] w-[40%]" >No</button>
+                    <button id="blocked-valid" class="rounded-xl bg-[#9B1C1C] w-[40%]">Yes</button>
+                    <button id="blocked-unvalid" class="rounded-xl border border-[#9B1C1C] w-[40%]" >No</button>
                 </div>
             </div>
-            <div id="unblock-option" class="hidden text-white text-sm flex flex-col items-center  w-50 bg-[#181818] absolute right-6 top-12 rounded-xl border border-[#E63946] shadow-[0_0_25px_rgba(0,0,0,0.6)]">
+            <div id="unblock-option" class="hidden text-white text-sm flex flex-col items-center  w-50 bg-[#181818] absolute right-6 top-12 rounded-xl border border-[#9B1C1C] shadow-[0_0_25px_rgba(0,0,0,0.6)]">
                 <p class="p-4" >Are you sure you want to unblock this account?</p>
                 <div class="flex items-center w-full justify-around mb-2">
-                    <button id="unblocked-valid" class="rounded-xl bg-[#E63946] w-[40%]">Yes</button>
-                    <button id="unblocked-unvalid" class="rounded-xl border border-[#E63946] w-[40%]" >No</button>
+                    <button id="unblocked-valid" class="rounded-xl bg-[#9B1C1C] w-[40%]">Yes</button>
+                    <button id="unblocked-unvalid" class="rounded-xl border border-[#9B1C1C] w-[40%]" >No</button>
                 </div>
             </div>
             
         </div>
-        <div class="h-[2px] bg-gradient-to-r from-[#E63946] to-[#8A1C1C]"></div>`
+        <div class="h-[2px]  bg-gradient-to-r from-[#9B1C1C] to-[#6F1414]"></div>`
 }
 export function inputMsg(status:string,myStatus:string):string //done
 {
@@ -205,15 +205,15 @@ export function inputMsg(status:string,myStatus:string):string //done
         if(myStatus === 'blocked')
         {
             return `<div class="h-[100%] flex items-center justify-center mt-2">
-                        <p class="text-[#E63946]">Contacting this account requires unblocking</p>
+                        <p class="text-[#9B1C1C]">Contacting this account requires unblocking</p>
                     </div>`
         }else{
             return `<div class="h-[100%] flex items-center justify-center mt-2">
-                        <p class="text-[#E63946]">This account has blocked you</p>
+                        <p class="text-[#9B1C1C]">This account has blocked you</p>
                     </div>`
         }
     }
-    else{//TODO N9ra 3la ay l3ayba  dyal css
+    else{
         return `
                 <style>
                     #input-msg-zone {
@@ -225,7 +225,7 @@ export function inputMsg(status:string,myStatus:string):string //done
                 </style>
 
 
-                <div class="h-full border-[#E63946] rounded-xl border-2 flex items-center mt-2">
+                <div class="h-full border-[#9B1C1C] rounded-xl border-2 flex items-center mt-2">
                     <textarea
                         id="input-msg-zone"
                         placeholder="Message..."
@@ -233,8 +233,8 @@ export function inputMsg(status:string,myStatus:string):string //done
                         class="h-[100%] w-[95%] text-[#F5F5F5] p-5 focus:outline-none resize-none"
                     ></textarea>
                     <button id="send-button"
-                        class="bg-gradient-to-br from-[#E63946] to-[#8A1C1C] hover:from-[#FF4D4D]
-                        hover:to-[#A02020] rounded-xl w-[3vw] h-[80%] mr-2 ml-4 flex justify-center items-center">
+                        class="bg-gradient-to-br from-[#9B1C1C] to-[#8A1C1C] 
+                        hover:cursor-pointer rounded-xl w-[3vw] h-[80%] mr-2 ml-4 flex justify-center items-center">
                         <span class="material-symbols-outlined text-white">send</span>
                     </button>
                 </div>`
@@ -251,7 +251,7 @@ function escapeHTML(str: string): string {
 export function sendMsg(msg:string,time:string):string{
     return `<div id="received-msg" class="flex mt-5 w-[30vw] justify-end ml-auto pr-5 ">
     <div id="content-received" class="flex flex-col ">
-        <div class=" bg-[#E63946] rounded-xl p-3 ">
+        <div class=" bg-[#9B1C1C] rounded-xl p-3 ">
         <span class="text-[#F5F5F5]  break-all">
             ${escapeHTML(msg)}
         </span>
@@ -275,7 +275,7 @@ export function receivedMsg(msg:string,time:string,img:string):string{
                         ">
                 </div>
                 <div id="content-sent" class="max-w-[80%] flex flex-col">
-                    <div  class="border-2 border-[#E63946] rounded-xl p-3  ">
+                    <div  class="border-2 border-[#9B1C1C] rounded-xl p-3  ">
                         <span class="text-[#F5F5F5]  break-all">
                             ${escapeHTML(msg)}
                         </span>

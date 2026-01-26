@@ -287,16 +287,20 @@ export async function spyUi()
                     <div id="choice-screen" class="flex flex-col items-center justify-center gap-6 h-full">
                         <button id="guess-the-word"
                                 class="w-70 px-10 py-4 text-xl font-bold rounded-lg 
-                                    bg-[#ff4d4d] text-white shadow-lg
-                                    hover:bg-[#e63939] hover:scale-105 
+                                    bg-gradient-to-b from-[#9B1C1C] to-[#6F1414]
+                                    hover:from-[#B32626] hover:to-[#8B1E1E]
+                                    text-white shadow-lg
+                                    hover:scale-105 
                                     transition-all duration-200 cursor-pointer
                                     font-['Share_Tech_Mono'] tracking-wider">
                             GUESS THE WORD
                         </button>
                         <button id="choose-spy"
                                 class="w-70 px-10 py-4 text-xl font-bold rounded-lg 
-                                    bg-[#ff4d4d] text-white shadow-lg
-                                    hover:bg-[#e63939] hover:scale-105 
+                                    bg-gradient-to-b from-[#9B1C1C] to-[#6F1414]
+                                    hover:from-[#B32626] hover:to-[#8B1E1E]
+                                    text-white shadow-lg
+                                    hover:scale-105 
                                     transition-all duration-200 cursor-pointer
                                     font-['Share_Tech_Mono'] tracking-wider">
                             CHOOSE SPY
@@ -320,8 +324,10 @@ export async function spyUi()
                                         </div>
                                         <button id="next-btn-ask"
                                                 class="px-10 py-4 text-xl font-bold rounded-lg 
-                                                    bg-[#ff4d4d] text-white shadow-lg
-                                                    hover:bg-[#e63939] hover:scale-105 
+                                                    bg-gradient-to-b from-[#9B1C1C] to-[#6F1414]
+                                                    text-white shadow-lg
+                                                    hover:from-[#B32626] hover:to-[#8B1E1E]
+                                                    hover:scale-105 
                                                     transition-all duration-200 cursor-pointer
                                                     font-['Share_Tech_Mono'] tracking-wider">
                                             NEXT
@@ -345,9 +351,11 @@ export async function spyUi()
                             <button id="back-to-choose"
                                 class="absolute top-4 left-4
                                     px-5 py-2 text-sm font-bold rounded-md
-                                    bg-[#1a1a1a] text-[#ff4d4d]
+                                    bg-[#1a1a1a]
+                                    text-[#ff4d4d]
+                                    hover:bg-gradient-to-b from-[#9B1C1C] to-[#6F1414]
                                     border-2 border-[#ff4d4d]
-                                    hover:bg-[#ff4d4d] hover:text-white
+                                    hover:text-white
                                     transition-all duration-200
                                     font-['Share_Tech_Mono'] tracking-wider">
                                 ← BACK
@@ -380,8 +388,9 @@ export async function spyUi()
                             <!-- Confirm button -->
                             <button id="confirm-spy"
                                 class="px-10 py-4 text-xl font-bold rounded-lg 
-                                    bg-[#ff4d4d] text-white shadow-lg
-                                    hover:bg-[#e63939] hover:scale-105 
+                                    bg-gradient-to-b from-[#9B1C1C] to-[#6F1414]
+                                    hover:from-[#B32626] hover:to-[#8B1E1E]
+                                    text-white shadow-lg
                                     transition-all duration-200 cursor-pointer
                                     font-['Share_Tech_Mono'] tracking-wider">
                                 CONFIRM
@@ -490,7 +499,8 @@ export async function spyUi()
                                         <button id="back-to-choose"
                                             class="absolute top-4 left-4
                                                 px-5 py-2 text-sm font-bold rounded-md
-                                                bg-[#1a1a1a] text-[#ff4d4d]
+                                                hover:bg-gradient-to-b from-[#9B1C1C] to-[#6F1414]
+                                                text-[#ff4d4d]
                                                 border-2 border-[#ff4d4d]
                                                 hover:bg-[#ff4d4d] hover:text-white
                                                 transition-all duration-200
@@ -515,8 +525,10 @@ export async function spyUi()
 
                                         <button id="confirm-guess"
                                             class="px-10 py-4 text-xl font-bold rounded-xl
-                                                bg-[#ff4d4d] text-white shadow-lg
-                                                hover:bg-[#e63939] hover:scale-105
+                                                hover:bg-gradient-to-b from-[#9B1C1C] to-[#6F1414]
+                                                bg-gradient-to-b from-[#9B1C1C] to-[#6F1414]
+                                                text-white shadow-lg
+                                                hover:scale-105
                                                 transition-all duration-200">
                                             CONFIRM
                                         </button>

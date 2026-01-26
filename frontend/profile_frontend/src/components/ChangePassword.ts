@@ -166,11 +166,10 @@ export class ChangePasswordModal {
     const errorDiv = document.getElementById('password-error')!;
     const successDiv = document.getElementById('password-success')!;
     
-    // Hide previous messages
+   
     errorDiv.classList.add('hidden');
     successDiv.classList.add('hidden');
 
-    // Validation
     if (newPassword !== confirmPassword) {
       this.showError('New passwords do not match');
       return;
@@ -186,7 +185,7 @@ export class ChangePasswordModal {
       return;
     }
 
-    // Disable submit button
+  
     const submitBtn = document.getElementById('submit-password-btn') as HTMLButtonElement;
     submitBtn.disabled = true;
     submitBtn.textContent = 'Changing...';
@@ -209,10 +208,9 @@ export class ChangePasswordModal {
         throw new Error(data.error || 'Failed to change password');
       }
 
-      // Success
       this.showSuccess('Password changed successfully!');
       
-      // Reset form and close after delay
+    
       setTimeout(() => {
         this.hide();
       }, 2000);

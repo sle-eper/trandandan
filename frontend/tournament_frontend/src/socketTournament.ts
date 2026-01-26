@@ -1,7 +1,7 @@
 import * as Socket from "../../socket_manager/socket";
 import { navigate } from "../../auth_frontend/src_auth/app"
 import { addMenuNotification } from "../../chat-frontend/src/ts/chat_ui_tools";
-import { showToast } from "./create_tournament";
+import {  renderTournamentBracket , showToast } from "./create_tournament";
 
 export function inviteHandlerReceived(data: any) {
 
@@ -56,11 +56,9 @@ export function inviteHandlerReceived(data: any) {
     }
     const responseData = await result.json();
     const socket = Socket.getSocketInstance();
-    if (responseData.message === "Tournament Full")
-    {
-      console.log("Response data::::::::::::::::::::::::::", responseData);
-      socket.emit("tournament:start", { tournamentName: data.tournamentName });
-      showToast("Tournament is full. You have been added to the tournament!");
+    if (responseData.message === "Tournament Full") {
+      socket.emit("matchmaking:start", { tournamentName: data.tournamentName, maxPlayers: 4 });
+      showToast("Tournament is full.");
       notif.remove();
       return;
     }
@@ -76,12 +74,10 @@ export function inviteHandlerReceived(data: any) {
   setTimeout(() => {
     notif.remove();
   }, 10000);
-} 
 
-
-
-export function StartingTournament(data: any) {
-
+}
+export function start_gameHandlerTournament(data: any) {
+console.log("------------------------------------", data);
   const container = document.getElementById("play-notification-container");
   if (!container) return;
 
@@ -97,9 +93,10 @@ export function StartingTournament(data: any) {
         shadow-lg backdrop-blur-lg
         animate-slide-in
       `;
+
   notif.innerHTML = `
         <span class="text-sm text-white truncate">
-          🎮 <strong>${data.tournamentName}</strong> is starting now! 
+          Go To Game <strong>${data.gameId}</strong>
         </span>
 
         <div class="flex gap-2 shrink-0">
@@ -113,18 +110,41 @@ export function StartingTournament(data: any) {
           </button>
         </div>
       `;
+
   container.appendChild(notif);
 
   notif.querySelector(".accept")?.addEventListener("click", async () => {
-    navigate(`/tournament/${data.tournamentName}`);
+    const socket = Socket.getSocketInstance();
+    console.log("++++++++++++++++++++++++++++++++++++++++++", data);
+    socket.emit("game:tournament:joined", data);
+    renderTournamentBracket(data.tournamentName, data.maxPlayers, 1);
+    navigate(`/tournament/bracket/${data.tournamentName}`);
     notif.remove();
   });
 
   notif.querySelector(".reject")?.addEventListener("click", () => {
+    const socket = Socket.getSocketInstance();
+    socket.emit("Tournament:leave", data);
     notif.remove();
   });
-  addMenuNotification("🎮 ", `<strong>${data.tournamentName}</strong> wants to join`, "1");
+  addMenuNotification("🎮 ", `<strong>${data.tournamentName}</strong> Go to Game`, data.notfId);
   setTimeout(() => {
+    const socket = Socket.getSocketInstance();
+    socket.emit("Tournament:leave", data);
     notif.remove();
-  }, 10000);
-} 
+  }, 40000);
+
+}
+
+export function match_endedHandlerTournament(data: any) {
+  if (data.result === 'won') {
+  console.log("Tournament match ended handler called with data:", data);
+  const message = data.message || "Your tournament match has ended.";
+  showToast(message);
+  }
+  else if(data.result === 'lost') {
+    console.log("Tournament match ended handler called with data:", data);
+    const message = data.message || "Your tournament match has ended.";
+    showToast(message);
+  }
+}

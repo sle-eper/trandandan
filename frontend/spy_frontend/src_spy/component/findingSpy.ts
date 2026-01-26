@@ -13,8 +13,10 @@ export function findingSpy(msg:string): string
 
             <button id="new-game"
                 class="px-8 py-3 text-xl font-bold rounded-lg 
-                    bg-[#ff4d4d] text-white shadow-lg
-                    hover:bg-[#e63939] hover:scale-105 
+                    bg-gradient-to-b from-[#9B1C1C] to-[#6F1414]
+                    text-white shadow-lg
+                    hover:from-[#B32626] hover:to-[#8B1E1E]
+                    hover:scale-105 
                     transition-all duration-200 cursor-pointer
                     font-['Share_Tech_Mono'] tracking-wider">
                 NEW GAME
