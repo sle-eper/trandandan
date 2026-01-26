@@ -64,8 +64,7 @@ server.ready().then(() => {
         return;
       }
       socket.data.user = await fetchUserData(userId);
-      if(!socket.data.user)
-      {
+      if (!socket.data.user) {
         socket.disconnect();
         return;
       }
@@ -105,7 +104,7 @@ server.ready().then(() => {
             const msgId: string = await saveMsg(id, friendId, msg, roomName, "waiting");
             const timeOfMsg: string = await getTimeOfMsg(msgId);
             // const UserData = await fetchUserData(id); // get data of user from user-management service
-            if(!socket.data.user)return
+            if (!socket.data.user) return
             socket.to(roomName).emit("receive_message", msg, msgId, id, timeOfMsg, socket.data.user.avatar_url);
             if (friendSocketId) {
               for (const ids of friendSocketId) {
@@ -132,7 +131,7 @@ server.ready().then(() => {
         await changeDisplay(userID)
         const messages = await getAllMsg(roomName, limit, offset);
         const UserData = await fetchUserData(data.friendId);
-        if(!UserData || !messages)return;
+        if (!UserData || !messages) return;
         socket.emit('messages_batch', messages.reverse(), UserData?.user?.avatar_url);
       } catch (err) {
         console.error('Error in get_messages:', err);
@@ -150,7 +149,7 @@ server.ready().then(() => {
         await changeDisplay(userID)
         const messages = await getAllMsg(roomName, limit, offset);
         const UserData = await fetchUserData(data.friendId);
-        if(!messages || !UserData) return;
+        if (!messages || !UserData) return;
         socket.emit('messages_old_batch', messages, UserData?.user?.avatar_url);
       } catch (err) {
         console.error('Error in get_old_messages:', err);
@@ -256,7 +255,7 @@ server.ready().then(() => {
         const friendSocket = onlineUsers.get(friendId);
         if (!friendSocket) return;
         // const UserData = await fetchUserData(id);
-        if(!socket.data.user)return
+        if (!socket.data.user) return
         for (const isd of friendSocket) {
           io.to(isd).emit("request_to_play", socket.data.user.username, id, notfId);
         }
@@ -299,7 +298,7 @@ server.ready().then(() => {
         const friendId = String(friendIdInput);
         const notifId = await saveNotif(id, friendId, 'reject', null);
         const Sockets = onlineUsers.get(friendId);
-        if (!Sockets||!socket.data.user) return;
+        if (!Sockets || !socket.data.user) return;
         // const UserData = await fetchUserData(id);
         // if (!UserData) return;
         for (const isd of Sockets) {
@@ -339,7 +338,7 @@ server.ready().then(() => {
 
       // const UserData = await fetchUserData(myId);
       // if (!UserData) return;
-      if(!socket.data.user)return
+      if (!socket.data.user) return
       for (const ids of userSocket) {
 
         socket.to(ids).emit("friendRequestReceived",
@@ -361,7 +360,7 @@ server.ready().then(() => {
         // const UserData = await fetchUserData(myId);
         // if (!UserData)
         //   return;
-        if(!socket.data.user)return
+        if (!socket.data.user) return
         for (const isd of friendSocket) {
           socket.to(isd).emit("friendRequestAccepted", socket.data.user.username, myId, friendId);
         }
@@ -378,7 +377,7 @@ server.ready().then(() => {
         // const UserData = await fetchUserData(myId);
         // if (!UserData)
         //   return;
-        if(!socket.data.user)return
+        if (!socket.data.user) return
         for (const isd of friendSocket) {
           socket.to(isd).emit("friendRequestRejected", socket.data.user.username, myId, friendId);
         }
@@ -519,7 +518,7 @@ server.ready().then(() => {
         //wait 10 seconds max
         setTimeout(() => {
         }, 10000);
-        if(room && room.size == 1) {
+        if (room && room.size == 1) {
           const sidArray = Array.from(room);
           const sid = sidArray[0];
           //wait 5 seconds then send
@@ -539,7 +538,7 @@ server.ready().then(() => {
         //send to game service that the player win by default
       }
       else {
-          setTimeout(() => {
+        setTimeout(() => {
           console.log("Left the tournament game. Waiting for opponent...");
         }, 5000);
       }
@@ -556,7 +555,7 @@ server.ready().then(() => {
 
       if (loserSockets) {
         for (const sid of loserSockets) {
-          
+
           io.to(sid).emit("match:ended", { result: 'lost' });
         }
       }

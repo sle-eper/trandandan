@@ -451,6 +451,7 @@ function updateGamePhysics(gameId) {
             const loser = game.score.left >= 5 ? game.players.find(p => p.side === 'right') : game.players.find(p => p.side === 'left');
 
             gameNamespace.to(gameId).emit('game_over', { winner, score: game.score });
+            //
             saveMatchResult(game, winner, loser);
             stopGameLoop(gameId);
 
