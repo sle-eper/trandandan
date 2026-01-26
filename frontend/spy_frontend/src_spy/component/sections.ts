@@ -55,8 +55,10 @@ export function renderSection():string
         <div class="col-span-2 md:col-span-3 w-full flex justify-center mt-10">
             <button id="confirm-sections"
                     class="px-10 py-4 text-xl font-bold rounded-lg 
-                        bg-[#ff4d4d] text-white shadow-lg
-                        hover:bg-[#e63939] hover:scale-105 
+                        hover:from-[#B32626] hover:to-[#8B1E1E]
+                        bg-gradient-to-b from-[#9B1C1C] to-[#6F1414]
+                        text-white shadow-lg
+                        hover:scale-105 
                         transition-all duration-200 cursor-pointer
                         font-['Share_Tech_Mono'] tracking-wider">
                 CONFIRM SELECTION

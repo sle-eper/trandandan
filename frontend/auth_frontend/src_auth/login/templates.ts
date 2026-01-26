@@ -32,14 +32,9 @@ export const loginTemplate = () => `
           class="text-red-500 text-sm h-5 opacity-0 transition-opacity duration-300"></div>
       </div>
 
-      <div class="flex items-center mt-3">
-        <input id="login-remember" type="checkbox" class="mr-2 accent-[#E64249]" />
-        <label for="login-remember" class="text-gray-300 text-sm">Remember me</label>
-      </div>
-
       <!-- 🔑 type="submit" -->
       <button id="login-btn" type="submit"
-        class="w-full bg-red-600 text-white py-2 rounded-md mt-4 hover:opacity-90 transition">
+        class="w-full bg-[#E3423A] text-white py-2 rounded-md mt-4 hover:opacity-90 transition">
         Login
       </button>
 
@@ -130,7 +125,7 @@ export const signupTemplate = () => `
 `;
 
 export const gamesTemplate = () => `
-<div class="h-full w-full flex flex-col items-center px-4 py-4 md:py-6 overflow-hidden">
+<div class="h-full w-full flex flex-col items-center px-4 py-4 overflow-hidden">
 
   <!-- Title -->
   <h1 class="text-3xl md:text-5xl font-bold text-white mb-6 md:mb-12 flex items-center gap-3">
@@ -141,7 +136,7 @@ export const gamesTemplate = () => `
   </h1>
 
   <!-- Games container -->
-  <div class="flex flex-col md:flex-row gap-4 md:gap-8 w-full max-w-4xl flex-1">
+  <div class="flex flex-col md:flex-row gap-4 md:gap-8 w-full max-w-4xl flex-1 justify-center items-center">
 
     <!-- Ping Pong -->
     <a href="/game/pong" data-route

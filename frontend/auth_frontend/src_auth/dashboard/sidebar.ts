@@ -10,7 +10,7 @@ export function renderSidebar(): string {
       <aside
           id="sidebar"
           class="
-            bg-red-600
+            bg-gradient-to-b from-[#9B1C1C] to-[#6F1414]
             h-[65%] w-[90%] mt-6
             rounded-full
             md:rounded-3xl

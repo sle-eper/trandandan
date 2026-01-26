@@ -63,13 +63,13 @@ server.ready().then(() => {
         socket.disconnect();
         return;
       }
-      socket.data.user = await fetchUserData(userId);
-      if (!socket.data.user) {
+      socket.data.user = (await fetchUserData(userId))?.user;
+      if(!socket.data.user)
+      {
         socket.disconnect();
         return;
       }
       socket.data.userId = userId;
-
       if (!onlineUsers.has(userId)) {
         onlineUsers.set(userId, new Set());
         socket.broadcast.emit("user_online", userId);

@@ -14,8 +14,10 @@ export function PlayerAndSpaySelection(title:string,counter?:number) {
             <button 
                 id="counter-decrease-${title}"
                 class="px-5 py-2 text-xl font-bold rounded-lg
-                    bg-[#ff4d4d] text-white 
-                    hover:bg-[#e63939] hover:scale-105
+                    bg-gradient-to-b from-[#9B1C1C] to-[#6F1414]
+                    hover:from-[#B32626] hover:to-[#8B1E1E]
+                    text-white 
+                    hover:scale-105
                     transition-all duration-200 cursor-pointer
                     font-['Share_Tech_Mono'] select-none">
                 -
@@ -32,8 +34,10 @@ export function PlayerAndSpaySelection(title:string,counter?:number) {
             <button 
                 id="counter-increase-${title}"
                 class="px-5 py-2 text-xl font-bold rounded-lg
-                    bg-[#ff4d4d] text-white 
-                    hover:bg-[#e63939] hover:scale-105
+                    bg-gradient-to-b from-[#9B1C1C] to-[#6F1414]
+                    hover:from-[#B32626] hover:to-[#8B1E1E]
+                    text-white 
+                    hover:scale-105
                     transition-all duration-200 cursor-pointer
                     font-['Share_Tech_Mono'] select-none">
                 +
@@ -41,8 +45,10 @@ export function PlayerAndSpaySelection(title:string,counter?:number) {
         </div>
         <button id="confirm-${title}"
                 class="px-10 py-4 text-xl font-bold rounded-lg 
-                    bg-[#ff4d4d] text-white shadow-lg
-                    hover:bg-[#e63939] hover:scale-105 
+                    bg-gradient-to-b from-[#9B1C1C] to-[#6F1414]
+                    hover:from-[#B32626] hover:to-[#8B1E1E]
+                    text-white shadow-lg
+                    hover:scale-105 
                     transition-all duration-200 cursor-pointer
                     font-['Share_Tech_Mono'] tracking-wider select-none">
             CONFIRM
