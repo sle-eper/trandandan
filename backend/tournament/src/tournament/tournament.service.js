@@ -288,3 +288,25 @@ export async function matchmaking_get(request, reply) {
         return reply.code(500).send({ message: "Internal Server Error" });
     }
 }
+
+export async function updateMatchResult_post(request, reply) {
+    const { winnerId, tournamentName } = request.body;
+    const db = await getDatabase();
+    try {
+        const tournament = await db.get('SELECT * FROM tournament WHERE name = ?', [tournamentName]);
+        if (!tournament) {
+            return reply.code(404).send({ success: false, message: "Tournament not found" });
+        }
+
+        await db.run(
+            'UPDATE participant SET score = score + 1 WHERE userid = ? AND tournamentid = ?',
+            [winnerId, tournament.id]
+        );
+
+        console.log(`[TOURNAMENT] Updated score for user ${winnerId} in tournament ${tournamentName}`);
+        return reply.code(200).send({ success: true, message: "Score updated" });
+    } catch (error) {
+        console.error("Error updating match result:", error);
+        return reply.code(500).send({ success: false, message: error.message });
+    }
+}

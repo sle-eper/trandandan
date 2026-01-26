@@ -12,4 +12,5 @@ export default async function (fastify) {
     fastify.get('/participant/list', participant.listParticipants_get);
     fastify.get('/My/status', participant.getMyStatus_get);
     fastify.get('/matchmaking', tournament.matchmaking_get);
+    fastify.post('/match-result', tournament.updateMatchResult_post);
 }
