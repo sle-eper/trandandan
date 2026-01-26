@@ -46,8 +46,6 @@ const getRoomName = (id1: string, id2: string): string => {
 // socket.to(room).emit ===> kolchi f room ila hada 
 // io.to(room).emit ===> kolchi li f room 
 
-
-
 server.ready().then(() => {
   const io = (server as any).io;
   io.on("connection", async (socket) => {
@@ -513,8 +511,8 @@ server.ready().then(() => {
         const sid1 = sidArray[0];
         const sid2 = sidArray[1];
         const gameId = data.gameId;
-        io.to(sid1).emit("start_game", { gameId, side: 'right', flagTournament: true });
-        io.to(sid2).emit("start_game", { gameId, side: 'left', flagTournament: true });
+        io.to(sid1).emit("matchTournament", { gameId, side: 'right', flagTournament: true });
+        io.to(sid2).emit("matchTournament", { gameId, side: 'left', flagTournament: true });
       }
       else {
         console.log("Waiting for opponent to join...");
