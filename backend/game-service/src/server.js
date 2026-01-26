@@ -246,14 +246,42 @@ const start = async () => {
                                 }
                             }
                         } else if (game.status === 'playing') {
-                            // If a player leaves during a game, stop the loop and clean up?
-                            // For now, let's just log it. In a real app we might pause or end the match.
-                            const isPlayer = game.players.some(p => p.id === socket.user.id);
-                            if (isPlayer) {
-                                console.log(`[SOCKET] Player left active game ${gameId}. Stopping loop.`);
+                            const disconnectingPlayer = game.players.find(p => p.id === socket.user.id);
+                            if (disconnectingPlayer) {
+                                console.log(`[SOCKET] Player ${socket.user.username} left active game ${gameId}. Stopping loop.`);
                                 stopGameLoop(gameId);
-                                // Optional: notify other player
-                                gameNamespace.to(gameId).emit('player_left');
+
+                                const winner = game.players.find(p => p.id !== socket.user.id);
+                                if (winner) {
+                                    game.status = 'finished';
+
+                                    // Set score to 3-0 for the winner
+                                    if (winner.side === 'left') {
+                                        game.score.left = 3;
+                                        game.score.right = 0;
+                                    } else {
+                                        game.score.left = 0;
+                                        game.score.right = 3;
+                                    }
+
+                                    console.log(`[GAME] Awarding 3-0 victory to ${winner.username} in game ${gameId}`);
+
+                                    gameNamespace.to(gameId).emit('game_over', {
+                                        winner,
+                                        score: game.score,
+                                        players: game.players,
+                                        reason: 'opponent_disconnected'
+                                    });
+
+                                    saveMatchResult(game, winner, disconnectingPlayer);
+
+                                    game.rematchTimeout = setTimeout(() => {
+                                        if (games.has(gameId) && games.get(gameId).status === 'finished') {
+                                            games.delete(gameId);
+                                            console.log(`[GAME] Cleaned up finished game after disconnect: ${gameId}`);
+                                        }
+                                    }, 60000);
+                                }
                             }
                         }
                     });
