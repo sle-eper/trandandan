@@ -65,7 +65,7 @@ function simpleConfirm(message: string): Promise<boolean> {
   });
 }
 
-// Socket listener for friend request received
+
 export const friendRequestReceivedHandler = (from: string, myId: string,friendId: string, notifId: string) => {
  
   console.log('Friend request received myId:', myId, 'with frienID:', friendId, 'from:', from, 'notifId:', notifId); ;
@@ -82,7 +82,7 @@ interface FriendshipStatus {
   isCurrentUser: boolean;
 }
 
-// Player Profile Manager Class
+
 export class PlayerProfileManager {
   private currentUserId: number | null = null;
   private showEditProfileCallback: ProfileForm | null = null;
@@ -94,7 +94,6 @@ export class PlayerProfileManager {
   
   async initialize(): Promise<void> {
     const currentUser = await User.fetchUserProfile();
-    console.log('Current user profile in PlayerProfileManager:', currentUser);
     if (currentUser) {
       this.currentUserId = currentUser.id ?? null;
     }
@@ -102,14 +101,12 @@ export class PlayerProfileManager {
 
   
 
-  // Check friendship status
   private async checkFriendshipStatus(playerId: number): Promise<FriendshipStatus> {
    
     if (!this.currentUserId) {
       console.log('Initializing current user ID for friendship status check...');
       await this.initialize();
     }
-    console.log('Checking friendship status for playerId:', playerId, 'currentUserId:', this.currentUserId);
     if (playerId === this.currentUserId) {
       return {
         isFriend: false,
@@ -147,7 +144,7 @@ export class PlayerProfileManager {
     }
   }
 
-  // Get action buttons HTML based on friendship status
+  
   private getActionButtonsHTML(player: Player, status: FriendshipStatus): string {
     if (status.isCurrentUser) {
       return `
@@ -228,30 +225,22 @@ export class PlayerProfileManager {
 
 
     if (!this.currentUserId) {
-      console.log('Initializing current user ID...');
+      
       await this.initialize();
     }
 
     
-    let player: Player | null = null;
-    let status: FriendshipStatus = { isFriend: false, isPending: false, isCurrentUser: false };
-    if (!playerId && this.currentUserId) {
-      playerId = this.currentUserId;
-      status  = await this.checkFriendshipStatus(playerId);
-      if (status.isCurrentUser) 
-         player = await PlayerFriendship.fetchPlayerProfile(this.currentUserId);
-    }
-    else if (playerId)
-   { 
-       status  = await this.checkFriendshipStatus(playerId)
-      if (status.isCurrentUser) {
-      player  = await PlayerFriendship.fetchPlayerProfile(this.currentUserId!);
+   
+      const targetPlayerId = playerId || this.currentUserId;
+
+      if (!targetPlayerId) {
+        throw new Error('No valid player ID available');
       }
-      else {
-        player = await PlayerFriendship.fetchPlayerProfile(playerId);
-      }
-    }
-    console.log('Fetched player data:', player,);
+
+      const status = await this.checkFriendshipStatus(targetPlayerId);
+      const profileId = status.isCurrentUser ? this.currentUserId! : targetPlayerId;
+      const player = await PlayerFriendship.fetchPlayerProfile(profileId);
+
     if (!player) {
       mainContent.innerHTML = `
         <div class="flex items-center justify-center h-full">
@@ -445,7 +434,6 @@ export class PlayerProfileManager {
       });
     } else {
       const friendRequestBtn = document.getElementById(`send-friend-request-${player.id}`) as HTMLButtonElement;
-      const messageBtn = document.getElementById(`send-message-${player.id}`);
 
       friendRequestBtn?.addEventListener('click', async () => {
         try {
@@ -469,9 +457,7 @@ export class PlayerProfileManager {
         }
       });
 
-      messageBtn?.addEventListener('click', () => {
-        console.log('Send message to player:', player.id);
-      });
+      
     }
   }
 

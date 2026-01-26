@@ -112,7 +112,6 @@ export class Toast {
     }
   }
 
-  // Public API
   static success(message: string, duration?: number): void {
     this.show(message, 'success', duration);
   }
@@ -160,11 +159,6 @@ export class ProfileForm {
         this.oldProfileData = JSON.parse(JSON.stringify(this.userData));
         this.avatarPreview = this.userData.avatarUrl || this.avatarPreview;
         
-        if (this.userData.onlineStatus !== 'offline') {
-          this.isOnline = true;
-        } else {
-          this.isOnline = false;
-        }
       } else {
         console.log('No existing profile found, using defaults');
       }

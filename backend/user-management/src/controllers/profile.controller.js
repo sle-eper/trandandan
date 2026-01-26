@@ -29,7 +29,6 @@ class ProfileController {
 
   async getById(request, reply) {
     try {
-      // console.log('Getting user by ID from headers:', request.headers);
       const id = request.headers['x-user-id'];
       const user = await this.userModel.findById(id);
     
@@ -263,9 +262,7 @@ class ProfileController {
     await fs.promises.writeFile(filePath, buffer);
     console.log('Avatar saved successfully:', filePath);
     
-    // Verify file was written
-    // const stats = await fs.promises.stat(filePath);
-    // console.log('File size on disk:', stats.size, 'bytes');
+   
     
     return reply.code(200).send({
       success: true,
