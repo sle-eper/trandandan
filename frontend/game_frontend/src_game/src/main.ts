@@ -360,17 +360,17 @@ function setupSocketListeners() {
         // Show Return to Lobby button
         const btnLobby = document.getElementById('btn-return-lobby');
         if (btnLobby) btnLobby.classList.remove('hidden');
-
         if (gameMode === 'tournament') {
             const tSocket = getSocketInstance();
             if (tSocket) {
-                console.log('[DEBUG] Tournament mode detected. Emitting match:result', data);
-                tSocket.emit('match:result', {
+                const result = {
                     gameId: currentGameId,
                     winnerId: data.winner?.id,
                     loserId: data.players?.find((p: any) => p.id !== data.winner?.id)?.id,
                     score: data.score
-                });
+                };
+                console.log('[DEBUG] Tournament mode detected. Emitting match:result', result);
+                tSocket.emit('match:result', result);
             }
         }
     });
