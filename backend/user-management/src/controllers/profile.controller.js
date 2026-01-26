@@ -99,20 +99,11 @@ class ProfileController {
 
     try {
       const { email, username } = request.query; // can be email or username
-      const { token } = request.query;
       let user = await this.userModel.findByEmail(email);
       if (user) {
         return reply.code(200).send(user);
       }
       user = await this.userModel.findByUsername(username);
-      if (user) {
-        return reply.code(200).send(user);
-      }
-      user = await this.userModel.findByToken(token);
-      if (user) {
-        return reply.code(200).send(user);
-      }
-      user = await this.userModel.findById(id);
       if (user) {
         return reply.code(200).send(user);
       }
@@ -549,20 +540,15 @@ class ProfileController {
   }
   async getIdToken(request, reply) {
     try {
-      const { username } = request.query;
-      if (!username) {
-        return reply.code(400).send({ error: 'Username is required' });
+      const { token } = request.query;
+      if (!token) {
+        return reply.code(400).send({ error: 'token is required' });
       }
-      const user = await this.userModel.findByUsername(username);
+      const user = await this.userModel.findByToken(token);
       if (!user) {
         return reply.code(404).send({ error: 'User not found' });
       }
-      const token = user.id_token;
-      return {
-        success: true,
-        id_token: token
-      };
-
+      return user;
     }
     catch (error) {
       return reply.code(500).send({ error: error.message });

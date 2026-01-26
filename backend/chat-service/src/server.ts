@@ -549,6 +549,7 @@ server.ready().then(() => {
       //process the result and update tournament bracket
       const loser = data.loserId;
       const winner = data.winnerId;
+      console.log("Loser:", loser, "Winner:", winner);
       //notify both players
       const loserSockets = onlineUsers.get(loser);
       const winnerSockets = onlineUsers.get(winner);
