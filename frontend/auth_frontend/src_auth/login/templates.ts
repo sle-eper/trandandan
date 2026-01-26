@@ -31,12 +31,6 @@ export const loginTemplate = () => `
         <div id="login-error"
           class="text-red-500 text-sm h-5 opacity-0 transition-opacity duration-300"></div>
       </div>
-
-      <div class="flex items-center mt-3">
-        <input id="login-remember" type="checkbox" class="mr-2 accent-[#E64249]" />
-        <label for="login-remember" class="text-gray-300 text-sm">Remember me</label>
-      </div>
-
       <!-- 🔑 type="submit" -->
       <button id="login-btn" type="submit"
         class="w-full bg-red-600 text-white py-2 rounded-md mt-4 hover:opacity-90 transition">
