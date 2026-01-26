@@ -107,7 +107,7 @@ export async function showDashboard() {
       </div>
     `;
 
-function getnotif(): Promise<any[]> {
+function getnotif(): Promise<any[]> {//TODO nkhedmha bla promise
   return new Promise(async (resolve, reject) => {
     try {
       const response = await fetch("/auth/verify", {

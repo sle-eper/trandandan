@@ -10,7 +10,7 @@ export class PongBall {
     radius: number = 15;
     initialSpeed: number = 9;
     speed: number = this.initialSpeed;
-    speedIncrement: number = 0.2;
+    speedIncrement: number = 1;
     trail: { x: number, y: number }[] = [];
     maxTrail: number = 15;
     color: string;

@@ -99,7 +99,7 @@ export const getUserStats = async (request, reply) => {
             return reply.code(404).send({ error: "Stats not found for this user" });
         }
 
-        return { success: true, stats };
+        return reply.send( stats, { success: true});
     } catch (error) {
         request.log.error(error);
         return reply.code(500).send({ error: "Internal Server Error" });

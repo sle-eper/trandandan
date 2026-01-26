@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import axios from "axios";
-
+import qs from "qs";
 
 
 // #########################################################
@@ -29,32 +29,39 @@ export async function githubAuth_get(request, reply) {
 export async function googleAuthCallback_get(request, reply) {
     const { code } = request.query;
     try {
+        const tokenPayload = {
+            code,
+            client_id: process.env.Google_ID,
+            client_secret: process.env.Google_SECRET,
+            redirect_uri: process.env.Google_REDIRECT_URI,
+            grant_type: "authorization_code",
+        };
+
         const tokenResponse = await axios.post(
             "https://oauth2.googleapis.com/token",
+            qs.stringify(tokenPayload),
             {
-                code,
-                client_id: process.env.Google_ID,
-                client_secret: process.env.Google_SECRET,
-                redirect_uri: process.env.Google_REDIRECT_URI,
-                grant_type: "authorization_code",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
             }
         );
         const { id_token, access_token } = tokenResponse.data;
         const userInfo = jwt.decode(id_token);
         const { name, email } = userInfo;
-        const token = jwt.sign({ name, email }, process.env.JWT_SECRET, { expiresIn: '1h' });
         const row = await axios.get('http://user-management:3000/profile/User', {
             params: {
                 email,
             }
         });
         if (row.data) {
+            const token = jwt.sign({ id: row.data.id, email }, process.env.JWT_SECRET, { expiresIn: '1h' });
             return reply
                 .setCookie('token', token, {
                     path: '/',
                     httpOnly: true,
                 })
-            .redirect(`https://localhost:8443/home`);
+                .redirect(`/auth/callback?token=${token}`);
 
         }
         else {
@@ -64,11 +71,13 @@ export async function googleAuthCallback_get(request, reply) {
                 displayName: name,
                 id_token: id_token,
             });
-
+            const token = jwt.sign({ id: response.data.id, email }, process.env.JWT_SECRET, { expiresIn: '1h' });
             return reply
-                .setCookie('token', token, { httpOnly: true }) // optional, for security
-                .redirect(`http://localhost:5173/auth/callback?token=${token}`);
+                .setCookie('token', token, { httpOnly: true })
+                .redirect(`/auth/callback?token=${token}`);
+
         }
+
     } catch (err) {
         reply.status(500).send("Authentication failed");
     }
@@ -120,37 +129,33 @@ export async function githubAuthCallback_get(request, reply) {
         const email = primaryEmail;
 
         // 5. Create JWT token
-        const token = jwt.sign({ name, email }, process.env.JWT_SECRET, { expiresIn: "1h" });
-
+        
         // 6. Check if user exists
         const row = await axios.get('http://user-management:3000/profile/User', {
             params: { email }
         });
-
+        
         if (row.data) {
             // User exists → redirect with token
+            const token = jwt.sign({ id: row.data.id, email }, process.env.JWT_SECRET, { expiresIn: "1h" });
             return reply
-                .setCookie('token', token, { path: '/', httpOnly: true })
-                .redirect(`http://localhost:8080/auth/success?token=${token}`);
+            .setCookie('token', token, { path: '/', httpOnly: true })
+            .redirect(`/auth/callback?token=${token}`);
         } else {
             // User doesn't exist → create profile
-            console.log("Creating new user profile for:", email);
-            console.log("Name:", name);
-            console.log("password: null");
             const response = await axios.post('http://user-management:3000/profile/create', {
                 username: name,
                 email,
                 displayName: name,
-                // password can be null or generated randomly
-                password: null,
+                id_token: access_token,
             });
+            const token = jwt.sign({ id: response.data.id, email }, process.env.JWT_SECRET, { expiresIn: "1h" });
             return reply
                 .setCookie('token', token, { path: '/', httpOnly: true })
-                .redirect(`https://localhost:8443/`);
+                .redirect(`/auth/callback?token=${token}`);
         }
 
     } catch (err) {
-        console.error("GitHub OAuth error:", err);
         return reply.status(500).send({ success: false, message: "Authentication failed" });
     }
 }

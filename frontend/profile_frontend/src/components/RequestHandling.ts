@@ -1,6 +1,3 @@
-
-
-// import { socket } from "../../../auth_frontend/src_auth/login/login";
 import { getSocketInstance } from "../../../socket_manager/socket.ts";
 
 // ============================================
@@ -107,7 +104,6 @@ export function createNotificationMenuItem(
   notifId: string,
   userId: string
 ): void {
-// console.log("Creating menu item for notifId:", notifId, "from:", from, "friendId:", friendId, "userId:", userId);
   const notifIcon = document.getElementById("notif-icon");
   if(!notifIcon)return;
    notifIcon.innerHTML = `<span class=" text-[#E63946]  material-symbols-outlined">
@@ -308,20 +304,6 @@ function attachMenuAcceptHandler(
       
         getSocketInstance()?.emit('acceptFriendRequest', notifId, friendId, userId);
         removeNotificationFromUI(notifId);
-
-            // const container = document.getElementById("notification-menu");
-            // if(!container)return;
-            // console.log(`******************************${container.children.length }********************************************`);
-            // if(container.children.length === 0)
-            // {
-            //   // console.log("ssssssssssssssssssssssss")
-            // //   if(container.classList.contains("hidden")) return;
-            // //     container.classList.add("opacity-0");
-            // //     container.classList.add("hidden")
-            // //     // notifIcon.innerHTML = `<span class="  material-symbols-outlined">
-            // //     //                     notifications
-            // //     //                     </span>`
-            // }
         
       } else {
         throw new Error('Failed to accept');
@@ -373,17 +355,7 @@ function attachMenuRejectHandler(
         
         removeNotificationFromUI(notifId);
 
-          // const container = document.getElementById("notification-menu");
-          // if(!container)return;
-          // if(container.children.length === 0)
-          // {
-          //   if(container.classList.contains("hidden")) return;
-          //     container.classList.add("opacity-0");
-          //     container.classList.add("hidden")
-          //     // notifIcon.innerHTML = `<span class="  material-symbols-outlined">
-          //     //                     notifications
-          //     //                     </span>`
-          // }
+
         
       } else {
         throw new Error('Failed to reject');
