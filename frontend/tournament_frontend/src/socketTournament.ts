@@ -137,14 +137,30 @@ export function start_gameHandlerTournament(data: any) {
 
 }
 
-export function match_endedHandlerTournament(data: any) {
+export async function match_endedHandlerTournament(data: any) {
   console.log("Tournament match ended handler called with data:", data);
-  if (data.result === 'won') {
+  const result = await fetch("/tournament/list", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  console.log("Get list", result);
+   if (data.result === 'won') {
     const message = "You won your tournament match!";
-    console.log("Tournament match ended handler called with data:",data.userId,  data);
     showToast(message);
     const socket = Socket.getSocketInstance();
-    // socket.emit('matchmaking:start', { tournamentName: data.tournamentName});
+    const response = await fetch("https://localhost:8443/tournament/finalMatch", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ tournamentName: data.tournamentName, winnerId: data.userid }),
+    });
+
+    const responseData = await response.json();
+    console.log("this is the response data after adding to final table", responseData);
+    socket.emit("tournament:Final", data);
     navigate('/home');
     return;
   }
@@ -152,8 +168,6 @@ export function match_endedHandlerTournament(data: any) {
     const message = "You lost your tournament match.";
     showToast(message);
     console.log("this the data to leave tournament: for user", data.userId, data);
-    const socket = Socket.getSocketInstance();
-    socket.emit("tournament:leave", data);
     navigate('/home');
     return;
   }
@@ -168,9 +182,8 @@ export function matchHandlerTournament(data: any) {
 }
 
 
-export function waitingForOpponentHandlerTournament(data:any)
-{
+export function waitingForOpponentHandlerTournament(data: any) {
   showToast("Waiting for opponent to join the tournament match...");
   console.log("Waiting for opponent to join the tournament match:", data);
-  
+
 }
