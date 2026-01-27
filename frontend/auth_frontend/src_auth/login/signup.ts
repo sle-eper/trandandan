@@ -66,7 +66,6 @@ function attachSignupHandlers() {
 
     try {
       const result = await signupUser(username, email, password, confirm);
-
       if (result.success) {
         socketInstance();
         navigate("/home"); // ✅ go to login on success

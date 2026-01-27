@@ -32,6 +32,8 @@ server.register(fastifyIO, {
 });
 
 export const onlineUsers = new Map<string, Set<string>>();
+const tournamentTimeouts = new Map<string, NodeJS.Timeout>();
+
 // let UserData ;
 const getRoomName = (id1: string, id2: string): string => {
   return [id1, id2].sort().join("_");
@@ -63,13 +65,12 @@ server.ready().then(() => {
         socket.disconnect();
         return;
       }
-      socket.data.user = await fetchUserData(userId);
+      socket.data.user = (await fetchUserData(userId))?.user;
       if (!socket.data.user) {
         socket.disconnect();
         return;
       }
       socket.data.userId = userId;
-
       if (!onlineUsers.has(userId)) {
         onlineUsers.set(userId, new Set());
         socket.broadcast.emit("user_online", userId);
@@ -467,6 +468,7 @@ server.ready().then(() => {
       socket.emit("tournament:joined", data);
     });
     socket.on("matchmaking:start", async (data) => {
+      console.log("Matchmaking start event received for tournament:", data.tournamentName);
       const participantsMatching = await fetch(`http://tournament:5500/tournament/matchmaking?tournamentName=${encodeURIComponent(data.tournamentName)}`, {
         method: 'GET',
         headers: {
@@ -474,7 +476,18 @@ server.ready().then(() => {
         },
       }
       )
+      if (participantsMatching.status === 400) {
+        console.log("**********Not enough participants, waiting for more players...");
+        return;
+      }
+      if (participantsMatching.status === 206) {
+        console.log("iam the winner------------------------------------");
+        return;
+      }
       const participantsMatchingJson = await participantsMatching.json();
+      console.log("=========================");
+      console.log("Participants matching response status:", participantsMatchingJson.matches);
+      console.log("=========================");
       for (const match of participantsMatchingJson.matches) {
         //generatename for room game 
         //send notif to both player to start game 
@@ -495,7 +508,7 @@ server.ready().then(() => {
         }
         if (player2Sockets) {
           for (const sid of player2Sockets) {
-            io.to(sid).emit("start_gameTournament", { gameId, userId: player2.userid });
+            io.to(sid).emit("start_gameTournament", { gameId, userId: player2.userid, tournamentName: data.tournamentName, maxPlayers: data.maxPlayers });
           }
         }
       }
@@ -504,65 +517,82 @@ server.ready().then(() => {
     socket.on("game:tournament:joined", async (data) => {
       socket.join(data.gameId);
       const room = io.sockets.adapter.rooms.get(data.gameId);
-      console.log("room after joining:::::::::::::::::::", room);
+
       if (room && room.size === 2) {
-        const sidArray = Array.from(room);
-        const sid1 = sidArray[0];
-        const sid2 = sidArray[1];
-        const gameId = data.gameId;
-        io.to(sid1).emit("matchTournament", { gameId, side: 'right', flagTournament: true });
-        io.to(sid2).emit("matchTournament", { gameId, side: 'left', flagTournament: true });
-      }
-      else {
-        console.log("Waiting for opponent to join...");
-        //wait 10 seconds max
-        setTimeout(() => {
-        }, 10000);
-        if (room && room.size == 1) {
-          const sidArray = Array.from(room);
-          const sid = sidArray[0];
-          //wait 5 seconds then send
-          io.to(sid).emit("match:ended", { result: 'won', message: 'Opponent did not join in time. You win by default.' });
+        const existingTimeout = tournamentTimeouts.get(data.gameId);
+        if (existingTimeout) {
+          console.log("000000000000000000000000000000000000000000000000000000000000000000000000");
+          clearTimeout(existingTimeout);
+          tournamentTimeouts.delete(data.gameId);
         }
+        const sidArray = Array.from(room);
+        const [sid1, sid2] = sidArray;
+        const gameId = data.gameId;
+        io.to(sid1).emit("matchTournament", { gameId, side: 'right', flagTournament: true, tournamentName: data.tournamentName });
+        io.to(sid2).emit("matchTournament", { gameId, side: 'left', flagTournament: true, tournamentName: data.tournamentName });
+      } else {
+        console.log("Waiting for opponent to join...");
+        setTimeout(() => {
+          // If opponent hasn't joined within the timeout, remove the player from the tournament
+          console.log("Tournament join timeout reached for gameId:", data.gameId);
+          socket.emit("match:ended", {
+            result: 'lost',
+            message: 'Opponent did not join in time. You have been removed from the tournament.',
+            tournamentName: data.tournamentName
+          });
+          socket.leave(data.gameId);
+          tournamentTimeouts.delete(data.gameId);
+        }, 40000);
       }
-    })
+    });
     socket.on("Tournament:leave", async (data) => {
+      const remove = await fetch(`http://tournament:5500/tournament/leave?tournamentName=${encodeURIComponent(data.tournamentName)}&userId=${encodeURIComponent(socket.data.userId)}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+      console.log("User left tournament:", remove);
+      console.log("Player leaving tournament game:", data);
       const room = io.sockets.adapter.rooms.get(data.gameId);
-      console.log("room before leaving:::::::::::::::::::", room);
-      if (room && room.size == 1) {
-        console.log("Opponent left the tournament game. You win by default.");
+      if (room && room.size === 1) {
         const sidArray = Array.from(room);
         const sid = sidArray[0];
-        //wait 5 seconds then send
-        io.to(sid).emit("match:ended", { result: 'won', message: 'Opponent left the tournament game. You win by default.' });
-        //send to game service that the player win by default
+        console.log("yassir++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+
+        io.to(sid).emit("match:ended", {
+          result: 'won',
+          message: 'Opponent left the tournament game. You win by default.',
+          tournamentName: data.tournamentName
+        });
+      } else if (room && room.size === 0) {
+        console.log("All players left the tournament game:", data.gameId);
+        return;
       }
-      else {
-        setTimeout(() => {
-          console.log("Left the tournament game. Waiting for opponent...");
-        }, 5000);
-      }
-    })
-    //hna khask tsift lih match result
+      socket.leave(data.gameId);
+    });
     socket.on("match:result", async (data) => {
       console.log("Match result received:", data);
-      //process the result and update tournament bracket
       const loser = data.loserId;
       const winner = data.winnerId;
       console.log("Loser:", loser, "Winner:", winner);
-      //notify both players
-      const loserSockets = onlineUsers.get(loser);
-      const winnerSockets = onlineUsers.get(winner);
-
+      const loserSockets = onlineUsers.get(String(loser));
+      const winnerSockets = onlineUsers.get(String(winner));
+      console.log("Loser Sockets:", loserSockets, "Winner Sockets:", winnerSockets);
       if (loserSockets) {
         for (const sid of loserSockets) {
+          console.log("noussaiba++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
-          io.to(sid).emit("match:ended", { result: 'lost' });
+          io.to(sid).emit("match:ended", { result: 'lost', tournamentName: data.tournamentName });
         }
       }
       if (winnerSockets) {
         for (const sid of winnerSockets) {
-          io.to(sid).emit("match:ended", { result: 'won' });
+          console.log("lobaba++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+
+          io.to(sid).emit("match:ended", { result: 'won', tournamentName: data.tournamentName });
         }
       }
     })

@@ -122,24 +122,24 @@ export async function joinTournament_post(request, reply) {
 }
 
 export async function leaveTournament_get(request, reply) {
-    const userid = request.headers['x-user-id'];
-    const { tournamentid } = request.query;
+    const { tournamentName , userId} = request.query;
     const db = await getDatabase();
-    const tournament = await db.get('SELECT * FROM tournament WHERE id  = ?', [tournamentid]);
+    const tournament = await db.get('SELECT * FROM tournament WHERE name  = ?', [tournamentName]);
     if (!tournament) {
         console.log("Tournament Not Found");
         return reply.code(400)
-            .send("Tournament Not Found")
+        .send("Tournament Not Found")
     }
     const participants = await db.all(
         "SELECT * FROM participant WHERE tournamentId = ?",
         [tournament.id]
     );
+    console.log("UserID leaving tournament:", userId, "Tournament Name:", tournamentName);
     for (let i = 0; i < tournament.currentPlayers; i++) {
-        if (String(participants[i].userid) === String(userid)) {
+        if (String(participants[i].userid) === String(userId)) {
             await db.run(
                 "DELETE FROM participant WHERE userid = ?",
-                [userid]
+                [userId]
             );
             await db.run(
                 "UPDATE tournament SET currentPlayers = currentPlayers - 1 WHERE id = ?",
@@ -243,9 +243,11 @@ export async function matchmaking_get(request, reply) {
             "SELECT * FROM participant WHERE tournamentId = ?",
             [tournament.id]
         );
-
+        if (participants.length % 2 !== 0) {
+            return reply.code(400).send({ message: "we have to wait" });
+        }
         if (participants.length < 2) {
-            return reply.code(400).send({ message: "Not enough participants for matchmaking" });
+            return reply.code(206).send(participants);
         }
         const participantStats = [];
         for (let partic of participants) {
