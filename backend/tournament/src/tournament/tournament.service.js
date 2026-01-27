@@ -55,17 +55,23 @@ export async function createTournament_post(request, reply) {
 export async function joinTournament_post(request, reply) {
     const userid = request.headers['x-user-id'];
     const username = request.headers['x-user'];
+    console.log("UserID:", userid, "Username:", username);
     const { tournamentName } = request.body;
     const existingUser = await axios.get(
-        "http://user-management:3000/profile/User",
+        `http://user-management:3000/user/${userid}`,
         {
             params: {
-                username,
+                userid
             },
         }
     );
+    if (existingUser.data === null) {
+        return reply.code(404).send({
+            message: "User does not exist!",
+        });
+    }
     const db = await getDatabase();
-    const nickname = existingUser.data.display_name;
+    const nickname = existingUser.data.user.display_name;
     const tournament = await db.get('SELECT * FROM tournament WHERE name  = ?', [tournamentName]);
     if (!tournament) {
         console.log("Tournament Not Found");
