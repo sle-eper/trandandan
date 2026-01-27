@@ -550,10 +550,38 @@ server.ready().then(() => {
         //redirect to home 
       }
     });
+    socket.on("tournament:finalResult", async (data) => {
+      console.log("Final result received at server:", data);
+      const Winner = await fetch("http://tournament:5500/tournament/declareWinner", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ tournamentName: data.tournamentName, winnerId: data.winnerId }),
+      });
+      const winnerData = await Winner.json();
+      console.log("Winner declared:", winnerData);
+      const winnerId = data.winnerId;
+      const tournamentName = data.tournamentName;
+      const winnerSockets = onlineUsers.get(String(winnerId));
+      if (winnerSockets) {
+        for (const sid of winnerSockets) {
+          io.to(sid).emit("tournament:champion", {
+            message: `Congratulations! You are the champion of the tournament ${tournamentName}!`,
+            tournamentName: tournamentName
+          });
+        }
+      }
+    });
     socket.on("match:result", async (data) => {
       console.log("Match result received:", data);
       const loser = data.loserId;
       const winner = data.winnerId;
+      if (data.final === 'final') {
+        console.log("Final match result processing for tournament:", data.tournamentName);
+        socket.emit("tournament:finalResult", data);
+        return;
+      }
       console.log("Loser:", loser, "Winner:", winner);
       const loserSockets = onlineUsers.get(String(loser));
       const winnerSockets = onlineUsers.get(String(winner));
@@ -588,27 +616,30 @@ server.ready().then(() => {
       });
       const finalMatchJson = await finalMatchResponse.json();
       console.log("Final match response received", finalMatchJson);
-      // Notify players about final match results if needed
-      for (const match of finalMatchJson.finalists) {
-        const player1 = match.player1;
-        const player2 = match.player2;
+      if (finalMatchJson.finalists.length === 2) {
+        console.log("We can now start the final match between the last two players.");
+        // Notify players about final match results if needed
+        const player1 = finalMatchJson.finalists[0];
+        const player2 = finalMatchJson.finalists[1];
+        console.log("Final Match between:", player1, "and", player2);
         const gameId = Math.random().toString(36).substring(2, 9);
         const player1Sockets = onlineUsers.get(String(player1.userid));
         const player2Sockets = onlineUsers.get(String(player2.userid));
 
         if (player1Sockets) {
           for (const sid of player1Sockets) {
-            io.to(sid).emit("start_gameTournament", { gameId, userId: player1.userid, tournamentName: data.tournamentName, maxPlayers: data.maxPlayers });
+            io.to(sid).emit("matchTournament", { gameId, side: 'right', flagTournament: true, tournamentName: data.tournamentName, final: 'final' });
 
           }
         }
         if (player2Sockets) {
           for (const sid of player2Sockets) {
-            io.to(sid).emit("start_gameTournament", { gameId, userId: player2.userid, tournamentName: data.tournamentName, maxPlayers: data.maxPlayers });
+            io.to(sid).emit("matchTournament", { gameId, side: 'right', flagTournament: true, tournamentName: data.tournamentName, final: 'final' });
           }
         }
       }
     });
+    
   })
 });
 

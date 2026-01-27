@@ -78,6 +78,14 @@ export async function createTables() {
             score INTEGER DEFAULT 0,
             FOREIGN KEY (tournamentid) REFERENCES tournament(id) ON DELETE CASCADE)
 `)
+    await db.run(`
+            CREATE TABLE IF NOT EXISTS Winner (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nickname VARCHAR(50) NOT NULL,
+            tournamentid INTEGER NOT NULL,
+            userid INTEGER NOT NULL,
+            score INTEGER DEFAULT 0,
+            FOREIGN KEY (tournamentid) REFERENCES tournament(id) ON DELETE CASCADE)`);
   } catch (error) {
     console.error('❌ Error creating tables:', error);
     throw error;

@@ -376,3 +376,32 @@ export async function finalMatch_get(request, reply) {
         return reply.code(500).send({ message: "Internal Server Error" });
     }
 }
+export async function declareWinner_post(request, reply) {
+    const { tournamentName, winnerId } = request.body;
+    console.log("Declaring winner for tournament:", tournamentName, "Winner ID:", winnerId);
+    const db = await getDatabase();
+    const tournament = await db.get('SELECT * FROM tournament WHERE name = ?', [tournamentName]);
+    if (!tournament) {
+        console.log("Tournament Not Found");
+        return reply.code(400).send({ message: "Tournament Not Found" });
+    }
+    const winner = await db.get(
+        `SELECT * FROM final WHERE userid = ? AND tournamentid = ?`,
+        [winnerId, tournament.id]
+    );
+    if (!winner) {
+        console.log("Winner Not Found in final table");
+        return reply.code(400).send({ message: "Winner Not Found in final table" });
+    }
+    try {
+        await db.run(
+            `INSERT INTO Winner (nickname, tournamentid, userid, score)
+             VALUES (?, ?, ?, ?)`,
+            [winner.nickname, tournament.id, winner.userid, winner.score]
+        );
+        return reply.code(200).send({ message: "Winner declared successfully" });
+    } catch (error) {
+        console.log("Error declaring winner:", error);
+        return reply.code(500).send({ message: "Internal Server Error" });
+    }
+}

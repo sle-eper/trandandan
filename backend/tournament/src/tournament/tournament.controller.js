@@ -14,4 +14,5 @@ export default async function (fastify) {
     fastify.get('/matchmaking', tournament.matchmaking_get);
     fastify.post('/finalMatch', tournament.finalMatch_post);
     fastify.get('/finalMatch', tournament.finalMatch_get);
+    fastify.post('/declareWinner', tournament.declareWinner_post);
 }

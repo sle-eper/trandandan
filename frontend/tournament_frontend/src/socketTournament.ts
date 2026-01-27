@@ -178,7 +178,7 @@ export async function match_endedHandlerTournament(data: any) {
 export function matchHandlerTournament(data: any) {
   console.log('Starting remote game from chat challenge:', data.gameId, 'as side:', data.side);
   // Redirect using the SPA router navigate function, passing both gameId and side
-  navigate(`/game/pong?TournamentName=${data.tournamentName}&gameId=${data.gameId}&side=${data.side}&mode=tournament`);
+  navigate(`/game/pong?TournamentName=${data.tournamentName}&gameId=${data.gameId}&side=${data.side}&mode=tournament&final=${data.final}`);
 }
 
 
@@ -187,3 +187,10 @@ export function waitingForOpponentHandlerTournament(data: any) {
   console.log("Waiting for opponent to join the tournament match:", data);
 
 }
+export function finalResultHandlerTournament(data: any) {
+  console.log("Final result handler called with data:", data);
+  // showToast(`Tournament <${data.tournamentName}> has concluded! Champion: ${data.championNickname} with Score: ${data.championScore}`);
+  navigate('/home');
+}
+
+
