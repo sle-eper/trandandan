@@ -65,7 +65,7 @@ export async function twofactor_get(request, reply) {
             username,
         },
     });
-    if (!row) {
+    if (!row.data) {
         return reply.code(400).send({ success: false, message: "User not found" });
     }
     if (String(row.data.two_factor_enabled) === "true") {

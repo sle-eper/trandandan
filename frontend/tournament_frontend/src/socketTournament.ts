@@ -148,3 +148,11 @@ export function match_endedHandlerTournament(data: any) {
     showToast(message);
   }
 }
+
+
+
+export function matchHandlerTournament(data: any) {
+  console.log('Starting remote game from chat challenge:', data.gameId, 'as side:', data.side);
+  // Redirect using the SPA router navigate function, passing both gameId and side
+  navigate(`/game/pong?gameId=${data.gameId}&side=${data.side}&mode=tournament`);
+}

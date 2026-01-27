@@ -8,7 +8,7 @@ export async function addParticipant_post(request, reply) {
     try {
         console.log("userId:", userId);
         const row = await axios.get(
-            "http://user-management:3000/profile/User",
+            "http://user-management:3000/user/",
             {
                 params: {
                     id: userId

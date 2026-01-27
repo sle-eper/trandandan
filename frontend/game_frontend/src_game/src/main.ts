@@ -5,6 +5,7 @@ import '../css/gameCountDown.css';
 import '../css/gameLobby.css';
 import '../css/gameVisuals.css';
 import { gameSocket } from './services/gameSocket';
+import { getSocketInstance } from '../../../socket_manager/socket';
 
 console.debug('Game module loaded');
 
@@ -26,6 +27,7 @@ let pongBall: PongBall;
 let countdown: CountDown;
 let animationId: number | null = null;
 let winnerName: string | null = null;
+let gameMode: string | null = null;
 
 // Color State
 let leftPaddleColor = '#ff0000';
@@ -358,6 +360,19 @@ function setupSocketListeners() {
         // Show Return to Lobby button
         const btnLobby = document.getElementById('btn-return-lobby');
         if (btnLobby) btnLobby.classList.remove('hidden');
+
+        if (gameMode === 'tournament') {
+            const tSocket = getSocketInstance();
+            if (tSocket) {
+                console.log('[DEBUG] Tournament mode detected. Emitting match:result', data);
+                tSocket.emit('match:result', {
+                    gameId: currentGameId,
+                    winnerId: data.winner?.id,
+                    loserId: data.players?.find((p: any) => p.id !== data.winner?.id)?.id,
+                    score: data.score
+                });
+            }
+        }
     });
 
     s.on('player_left', () => {
@@ -570,11 +585,13 @@ function checkUrlForGame() {
     const params = new URLSearchParams(window.location.search);
     const gameId = params.get('gameId');
     const sideParam = params.get('side');
+    const modeParam = params.get('mode');
     if (gameId) {
         showGameView();
         gameSocket.connect();
         currentGameId = gameId;
         isRemote = true;
+        gameMode = modeParam;
         playerSide = (sideParam === 'left' || sideParam === 'right') ? sideParam : 'right';
         gameSocket.socket.emit('join_game', { gameId, side: playerSide });
     }

@@ -7,7 +7,7 @@ import * as Socket from "../../socket_manager/socket";
 ======================= */
 let currentTournament = {
   name: "",
-  maxPlayers: 16
+  maxPlayers: 4
 };
 
 const CARD_HEIGHT = 56;
@@ -132,13 +132,8 @@ function tournamentCard(
    TOURNAMENT BRACKET GENERATION
 ======================= */
 
-function generateBracketHTML(maxPlayers: number, participants?: any, matches?: any) {
-  if (maxPlayers === 4) {
+function generateBracketHTML( participants?: any, matches?: any) {
     return generate4PlayerBracket(participants, matches);
-  } else if (maxPlayers === 8) {
-    return generate8PlayerBracket(participants, matches);
-  }
-  return "";
 }
 
 function generate4PlayerBracket(participants: any[] = [], matches?: any) {
@@ -197,105 +192,6 @@ function generate4PlayerBracket(participants: any[] = [], matches?: any) {
   `;
 }
 
-function generate8PlayerBracket(participants: any[] = [], matches?: any) {
-  // Helper to safely get participant nickname
-  const p = (i: number) => participants[i]?.nickname ?? "TBD";
-  
-  // Get match data
-  const quarterFinals = matches?.quarterFinals || [];
-  const semiFinals = matches?.semiFinals || [];
-  const final = matches?.final || {};
-  
-  // Quarter Finals
-  const qf1 = quarterFinals[0] || {};
-  const qf2 = quarterFinals[1] || {};
-  const qf3 = quarterFinals[2] || {};
-  const qf4 = quarterFinals[3] || {};
-  
-  // Semi Finals
-  const sf1 = semiFinals[0] || {};
-  const sf2 = semiFinals[1] || {};
-  
-  return `
-    <div class="w-full h-full flex items-center justify-center gap-10">
-      <!-- Quarter-Finals -->
-      <div class="relative w-44" style="height: 480px;">
-        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
-          Quarter-Final
-        </h3>
-        <!-- QF 1 -->
-        <div class="absolute left-0" style="top: 48px;">
-          ${matchCard(p(0), qf1.score1 ?? "—", p(1), qf1.score2 ?? "—")}
-        </div>
-        <!-- QF 2 -->
-        <div class="absolute left-0" style="top: 168px;">
-          ${matchCard(p(2), qf2.score1 ?? "—", p(3), qf2.score2 ?? "—")}
-        </div>
-        <!-- QF 3 -->
-        <div class="absolute left-0" style="top: 288px;">
-          ${matchCard(p(4), qf3.score1 ?? "—", p(5), qf3.score2 ?? "—")}
-        </div>
-        <!-- QF 4 -->
-        <div class="absolute left-0" style="top: 408px;">
-          ${matchCard(p(6), qf4.score1 ?? "—", p(7), qf4.score2 ?? "—")}
-        </div>
-      </div>
-      
-      <!-- Connector Lines QF → SF -->
-      <div class="flex flex-col justify-center">
-        <svg width="60" height="480" class="text-white/20">
-          ${connectorPair(60, 120, 48, 2)}
-          ${connectorPair(60, 120, 308, 2)}
-        </svg>
-      </div>
-      
-      <!-- Semi-Finals -->
-      <div class="relative w-44" style="height: 480px;">
-        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
-          Semi-Final
-        </h3>
-        <div class="absolute left-0" style="top: 108px;">
-          ${matchCard(
-            qf1.winner || "TBD", 
-            sf1.score1 ?? "—", 
-            qf2.winner || "TBD", 
-            sf1.score2 ?? "—"
-          )}
-        </div>
-        <div class="absolute left-0" style="top: 368px;">
-          ${matchCard(
-            qf3.winner || "TBD", 
-            sf2.score1 ?? "—", 
-            qf4.winner || "TBD", 
-            sf2.score2 ?? "—"
-          )}
-        </div>
-      </div>
-      
-      <!-- Connector Lines SF → F -->
-      <div class="flex flex-col justify-center">
-        <svg width="60" height="480" class="text-white/20">
-          ${connectorPair(60, 260, 108, 3)}
-        </svg>
-      </div>
-      
-      <!-- Final -->
-      <div class="relative w-44" style="height: 480px;">
-        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
-          Final
-        </h3>
-        <div class="absolute left-0" style="top: 228px;">
-          ${matchCard(
-            sf1.winner || "TBD", 
-            final.score1 ?? "—", 
-            sf2.winner || "TBD", 
-            final.score2 ?? "—"
-          )}
-        </div>
-      </div>
-    </div>
-  `;
-}
 
 let joinedPlayers: string[] = [];
 const friends = [
@@ -333,7 +229,7 @@ function tournamentBracketTemplate(maxPlayers: number, participants: any, matche
       
       <!-- Bracket Container -->
       <div class="flex-1 flex items-center justify-center p-4">
-        ${generateBracketHTML(Number(maxPlayers), participants, matches)}
+        ${generateBracketHTML(participants, matches)}
       </div>
       
       <!-- Invite Friends Modal -->
@@ -444,7 +340,6 @@ export function renderCreateTournament() {
                      bg-black/40 border border-white/10
                      outline-none focus:border-red-500">
               <option value="4">4</option>
-              <option value="8">8</option>
             </select>
           </div>
           <div class="flex gap-3 mt-6">
@@ -564,7 +459,7 @@ function attachListHandlers() {
         });
         const body = await tournamentstatus.json();
         console.log("Tournament status:", body);
-        currentTournament.maxPlayers = body.maxPlayers || 16;
+        currentTournament.maxPlayers = body.maxPlayers || 4;
         renderTournamentBracket(currentTournament.name, currentTournament.maxPlayers);
         navigate(`/tournament/bracket/${currentTournament.name}?maxPlayers=${currentTournament.maxPlayers}`);
       }
@@ -576,7 +471,7 @@ function attachListHandlers() {
       const target = e.currentTarget as HTMLElement;
       const tournamentId = target.dataset.tournamentId;
       const tournamentName = target.dataset.tournamentName;
-      const maxPlayers = target.dataset.maxPlayers ? parseInt(target.dataset.maxPlayers) : 16;
+      const maxPlayers = target.dataset.maxPlayers ? parseInt(target.dataset.maxPlayers) : 4;
       if (!tournamentId || !tournamentName) return;
       const result = await fetch("/tournament/join", {
         method: "POST",
@@ -621,7 +516,7 @@ function attachListHandlers() {
 export async function renderTournamentBracket(tournamentName?: string, maxPlayers?: number) {
   const main = document.getElementById("dashboard-content");
   if (!main) return;
-  const Players = Number(maxPlayers) || 16;
+  const Players = Number(maxPlayers) || 4;
   console.log("{Debug}", tournamentName, "----", maxPlayers);
   
   // Fetch participants
