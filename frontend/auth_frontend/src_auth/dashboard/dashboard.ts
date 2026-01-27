@@ -134,6 +134,8 @@ function getnotif(): Promise<any[]> {
   if (sidebar) sidebar.innerHTML = renderSidebar();
   if (nav) nav.innerHTML = renderNavBar();
 
+  navBarLogic();
+  sidebarLogic();
   // Verify user and set up socket listeners
   try {
     const response = await fetch("/auth/verify", {
@@ -163,6 +165,5 @@ function getnotif(): Promise<any[]> {
   }
 
   // Apply logic handlers after everything is rendered
-  navBarLogic();
-  sidebarLogic();
+
 }
