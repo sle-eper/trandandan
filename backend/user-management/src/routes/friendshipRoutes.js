@@ -5,9 +5,9 @@ async function friendshipRoutes(fastify, options) {
   const friendsController = new FriendsController(fastify.db);
 
   // All friendship routes require authentication
-  fastify.get('/:id/friends', {
+  // fastify.get('/:id/friends', {
     
-  }, friendsController.getFriends.bind(friendsController));
+  // }, friendsController.getFriends.bind(friendsController));
 
    fastify.post('/friends/request',
      {
@@ -53,22 +53,22 @@ async function friendshipRoutes(fastify, options) {
     
   }, friendsController.rejectRequest.bind(friendsController));
 
-  fastify.delete('/friends/:id', {
-    schema: {
-      params: {
-        type: 'object',
-        required: ['id'],
-        properties: {
-          id: { type: 'integer', minimum: 1 }
-        }
-      }
-    },
+  // fastify.delete('/friends/:id', {
+  //   schema: {
+  //     params: {
+  //       type: 'object',
+  //       required: ['id'],
+  //       properties: {
+  //         id: { type: 'integer', minimum: 1 }
+  //       }
+  //     }
+  //   },
     
-  }, friendsController.removeFriend.bind(friendsController));
+  // }, friendsController.removeFriend.bind(friendsController));
 
-  fastify.get('/friends/requests', {
+  // fastify.get('/friends/requests', {
     
-  }, friendsController.getPendingRequests.bind(friendsController));
+  // }, friendsController.getPendingRequests.bind(friendsController));
 
 
 fastify.get('/friendship/status/:userId/:friendId', {

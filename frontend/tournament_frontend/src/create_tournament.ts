@@ -1,4 +1,5 @@
 import { navigate } from "../../auth_frontend/src_auth/app"
+import { show2FAPage } from "../../auth_frontend/src_auth/login/2FA";
 import * as Socket from "../../socket_manager/socket";
 /* =======================
    TOURNAMENT STATE
@@ -16,6 +17,29 @@ const COLUMN_TOP_PADDING = 32; // px
 /* =======================
    PAGE TEMPLATES
 ======================= */
+
+export function showToast(message: string) {
+  const toast = document.createElement('div');
+  toast.className = `
+    fixed top-6 right-6 z-50
+      bg-[#1a1a1d] text-white
+      pointer-events-auto
+      min-w-[300px] max-w-md
+      px-4 py-3 rounded-xl
+      shadow-2xl border border-white/10
+      flex items-start gap-3
+      transform transition-all duration-300
+  `;
+
+  toast.textContent = message;
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.transform = 'translateX(400px)';
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
 function tournamentEntryTemplate() {
   return `
     <div class="w-full h-full flex flex-col justify-center items-center gap-8">
@@ -95,9 +119,8 @@ function tournamentCard(
           View Bracket
         </button>
 
-        ${
-          canJoin
-            ? `
+        ${canJoin
+      ? `
           <button
             class="flex-1 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition text-sm join-tournament-btn"
             data-tournament-id="${id}"
@@ -105,8 +128,8 @@ function tournamentCard(
             Join
           </button>
           `
-            : ""
-        }
+      : ""
+    }
       </div>
 
     </div>
@@ -114,18 +137,17 @@ function tournamentCard(
 }
 
 
-function generateBracketHTML(maxPlayers: number) {
+function generateBracketHTML(maxPlayers: number, participants?: any, flag?: number) {
   if (maxPlayers === 4) {
-    return generate4PlayerBracket();
+    return generate4PlayerBracket(participants, flag);
   } else if (maxPlayers === 8) {
-    return generate8PlayerBracket();
-  } else {
-    return generate16PlayerBracket();
+    return generate8PlayerBracket(participants, flag);
   }
 }
 
-function generate4PlayerBracket() {
-  return `
+function generate4PlayerBracket(Participants?: any, flag?:number) {
+  if (flag === 1){
+    return `
     <div class="w-full h-full flex items-center justify-center gap-12">
 
       <!-- Semi-Finals -->
@@ -136,12 +158,12 @@ function generate4PlayerBracket() {
 
         <!-- SF 1 -->
         <div class="absolute left-0" style="top: 48px;">
-          ${matchCard("Player 1", "TBD", "Player 2", "TBD")}
+          ${matchCard(Participants[0].nickname || "TBD", "TBD", Participants[1].nickname || "TBD", "TBD")}
         </div>
 
         <!-- SF 2 -->
         <div class="absolute left-0" style="top: 168px;">
-          ${matchCard("Player 3", "TBD", "Player 4", "TBD")}
+          ${matchCard(Participants[2].nickname || "TBD", "TBD", Participants[3].nickname || "TBD", "TBD")}
         </div>
       </div>
 
@@ -165,9 +187,54 @@ function generate4PlayerBracket() {
 
     </div>
   `;
+  }
+  else
+  {
+    return `
+    <div class="w-full h-full flex items-center justify-center gap-12">
+
+      <!-- Semi-Finals -->
+      <div class="relative w-44" style="height: 280px;">
+        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
+          Semi-Final
+        </h3>
+
+        <!-- SF 1 -->
+        <div class="absolute left-0" style="top: 48px;">
+          ${matchCard(Participants[0].nickname || "TBD", "TBD", "Loser0", "TBD")}
+        </div>
+
+        <!-- SF 2 -->
+        <div class="absolute left-0" style="top: 168px;">
+          ${matchCard(Participants[1].nickname || "TBD", "TBD", "Loser1", "TBD")}
+        </div>
+      </div>
+
+      <!-- Connector Lines SF → F -->
+      <div class="flex flex-col justify-center">
+        <svg width="60" height="280" class="text-white/20">
+          ${connectorPair(60, 110, 60, 3)}
+        </svg>
+      </div>
+
+      <!-- Final -->
+      <div class="relative w-44" style="height: 280px;">
+        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
+          Final
+        </h3>
+
+        <div class="absolute left-0" style="top: 108px;">
+          ${matchCard(Participants[0].nickname || "TBD", "TBD", Participants[1].nickname || "TBD", "TBD")}
+        </div>
+      </div>
+
+    </div>
+  `;
+  }
 }
 
-function generate8PlayerBracket() {
+function generate8PlayerBracket(participants?: any, flag?:number) {
+  if (flag === 1){
   return `
     <div class="w-full h-full flex items-center justify-center gap-10">
 
@@ -179,22 +246,22 @@ function generate8PlayerBracket() {
 
         <!-- QF 1 -->
         <div class="absolute left-0" style="top: 48px;">
-          ${matchCard("Player 1", "TBD", "Player 2", "TBD")}
+          ${matchCard(participants[0].nickname || "TBD", "TBD", participants[1].nickname || "TBD", "TBD")}
         </div>
 
         <!-- QF 2 -->
         <div class="absolute left-0" style="top: 168px;">
-          ${matchCard("Player 3", "TBD", "Player 4", "TBD")}
+          ${matchCard(participants[2].nickname || "TBD", "TBD", participants[3].nickname || "TBD", "TBD")}
         </div>
 
         <!-- QF 3 -->
         <div class="absolute left-0" style="top: 288px;">
-          ${matchCard("Player 5", "TBD", "Player 6", "TBD")}
+          ${matchCard(participants[4].nickname || "TBD", "TBD", participants[5].nickname || "TBD", "TBD")}
         </div>
 
         <!-- QF 4 -->
         <div class="absolute left-0" style="top: 408px;">
-          ${matchCard("Player 7", "TBD", "Player 8", "TBD")}
+          ${matchCard(participants[6].nickname || "TBD", "TBD", participants[7].nickname || "TBD", "TBD")}
         </div>
       </div>
 
@@ -241,111 +308,163 @@ function generate8PlayerBracket() {
 
     </div>
   `;
-}
+  }
+  else if (flag === 2)
+  {
+`
+    <div class="w-full h-full flex items-center justify-center gap-10">
 
+      <!-- Quarter-Finals -->
+      <div class="relative w-44" style="height: 480px;">
+        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
+          Quarter-Final
+        </h3>
 
-function generate16PlayerBracket() {
-  return `
-    <div class="w-full h-full flex items-center justify-center gap-8">
-      
-      <!-- Round of 16 -->
-      <div class="flex flex-col gap-2">
-        <h3 class="text-xs text-gray-400 uppercase tracking-wider mb-4 text-center">Round of 16</h3>
-        <div class="flex flex-col gap-10 pt-8">
-          ${matchCard("Player 1", "3", "Player 2", "1")}
-          ${matchCard("Player 3", "TBD", "Player 4", "TBD")}
-          ${matchCard("Player 5", "TBD", "Player 6", "TBD")}
-          ${matchCard("Player 7", "TBD", "Player 8", "TBD")}
-          ${matchCard("Player 9", "TBD", "Player 10", "TBD")}
-          ${matchCard("Player 11", "TBD", "Player 12", "TBD")}
-          ${matchCard("Player 13", "TBD", "Player 14", "TBD")}
-          ${matchCard("Player 15", "TBD", "Player 16", "TBD")}
+        <!-- QF 1 -->
+        <div class="absolute left-0" style="top: 48px;">
+          ${matchCard(participants[0].nickname || "TBD", "TBD","Loser0", "TBD")}
+        </div>
+
+        <!-- QF 2 -->
+        <div class="absolute left-0" style="top: 168px;">
+          ${matchCard(participants[1].nickname || "TBD", "TBD","Loser1", "TBD")}
+        </div>
+
+        <!-- QF 3 -->
+        <div class="absolute left-0" style="top: 288px;">
+          ${matchCard(participants[2].nickname || "TBD", "TBD","Loser2", "TBD")}
+        </div>
+
+        <!-- QF 4 -->
+        <div class="absolute left-0" style="top: 408px;">
+          ${matchCard(participants[3].nickname || "TBD", "TBD","Loser3", "TBD")}
         </div>
       </div>
 
-      <!-- Connector Lines R16 → QF -->
-      <div>
-        <svg width="50" height="860" class="text-white/20">
-          ${connectorPair(50, 100, 50, 2)}
-          ${connectorPair(50, 100, 280, 2)}
-          ${connectorPair(50, 100, 510, 2)}
-          ${connectorPair(50, 100, 730, 2)}
-        </svg>
-
-      </div>
-
-  <!-- Quarter-Finals -->
-    <div class="relative w-44" style="height: 860px;">
-      <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
-        Quarter-Final
-      </h3>
-
-      <div class="absolute left-0" style="top: 98px;">
-        ${matchCard("Player 1", "TBD", "TBD", "TBD")}
-      </div>
-
-      <div class="absolute left-0" style="top: 328px;">
-        ${matchCard("TBD", "TBD", "TBD", "TBD")}
-      </div>
-
-      <div class="absolute left-0" style="top: 558px;">
-        ${matchCard("TBD", "TBD", "TBD", "TBD")}
-      </div>
-
-      <div class="absolute left-0" style="top: 778px;">
-        ${matchCard("TBD", "TBD", "TBD", "TBD")}
-      </div>
-    </div>
-
-
-
-
       <!-- Connector Lines QF → SF -->
       <div class="flex flex-col justify-center">
-        <svg width="50" height="860" class="text-white/20">
-          ${connectorPair(50, 224, 106, 2.5)}
-          ${connectorPair(50, 224, 566, 2.5)}
+        <svg width="60" height="480" class="text-white/20">
+          ${connectorPair(60, 120, 48, 2)}
+          ${connectorPair(60, 120, 308, 2)}
         </svg>
       </div>
 
       <!-- Semi-Finals -->
-      <div class="relative w-44" style="height: 860px;">
+      <div class="relative w-44" style="height: 480px;">
         <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
           Semi-Final
         </h3>
 
-        <!-- SF 1 -->
-        <div class="absolute left-0" style="top: 212px;">
-          ${matchCard("TBD", "TBD", "TBD", "TBD")}
+        <div class="absolute left-0" style="top: 108px;">
+          ${matchCard(participants[0].nickname || "TBD", "TBD", "Loser0", "TBD")}
         </div>
 
-        <!-- SF 2 -->
-        <div class="absolute left-0" style="top: 672px;">
-          ${matchCard("TBD", "TBD", "TBD", "TBD")}
+        <div class="absolute left-0" style="top: 368px;">
+          ${matchCard(participants[1].nickname || "TBD", "TBD", "Loser1", "TBD")}
         </div>
       </div>
 
       <!-- Connector Lines SF → F -->
       <div class="flex flex-col justify-center">
-        <svg width="50" height="860" class="text-white/20">
-          ${connectorPair(50, 460, 220, 3)}
+        <svg width="60" height="480" class="text-white/20">
+          ${connectorPair(60, 260, 108, 3)}
         </svg>
       </div>
 
       <!-- Final -->
-      <div class="relative w-44" style="height: 860px;">
+      <div class="relative w-44" style="height: 480px;">
         <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
           Final
         </h3>
 
-        <div class="absolute left-0" style="top: 450px;">
+        <div class="absolute left-0" style="top: 228px;">
           ${matchCard("TBD", "TBD", "TBD", "TBD")}
         </div>
       </div>
 
     </div>
   `;
+  }
+  else
+  {
+    `
+    <div class="w-full h-full flex items-center justify-center gap-10">
+
+      <!-- Quarter-Finals -->
+      <div class="relative w-44" style="height: 480px;">
+        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
+          Quarter-Final
+        </h3>
+
+        <!-- QF 1 -->
+        <div class="absolute left-0" style="top: 48px;">
+          ${matchCard(participants[0].nickname || "TBD", "TBD", "Loser0", "TBD")}
+        </div>
+
+        <!-- QF 2 -->
+        <div class="absolute left-0" style="top: 168px;">
+          ${matchCard(participants[1].nickname || "TBD", "TBD", "Loser1", "TBD")}
+        </div>
+
+        <!-- QF 3 -->
+        <div class="absolute left-0" style="top: 288px;">
+          ${matchCard(participants[2].nickname || "TBD", "TBD", "Loser2", "TBD")}
+        </div>
+
+        <!-- QF 4 -->
+        <div class="absolute left-0" style="top: 408px;">
+          ${matchCard(participants[3].nickname || "TBD", "TBD", "Loser3", "TBD")}
+        </div>
+      </div>
+
+      <!-- Connector Lines QF → SF -->
+      <div class="flex flex-col justify-center">
+        <svg width="60" height="480" class="text-white/20">
+          ${connectorPair(60, 120, 48, 2)}
+          ${connectorPair(60, 120, 308, 2)}
+        </svg>
+      </div>
+
+      <!-- Semi-Finals -->
+      <div class="relative w-44" style="height: 480px;">
+        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
+          Semi-Final
+        </h3>
+
+        <div class="absolute left-0" style="top: 108px;">
+          ${matchCard(participants[0].nickname || "TBD", "TBD", "Loser0", "TBD")}
+        </div>
+
+        <div class="absolute left-0" style="top: 368px;">
+          ${matchCard(participants[1].nickname || "TBD", "TBD", "Loser1", "TBD")}
+        </div>
+      </div>
+
+      <!-- Connector Lines SF → F -->
+      <div class="flex flex-col justify-center">
+        <svg width="60" height="480" class="text-white/20">
+          ${connectorPair(60, 260, 108, 3)}
+        </svg>
+      </div>
+
+      <!-- Final -->
+      <div class="relative w-44" style="height: 480px;">
+        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
+          Final
+        </h3>
+
+        <div class="absolute left-0" style="top: 228px;">
+          ${matchCard(participants[0].nickname || "TBD", "TBD",participants[1].nickname || "TBD", "TBD")}
+        </div>
+      </div>
+
+    </div>
+  `;
+  }
 }
+
+
+
 let joinedPlayers: string[] = [];
 const friends = [
   { id: 1, username: "ayoub" },
@@ -354,7 +473,7 @@ const friends = [
 ];
 
 
-function tournamentBracketTemplate() {
+function tournamentBracketTemplate(maxPlayers: number, participants: any, flag?: number) {
   return `
     <div class="w-full h-full flex flex-col">
       
@@ -398,7 +517,7 @@ function tournamentBracketTemplate() {
 
       <!-- Bracket Container -->
       <div class="flex-1 flex items-center justify-center p-4">
-        ${generateBracketHTML(currentTournament.maxPlayers)}
+        ${generateBracketHTML(Number(maxPlayers), participants, flag)}
       </div>
       <!-- Invite Friends Modal -->
       <div
@@ -537,32 +656,10 @@ export function renderCreateTournament() {
   `;
 
   document.getElementById("cancel-create-tournament")?.addEventListener("click", () => {
-    navigate("/tournament");
+    navigate("/tournement");
     Tournament();
   });
-  function showToast(message: string) {
-    const toast = document.createElement('div');
-    toast.className = `
-    fixed top-6 right-6 z-50
-      bg-[#1a1a1d] text-white
-      pointer-events-auto
-      min-w-[300px] max-w-md
-      px-4 py-3 rounded-xl
-      shadow-2xl border border-white/10
-      flex items-start gap-3
-      transform transition-all duration-300
-  `;
 
-    toast.textContent = message;
-
-    document.body.appendChild(toast);
-
-    setTimeout(() => {
-      toast.style.transform = 'translateX(400px)';
-      toast.style.opacity = '0';
-      setTimeout(() => toast.remove(), 300);
-    }, 3000);
-  }
   document.getElementById("create")?.addEventListener("click", async () => {
     const nameInput = document.getElementById("tournament-name-input") as HTMLInputElement;
     const playersSelect = document.getElementById("max-players-select") as HTMLSelectElement;
@@ -586,8 +683,8 @@ export function renderCreateTournament() {
       socket?.once("tournament:created", () => {
         showToast("Tournament created successfully!");
         console.log("Tournament created event received");
-        renderTournamentBracket();
-        navigate("/tournament/bracket");
+        renderTournamentBracket(currentTournament.name, currentTournament.maxPlayers);
+        navigate(`/tournement/bracket/${currentTournament.name}?maxPlayers=${currentTournament.maxPlayers}`);
       });
       socket?.emit("tournament:create", {
         room: currentTournament.name,
@@ -608,18 +705,18 @@ export function Tournament() {
 function attachEntryHandlers() {
   document.getElementById("view-tournaments-btn")?.addEventListener("click", () => {
     renderTournamentList();
-    navigate("/tournament/list");
+    navigate(`/tournement/list`);
   });
   document.getElementById("create-tournament-btn")?.addEventListener("click", () => {
     renderCreateTournament();
-    navigate("/tournament/create");
+    navigate("/tournement/create");
   });
 }
 
 export async function renderTournamentList() {
   const main = document.getElementById("dashboard-content");
   if (!main) return;
-  const result =await  fetch("/tournament/list", {
+  const result = await fetch("/tournament/list", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -634,18 +731,34 @@ export async function renderTournamentList() {
 function attachListHandlers() {
   document.getElementById("back-to-entry")?.addEventListener("click", () => {
     Tournament();
-    navigate("/tournament");
+    navigate("/tournement");
   });
 
   // View Bracket
   document.querySelectorAll(".view-bracket-btn").forEach(btn => {
-    btn.addEventListener("click", (e) => {
+    btn.addEventListener("click", async (e) => {
       const target = e.currentTarget as HTMLElement;
       currentTournament.name = target.dataset.tournamentName || "Tournament";
-      currentTournament.maxPlayers = parseInt(target.dataset.maxPlayers || "16");
-
-      renderTournamentBracket();
-      navigate("/tournament/bracket");
+      const partic = await fetch(`/tournament/My/status?tournamentName=${encodeURIComponent(currentTournament.name)}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      console.log("Participant status:", partic);
+      if (partic.ok) {
+        const tournamentstatus = await fetch(`/tournament/check?tournamentName=${encodeURIComponent(currentTournament.name)}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          }
+        });
+        const body = await tournamentstatus.json();
+        console.log("Tournament status:", body);
+        currentTournament.maxPlayers = body.maxPlayers || 16;
+        renderTournamentBracket(currentTournament.name, currentTournament.maxPlayers);
+        navigate(`/tournament/bracket/${currentTournament.name}?maxPlayers=${currentTournament.maxPlayers}`);
+      }
     });
   });
 
@@ -654,20 +767,46 @@ function attachListHandlers() {
     btn.addEventListener("click", async (e) => {
       const target = e.currentTarget as HTMLElement;
       const tournamentId = target.dataset.tournamentId;
-      const tournamentName = target.dataset.tournamentName;
-
+      const tournamentName = target.dataset.tournamentName ;
+      const maxPlayers = target.dataset.maxPlayers ? parseInt(target.dataset.maxPlayers) : 16;
       if (!tournamentId || !tournamentName) return;
-
+      const result = await fetch("/tournament/join", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          tournamentName: tournamentName,
+        }),
+      });
+      const body = await result.json();
+      if (!result.ok) {
+        showToast(body.message || "Error joining tournament.");
+        return;
+      }
+      const Me = await fetch("/auth/verify", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+      console.log
       const socket = Socket.getSocketInstance();
-
       socket?.emit("tournament:join", {
         tournamentId,
-        room: tournamentName,
+        tournamentName: tournamentName,
       });
-
       socket?.once("tournament:joined", () => {
         console.log("Joined tournament:", tournamentName);
-        navigate("/tournament/bracket");
+        showToast("Joined tournament successfully!");
+
+        //start the tournamnet
+        if (body.message === "Tournament Full") {
+          console.log("Starting tournament as it is full", body.tournament.maxPlayers);
+          socket?.emit("matchmaking:start", {
+            tournamentName: tournamentName,
+            maxPlayers: body.tournament.maxPlayers,
+          });
+        }
       });
     });
   });
@@ -685,28 +824,43 @@ function onPlayerJoined(username: string) {
   }
 }
 
-export function renderTournamentBracket() {
+export async function renderTournamentBracket(tournamentName?: string, maxPlayers?: number, flag?:number) {
   const main = document.getElementById("dashboard-content");
   if (!main) return;
-  main.innerHTML = tournamentBracketTemplate();
-
+  const Players = Number(maxPlayers) || 16;
+  console.log("{Debug}", tournamentName,"----" , maxPlayers);
+  const Participant = await fetch(`/tournament/participant/list?tournamentname=${encodeURIComponent(tournamentName || '')}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  const body = await Participant.json();
+  main.innerHTML = tournamentBracketTemplate(Players, body, flag);
   const addBtn = document.getElementById("add-player-btn");
   const startBtn = document.getElementById("start-tournament-btn");
   const playerCount = document.getElementById("player-count");
 
-  addBtn?.addEventListener("click", () => {
-  const modal = document.getElementById("invite-modal");
-  modal?.classList.remove("hidden");
-  modal?.classList.add("flex");
-
-  renderFriendsList(friends);
+  addBtn?.addEventListener("click", async () => {
+    console.log("Add Player clicked");
+    const modal = document.getElementById("invite-modal");
+    modal?.classList.remove("hidden");
+    modal?.classList.add("flex");
+    const friends = await fetch("/api/users/getAllUsers", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }).then(res => res.json());
+    console.log("Friends data:", friends);
+    renderFriendsList(friends.users);
   });
   document.getElementById("close-invite-modal")?.addEventListener("click", () => {
     const modal = document.getElementById("invite-modal");
     modal?.classList.add("hidden");
     modal?.classList.remove("flex");
   });
-  document.addEventListener("click", (e) => {
+  document.addEventListener("click", async (e) => {
     const target = e.target as HTMLElement;
 
     if (!target.classList.contains("invite-btn")) return;
@@ -717,33 +871,39 @@ export function renderTournamentBracket() {
     target.textContent = "Invited";
     target.classList.add("opacity-50", "cursor-not-allowed");
     target.setAttribute("disabled", "true");
-
-    console.log("Invite sent to friend:", friendId);
-
-    // 🔌 SOCKET / API (later)
-    // socket.emit("tournament:invite", {
-    //   tournamentId: currentTournament.id,
-    //   friendId,
-    // });
+    const socket = Socket.getSocketInstance();
+    socket?.once("InvitationSended", () => {
+      showToast("Invitation sent!");
+      navigate(`/tournament/bracket/tournamentName=${tournamentName}?maxPlayers=${maxPlayers}`);
+    });
+    const response = await fetch("/auth/verify", {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include", // VERY IMPORTANT FOR Cookies
+    });
+    const responseJson = await response.json()
+    const userID = responseJson.id as string;
+    socket?.emit("tournament:invite", {
+      tournamentName: tournamentName,
+      userId: userID,
+      friendId: friendId,
+    });
+    console.log(`Invited friend ID: ${friendId}`);
   });
 
   startBtn?.addEventListener("click", () => {
-    if (joinedPlayers.length !== currentTournament.maxPlayers) {
+    if (joinedPlayers.length !== Number(maxPlayers)) {
       alert("Not all players have joined yet!");
       return;
     }
-
     console.log("Tournament started with players:", joinedPlayers);
-
-    // 🔌 Socket / API hook
-    // socket.emit("tournament:start", { players: joinedPlayers });
   });
 
   document.getElementById("back-to-tournaments")?.addEventListener("click", () => {
-    navigate("/tournament");
+    navigate("/tournement");
   });
   document.getElementById("back-to-tournaments")?.addEventListener("click", async () => {
     renderTournamentList();
-    navigate("/tournament/list");
+    navigate(`/tournement/list`);
   });
 }

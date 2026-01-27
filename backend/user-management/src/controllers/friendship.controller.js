@@ -11,7 +11,6 @@ class FriendsController {
         
         const userId = request.params.id;
         const friends = await this.friendshipModel.getFriends(userId);
-        // console.log("Friends list for userId", userId, ":", friends);
         return { success: true, friends };
       } catch (error) {
         return reply.code(500).send({ error: error.message });
@@ -86,17 +85,17 @@ class FriendsController {
     }
   
     // GET /friends/requests - Get pending requests
-    async getPendingRequests(request, reply) {
-      try {
+    // async getPendingRequests(request, reply) {
+    //   try {
         
-        const userId = request.user.userId;
-        const requests = await this.friendshipModel.getPendingRequests(userId);
+    //     const userId = request.user.userId;
+    //     const requests = await this.friendshipModel.getPendingRequests(userId);
         
-        return { success: true, requests };
-      } catch (error) {
-        return reply.code(500).send({ error: error.message });
-      }
-    }
+    //     return { success: true, requests };
+    //   } catch (error) {
+    //     return reply.code(500).send({ error: error.message });
+    //   }
+    // }
 
     // PUT /friends/status - Change friend status
     async changeFriendStatus(request, reply) {
@@ -125,33 +124,33 @@ class FriendsController {
       }
     }
 
-  async checkFriendshipStatus(request, reply) {
-  try {
-    const userId = request.headers['x-user-id'];
-    const friendId = request.query.friendId;
-    
-    console.log("Checking friendship status between userId:", userId, "and friendId:", friendId);
-    
-    const result = await this.friendshipModel.getStatusOfTwoFriends(userId, friendId);
-    
-    
-    if (!result || !result.status1 || !result.status2) {
-      console.log("No friendship record found");
-      return reply.code(200).send({ areFriends: false });
+    async checkFriendshipStatus(request, reply) {
+    try {
+      const userId = request.headers['x-user-id'];
+      const friendId = request.query.friendId;
+      
+      console.log("Checking friendship status between userId:", userId, "and friendId:", friendId);
+      
+      const result = await this.friendshipModel.getStatusOfTwoFriends(userId, friendId);
+      
+      
+      if (!result || !result.status1 || !result.status2) {
+        console.log("No friendship record found");
+        return reply.code(200).send({ areFriends: false });
+      }
+      
+      console.log("Friendship statuses:", result);
+      const areFriends = result.status1.status === 'accepted' && result.status2.status === 'accepted';
+      
+      console.log("areFriends:", areFriends);
+      
+      return reply.code(200).send({ areFriends });
+      
+    } catch (error) {
+      console.error("Error checking friendship status:", error);
+      return reply.code(500).send({ error: error.message });
     }
-    
-    console.log("Friendship statuses:", result);
-    const areFriends = result.status1.status === 'accepted' && result.status2.status === 'accepted';
-    
-    console.log("areFriends:", areFriends);
-    
-    return reply.code(200).send({ areFriends });
-    
-  } catch (error) {
-    console.error("Error checking friendship status:", error);
-    return reply.code(500).send({ error: error.message });
-  }
-}
+    }
     async checkPendingRequest(request, reply) {
       try {
         const userId = request.headers['x-user-id'];

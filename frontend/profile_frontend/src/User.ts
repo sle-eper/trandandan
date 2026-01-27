@@ -71,7 +71,7 @@ export class User {
         console.log('Avatar upload response:', response);
         if (response.status === 200 && response.data.avatarUrl) {
             console.log('Avatar URL:', response.data.avatarUrl);
-            return response.data.avatarUrl; // Return the new avatar URL
+            return response.data.avatarUrl; 
         }
 
         return null;

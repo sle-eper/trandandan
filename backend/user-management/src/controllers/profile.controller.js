@@ -16,7 +16,8 @@ class ProfileController {
     try {
       const id = request.params.id;
       const user = await this.userModel.findById(id);
-     
+
+
       if (!user) {
         return reply.code(404).send({ error: 'User not found' });
       }
@@ -31,7 +32,8 @@ class ProfileController {
     try {
       const id = request.headers['x-user-id'];
       const user = await this.userModel.findById(id);
-    
+
+
       if (!user) {
         return reply.code(404).send({ error: 'User not found' });
       }
@@ -42,8 +44,6 @@ class ProfileController {
     }
   }
 
-
-
   async setUser(request, reply) {
     try {
       let { username, email, displayName, password, id_token } = request.body;
@@ -52,7 +52,7 @@ class ProfileController {
         return reply.code(400).send({ error: 'email and displayName are required' });
       }
 
-      // Generate username if not provided
+      
       if (!username) {
         username = displayName.replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase();
       } else {
@@ -63,8 +63,6 @@ class ProfileController {
         return reply.code(400).send({ error: 'password or id_token is required' });
       }
 
-      // // Hash password if provided
-      // let password_hash = null;
       console.log(password);
       const userData = {
         username,
@@ -77,7 +75,7 @@ class ProfileController {
       const userId = await this.userModel.create(userData);
       const profile = await this.userModel.findById(userId);
 
-      console.log('Created user profile:', profile);
+      
 
       return reply.code(201).send({
         success: true,
@@ -91,21 +89,29 @@ class ProfileController {
     }
   }
 
-
   async getUserBYemailorUsername(request, reply) {
 
     try {
       const { email, username } = request.query; // can be email or username
-      const {token} = request.query;
+      const { token } = request.query;
+     
+      // const id = request.headers['x-user-id'];
       let user = await this.userModel.findByEmail(email);
       if (user) {
+      
         return reply.code(200).send(user);
       }
       user = await this.userModel.findByUsername(username);
       if (user) {
+        
         return reply.code(200).send(user);
       }
       user = await this.userModel.findByToken(token);
+      if (user) {
+        
+        return reply.code(200).send(user);
+      }
+      user = await this.userModel.findById(id);
       if (user) {
         return reply.code(200).send(user);
       }
@@ -123,7 +129,8 @@ class ProfileController {
       // const userId = request.headers['x-user-id'];
 
       const userId = request.query.id;
-     
+
+
       const profile = await this.userModel.getProfile(userId);
 
       if (!profile) {
@@ -136,21 +143,6 @@ class ProfileController {
     }
   }
 
-  // GET /profile/:id - Get another user's profile (view another user's profile /dashboard)
-  async getUserProfile(request, reply) {
-    try {
-      const id = request.headers['x-user-id'];
-      const profile = await this.userModel.getProfile(id);
-
-      if (!profile) {
-        return reply.code(404).send({ error: 'User not found' });
-      }
-
-      return { success: true, profile };
-    } catch (error) {
-      return reply.code(500).send({ error: error.message });
-    }
-  }
 
   // PUT /profile/update - Update profile
   async updateProfile(request, reply) {
@@ -158,7 +150,8 @@ class ProfileController {
 
       const userId = request.headers['x-user-id'];
       const updates = request.body;
-   
+
+
 
       if (updates.email) {
         const existingUser = await this.userModel.findByEmail(updates.email);
@@ -289,24 +282,7 @@ class ProfileController {
     });
   }
 }  
-    // GET /users/search?q=John - Search users 
-    async searchUsers(request, reply) {
-      try {
-        const { q } = request.query;
-        
-        if (!q || q.length < 2) {
-          return reply.code(400).send({ 
-            error: 'Search query must be at least 2 characters' 
-          });
-        }
-        
-        const users = await this.userModel.searchByDisplayName(q);
-        
-        return { success: true, users };
-      } catch (error) {
-        return reply.code(500).send({ error: error.message });
-      }
-    }
+ 
   
   
   async changePassword(request, reply) {
@@ -356,8 +332,6 @@ class ProfileController {
       return reply.code(500).send({ error: error.message });
     }
   }
-
-
   async getTwoFactorStatus(request, reply) {
     try {
       const { username } = request.query;
@@ -420,9 +394,8 @@ class ProfileController {
     }
 
   }
-  async getIdToken(request, reply)
-  {
-    try{
+  async getIdToken(request, reply) {
+    try {
       const { username } = request.query;
       if (!username) {
         return reply.code(400).send({ error: 'Username is required' });
@@ -438,12 +411,10 @@ class ProfileController {
       };
 
     }
-    catch(error)
-    {
+    catch (error) {
       return reply.code(500).send({ error: error.message });
     }
   }
-  // i add this for setting secret key for 2FA
   async setsecretkeytwofactor(request, reply) {
     try {
       const { username, two_factor_secret } = request.body;
@@ -526,7 +497,20 @@ class ProfileController {
       return reply.code(500).send({ error: error.message });
     }
   }
- 
+  async getUserStats(request, reply) {
+    try {
+      const { id } = request.params;
+      const stats = await this.statsModel.getByUserId(id);
+
+      if (!stats) {
+        return reply.code(404).send({ error: 'Stats not found for this user' });
+      }
+
+      return { success: true, stats };
+    } catch (error) {
+      return reply.code(500).send({ error: error.message });
+    }
+  }
 
 }
 export default ProfileController;

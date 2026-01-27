@@ -15,6 +15,7 @@ import { showverifyPage } from "./login/verify";
 import { spyUi } from "../../spy_frontend/src_spy/app";
 import { renderCreateTournament } from "../../tournament_frontend/src/create_tournament";
 import { renderTournamentList } from "../../tournament_frontend/src/create_tournament";
+import {showOAuthCallback} from "./login/OauthCallback"
 
 async function protectedRoute(
   handler: () => void
@@ -52,6 +53,7 @@ addRoute("/change", () => showchangePassPage());
 addRoute("/mailsended", () => mailSendedPage());
 addRoute("/auth/success", () => handleOAuthSuccess());
 addRoute("/verify", () => showverifyPage());
+addRoute("/auth/callback", () => showOAuthCallback());
 
 addRoute("/home", () =>
   protectedRoute(() => {

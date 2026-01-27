@@ -5,16 +5,20 @@ let socket: Socket | null = null;
 export function reSetSocket(){
   socket = null;
 }
+
 export function socketInstance(): Socket {
   if (!socket) {
-    socket = io("http://localhost:3000/", {
+    socket = io("https://localhost:8443", {
+      path: "/socket.io",
       withCredentials: true,
       // autoConnect: true,
       transports: ["websocket"],
+      autoConnect: true,
     });
   }
   return socket;
 }
+
 
 export function getSocketInstance(): Socket | null {
   // get current url

@@ -62,7 +62,7 @@ function createPopupNotification(
   popupNotif.innerHTML = `
     
     <span class="text-sm truncate">
-      🤝 <strong>${from}</strong> rejected your play request
+      🤝 <strong>${from}</strong> sent you a friend request
     </span>
 
     <div class="flex gap-2 shrink-0">
