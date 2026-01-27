@@ -13,7 +13,7 @@ export function socketInstance(): Socket {
       withCredentials: true,
       // autoConnect: true,
       transports: ["websocket"],
-      autoConnect: true,
+      // autoConnect: true,
     });
   }
   return socket;
