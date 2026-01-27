@@ -36,44 +36,44 @@ export function games(type?: string) {
           </h2>
           
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl px-4">
-            <!-- Local Friend -->
-            <button id="btn-friend" class="group relative overflow-hidden p-8 rounded-3xl border border-white/10 hover:border-cyan-500/50 transition-all duration-500 hover:scale-105 backdrop-blur-sm">
-              <img src="${loclalImg}" alt="Versus Friend" class="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-30 transition-opacity duration-500">
+            <!-- Local Friend-->
+            <button id="btn-friend" class="group relative overflow-hidden p-8 rounded-3xl border border-white/10 transition-all duration-500 hover:scale-105 backdrop-blur-sm">
+              <img src="${loclalImg}" alt="Versus Friend" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500">
               <div class="relative z-10 flex flex-col items-center gap-6">
-                <div class="p-4 rounded-full bg-cyan-500/10 group-hover:bg-cyan-500/20 transition-colors duration-500 shadow-[0_0_20px_rgba(34,211,238,0.1)]">
-                    <span class="material-symbols-outlined text-5xl text-cyan-400 group-hover:text-cyan-300 transition-colors">groups</span>
+                <div class="p-4 rounded-full transition-colors duration-500">
+                    <span class="material-symbols-outlined text-5xl text-white transition-colors">groups</span>
                 </div>
                 <div class="text-center">
                     <span class="block text-xl font-bold text-white mb-2 tracking-wide">Versus Friend</span>
-                    <p class="text-sm text-cyan-100/60 font-medium">Local Multiplayer</p>
+                    <p class="text-sm text-white/60 font-medium">Local Multiplayer</p>
                 </div>
               </div>
             </button>
-
+             
             <!-- Local AI -->
-            <button id="btn-ai" class="group relative overflow-hidden p-8 rounded-3xl border border-white/10 hover:border-purple-500/50 transition-all duration-500 hover:scale-105 hover:shadow-[0_0_50px_rgba(168,85,247,0.3)] backdrop-blur-sm">
-              <img src="${aiImg}" alt="Versus AI" class="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-30 transition-opacity duration-500">
+            <button id="btn-ai" class="group relative overflow-hidden p-8 rounded-3xl border border-white/10 transition-all duration-500 hover:scale-105 backdrop-blur-sm">
+              <img src="${aiImg}" alt="Versus AI" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500">
               <div class="relative z-10 flex flex-col items-center gap-6">
-                <div class="p-4 rounded-full bg-purple-500/10 group-hover:bg-purple-500/20 transition-colors duration-500 shadow-[0_0_20px_rgba(168,85,247,0.1)]">
-                    <span class="material-symbols-outlined text-5xl text-purple-400 group-hover:text-purple-300 transition-colors">smart_toy</span>
+                <div class="p-4 rounded-full transition-colors duration-500">
+                    <span class="material-symbols-outlined text-5xl text-white transition-colors">smart_toy</span>
                 </div>
                 <div class="text-center">
                     <span class="block text-xl font-bold text-white mb-2 tracking-wide">Versus AI</span>
-                    <p class="text-sm text-purple-100/60 font-medium">Single Player</p>
+                    <p class="text-sm text-white/60 font-medium">Single Player</p>
                 </div>
               </div>
             </button>
 
             <!-- Remote -->
-            <button id="btn-remote" class="group relative overflow-hidden p-8 rounded-3xl border border-white/10 hover:border-green-500/50 transition-all duration-500 hover:scale-105 hover:shadow-[0_0_50px_rgba(34,197,94,0.3)] backdrop-blur-sm">
-              <img src="${remoteImg}" alt="Online Match" class="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-30 transition-opacity duration-500">
+            <button id="btn-remote" class="group relative overflow-hidden p-8 rounded-3xl border border-white/10 transition-all duration-500 hover:scale-105 backdrop-blur-sm">
+              <img src="${remoteImg}" alt="Online Match" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500">
               <div class="relative z-10 flex flex-col items-center gap-6">
-                <div class="p-4 rounded-full bg-green-500/10 group-hover:bg-green-500/20 transition-colors duration-500 shadow-[0_0_20px_rgba(34,197,94,0.1)]">
-                    <span class="material-symbols-outlined text-5xl text-green-400 group-hover:text-green-300 transition-colors">public</span>
+                <div class="p-4 rounded-full transition-colors duration-500">
+                    <span class="material-symbols-outlined text-5xl text-white transition-colors">public</span>
                 </div>
                 <div class="text-center">
                     <span class="block text-xl font-bold text-white mb-2 tracking-wide">Online Match</span>
-                    <p class="text-sm text-green-100/60 font-medium">Global Multiplayer</p>
+                    <p class="text-sm text-white/60 font-medium">Global Multiplayer</p>
                 </div>
               </div>
             </button>

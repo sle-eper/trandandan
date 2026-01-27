@@ -494,7 +494,7 @@ function setupMenuButtons() {
         const infoBox = document.getElementById('game-info');
         if (infoBox) {
             infoBox.classList.remove('hidden');
-            infoBox.innerHTML = `<span class="text-red-500 font-bold">Local Multiplayer</span>`;
+            infoBox.innerHTML = `<span class="text-yellow-500 font-bold">Local Multiplayer</span>`;
             setTimeout(() => infoBox.classList.add('hidden'), 3000);
         }
         countdown.start(() => { gameStarted = true; pongBall.start(); });
@@ -544,7 +544,7 @@ function setupMenuButtons() {
                 infoBox.classList.remove('hidden');
                 infoBox.innerHTML = aiMode ?
                     `<span class="text-red-500 font-bold">Practice vs AI</span>` :
-                    `<span class="text-red-500 font-bold">Local Multiplayer</span>`;
+                    `<span class="text-yellow-500 font-bold">Local Multiplayer</span>`;
                 setTimeout(() => infoBox.classList.add('hidden'), 3000);
             }
 
