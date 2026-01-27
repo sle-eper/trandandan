@@ -259,10 +259,10 @@ export async function navBarLogic() {
         });
         if (result.ok) {
           console.log('Logout successful');
-          const socket = getSocketInstance();
-          if (socket) {
-            socket.disconnect();
-          }
+          // const socket = getSocketInstance();
+          // if (socket) {
+          //   socket.disconnect();
+          // }
           reSetSocket();
           navigate("/login");
         }
