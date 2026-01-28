@@ -3,6 +3,20 @@ class Friendship {
       this.db = database;
     }
   
+     async getFriends(userId) {
+    return await this.db.all(
+      `SELECT 
+        u.id, u.username, u.display_name, u.avatar_url, 
+        u.online_status, u.last_seen,
+        f.accepted_at, f.status
+      FROM friendships f
+      JOIN users u ON 
+        f.user_id = ? AND u.id = f.friend_id
+      WHERE  f.status = 'accepted' OR f.status = 'blocked'
+      ORDER BY u.online_status DESC, u.display_name ASC`,
+      [userId]
+    );
+  }
     async sendRequest(userId, friendId) {
      
       const existing = await this.db.get(
@@ -110,7 +124,7 @@ class Friendship {
       }
       return { success: true, message: 'Friend request cancelled' };
     }
-    
+
     async removeFriendship(userId, friendId) {
       const result = await this.db.run(
         `DELETE FROM friendships 
@@ -128,20 +142,7 @@ class Friendship {
 
 export default Friendship;
 
-  //  async getFriends(userId) {
-  //   return await this.db.all(
-  //     `SELECT 
-  //       u.id, u.username, u.display_name, u.avatar_url, 
-  //       u.online_status, u.last_seen,
-  //       f.accepted_at, f.status
-  //     FROM friendships f
-  //     JOIN users u ON 
-  //       f.user_id = ? AND u.id = f.friend_id
-  //     WHERE  f.status = 'accepted' OR f.status = 'blocked'
-  //     ORDER BY u.online_status DESC, u.display_name ASC`,
-  //     [userId]
-  //   );
-  // }
+  
 
 
     // async getPendingRequests(userId) {

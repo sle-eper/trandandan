@@ -5,7 +5,7 @@ async function friendshipRoutes(fastify, options) {
   const friendsController = new FriendsController(fastify.db);
 
 
-
+  fastify.get('/:id/friends', friendsController.getFriends.bind(friendsController));
 
    fastify.post('/friends/request',{
     schema: {

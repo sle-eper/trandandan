@@ -4,7 +4,21 @@ class FriendsController {
     constructor(database) {
       this.friendshipModel = new Friendship(database);
     }
-  
+    
+
+
+    // GET /friends - Get friends list
+    async getFriends(request, reply) {
+      try {
+        
+        const userId = request.params.id;
+        const friends = await this.friendshipModel.getFriends(userId);
+        // console.log("Friends list for userId", userId, ":", friends);
+        return { success: true, friends };
+      } catch (error) {
+        return reply.code(500).send({ error: error.message });
+      }
+    }
 
     // Send friend request
     async sendRequest(request, reply) {
