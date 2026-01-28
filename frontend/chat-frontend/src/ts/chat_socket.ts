@@ -66,6 +66,7 @@ export function socketNotificationListener() {
   socket.off("matchTournament");
   socket.off("tournament:finalResult");
   socket.off("tournament:champion");
+  socket.off("tournament:bracket");
 
   // Add new listeners
   socket.on("user_online", friendConnectHandler);
@@ -90,5 +91,6 @@ export function socketNotificationListener() {
   socket.on("matchTournament", Tournament.matchHandlerTournament);
   socket.on("tournament:finalResult", Tournament.finalResultHandlerTournament);
   socket.on("tournament:champion", Tournament.tournamentChampionHandler);
+  socket.on("tournament:bracket", Tournament.tournamentBracketHandler);
 }
 

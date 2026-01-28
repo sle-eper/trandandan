@@ -483,13 +483,13 @@ server.ready().then(() => {
         const player2Sockets = onlineUsers.get(String(player2.userid));
         if (player1Sockets) {
           for (const sid of player1Sockets) {
-            io.to(sid).emit("start_gameTournament", { gameId, userId: player1.userid, tournamentName: data.tournamentName, maxPlayers: data.maxPlayers });
+            io.to(sid).emit("start_gameTournament", { gameId, userId: player1.userid, tournamentName: data.tournamentName, maxPlayers: data.maxPlayers, matches: participantsMatchingJson.matches });
 
           }
         }
         if (player2Sockets) {
           for (const sid of player2Sockets) {
-            io.to(sid).emit("start_gameTournament", { gameId, userId: player2.userid, tournamentName: data.tournamentName, maxPlayers: data.maxPlayers });
+            io.to(sid).emit("start_gameTournament", { gameId, userId: player2.userid, tournamentName: data.tournamentName, maxPlayers: data.maxPlayers, matches: participantsMatchingJson.matches });
           }
         }
       }
@@ -616,24 +616,38 @@ server.ready().then(() => {
       });
       const finalMatchJson = await finalMatchResponse.json();
       if (finalMatchJson.finalists.length === 2) {
+        console.log("{DEBUG} final match finalists:", finalMatchJson.finalists);
+        console.log("{DEBUG} final match matches:",data);
+         const participantsMatching = await fetch(`http://tournament:5500/tournament/matchmaking?tournamentName=${encodeURIComponent(data.tournamentName)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+      )
+      const participantsMatchingJson = await participantsMatching.json();
+        console.log("{DEBUG} semifinal matches:", participantsMatchingJson.matches);
+        socket.emit("Tournament:bracket", {tournamentName: data.tournamentName, matches:participantsMatchingJson.matches, final: finalMatchJson.matches });
+        setTimeout(() => {
+          const player1 = finalMatchJson.finalists[0];
+          const player2 = finalMatchJson.finalists[1];
+          const gameId = Math.random().toString(36).substring(2, 9);
+          const player1Sockets = onlineUsers.get(String(player1.userid));
+          const player2Sockets = onlineUsers.get(String(player2.userid));
+
+          if (player1Sockets) {
+            for (const sid of player1Sockets) {
+              io.to(sid).emit("matchTournament", { gameId, side: 'right', flagTournament: true, tournamentName: data.tournamentName, final: 'final' });
+
+            }
+          }
+          if (player2Sockets) {
+            for (const sid of player2Sockets) {
+              io.to(sid).emit("matchTournament", { gameId, side: 'right', flagTournament: true, tournamentName: data.tournamentName, final: 'final' });
+            }
+          }
+        }, 40000);
         // Notify players about final match results if needed
-        const player1 = finalMatchJson.finalists[0];
-        const player2 = finalMatchJson.finalists[1];
-        const gameId = Math.random().toString(36).substring(2, 9);
-        const player1Sockets = onlineUsers.get(String(player1.userid));
-        const player2Sockets = onlineUsers.get(String(player2.userid));
-
-        if (player1Sockets) {
-          for (const sid of player1Sockets) {
-            io.to(sid).emit("matchTournament", { gameId, side: 'right', flagTournament: true, tournamentName: data.tournamentName, final: 'final' });
-
-          }
-        }
-        if (player2Sockets) {
-          for (const sid of player2Sockets) {
-            io.to(sid).emit("matchTournament", { gameId, side: 'right', flagTournament: true, tournamentName: data.tournamentName, final: 'final' });
-          }
-        }
       }
     });
 

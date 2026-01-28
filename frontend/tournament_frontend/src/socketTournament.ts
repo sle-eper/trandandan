@@ -116,7 +116,7 @@ export function start_gameHandlerTournament(data: any) {
   notif.querySelector(".accept")?.addEventListener("click", async () => {
     const socket = Socket.getSocketInstance();
     socket.emit("game:tournament:joined", data);
-    renderTournamentBracket(data.tournamentName, data.maxPlayers, 1);
+    renderTournamentBracket(data.tournamentName, data.matches, null);
     navigate(`/tournament/bracket/${data.tournamentName}`);
     notif.remove();
   });
@@ -197,4 +197,9 @@ export function tournamentChampionHandler(data: any) {
   navigate('/home');
 }
 
+export function tournamentBracketHandler(data: any) {
+  console.log("Received tournament bracket data:", data);
+  renderTournamentBracket(data.tournamentName, data.matches, data.finalMatches);
+  navigate(`/tournament/bracket/${data.tournamentName}`);
+}
 
