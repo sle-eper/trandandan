@@ -52,7 +52,13 @@ export function navigateSilent(path: string) {
 }
 
 
-function router(onNotFound?: () => void) {
+function router(onNotFound?: (() => void) | Event) {
+  // Cleanup any running game sessions before switching routes
+  if ((window as any).pongGameCleanup) {
+    console.debug('Cleaning up game via central router');
+    (window as any).pongGameCleanup();
+  }
+
   const path = window.location.pathname;
 
   if (routes[path]) {
@@ -67,5 +73,5 @@ function router(onNotFound?: () => void) {
     return;
   }
 
-  if (onNotFound) onNotFound();
+  if (onNotFound && typeof onNotFound === 'function') onNotFound();
 }

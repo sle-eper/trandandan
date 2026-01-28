@@ -59,6 +59,20 @@ function resetLocalState() {
     if (endControls) endControls.classList.add('hidden');
 }
 
+export function stopGame() {
+    console.debug('Stopping game and cleaning up...');
+    if (animationId !== null) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+    }
+    resetLocalState();
+    if (isRemote) {
+        gameSocket.disconnect();
+        isRemote = false;
+    }
+    (window as any).pongGameCleanup = null;
+}
+
 // Color State
 
 // Color State
@@ -245,6 +259,8 @@ export function initializeGame() {
     checkUrlForGame();
 
     updateLocalAvatars();
+
+    (window as any).pongGameCleanup = stopGame;
 
     return true;
 }
