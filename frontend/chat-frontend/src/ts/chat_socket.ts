@@ -64,7 +64,6 @@ export function socketNotificationListener() {
   socket.off("start_gameTournament");
   socket.off("match:ended");
   socket.off("matchTournament");
-  socket.off("waitingForOpponent");
   socket.off("tournament:finalResult");
   socket.off("tournament:champion");
 
@@ -89,7 +88,7 @@ export function socketNotificationListener() {
   socket.on("start_gameTournament", Tournament.start_gameHandlerTournament)
   socket.on("match:ended", Tournament.match_endedHandlerTournament);
   socket.on("matchTournament", Tournament.matchHandlerTournament);
-  socket.on("waitingForOpponent", Tournament.waitingForOpponentHandlerTournament);
+  socket.on("tournament:finalResult", Tournament.finalResultHandlerTournament);
   socket.on("tournament:champion", Tournament.tournamentChampionHandler);
 }
 

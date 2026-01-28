@@ -146,7 +146,7 @@ export async function match_endedHandlerTournament(data: any) {
     },
   });
   console.log("Get list", result);
-   if (data.result === 'won') {
+  if (data.result === 'won') {
     const message = "You won your tournament match!";
     showToast(message);
     const socket = Socket.getSocketInstance();
@@ -181,15 +181,19 @@ export function matchHandlerTournament(data: any) {
   navigate(`/game/pong?TournamentName=${data.tournamentName}&gameId=${data.gameId}&side=${data.side}&mode=tournament&final=${data.final}`);
 }
 
-
-export function waitingForOpponentHandlerTournament(data: any) {
-  showToast("Waiting for opponent to join the tournament match...");
-  console.log("Waiting for opponent to join the tournament match:", data);
-
+export async function finalResultHandlerTournament(data: any) {
+  await fetch("https://localhost:8443/tournament/declareWinner", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ tournamentName: data.tournamentName, winnerId: data.winnerId }),
+  });
+  const socket = Socket.getSocketInstance();
+  socket.emit("tournament:Goo", data);
 }
-export function finalResultHandlerTournament(data: any) {
-  console.log("Final result handler called with data:", data);
-  // showToast(`Tournament <${data.tournamentName}> has concluded! Champion: ${data.championNickname} with Score: ${data.championScore}`);
+export function tournamentChampionHandler(data: any) {
+  showToast(data.message);
   navigate('/home');
 }
 
