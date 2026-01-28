@@ -3,8 +3,6 @@ import { PlayerFriendship} from '../Player.ts';
 import type { Player } from '../Player.ts';
 import { ProfileForm}  from './ProfileForm.ts';
 import  { User } from '../User.ts';
-import { navigate } from "../../../auth_frontend/src_auth/app.ts";
-// import { socket } from "../../../auth_frontend/src_auth/login/login.ts";
 import { getSocketInstance } from "../../../socket_manager/socket.ts";
 import { createFriendRequestNotification } from "./RequestHandling.ts";
 import {Toast} from "./ProfileForm.ts";
@@ -149,10 +147,9 @@ export class PlayerProfileManager {
     if (status.isCurrentUser) {
       return `
         <button id="edit-profile"
-                class="px-6 py-3 rounded-xl bg-gradient-to-r from-[#FD1D1D] to-[#711F21]
-                       text-white font-semibold
-                       hover:shadow-[0_0_20px_#FD1D1D]
-                       transition-all duration-300 flex items-center gap-2">
+                class="px-6 py-3 rounded-xl bg-gradient-to-r from-[#9B1C1C] to-[#6F1414]
+                      text-white font-semibold hover: cursor-pointer
+                      transition-all duration-300 flex items-center gap-2">
           <span class="material-symbols-outlined">edit</span>
           <span>Edit Profile</span>
         </button>
@@ -163,12 +160,12 @@ export class PlayerProfileManager {
       return `
         <button id="unfriend-${player.id}"
                 class="px-6 py-3 rounded-xl bg-white/5 border border-white/10
-                       text-white font-semibold
-                       hover:bg-red-500/20 hover:border-red-500 transition-all duration-300 flex items-center gap-2">
+                      text-white font-semibold
+                      hover:bg-red-500/20 hover:border-red-500 transition-all duration-300 flex items-center gap-2">
           <span class="material-symbols-outlined">person_remove</span>
           <span>Unfriend</span>
         </button>
-       
+      
       `;
     }
 

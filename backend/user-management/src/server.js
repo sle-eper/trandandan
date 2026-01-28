@@ -10,8 +10,8 @@ import gameRoutes from './routes/gameRoutes.js';
 import multipart from '@fastify/multipart';
 import rateLimit from '@fastify/rate-limit';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
 const fastify = Fastify({
     logger: true
@@ -22,10 +22,10 @@ fastify.register(multipart, {
     }
 });
 
-await fastify.register(rateLimit, {
-  max: 100,            
-  timeWindow: '1 minute' 
-})
+// await fastify.register(rateLimit, {
+//   max: 100,            
+//   timeWindow: '1 minute' 
+// })
 
 fastify.register(fastifyCors, {
     origin: ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:8443', 'https://localhost:8443', 'http://localhost:443', 'https://localhost:443'],
@@ -40,7 +40,6 @@ fastify.register(fastifyStatic, {
 });
 
 
-// This returns JSON for API testing
 fastify.get('/api', (req, reply) => {
     return {
         message: 'API is running',
@@ -66,15 +65,10 @@ async function start() {
 
 
 
-        fastify.register(profileRoutes
-            , { prefix: '/' }
-        );
-        fastify.register(friendshipRoutes, {
-            prefix: '/'
-        });
-        fastify.register(gameRoutes, {
-            prefix: '/'
-        });
+        fastify.register(profileRoutes);
+        fastify.register(friendshipRoutes);
+        fastify.register(gameRoutes);
+        
 
 
 
@@ -88,7 +82,6 @@ async function start() {
     }
 }
 
-// Graceful shutdown
 process.on('SIGINT', async () => {
     console.log('🔄 Shutting down gracefully...');
     await closeDatabase();

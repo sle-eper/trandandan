@@ -42,22 +42,24 @@ export function showToast(message: string) {
 }
 function tournamentEntryTemplate() {
   return `
-    <div class="w-full h-full flex flex-col justify-center items-center gap-8">
+    <div class="w-full h-full flex flex-col items-center pt-16">
       <h1 class="text-4xl font-bold">🏆 Tournament</h1>
-      <p class="text-gray-400 max-w-md text-center">
-        Create or join tournaments and compete with other players.
-      </p>
-      <div class="flex gap-4">
-        <button
-          id="create-tournament-btn"
-          class="px-6 py-3 bg-red-600 rounded-xl font-semibold hover:opacity-90 transition">
-          Create Tournament
-        </button>
-        <button
-          id="view-tournaments-btn"
-          class="px-6 py-3 bg-white/10 rounded-xl font-semibold hover:bg-white/20 transition">
-          View Tournaments
-        </button>
+      <div class="flex-grow flex flex-col justify-center items-center gap-8">
+        <p class="text-gray-400 max-w-md text-center">
+          Create or join tournaments and compete with other players.
+        </p>
+        <div class="flex gap-4">
+          <button
+            id="create-tournament-btn"
+            class="px-6 py-3 bg-gradient-to-r from-[#9B1C1C] to-[#6F1414] rounded-xl font-semibold hover:opacity-90 transition">
+            Create Tournament
+          </button>
+          <button
+            id="view-tournaments-btn"
+            class="px-6 py-3 bg-white/10 rounded-xl font-semibold hover:bg-white/20 transition">
+            View Tournaments
+          </button>
+        </div>
       </div>
     </div>
   `;
@@ -113,7 +115,7 @@ function tournamentCard(
 
       <div class="flex gap-2 mt-4">
         <button
-          class="flex-1 py-2 rounded-lg bg-red-600/80 hover:bg-red-600 transition text-sm view-bracket-btn"
+          class="flex-1 py-2 rounded-lg bg-gradient-to-r from-[#9B1C1C] to-[#6F1414] hover:bg-red-600 transition text-sm view-bracket-btn"
           data-tournament-name="${name}"
           data-max-players="${maxPlayers}">
           View Bracket
@@ -143,10 +145,11 @@ function generateBracketHTML(maxPlayers: number, participants?: any, flag?: numb
   } else if (maxPlayers === 8) {
     return generate8PlayerBracket(participants, flag);
   }
+  return "";
 }
 
-function generate4PlayerBracket(Participants?: any, flag?:number) {
-  if (flag === 1){
+function generate4PlayerBracket(Participants?: any, flag?: number) {
+  if (flag === 1) {
     return `
     <div class="w-full h-full flex items-center justify-center gap-12">
 
@@ -188,8 +191,7 @@ function generate4PlayerBracket(Participants?: any, flag?:number) {
     </div>
   `;
   }
-  else
-  {
+  else {
     return `
     <div class="w-full h-full flex items-center justify-center gap-12">
 
@@ -233,9 +235,9 @@ function generate4PlayerBracket(Participants?: any, flag?:number) {
   }
 }
 
-function generate8PlayerBracket(participants?: any, flag?:number) {
-  if (flag === 1){
-  return `
+function generate8PlayerBracket(participants?: any, flag?: number) {
+  if (flag === 1) {
+    return `
     <div class="w-full h-full flex items-center justify-center gap-10">
 
       <!-- Quarter-Finals -->
@@ -309,84 +311,7 @@ function generate8PlayerBracket(participants?: any, flag?:number) {
     </div>
   `;
   }
-  else if (flag === 2)
-  {
-`
-    <div class="w-full h-full flex items-center justify-center gap-10">
-
-      <!-- Quarter-Finals -->
-      <div class="relative w-44" style="height: 480px;">
-        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
-          Quarter-Final
-        </h3>
-
-        <!-- QF 1 -->
-        <div class="absolute left-0" style="top: 48px;">
-          ${matchCard(participants[0].nickname || "TBD", "TBD","Loser0", "TBD")}
-        </div>
-
-        <!-- QF 2 -->
-        <div class="absolute left-0" style="top: 168px;">
-          ${matchCard(participants[1].nickname || "TBD", "TBD","Loser1", "TBD")}
-        </div>
-
-        <!-- QF 3 -->
-        <div class="absolute left-0" style="top: 288px;">
-          ${matchCard(participants[2].nickname || "TBD", "TBD","Loser2", "TBD")}
-        </div>
-
-        <!-- QF 4 -->
-        <div class="absolute left-0" style="top: 408px;">
-          ${matchCard(participants[3].nickname || "TBD", "TBD","Loser3", "TBD")}
-        </div>
-      </div>
-
-      <!-- Connector Lines QF → SF -->
-      <div class="flex flex-col justify-center">
-        <svg width="60" height="480" class="text-white/20">
-          ${connectorPair(60, 120, 48, 2)}
-          ${connectorPair(60, 120, 308, 2)}
-        </svg>
-      </div>
-
-      <!-- Semi-Finals -->
-      <div class="relative w-44" style="height: 480px;">
-        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
-          Semi-Final
-        </h3>
-
-        <div class="absolute left-0" style="top: 108px;">
-          ${matchCard(participants[0].nickname || "TBD", "TBD", "Loser0", "TBD")}
-        </div>
-
-        <div class="absolute left-0" style="top: 368px;">
-          ${matchCard(participants[1].nickname || "TBD", "TBD", "Loser1", "TBD")}
-        </div>
-      </div>
-
-      <!-- Connector Lines SF → F -->
-      <div class="flex flex-col justify-center">
-        <svg width="60" height="480" class="text-white/20">
-          ${connectorPair(60, 260, 108, 3)}
-        </svg>
-      </div>
-
-      <!-- Final -->
-      <div class="relative w-44" style="height: 480px;">
-        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
-          Final
-        </h3>
-
-        <div class="absolute left-0" style="top: 228px;">
-          ${matchCard("TBD", "TBD", "TBD", "TBD")}
-        </div>
-      </div>
-
-    </div>
-  `;
-  }
-  else
-  {
+  else if (flag === 2) {
     `
     <div class="w-full h-full flex items-center justify-center gap-10">
 
@@ -454,7 +379,82 @@ function generate8PlayerBracket(participants?: any, flag?:number) {
         </h3>
 
         <div class="absolute left-0" style="top: 228px;">
-          ${matchCard(participants[0].nickname || "TBD", "TBD",participants[1].nickname || "TBD", "TBD")}
+          ${matchCard("TBD", "TBD", "TBD", "TBD")}
+        </div>
+      </div>
+
+    </div>
+  `;
+  }
+  else {
+    `
+    <div class="w-full h-full flex items-center justify-center gap-10">
+
+      <!-- Quarter-Finals -->
+      <div class="relative w-44" style="height: 480px;">
+        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
+          Quarter-Final
+        </h3>
+
+        <!-- QF 1 -->
+        <div class="absolute left-0" style="top: 48px;">
+          ${matchCard(participants[0].nickname || "TBD", "TBD", "Loser0", "TBD")}
+        </div>
+
+        <!-- QF 2 -->
+        <div class="absolute left-0" style="top: 168px;">
+          ${matchCard(participants[1].nickname || "TBD", "TBD", "Loser1", "TBD")}
+        </div>
+
+        <!-- QF 3 -->
+        <div class="absolute left-0" style="top: 288px;">
+          ${matchCard(participants[2].nickname || "TBD", "TBD", "Loser2", "TBD")}
+        </div>
+
+        <!-- QF 4 -->
+        <div class="absolute left-0" style="top: 408px;">
+          ${matchCard(participants[3].nickname || "TBD", "TBD", "Loser3", "TBD")}
+        </div>
+      </div>
+
+      <!-- Connector Lines QF → SF -->
+      <div class="flex flex-col justify-center">
+        <svg width="60" height="480" class="text-white/20">
+          ${connectorPair(60, 120, 48, 2)}
+          ${connectorPair(60, 120, 308, 2)}
+        </svg>
+      </div>
+
+      <!-- Semi-Finals -->
+      <div class="relative w-44" style="height: 480px;">
+        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
+          Semi-Final
+        </h3>
+
+        <div class="absolute left-0" style="top: 108px;">
+          ${matchCard(participants[0].nickname || "TBD", "TBD", "Loser0", "TBD")}
+        </div>
+
+        <div class="absolute left-0" style="top: 368px;">
+          ${matchCard(participants[1].nickname || "TBD", "TBD", "Loser1", "TBD")}
+        </div>
+      </div>
+
+      <!-- Connector Lines SF → F -->
+      <div class="flex flex-col justify-center">
+        <svg width="60" height="480" class="text-white/20">
+          ${connectorPair(60, 260, 108, 3)}
+        </svg>
+      </div>
+
+      <!-- Final -->
+      <div class="relative w-44" style="height: 480px;">
+        <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
+          Final
+        </h3>
+
+        <div class="absolute left-0" style="top: 228px;">
+          ${matchCard(participants[0].nickname || "TBD", "TBD", participants[1].nickname || "TBD", "TBD")}
         </div>
       </div>
 
@@ -497,15 +497,6 @@ function tournamentBracketTemplate(maxPlayers: number, participants: any, flag?:
             class="px-4 py-2 bg-white/10 rounded-xl text-sm hover:bg-white/20 transition">
             + Add Player
           </button>
-
-          <button
-            id="start-tournament-btn"
-            class="px-4 py-2 bg-red-600/80 rounded-xl text-sm
-                   hover:bg-red-600 transition disabled:opacity-40 disabled:cursor-not-allowed"
-            disabled>
-            Start Tournament
-          </button>
-
           <button
             id="back-to-tournaments"
             class="px-4 py-2 bg-white/10 rounded-xl text-sm hover:bg-white/20 transition">
@@ -544,7 +535,6 @@ function tournamentBracketTemplate(maxPlayers: number, participants: any, flag?:
 function renderFriendsList(friends: { id: number; username: string }[]) {
   const list = document.getElementById("friends-list");
   if (!list) return;
-
   list.innerHTML = friends
     .map(
       (friend) => `
@@ -627,26 +617,21 @@ export function renderCreateTournament() {
             <label class="text-sm text-gray-400">
               Max Players
             </label>
-            <select
-              id="max-players-select"
-              class="w-full mt-1 px-4 py-2 rounded-xl
-                     bg-black/40 border border-white/10
-                     outline-none focus:border-red-500">
+            <select id="max-players-select" ...>
               <option value="4">4</option>
               <option value="8">8</option>
-              <option value="16" selected>16</option>
             </select>
           </div>
           <div class="flex gap-3 mt-6">
             <button id="create"
-              class="flex-1 py-2 rounded-xl bg-red-600
-                     font-semibold hover:opacity-90 transition">
+              class="flex-1 py-2 rounded-xl bg-gradient-to-r from-[#9B1C1C] to-[#6F1414]
+                    font-semibold hover:opacity-90 transition">
               Create
             </button>
             <button
               id="cancel-create-tournament"
               class="flex-1 py-2 rounded-xl
-                     bg-white/10 hover:bg-white/20 transition">
+                    bg-white/10 hover:bg-white/20 transition">
               Cancel
             </button>
           </div>
@@ -678,14 +663,20 @@ export function renderCreateTournament() {
     })
     const body = await result.json();
     if (result.ok) {
-      const socket = Socket.getSocketInstance();
+      showToast("Tournament created successfully!");
 
-      socket?.once("tournament:created", () => {
-        showToast("Tournament created successfully!");
-        console.log("Tournament created event received");
-        renderTournamentBracket(currentTournament.name, currentTournament.maxPlayers);
-        navigate(`/tournement/bracket/${currentTournament.name}?maxPlayers=${currentTournament.maxPlayers}`);
-      });
+      // 🔥 SHOW BRACKET IMMEDIATELY
+      renderTournamentBracket(
+        currentTournament.name,
+        currentTournament.maxPlayers
+      );
+
+      navigate(
+        `/tournement/bracket/${currentTournament.name}?maxPlayers=${currentTournament.maxPlayers}`
+      );
+
+      // still notify backend
+      const socket = Socket.getSocketInstance();
       socket?.emit("tournament:create", {
         room: currentTournament.name,
       });
@@ -767,7 +758,7 @@ function attachListHandlers() {
     btn.addEventListener("click", async (e) => {
       const target = e.currentTarget as HTMLElement;
       const tournamentId = target.dataset.tournamentId;
-      const tournamentName = target.dataset.tournamentName ;
+      const tournamentName = target.dataset.tournamentName;
       const maxPlayers = target.dataset.maxPlayers ? parseInt(target.dataset.maxPlayers) : 16;
       if (!tournamentId || !tournamentName) return;
       const result = await fetch("/tournament/join", {
@@ -797,7 +788,6 @@ function attachListHandlers() {
       });
       socket?.once("tournament:joined", () => {
         console.log("Joined tournament:", tournamentName);
-        showToast("Joined tournament successfully!");
 
         //start the tournamnet
         if (body.message === "Tournament Full") {
@@ -807,6 +797,8 @@ function attachListHandlers() {
             maxPlayers: body.tournament.maxPlayers,
           });
         }
+        else
+          showToast("Joined tournament successfully!");
       });
     });
   });
@@ -824,21 +816,22 @@ function onPlayerJoined(username: string) {
   }
 }
 
-export async function renderTournamentBracket(tournamentName?: string, maxPlayers?: number, flag?:number) {
+export async function renderTournamentBracket(tournamentName?: string, maxPlayers?: number, flag?: number) {
   const main = document.getElementById("dashboard-content");
   if (!main) return;
   const Players = Number(maxPlayers) || 16;
-  console.log("{Debug}", tournamentName,"----" , maxPlayers);
-  const Participant = await fetch(`/tournament/participant/list?tournamentname=${encodeURIComponent(tournamentName || '')}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+  console.log("{Debug}", tournamentName, "----", maxPlayers);
+  const Participant = await fetch(
+    `/tournament/participant/list?tournamentname=${encodeURIComponent(tournamentName || "")}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
   const body = await Participant.json();
   main.innerHTML = tournamentBracketTemplate(Players, body, flag);
   const addBtn = document.getElementById("add-player-btn");
-  const startBtn = document.getElementById("start-tournament-btn");
   const playerCount = document.getElementById("player-count");
 
   addBtn?.addEventListener("click", async () => {
@@ -889,14 +882,6 @@ export async function renderTournamentBracket(tournamentName?: string, maxPlayer
       friendId: friendId,
     });
     console.log(`Invited friend ID: ${friendId}`);
-  });
-
-  startBtn?.addEventListener("click", () => {
-    if (joinedPlayers.length !== Number(maxPlayers)) {
-      alert("Not all players have joined yet!");
-      return;
-    }
-    console.log("Tournament started with players:", joinedPlayers);
   });
 
   document.getElementById("back-to-tournaments")?.addEventListener("click", () => {

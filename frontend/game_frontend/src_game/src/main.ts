@@ -360,17 +360,22 @@ function setupSocketListeners() {
         // Show Return to Lobby button
         const btnLobby = document.getElementById('btn-return-lobby');
         if (btnLobby) btnLobby.classList.remove('hidden');
-
         if (gameMode === 'tournament') {
             const tSocket = getSocketInstance();
             if (tSocket) {
-                console.log('[DEBUG] Tournament mode detected. Emitting match:result', data);
-                tSocket.emit('match:result', {
+                const tournamentName = URLSearchParams.prototype.get.call(new URL(window.location.href).searchParams, 'TournamentName');
+                const final = URLSearchParams.prototype.get.call(new URL(window.location.href).searchParams, 'final');
+                console.log('[DEBUG] Preparing to emit match:result for tournament mode.', tournamentName, final);
+                const result = {
                     gameId: currentGameId,
                     winnerId: data.winner?.id,
                     loserId: data.players?.find((p: any) => p.id !== data.winner?.id)?.id,
-                    score: data.score
-                });
+                    score: data.score, 
+                    tournamentName: tournamentName,
+                    final: final
+                };
+                console.log('[DEBUG] Tournament mode detected. Emitting match:result', result);
+                tSocket.emit('match:result', result);
             }
         }
     });
@@ -494,7 +499,7 @@ function setupMenuButtons() {
         const infoBox = document.getElementById('game-info');
         if (infoBox) {
             infoBox.classList.remove('hidden');
-            infoBox.innerHTML = `<span class="text-red-500 font-bold">Local Multiplayer</span>`;
+            infoBox.innerHTML = `<span class="text-yellow-500 font-bold">Local Multiplayer</span>`;
             setTimeout(() => infoBox.classList.add('hidden'), 3000);
         }
         countdown.start(() => { gameStarted = true; pongBall.start(); });
@@ -544,7 +549,7 @@ function setupMenuButtons() {
                 infoBox.classList.remove('hidden');
                 infoBox.innerHTML = aiMode ?
                     `<span class="text-red-500 font-bold">Practice vs AI</span>` :
-                    `<span class="text-red-500 font-bold">Local Multiplayer</span>`;
+                    `<span class="text-yellow-500 font-bold">Local Multiplayer</span>`;
                 setTimeout(() => infoBox.classList.add('hidden'), 3000);
             }
 

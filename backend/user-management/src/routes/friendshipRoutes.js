@@ -1,16 +1,13 @@
-import FriendsController from '../controllers/friendship.controller.js';
+import FriendsController from '../controllers/friendshipController.js';
 
 
 async function friendshipRoutes(fastify, options) {
   const friendsController = new FriendsController(fastify.db);
 
-  // All friendship routes require authentication
-  // fastify.get('/:id/friends', {
-    
-  // }, friendsController.getFriends.bind(friendsController));
 
-   fastify.post('/friends/request',
-     {
+
+
+   fastify.post('/friends/request',{
     schema: {
       body: {
         type: 'object',
@@ -21,39 +18,41 @@ async function friendshipRoutes(fastify, options) {
         additionalProperties: false
       }
     },
-    
-  },
-   friendsController.sendRequest.bind(friendsController));
+  },friendsController.sendRequest.bind(friendsController));
 
-  fastify.post('/friends/accept', {
-    // schema: {
-    //   body: {
-    //     type: 'object',
-    //     required: ['friendId'],
-    //     properties: {
-    //       friendId: { type: 'integer', minimum: 1 }
-    //     },
-    //     additionalProperties: false
-    //   }
-    // },
-    
-  }, friendsController.acceptRequest.bind(friendsController));
+    fastify.post('/friends/accept', {
+      schema: {
+        body: {
+          type: 'integer',
+          minimum: 1
+        }
+      },
+    }, friendsController.acceptRequest.bind(friendsController));
 
-  fastify.delete('/friends/reject', {
-    // schema: {
-    //   body: {
-    //     type: 'object',
-    //     required: ['friendId'],
-    //     properties: {
-    //       friendId: { type: 'integer', minimum: 1 }
-    //     },
-    //     additionalProperties: false
-    //   }
-    // },
-    
-  }, friendsController.rejectRequest.bind(friendsController));
+    fastify.delete('/friends/reject', friendsController.rejectRequest.bind(friendsController));
+    fastify.get('/friendship/status/:userId/:friendId', friendsController.getStatusOfFriends.bind(friendsController));
+    fastify.put('/friends/:userId/status', {
+      schema: {
+        body: {
+          type: 'object',
+          required: ['friendId', 'status'],
+          properties: {
+            friendId: { type: 'integer', minimum: 1 },
+            status: { type: 'string', enum: ['pending', 'accepted', 'blocked'] }
+          },
+          additionalProperties: false
+        }
+      },
+      
+    }, friendsController.changeFriendStatus.bind(friendsController));
+    fastify.get('/friend/check', friendsController.checkFriendshipStatus.bind(friendsController));
+    fastify.get('/friend/requestStatus', friendsController.checkPendingRequest.bind(friendsController));
+    fastify.delete('/friends/cancelRequest', friendsController.cancelFriendRequest.bind(friendsController));
+    fastify.delete('/friends/removeFriend/:id', friendsController.removeFriend.bind(friendsController));
+}
+export default friendshipRoutes;
 
-  // fastify.delete('/friends/:id', {
+ // fastify.delete('/friends/:id', {
   //   schema: {
   //     params: {
   //       type: 'object',
@@ -69,40 +68,3 @@ async function friendshipRoutes(fastify, options) {
   // fastify.get('/friends/requests', {
     
   // }, friendsController.getPendingRequests.bind(friendsController));
-
-
-fastify.get('/friendship/status/:userId/:friendId', {
-    // schema: {
-    //   querystring: {
-    //     type: 'object',
-    //     required: ['userId', 'friendId'],
-    //     properties: {
-    //       userId: { type: 'integer', minimum: 1 },
-    //       friendId: { type: 'integer', minimum: 1 }
-    //     }
-    //   }
-    // },
-  }, friendsController.getStatusOfFriends.bind(friendsController));
-
-  fastify.put('/friends/:userId/status', {
-    schema: {
-      body: {
-        type: 'object',
-        required: ['friendId', 'status'],
-        properties: {
-          friendId: { type: 'integer', minimum: 1 },
-          status: { type: 'string', enum: ['pending', 'accepted', 'blocked'] }
-        },
-        additionalProperties: false
-      }
-    },
-    
-  }, friendsController.changeFriendStatus.bind(friendsController));
-
-
-      fastify.get('/friend/check', friendsController.checkFriendshipStatus.bind(friendsController));
-      fastify.get('/friend/requestStatus', friendsController.checkPendingRequest.bind(friendsController));
-      fastify.delete('/friends/cancelRequest', friendsController.cancelFriendRequest.bind(friendsController));
-      fastify.delete('/friends/removeFriend/:id', friendsController.removeFriend.bind(friendsController));
-}
-export default friendshipRoutes;

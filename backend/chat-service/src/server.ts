@@ -32,6 +32,8 @@ server.register(fastifyIO, {
 });
 
 export const onlineUsers = new Map<string, Set<string>>();
+const tournamentTimeouts = new Map<string, NodeJS.Timeout>();
+
 // let UserData ;
 const getRoomName = (id1: string, id2: string): string => {
   return [id1, id2].sort().join("_");
@@ -63,14 +65,12 @@ server.ready().then(() => {
         socket.disconnect();
         return;
       }
-      socket.data.user = (await fetchUserData(userId)).user;
-      if(!socket.data.user)
-      {
+      socket.data.user = (await fetchUserData(userId))?.user;
+      if (!socket.data.user) {
         socket.disconnect();
         return;
       }
       socket.data.userId = userId;
-
       if (!onlineUsers.has(userId)) {
         onlineUsers.set(userId, new Set());
         socket.broadcast.emit("user_online", userId);
@@ -469,6 +469,7 @@ server.ready().then(() => {
       socket.emit("tournament:joined", data);
     });
     socket.on("matchmaking:start", async (data) => {
+      console.log("Matchmaking start event received for tournament:", data.tournamentName);
       const participantsMatching = await fetch(`http://tournament:5500/tournament/matchmaking?tournamentName=${encodeURIComponent(data.tournamentName)}`, {
         method: 'GET',
         headers: {
@@ -477,12 +478,10 @@ server.ready().then(() => {
       }
       )
       const participantsMatchingJson = await participantsMatching.json();
+      console.log("=========================");
+      console.log("Participants matching response status:", participantsMatchingJson.matches);
+      console.log("=========================");
       for (const match of participantsMatchingJson.matches) {
-        //generatename for room game 
-        //send notif to both player to start game 
-        //if accept join room and wait for other player 
-        //if not reject and make the other player win by default
-        //then send to game service to start game
         const player1 = match.player1;
         const player2 = match.player2;
         const gameId = Math.random().toString(36).substring(2, 9);
@@ -497,7 +496,7 @@ server.ready().then(() => {
         }
         if (player2Sockets) {
           for (const sid of player2Sockets) {
-            io.to(sid).emit("start_gameTournament", { gameId, userId: player2.userid });
+            io.to(sid).emit("start_gameTournament", { gameId, userId: player2.userid, tournamentName: data.tournamentName, maxPlayers: data.maxPlayers });
           }
         }
       }
@@ -506,69 +505,142 @@ server.ready().then(() => {
     socket.on("game:tournament:joined", async (data) => {
       socket.join(data.gameId);
       const room = io.sockets.adapter.rooms.get(data.gameId);
-      console.log("room after joining:::::::::::::::::::", room);
+
       if (room && room.size === 2) {
-        const sidArray = Array.from(room);
-        const sid1 = sidArray[0];
-        const sid2 = sidArray[1];
-        const gameId = data.gameId;
-        io.to(sid1).emit("matchTournament", { gameId, side: 'right', flagTournament: true });
-        io.to(sid2).emit("matchTournament", { gameId, side: 'left', flagTournament: true });
-      }
-      else {
-        console.log("Waiting for opponent to join...");
-        //wait 10 seconds max
-        setTimeout(() => {
-        }, 10000);
-        if (room && room.size == 1) {
-          const sidArray = Array.from(room);
-          const sid = sidArray[0];
-          //wait 5 seconds then send
-          io.to(sid).emit("match:ended", { result: 'won', message: 'Opponent did not join in time. You win by default.' });
+        const existingTimeout = tournamentTimeouts.get(data.gameId);
+        if (existingTimeout) {
+          clearTimeout(existingTimeout);
+          tournamentTimeouts.delete(data.gameId);
         }
+        const sidArray = Array.from(room);
+        const [sid1, sid2] = sidArray;
+        const gameId = data.gameId;
+        io.to(sid1).emit("matchTournament", { gameId, side: 'right', flagTournament: true, tournamentName: data.tournamentName });
+        io.to(sid2).emit("matchTournament", { gameId, side: 'left', flagTournament: true, tournamentName: data.tournamentName });
+      } else {
+        console.log("Waiting for opponent to join...");
+        setTimeout(() => {
+          const room = io.sockets.adapter.rooms.get(data.gameId);
+          if (room && room.size === 1) {
+            console.log("Tournament join timeout reached for gameId:", data.gameId);
+            socket.emit("match:ended", {
+              userid: socket.data.userId,
+              result: 'win',
+              message: 'Opponent did not join in time. You win by default.',
+              tournamentName: data.tournamentName
+            });
+            socket.leave(data.gameId);
+            tournamentTimeouts.delete(data.gameId);
+          }
+        }, 40000);
       }
-    })
+    });
     socket.on("Tournament:leave", async (data) => {
+      console.log("Player leaving tournament game:", data);
       const room = io.sockets.adapter.rooms.get(data.gameId);
-      console.log("room before leaving:::::::::::::::::::", room);
-      if (room && room.size == 1) {
-        console.log("Opponent left the tournament game. You win by default.");
+      if (room && room.size === 1) {
         const sidArray = Array.from(room);
         const sid = sidArray[0];
-        //wait 5 seconds then send
-        io.to(sid).emit("match:ended", { result: 'won', message: 'Opponent left the tournament game. You win by default.' });
-        //send to game service that the player win by default
+        console.log("000000000000000000000000000000000000000000000000000000");
+        io.to(sid).emit("match:ended", {
+          userid: socket.data.userId,
+          result: 'won',
+          message: 'Opponent left the tournament game. You win by default.',
+          tournamentName: data.tournamentName
+        });
+        //redirect to home 
       }
-      else {
-        setTimeout(() => {
-          console.log("Left the tournament game. Waiting for opponent...");
-        }, 5000);
+    });
+    socket.on("tournament:finalResult", async (data) => {
+      console.log("Final result received at server:", data);
+      const Winner = await fetch("http://tournament:5500/tournament/declareWinner", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ tournamentName: data.tournamentName, winnerId: data.winnerId }),
+      });
+      const winnerData = await Winner.json();
+      console.log("Winner declared:", winnerData);
+      const winnerId = data.winnerId;
+      const tournamentName = data.tournamentName;
+      const winnerSockets = onlineUsers.get(String(winnerId));
+      if (winnerSockets) {
+        for (const sid of winnerSockets) {
+          io.to(sid).emit("tournament:champion", {
+            message: `Congratulations! You are the champion of the tournament ${tournamentName}!`,
+            tournamentName: tournamentName
+          });
+        }
       }
-    })
-    //hna khask tsift lih match result
+    });
     socket.on("match:result", async (data) => {
       console.log("Match result received:", data);
-      //process the result and update tournament bracket
       const loser = data.loserId;
       const winner = data.winnerId;
+      if (data.final === 'final') {
+        console.log("Final match result processing for tournament:", data.tournamentName);
+        socket.emit("tournament:finalResult", data);
+        return;
+      }
       console.log("Loser:", loser, "Winner:", winner);
-      //notify both players
-      const loserSockets = onlineUsers.get(loser);
-      const winnerSockets = onlineUsers.get(winner);
-
+      const loserSockets = onlineUsers.get(String(loser));
+      const winnerSockets = onlineUsers.get(String(winner));
+      console.log("Loser Sockets:", loserSockets, "Winner Sockets:", winnerSockets);
       if (loserSockets) {
         for (const sid of loserSockets) {
-
-          io.to(sid).emit("match:ended", { result: 'lost' });
+          console.log("Emitting match ended to loser socket:");
+          io.to(sid).emit("match:ended", {
+            result: 'lost',
+            tournamentName: data.tournamentName
+          });
         }
       }
       if (winnerSockets) {
         for (const sid of winnerSockets) {
-          io.to(sid).emit("match:ended", { result: 'won' });
+          io.to(sid).emit("match:ended", {
+            userid: winner,
+            result: 'won',
+            tournamentName: data.tournamentName
+          });
         }
       }
     })
+    socket.on("tournament:Final", async (data) => {
+      console.log("Final tournament event received:", data);
+      const tournamentName = data.tournamentName;
+      const finalMatchResponse = await fetch(`http://tournament:5500/tournament/finalMatch?tournamentName=${encodeURIComponent(tournamentName)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const finalMatchJson = await finalMatchResponse.json();
+      console.log("Final match response received", finalMatchJson);
+      if (finalMatchJson.finalists.length === 2) {
+        console.log("We can now start the final match between the last two players.");
+        // Notify players about final match results if needed
+        const player1 = finalMatchJson.finalists[0];
+        const player2 = finalMatchJson.finalists[1];
+        console.log("Final Match between:", player1, "and", player2);
+        const gameId = Math.random().toString(36).substring(2, 9);
+        const player1Sockets = onlineUsers.get(String(player1.userid));
+        const player2Sockets = onlineUsers.get(String(player2.userid));
 
+        if (player1Sockets) {
+          for (const sid of player1Sockets) {
+            io.to(sid).emit("matchTournament", { gameId, side: 'right', flagTournament: true, tournamentName: data.tournamentName, final: 'final' });
+
+          }
+        }
+        if (player2Sockets) {
+          for (const sid of player2Sockets) {
+            io.to(sid).emit("matchTournament", { gameId, side: 'right', flagTournament: true, tournamentName: data.tournamentName, final: 'final' });
+          }
+        }
+      }
+    });
+    
   })
 });
 

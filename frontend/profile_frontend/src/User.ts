@@ -5,7 +5,6 @@
     displayName: string;
     bio: string;
     avatarUrl: string;
-    onlineStatus: string;
 }
 
 import axios from "axios";

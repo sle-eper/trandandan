@@ -175,12 +175,12 @@ export class ProfileForm {
         const bio = this.userData?.bio || '';
      
         return ` 
-        <div class="w-full h-full flex items-center justify-center ">
+        <div class="w-full h-full flex items-center justify-center p-4"> 
     <!-- Main Card - Takes full space -->
-    <div class="w-full h-full bg-black/40 backdrop-blur-sm rounded-2xl shadow-2xl  flex flex-col">
+    <div class="w-full h-full bg-black/40 backdrop-blur-sm rounded-2xl shadow-2xl  flex flex-col overflow-hidden ">
       
       <!-- Header inside card -->
-      <div class="text-center pt-6 pb-4">
+      <div class="text-center pt-6 pb-4 ">
         <h1 class="text-2xl md:text-3xl font-bold text-white flex items-center justify-center gap-2">
           <svg class="text-yellow-500" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
@@ -195,6 +195,7 @@ export class ProfileForm {
       </div>
 
     <!-- Content wrapper - centered -->
+    <div class="flex-1 overflow-y-auto px-6 pb-6">
     <div class="flex-1 flex items-center justify-center px-8 pb-6 overflow-hidden">
       <div class="w-full max-w-5xl">
         <!-- Two Column Layout - Centered -->
@@ -336,7 +337,7 @@ export class ProfileForm {
               </button>
               <button 
                 id="save-btn"
-                class="flex-1 py-3 px-6 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-red-500/50 hover:scale-105"
+                class="flex-1 py-3 px-6 bg-gradient-to-r from-[#9B1C1C] to-[#6F1414] hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-red-500/50 hover:scale-105"
               >
                 Save Changes
               </button>
@@ -347,7 +348,7 @@ export class ProfileForm {
     </div>
   </div>
 </div>
-
+</div>
 
     `;
   } 
@@ -472,7 +473,6 @@ export class ProfileForm {
       displayName: (document.getElementById('displayName') as HTMLInputElement).value,
       bio: (document.getElementById('bio') as HTMLTextAreaElement).value,
       avatarUrl: this.avatarPreview,
-      onlineStatus: this.isOnline ? 'online' : 'offline'
     };
     
      let changedData = this.hasChanges(this.oldProfileData, formData);
@@ -500,7 +500,6 @@ export class ProfileForm {
       }
     }
     if (changedData) {
-      
       const success = await User.saveUserProfile(changedData);
       
       if (success) {
