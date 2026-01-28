@@ -277,6 +277,21 @@ function setupSocketListeners() {
     s.off('ball_update');
     s.off('game_over');
     s.off('player_left');
+    s.off('connect_error');
+
+    s.on('connect_error', (err: any) => {
+        console.error('[SOCKET] Connection Error:', err);
+        const infoBox = document.getElementById('game-info');
+        if (infoBox) {
+            infoBox.classList.remove('hidden');
+            infoBox.innerHTML = `<span class="text-red-500 font-bold">CONNECTION ERROR</span><br><span class="text-xs text-white/60">Server is unreachable</span>`;
+        }
+        gameOver = true;
+        gameStarted = false;
+        // Show Return to Lobby button
+        const btnLobby = document.getElementById('btn-return-lobby');
+        if (btnLobby) btnLobby.classList.remove('hidden');
+    });
 
     s.on('game_start', (game: any) => {
         console.log('[DEBUG] game_start received!', game);
