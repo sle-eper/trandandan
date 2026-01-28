@@ -41,22 +41,24 @@ export function showToast(message: string) {
 
 function tournamentEntryTemplate() {
   return `
-    <div class="w-full h-full flex flex-col justify-center items-center gap-8">
+    <div class="w-full h-full flex flex-col items-center pt-16">
       <h1 class="text-4xl font-bold">🏆 Tournament</h1>
-      <p class="text-gray-400 max-w-md text-center">
-        Create or join tournaments and compete with other players.
-      </p>
-      <div class="flex gap-4">
-        <button
-          id="create-tournament-btn"
-          class="px-6 py-3 bg-red-600 rounded-xl font-semibold hover:opacity-90 transition">
-          Create Tournament
-        </button>
-        <button
-          id="view-tournaments-btn"
-          class="px-6 py-3 bg-white/10 rounded-xl font-semibold hover:bg-white/20 transition">
-          View Tournaments
-        </button>
+      <div class="flex-grow flex flex-col justify-center items-center gap-8">
+        <p class="text-gray-400 max-w-md text-center">
+          Create or join tournaments and compete with other players.
+        </p>
+        <div class="flex gap-4">
+          <button
+            id="create-tournament-btn"
+            class="px-6 py-3 bg-gradient-to-r from-[#9B1C1C] to-[#6F1414] rounded-xl font-semibold hover:opacity-90 transition">
+            Create Tournament
+          </button>
+          <button
+            id="view-tournaments-btn"
+            class="px-6 py-3 bg-white/10 rounded-xl font-semibold hover:bg-white/20 transition">
+            View Tournaments
+          </button>
+        </div>
       </div>
     </div>
   `;
@@ -107,7 +109,7 @@ function tournamentCard(
       </div>
       <div class="flex gap-2 mt-4">
         <button
-          class="flex-1 py-2 rounded-lg bg-red-600/80 hover:bg-red-600 transition text-sm view-bracket-btn"
+          class="flex-1 py-2 rounded-lg bg-gradient-to-r from-[#9B1C1C] to-[#6F1414] hover:bg-red-600 transition text-sm view-bracket-btn"
           data-tournament-name="${name}"
           data-max-players="${maxPlayers}">
           View Bracket
@@ -344,14 +346,14 @@ export function renderCreateTournament() {
           </div>
           <div class="flex gap-3 mt-6">
             <button id="create"
-              class="flex-1 py-2 rounded-xl bg-red-600
-                     font-semibold hover:opacity-90 transition">
+              class="flex-1 py-2 rounded-xl bg-gradient-to-r from-[#9B1C1C] to-[#6F1414]
+                    font-semibold hover:opacity-90 transition">
               Create
             </button>
             <button
               id="cancel-create-tournament"
               class="flex-1 py-2 rounded-xl
-                     bg-white/10 hover:bg-white/20 transition">
+                    bg-white/10 hover:bg-white/20 transition">
               Cancel
             </button>
           </div>

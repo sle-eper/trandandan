@@ -81,8 +81,6 @@ export async function showDashboard() {
   if (!app) return;
 
   document.body.classList.remove("flex", "items-center", "justify-center", "px-6", "md:px-20");
-  // document.body.classList.add("bg-gray-900", "min-h-screen");
-  //TODO hadi ba9i dak tol fih mochekil 
   app.innerHTML = `
       <div class="flex flex-col h-screen bg-[#111] text-white">
           
@@ -107,7 +105,7 @@ export async function showDashboard() {
       </div>
     `;
 
-function getnotif(): Promise<any[]> {//TODO nkhedmha bla promise
+function getnotif(): Promise<any[]> {
   return new Promise(async (resolve, reject) => {
     try {
       const response = await fetch("/auth/verify", {
@@ -115,10 +113,8 @@ function getnotif(): Promise<any[]> {//TODO nkhedmha bla promise
         headers: { "Content-Type": "application/json" },
         credentials: "include",
       });
-      // console.log("response status:", response.status);
       const responseJson = await response.json();
       const myId = responseJson.id;
-      // console.log("user id ",myId);
 
       getSocketInstance()?.once("notif", (data) => {
         resolve(data);
@@ -137,6 +133,8 @@ function getnotif(): Promise<any[]> {//TODO nkhedmha bla promise
   
   if (sidebar) sidebar.innerHTML = renderSidebar();
   if (nav) nav.innerHTML = renderNavBar();
+  navBarLogic();
+  sidebarLogic();
 
   // Verify user and set up socket listeners
   try {
@@ -167,6 +165,5 @@ function getnotif(): Promise<any[]> {//TODO nkhedmha bla promise
   }
 
   // Apply logic handlers after everything is rendered
-  navBarLogic();
-  sidebarLogic();
+
 }

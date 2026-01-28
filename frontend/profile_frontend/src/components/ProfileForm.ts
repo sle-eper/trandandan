@@ -343,7 +343,7 @@ export class ProfileForm {
               </button>
               <button 
                 id="save-btn"
-                class="flex-1 py-3 px-6 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-red-500/50 hover:scale-105"
+                class="flex-1 py-3 px-6 bg-gradient-to-r from-[#9B1C1C] to-[#6F1414] hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-red-500/50 hover:scale-105"
               >
                 Save Changes
               </button>

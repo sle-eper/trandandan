@@ -435,17 +435,17 @@ export const spaySections = [
                     "https://images.pexels.com/photos/1631665/pexels-photo-1631665.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop",
             },
             {
-                name: "Statue of Liberty (USA)",
+                name: "Statue of Liberty",
                 imageUrl:
                     "https://images.pexels.com/photos/356844/pexels-photo-356844.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop",
             },
             {
-                name: "Machu Picchu (Peru)",
+                name: "Machu Picchu",
                 imageUrl:
                     "https://images.pexels.com/photos/259967/pexels-photo-259967.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop",
             },
             {
-                name: "Christ the Redeemer (Brazil)",
+                name: "Christ the Redeemer",
                 imageUrl:
                     "https://images.pexels.com/photos/2868242/pexels-photo-2868242.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop",
             },

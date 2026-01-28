@@ -7,8 +7,6 @@ import {PlayerAndSpaySelection} from "./component/PlayerAndSpaySelection.ts"
 import { findingSpy } from './component/findingSpy.ts';
 import { displayCard } from './component/localMode.ts';
 import { history } from './component/history.ts';
-// import { navigateSilent } from '../../auth_frontend/src_auth/login/router.ts';
-//TODO responsive design mam9adech 
 // //start og game 
 let correctChoice:string;
 
@@ -31,39 +29,9 @@ export async function spyUi()
     console.log("response user:", responseJson);
     const myId =  responseJson.user.id;
     const userName = responseJson.user.username;
-    // console.log("user id in spy ui:", myId);
-    // console.log("user name in spy ui:", userName);
-    // const url = new URL(window.location.href);
-    // const step = url.pathname.split("/").pop();
+;
     if(main)
     {
-       //show game mode
-        // if (step === "history") {
-        //     main.innerHTML = await history(myId);
-        //     return;
-        // }
-
-        // if (step === "players") {
-        //     main.innerHTML =
-        //     renderLocalMode() +
-        //     PlayerAndSpaySelection("players", 7);
-        //     return;
-        // }
-
-        // if (step === "spies") {
-        //     main.innerHTML =
-        //         renderLocalMode() +
-        //         PlayerAndSpaySelection("spies", 1);
-        //     return;
-        // }
-
-        // if (step === "sections") {
-        //     main.innerHTML =
-        //         renderLocalMode() +
-        //         renderSection();
-        //     return;
-        // }
-
         /* ===================== DEFAULT (MAIN SPY PAGE) ===================== */
         function showNotifError(message:string)
         {
@@ -95,10 +63,10 @@ export async function spyUi()
         let currentIndex:number = 0;
         let spaysNumberlit3arfo:number = 0;
 
-        let whoAsks
-        let spays
+        let whoAsks:any
+        let spays:any
         let click:number = 0;
-        let player1;
+        let player1:any;
         // let correctChoice:string;
         game?.addEventListener("click",async(e)=>{
                 const el = e.target as HTMLElement;
@@ -181,13 +149,6 @@ export async function spyUi()
                                 if(playerInput) playerInput.innerHTML = String(spaysNumber)
                             }else{
                                 showNotifError("Number of spies must be between 1 and 3");
-                                // const origin = confirm.innerText;
-                                // confirm.innerText = "invalid number";
-                                // confirm.classList.add("opacity-50","cursor-not-allowed","pointer-events-none")
-                                // setTimeout(()=>{
-                                //     confirm.innerText = origin;
-                                //     confirm.classList.remove("opacity-50","cursor-not-allowed","pointer-events-none")
-                                // },3000)
                             }
                         })
                         confirm.dataset.bound = "true"
@@ -259,26 +220,17 @@ export async function spyUi()
                                 if(playerInput) playerInput.innerHTML = String(playerNumber)
                             }else{
                                 showNotifError("Number of players must be between 2 and 10");
-                                // const origin = confirm.innerText;
-                                // confirm.innerText = "invalid number";
-                                // confirm.classList.add("opacity-50","cursor-not-allowed","pointer-events-none")
-                                // setTimeout(()=>{
-                                //     confirm.innerText = origin;
-                                //     confirm.classList.remove("opacity-50","cursor-not-allowed","pointer-events-none")
-                                // },3000)
                             }
                             
                         })
                         confirm.dataset.bound = "true"
                     }
-                    // navigateSilent("/game/spy/players");
                 }
                 if(el.id === 'sectionsCard' || el.id === 'sectionInput' )
                 {
                         selectSection(selected)
                         document.getElementById("local-mode")?.classList.add('hidden')
                         document.getElementById("sections-selection")?.classList.remove('hidden')
-                    // navigateSilent("/game/spy/section")
                 }
                 if(el.id === 'confirm-sections')
                 {
@@ -302,7 +254,6 @@ export async function spyUi()
                         //////////////////////// set data of game ///////////////////////////////////////////////////
                         const playersInput:HTMLDivElement = document.getElementById("playersInput") as HTMLDivElement;
                         const spaysInput:HTMLDivElement = document.getElementById("spaysInput") as HTMLDivElement;
-                        const confirm:HTMLButtonElement = document.getElementById("next") as HTMLButtonElement;
                         const numberOfPlayer = Number(playersInput.innerText)
                         const numberOfSpays = Number(spaysInput.innerText)
                         if(playersInput && numberOfPlayer > 0 && numberOfPlayer <= 10 )
@@ -311,20 +262,11 @@ export async function spyUi()
                             data.spays = numberOfSpays;
                         else{
                             showNotifError("players must be more than spies");
-                            //     const origin = confirm?.innerText;
-                            //     confirm.innerText = "players must be more than spies";
-                            //     confirm?.classList.add("opacity-50","cursor-not-allowed","pointer-events-none")
-                            //     setTimeout(()=>{
-                            //         confirm.innerText = origin;
-                            //         confirm?.classList.remove("opacity-50","cursor-not-allowed","pointer-events-none")
-                            //     },3000)
                             }
                         
                         //////////////////////////////////////////////////////////////////////////////////////////
-                        // console.log(data.spays,data.players);
                         if(data.spays && data.players)
                         {
-                            // console.log(data.spays,data.players)
                             game.innerHTML = ` <div
                                 id="notification-root"
                                 class="fixed top-30 left-1/2 -translate-x-1/2 z-[9999]
@@ -334,7 +276,6 @@ export async function spyUi()
 `;                   
                             game.innerHTML += renderPlayers(data,userName) 
                         }
-                    // navigateSilent("/game/spy/name_players");
                 }
                 function ask(spy:any):object
                 {
@@ -346,16 +287,20 @@ export async function spyUi()
                     <div id="choice-screen" class="flex flex-col items-center justify-center gap-6 h-full">
                         <button id="guess-the-word"
                                 class="w-70 px-10 py-4 text-xl font-bold rounded-lg 
-                                    bg-[#ff4d4d] text-white shadow-lg
-                                    hover:bg-[#e63939] hover:scale-105 
+                                    bg-gradient-to-b from-[#9B1C1C] to-[#6F1414]
+                                    hover:from-[#B32626] hover:to-[#8B1E1E]
+                                    text-white shadow-lg
+                                    hover:scale-105 
                                     transition-all duration-200 cursor-pointer
                                     font-['Share_Tech_Mono'] tracking-wider">
                             GUESS THE WORD
                         </button>
                         <button id="choose-spy"
                                 class="w-70 px-10 py-4 text-xl font-bold rounded-lg 
-                                    bg-[#ff4d4d] text-white shadow-lg
-                                    hover:bg-[#e63939] hover:scale-105 
+                                    bg-gradient-to-b from-[#9B1C1C] to-[#6F1414]
+                                    hover:from-[#B32626] hover:to-[#8B1E1E]
+                                    text-white shadow-lg
+                                    hover:scale-105 
                                     transition-all duration-200 cursor-pointer
                                     font-['Share_Tech_Mono'] tracking-wider">
                             CHOOSE SPY
@@ -363,7 +308,7 @@ export async function spyUi()
                     </div>
                     `
                 }
-                function hadlhebla(spays)
+                function hadlhebla(spays:any)
                 {
                     currentIndex = 0
                     whoAsks = ask(spays)
@@ -379,8 +324,10 @@ export async function spyUi()
                                         </div>
                                         <button id="next-btn-ask"
                                                 class="px-10 py-4 text-xl font-bold rounded-lg 
-                                                    bg-[#ff4d4d] text-white shadow-lg
-                                                    hover:bg-[#e63939] hover:scale-105 
+                                                    bg-gradient-to-b from-[#9B1C1C] to-[#6F1414]
+                                                    text-white shadow-lg
+                                                    hover:from-[#B32626] hover:to-[#8B1E1E]
+                                                    hover:scale-105 
                                                     transition-all duration-200 cursor-pointer
                                                     font-['Share_Tech_Mono'] tracking-wider">
                                             NEXT
@@ -388,7 +335,7 @@ export async function spyUi()
                                     </div>
                                                     `
                 }
-                function chooseSpy(players): string {
+                function chooseSpy(players:any): string {
                     return `
                         <div id="choose-spy" 
                             class="relative h-full w-full flex flex-col items-center justify-center gap-8 py-12">
@@ -404,9 +351,11 @@ export async function spyUi()
                             <button id="back-to-choose"
                                 class="absolute top-4 left-4
                                     px-5 py-2 text-sm font-bold rounded-md
-                                    bg-[#1a1a1a] text-[#ff4d4d]
+                                    bg-[#1a1a1a]
+                                    text-[#ff4d4d]
+                                    hover:bg-gradient-to-b from-[#9B1C1C] to-[#6F1414]
                                     border-2 border-[#ff4d4d]
-                                    hover:bg-[#ff4d4d] hover:text-white
+                                    hover:text-white
                                     transition-all duration-200
                                     font-['Share_Tech_Mono'] tracking-wider">
                                 ← BACK
@@ -439,8 +388,9 @@ export async function spyUi()
                             <!-- Confirm button -->
                             <button id="confirm-spy"
                                 class="px-10 py-4 text-xl font-bold rounded-lg 
-                                    bg-[#ff4d4d] text-white shadow-lg
-                                    hover:bg-[#e63939] hover:scale-105 
+                                    bg-gradient-to-b from-[#9B1C1C] to-[#6F1414]
+                                    hover:from-[#B32626] hover:to-[#8B1E1E]
+                                    text-white shadow-lg
                                     transition-all duration-200 cursor-pointer
                                     font-['Share_Tech_Mono'] tracking-wider">
                                 CONFIRM
@@ -467,8 +417,6 @@ export async function spyUi()
                     spays = roleDistribution(players,data.players,data.spays,selected)
                     console.log(spays)
                     player1 = spays[0];
-                    // console.log("in paly " , player1)
-                    // carts kayt9elbo hena 
                     game.innerHTML = `<div id="cards-container"></div>`;
                     const backCard = renderBackCard()
                     let index = 0;
@@ -498,15 +446,11 @@ export async function spyUi()
                                         cardContainer.innerHTML = backCard
                                 }
                             }
-                            // if(index === end)//weslat card lkhera 
-                            //     game.innerHTML=findingSpy()
                             if(index === end)
                             {
                                 hadlhebla(spays)
                             }
                             index++
-                            // console.log("sssssssssssssssssss",index)
-                                // console.log("ssss")
                         })
                     }
                 }
@@ -533,16 +477,11 @@ export async function spyUi()
                 if(el.id === 'next-btn-ask')
                 {
                     const display = document.getElementById("current-id");
-                    // const nextBtn = document.getElementById("next-btn");
-                    // console.log(Boolean(display),Boolean(nextBtn))
                     currentIndex++;
-                    // console.log(whoAsks[currentIndex])
-                    if (currentIndex < whoAsks.length){
+                    if (display && currentIndex < whoAsks.length){
                             display.textContent = whoAsks[currentIndex].name;
-
                         } else {
                             game.innerHTML = renderSpyChoice()
-                            // navigateSilent("/game/spy/win_page");
                         }
                 }
                 if(el.id === 'guess-the-word')
@@ -560,7 +499,8 @@ export async function spyUi()
                                         <button id="back-to-choose"
                                             class="absolute top-4 left-4
                                                 px-5 py-2 text-sm font-bold rounded-md
-                                                bg-[#1a1a1a] text-[#ff4d4d]
+                                                hover:bg-gradient-to-b from-[#9B1C1C] to-[#6F1414]
+                                                text-[#ff4d4d]
                                                 border-2 border-[#ff4d4d]
                                                 hover:bg-[#ff4d4d] hover:text-white
                                                 transition-all duration-200
@@ -585,21 +525,21 @@ export async function spyUi()
 
                                         <button id="confirm-guess"
                                             class="px-10 py-4 text-xl font-bold rounded-xl
-                                                bg-[#ff4d4d] text-white shadow-lg
-                                                hover:bg-[#e63939] hover:scale-105
+                                                hover:bg-gradient-to-b from-[#9B1C1C] to-[#6F1414]
+                                                bg-gradient-to-b from-[#9B1C1C] to-[#6F1414]
+                                                text-white shadow-lg
+                                                hover:scale-105
                                                 transition-all duration-200">
                                             CONFIRM
                                         </button>
 
                                     </div>`
-                    // navigateSilent("/game/spy/win_page/word");
                 }
                 if(el.id === 'confirm-guess')
                 {
                     const value = document.getElementById("confirm-guess-input")?.value;
                     if(value.trim())
                     {
-                        // console.log(correctChoice)
                         spaysNumberlit3arfo = 0;
                         if(value.trim().toLocaleLowerCase() === correctChoice)
                         {
@@ -702,7 +642,6 @@ export async function spyUi()
                     const select = document.getElementById("spy-select") as HTMLSelectElement;
                     const result = document.getElementById("spy-result") as HTMLDivElement;
                     const id = Number(select.value);
-                    // console.log("sssss",alivePlayers,aliveSpies)
                     if (!id) {
                         return;
                     }
@@ -728,14 +667,9 @@ export async function spyUi()
                     const aliveSpies = spays.filter(p=>p.spay === true).length;
                     const alivePlayers = spays.filter(p=>p.spay === false).length;
 
-                    // console.log(spaysNumberlit3arfo,spaysNumber)
                     if(aliveSpies >= alivePlayers ) 
                     {
                         spaysNumberlit3arfo = 0;
-                        // const win = section.find((s) => {
-                        //     return s.id === 1
-                        // })
-                        // console.log("The spy won " , player1)
                         if(player1.spay === true)
                         {
                             try{
@@ -782,11 +716,10 @@ export async function spyUi()
                     else if(aliveSpies === 0)
                     {
                         spaysNumberlit3arfo = 0;
-                        // console.log("investigators won " , player1)
                         if(player1.spay === false)
                         {
                             try{
-                                const response = await fetch('/api/spy/history',{//TODO https
+                                const response = await fetch('/api/spy/history',{
                                     method: "POST",
                                     headers: {
                                         "Content-Type": "application/json",

@@ -8,10 +8,9 @@ export function reSetSocket(){
 
 export function socketInstance(): Socket {
   if (!socket) {
-    socket = io("https://localhost:8443", {
+    return socket = io("https://localhost:8443", {
       path: "/socket.io",
       withCredentials: true,
-      // autoConnect: true,
       transports: ["websocket"],
       // autoConnect: true,
     });
@@ -27,7 +26,9 @@ export function getSocketInstance(): Socket | null {
     return null;
   }
   if(!socket) {
+    console.log('Creating new socket instance');
     return socketInstance();
   } 
+  console.log('Returning existing socket instance');
   return socket;
 }
