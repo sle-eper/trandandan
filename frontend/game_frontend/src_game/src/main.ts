@@ -28,6 +28,38 @@ let countdown: CountDown;
 let animationId: number | null = null;
 let winnerName: string | null = null;
 let gameMode: string | null = null;
+let goalTimeout: number | null = null;
+
+function resetLocalState() {
+    console.debug('Resetting local game state');
+    if (goalTimeout) {
+        clearTimeout(goalTimeout);
+        goalTimeout = null;
+    }
+    gameStarted = false;
+    gameOver = false;
+    leftScore = 0;
+    rightScore = 0;
+    winnerName = null;
+
+    if (leftPaddle) leftPaddle.setY((c.height - 100) / 2);
+    if (rightPaddle) rightPaddle.setY((c.height - 100) / 2);
+    if (pongBall) pongBall.resetPositionAndSpeed();
+
+    // Update Scores in HTML
+    const scoreLeftEl = document.getElementById('score-left');
+    const scoreRightEl = document.getElementById('score-right');
+    if (scoreLeftEl) scoreLeftEl.textContent = '0';
+    if (scoreRightEl) scoreRightEl.textContent = '0';
+
+    // Hide overlays
+    const infoBox = document.getElementById('game-info');
+    if (infoBox) infoBox.classList.add('hidden');
+    const endControls = document.getElementById('end-game-controls');
+    if (endControls) endControls.classList.add('hidden');
+}
+
+// Color State
 
 // Color State
 let leftPaddleColor = '#ff0000';
@@ -186,19 +218,17 @@ export function initializeGame() {
 
     c = canvas;
     ctxt = ctx;
-    gameStarted = false;
-    gameOver = false;
-    leftScore = 0;
-    rightScore = 0;
+    // Clear loop if already exists
+    if (animationId !== null) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+    }
+
+    resetLocalState();
     currentGameId = null;
     playerSide = 'left';
     isRemote = false;
     aiMode = false;
-    winnerName = null;
-
-    // Hide End Game Controls
-    const endControls = document.getElementById('end-game-controls');
-    if (endControls) endControls.classList.add('hidden');
 
     updateLocalAvatars();
 
@@ -307,12 +337,23 @@ function setupSocketListeners() {
     });
 
     s.on('waiting_for_opponent', () => {
+        gameOver = false;
+        gameStarted = false;
+        leftScore = 0;
+        rightScore = 0;
+        const scoreLeftEl = document.getElementById('score-left');
+        const scoreRightEl = document.getElementById('score-right');
+        if (scoreLeftEl) scoreLeftEl.textContent = '0';
+        if (scoreRightEl) scoreRightEl.textContent = '0';
+
+        const endControls = document.getElementById('end-game-controls');
+        if (endControls) endControls.classList.add('hidden');
+
         const infoBox = document.getElementById('game-info');
         if (infoBox) {
             infoBox.classList.remove('hidden');
             infoBox.innerHTML = `Game ID: <span class="text-yellow-400 font-bold select-all">${currentGameId}</span><br>Waiting for opponent...`;
         }
-
     });
 
     s.on('opponent_move', (data: any) => {
@@ -419,16 +460,7 @@ const showGameView = () => {
     if (lobby) lobby.classList.add('hidden');
     if (container) container.classList.remove('hidden');
 
-    // Reset game state for a new match
-    gameOver = false;
-    gameStarted = false;
-    leftScore = 0;
-    rightScore = 0;
-    if (pongBall) pongBall.resetPositionAndSpeed();
-
-    // Hide End Game Controls
-    const endControls = document.getElementById('end-game-controls');
-    if (endControls) endControls.classList.add('hidden');
+    resetLocalState();
 
     // Resume animation if it was stopped
     if (!animationId) animate();
@@ -448,9 +480,7 @@ const showLobbyView = () => {
         animationId = null;
     }
 
-    // Reset scores
-    leftScore = 0;
-    rightScore = 0;
+    resetLocalState();
 
     // Disconnect socket if remote
     if (isRemote) {
@@ -527,16 +557,7 @@ function setupMenuButtons() {
             const endControls = document.getElementById('end-game-controls');
             if (endControls) endControls.classList.add('hidden');
 
-            // Reset game state
-            gameOver = false;
-            gameStarted = false;
-            leftScore = 0;
-            rightScore = 0;
-
-            // Reset positions
-            leftPaddle.setY((c.height - 100) / 2);
-            rightPaddle.setY((c.height - 100) / 2);
-            pongBall.resetPositionAndSpeed();
+            resetLocalState();
 
             // Re-identify mode info
             const infoBox = document.getElementById('game-info');
@@ -629,7 +650,17 @@ export function animate() {
                 if (scorer === 'left') leftScore++;
                 else rightScore++;
                 if (leftScore >= winningScore || rightScore >= winningScore) { gameOver = true; gameStarted = false; }
-                else { pongBall.resetPositionAndSpeed(); gameStarted = false; setTimeout(() => { if (!gameOver) { pongBall.start(); gameStarted = true; } }, 1000); }
+                else {
+                    pongBall.resetPositionAndSpeed();
+                    gameStarted = false;
+                    goalTimeout = window.setTimeout(() => {
+                        if (!gameOver) {
+                            pongBall.start();
+                            gameStarted = true;
+                        }
+                        goalTimeout = null;
+                    }, 1000);
+                }
             }
         }
     }
