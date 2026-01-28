@@ -31,7 +31,6 @@ export const loginTemplate = () => `
         <div id="login-error"
           class="text-red-500 text-sm h-5 opacity-0 transition-opacity duration-300"></div>
       </div>
-
       <!-- 🔑 type="submit" -->
       <button id="login-btn" type="submit"
         class="w-full bg-[#E3423A] text-white py-2 rounded-md mt-4 hover:opacity-90 transition">
@@ -611,7 +610,6 @@ function matchCard(match: MatchData, userId: number, index: number): string {
           <div>
             <div class="flex items-center gap-2">
               <span class="text-sm font-medium text-white">${isWin ? 'Victory' : 'Defeat'}</span>
-              <span class="text-xs text-gray-500">vs Player ${oppId}</span>
             </div>
             <div class="text-xs text-gray-500">${timeAgo}</div>
           </div>
@@ -650,7 +648,6 @@ export function matchDetailTemplate(match: MatchData, userId: number): string {
   const isWin = match.winner_id === userId;
   const myScore = match.user1_id === userId ? match.user1_score : match.user2_score;
   const oppScore = match.user1_id === userId ? match.user2_score : match.user1_score;
-  const oppId = match.user1_id === userId ? match.user2_id : match.user1_id;
   const date = new Date(match.played_at);
   const duration = match.duration || Math.floor(Math.random() * 180) + 60;
 
@@ -662,7 +659,6 @@ export function matchDetailTemplate(match: MatchData, userId: number): string {
       <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full ${resultBg} ${resultColor} text-sm font-medium mb-2">
         ${isWin ? 'Victory' : 'Defeat'}
       </div>
-      <h3 class="text-xl font-bold text-white">Match vs Player ${oppId}</h3>
       <p class="text-sm text-gray-400">${date.toLocaleDateString()} at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
     </div>
 
@@ -711,30 +707,6 @@ function getPerformanceRating(myScore: number, oppScore: number, isWin: boolean)
   return 'Needs Improvement';
 }
 
-// function statCard(label: string, value: number | string, icon: string, color: string): string {
-//   const colorClasses = {
-//     blue: 'from-blue-500/20 to-blue-600/20 border-blue-500/30',
-//     green: 'from-green-500/20 to-green-600/20 border-green-500/30',
-//     red: 'from-red-500/20 to-red-600/20 border-red-500/30',
-//     purple: 'from-purple-500/20 to-purple-600/20 border-purple-500/30',
-//     yellow: 'from-yellow-500/20 to-yellow-600/20 border-yellow-500/30',
-//     orange: 'from-orange-500/20 to-orange-600/20 border-orange-500/30',
-//   }[color] || 'from-gray-500/20 to-gray-600/20 border-gray-500/30';
-
-//   return `
-//     <div class="bg-gradient-to-br ${colorClasses} rounded-xl border p-4 backdrop-blur-sm
-//       hover:scale-105 transition-transform duration-200 cursor-default">
-//       <div class="flex items-start justify-between mb-2">
-//         <span class="text-2xl">${icon}</span>
-//       </div>
-//       <div class="text-3xl font-bold mb-1">${value}</div>
-//       <div class="text-sm text-gray-400">${label}</div>
-//     </div>
-//   `;
-// }
-
-
-// src/login/templates.ts
 export const images: Record<string, string> = {
   "login-page": image1,
   "signup-page": image2,
