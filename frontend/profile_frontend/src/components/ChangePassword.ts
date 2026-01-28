@@ -1,6 +1,5 @@
 import axios from "axios";
 
-// components/ChangePasswordModal.ts
 export class ChangePasswordModal {
   private modal: HTMLElement | null = null;
 
@@ -37,18 +36,27 @@ export class ChangePasswordModal {
                   id="current-password" 
                   type="password" 
                   required
-                  class="w-full px-4 py-3 bg-gray-900/50  text-white rounded-xl border border-gray-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
+                  class="w-full px-4 py-3 bg-gray-900/50 text-white rounded-xl border border-gray-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
                   placeholder="Enter current password"
                 />
                 <button 
                   type="button"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-                  onclick="this.previousElementSibling.type = this.previousElementSibling.type === 'password' ? 'text' : 'password'"
+                  data-toggle-password="current-password"
+                  class="password-toggle absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
                 >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
+                  <span class="eye-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  </span>
+                  <span class="eye-off-icon hidden">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                      <line x1="2" y1="2" x2="22" y2="22"></line>
+                    </svg>
+                  </span>
                 </button>
               </div>
             </div>
@@ -64,18 +72,27 @@ export class ChangePasswordModal {
                   type="password" 
                   required
                   minlength="8"
-                  class="w-full px-4 py-3 bg-gray-900/50  text-white rounded-xl border border-gray-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
-                  placeholder="Enter new password "
+                  class="w-full px-4 py-3 bg-gray-900/50 text-white rounded-xl border border-gray-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
+                  placeholder="Enter new password"
                 />
                 <button 
                   type="button"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-                  onclick="this.previousElementSibling.type = this.previousElementSibling.type === 'password' ? 'text' : 'password'"
+                  data-toggle-password="new-password"
+                  class="password-toggle absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
                 >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
+                  <span class="eye-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  </span>
+                  <span class="eye-off-icon hidden">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                      <line x1="2" y1="2" x2="22" y2="22"></line>
+                    </svg>
+                  </span>
                 </button>
               </div>
               <p class="text-xs text-gray-500 mt-1">Must be at least 8 characters</p>
@@ -91,18 +108,27 @@ export class ChangePasswordModal {
                   id="confirm-password" 
                   type="password" 
                   required
-                  class="w-full px-4 py-3 bg-gray-900/50  text-white rounded-xl border border-gray-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
+                  class="w-full px-4 py-3 bg-gray-900/50 text-white rounded-xl border border-gray-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
                   placeholder="Confirm new password"
                 />
                 <button 
                   type="button"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-                  onclick="this.previousElementSibling.type = this.previousElementSibling.type === 'password' ? 'text' : 'password'"
+                  data-toggle-password="confirm-password"
+                  class="password-toggle absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
                 >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
+                  <span class="eye-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  </span>
+                  <span class="eye-off-icon hidden">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                      <line x1="2" y1="2" x2="22" y2="22"></line>
+                    </svg>
+                  </span>
                 </button>
               </div>
             </div>
@@ -148,12 +174,36 @@ export class ChangePasswordModal {
     closeBtn?.addEventListener('click', () => this.hide());
     cancelBtn?.addEventListener('click', () => this.hide());
     
-   
     this.modal?.addEventListener('click', (e) => {
       if (e.target === this.modal) this.hide();
     });
 
     form?.addEventListener('submit', (e) => this.handleSubmit(e));
+
+    this.attachPasswordToggleListeners();
+  }
+
+  private attachPasswordToggleListeners() {
+    const toggleButtons = document.querySelectorAll('.password-toggle');
+    
+    toggleButtons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        const btn = e.currentTarget as HTMLButtonElement;
+        const inputId = btn.getAttribute('data-toggle-password');
+        const input = document.getElementById(inputId!) as HTMLInputElement;
+        
+        if (input) {
+          const isPassword = input.type === 'password';
+          input.type = isPassword ? 'text' : 'password';
+          
+          const eyeIcon = btn.querySelector('.eye-icon') as HTMLElement;
+          const eyeOffIcon = btn.querySelector('.eye-off-icon') as HTMLElement;
+          
+          eyeIcon.classList.toggle('hidden');
+          eyeOffIcon.classList.toggle('hidden');
+        }
+      });
+    });
   }
 
   private async handleSubmit(e: Event) {
@@ -166,7 +216,6 @@ export class ChangePasswordModal {
     const errorDiv = document.getElementById('password-error')!;
     const successDiv = document.getElementById('password-success')!;
     
-   
     errorDiv.classList.add('hidden');
     successDiv.classList.add('hidden');
 
@@ -185,7 +234,6 @@ export class ChangePasswordModal {
       return;
     }
 
-  
     const submitBtn = document.getElementById('submit-password-btn') as HTMLButtonElement;
     submitBtn.disabled = true;
     submitBtn.textContent = 'Changing...';
@@ -197,26 +245,24 @@ export class ChangePasswordModal {
       }, {
         headers: {
           'Content-Type': 'application/json',
-   
         },
         withCredentials: true
       });
 
       const data = await response.data;
-
+      console.log(response);
       if (!response || response.status !== 200) {
         throw new Error(data.error || 'Failed to change password');
       }
 
       this.showSuccess('Password changed successfully!');
       
-    
       setTimeout(() => {
         this.hide();
       }, 2000);
 
     } catch (error) {
-      this.showError(error instanceof Error ? error.message : 'Failed to change password');
+      this.showError('Failed to change password');
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = 'Change Password';

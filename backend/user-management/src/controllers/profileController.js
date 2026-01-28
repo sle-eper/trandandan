@@ -16,8 +16,6 @@ class ProfileController {
     try {
       const id = request.params.id;
       const user = await this.userModel.findById(id);
-
-
       if (!user) {
         return reply.code(404).send({ error: 'User not found' });
       }
@@ -30,11 +28,8 @@ class ProfileController {
 
   async getById(request, reply) {
     try {
-      // console.log('Getting user by ID from headers:', request.headers);
       const id = request.headers['x-user-id'];
       const user = await this.userModel.findById(id);
-
-
       if (!user) {
         return reply.code(404).send({ error: 'User not found' });
       }
@@ -45,8 +40,6 @@ class ProfileController {
     }
   }
 
-
-
   async setUser(request, reply) {
     try {
       let { username, email, displayName, password, id_token } = request.body;
@@ -55,7 +48,6 @@ class ProfileController {
         return reply.code(400).send({ error: 'email and displayName are required' });
       }
 
-      // Generate username if not provided
       if (!username) {
         username = displayName.replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase();
       } else {
@@ -66,9 +58,7 @@ class ProfileController {
         return reply.code(400).send({ error: 'password or id_token is required' });
       }
 
-      // // Hash password if provided
-      // let password_hash = null;
-      console.log(password);
+     
       const userData = {
         username,
         email,
@@ -98,7 +88,8 @@ class ProfileController {
   async getUserBYemailorUsername(request, reply) {
 
     try {
-      const { email, username } = request.query; // can be email or username
+      const { email, username } = request.query; 
+   
       let user = await this.userModel.findByEmail(email);
       if (user) {
         return reply.code(200).send(user);
@@ -107,6 +98,7 @@ class ProfileController {
       if (user) {
         return reply.code(200).send(user);
       }
+     
       return reply.code(200).send(null);
     }
     catch (error) {
@@ -115,14 +107,10 @@ class ProfileController {
     }
   }
 
-  // GET /profile - Get current user profile(user information and stats) will be used in dashboard
   async getMyProfile(request, reply) {
     try {
-      // const userId = request.headers['x-user-id'];
 
       const userId = request.query.id;
-
-
       const profile = await this.userModel.getProfile(userId);
 
       if (!profile) {
@@ -135,31 +123,11 @@ class ProfileController {
     }
   }
 
-  // GET /profile/:id - Get another user's profile (view another user's profile /dashboard)
-  async getUserProfile(request, reply) {
-    try {
-      const id = request.headers['x-user-id'];
-      const profile = await this.userModel.getProfile(id);
-
-      if (!profile) {
-        return reply.code(404).send({ error: 'User not found' });
-      }
-
-      return { success: true, profile };
-    } catch (error) {
-      return reply.code(500).send({ error: error.message });
-    }
-  }
-
-  // PUT /profile/update - Update profile
   async updateProfile(request, reply) {
     try {
 
       const userId = request.headers['x-user-id'];
       const updates = request.body;
-
-
-
       if (updates.email) {
         const existingUser = await this.userModel.findByEmail(updates.email);
 
@@ -170,7 +138,16 @@ class ProfileController {
           });
         }
       }
+      if(updates.username) {
+        const existingUser = await this.userModel.findByUsername(updates.username);
 
+        if (existingUser && existingUser.id !== userId) {
+          console.log('Username already taken:', updates.username);
+          return reply.code(409).send({
+            error: 'Username already taken'
+          });
+        }
+      }
       if (updates.displayName) {
         const availableName = await this.userModel.findByDisplayName(
           updates.displayName,
@@ -196,29 +173,18 @@ class ProfileController {
     }
   }
 
-  // POST /profile/avatar - Upload avatar
   async uploadAvatar(request, reply) {
     try {
-      // const userId = request.headers['x-user-id'];
       const userId = request.headers['x-user-id'];
-
       const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
       const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-      const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-
-
-
-
       const data = await request.file();
-
       if (!data) {
         return reply.code(400).send({
           success: false,
           error: 'No file uploaded'
         });
       }
-
-
       if (!ALLOWED_TYPES.includes(data.mimetype)) {
         return reply.code(400).send({
           success: false,
@@ -226,9 +192,7 @@ class ProfileController {
         });
       }
 
-
       const buffer = await data.toBuffer();
-
       if (buffer.length > MAX_FILE_SIZE) {
         return reply.code(413).send({
           success: false,
@@ -236,12 +200,8 @@ class ProfileController {
           maxSize: MAX_FILE_SIZE
         });
       }
-
-      // Prepare upload directory
       const uploadDir = path.join(process.cwd(), 'public', 'avatars');
       await fs.promises.mkdir(uploadDir, { recursive: true });
-
-
       try {
         const oldAvatars = await fs.promises.readdir(uploadDir);
         const userAvatars = oldAvatars.filter(file => file.startsWith(`${userId}-`));
@@ -254,18 +214,10 @@ class ProfileController {
         console.warn('Could not clean up old avatars:', cleanupError.message);
       }
 
-      // Generate filename and save
       const extension = data.mimetype.split('/')[1];
       const filename = `${userId}-${Date.now()}.${extension}`;
       const filePath = path.join(uploadDir, filename);
-
       await fs.promises.writeFile(filePath, buffer);
-      console.log('Avatar saved successfully:', filePath);
-
-      // Verify file was written
-      // const stats = await fs.promises.stat(filePath);
-      // console.log('File size on disk:', stats.size, 'bytes');
-
       return reply.code(200).send({
         success: true,
         message: 'Avatar uploaded successfully',
@@ -275,8 +227,6 @@ class ProfileController {
 
     } catch (error) {
       console.error('Avatar upload error:', error);
-
-
       if (error.code === 'ENOSPC') {
         return reply.code(507).send({
           success: false,
@@ -287,145 +237,9 @@ class ProfileController {
       return reply.code(500).send({
         success: false,
         error: 'Failed to upload avatar',
-        // details: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
     }
   }
-  // GET /users/search?q=John - Search users 
-  async searchUsers(request, reply) {
-    try {
-      const { q } = request.query;
-
-      if (!q || q.length < 2) {
-        return reply.code(400).send({
-          error: 'Search query must be at least 2 characters'
-        });
-      }
-
-      const users = await this.userModel.searchByDisplayName(q);
-
-      return { success: true, users };
-    } catch (error) {
-      return reply.code(500).send({ error: error.message });
-    }
-  }
-
-
-
-  // POST /profile/avatar - Upload avatar
-  async uploadAvatar(request, reply) {
-    try {
-      // const userId = request.headers['x-user-id'];
-      const userId = request.headers['x-user-id'];
-
-      const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-      const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-      const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-
-
-
-
-      const data = await request.file();
-
-      if (!data) {
-        return reply.code(400).send({
-          success: false,
-          error: 'No file uploaded'
-        });
-      }
-
-
-      if (!ALLOWED_TYPES.includes(data.mimetype)) {
-        return reply.code(400).send({
-          success: false,
-          error: 'Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed'
-        });
-      }
-
-
-      const buffer = await data.toBuffer();
-
-      if (buffer.length > MAX_FILE_SIZE) {
-        return reply.code(413).send({
-          success: false,
-          error: `File size exceeds maximum limit of ${MAX_FILE_SIZE / (1024 * 1024)}MB`,
-          maxSize: MAX_FILE_SIZE
-        });
-      }
-
-      // Prepare upload directory
-      const uploadDir = path.join(process.cwd(), 'public', 'avatars');
-      await fs.promises.mkdir(uploadDir, { recursive: true });
-
-
-      try {
-        const oldAvatars = await fs.promises.readdir(uploadDir);
-        const userAvatars = oldAvatars.filter(file => file.startsWith(`${userId}-`));
-
-        for (const oldAvatar of userAvatars) {
-          await fs.promises.unlink(path.join(uploadDir, oldAvatar));
-          console.log('Deleted old avatar:', oldAvatar);
-        }
-      } catch (cleanupError) {
-        console.warn('Could not clean up old avatars:', cleanupError.message);
-      }
-
-      // Generate filename and save
-      const extension = data.mimetype.split('/')[1];
-      const filename = `${userId}-${Date.now()}.${extension}`;
-      const filePath = path.join(uploadDir, filename);
-
-      await fs.promises.writeFile(filePath, buffer);
-      console.log('Avatar saved successfully:', filePath);
-
-      // Verify file was written
-      // const stats = await fs.promises.stat(filePath);
-      // console.log('File size on disk:', stats.size, 'bytes');
-
-      return reply.code(200).send({
-        success: true,
-        message: 'Avatar uploaded successfully',
-        avatarUrl: filename,
-        fileSize: buffer.length
-      });
-
-    } catch (error) {
-      console.error('Avatar upload error:', error);
-
-
-      if (error.code === 'ENOSPC') {
-        return reply.code(507).send({
-          success: false,
-          error: 'Server storage full'
-        });
-      }
-
-      return reply.code(500).send({
-        success: false,
-        error: 'Failed to upload avatar',
-        // details: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
-    }
-  }
-  // GET /users/search?q=John - Search users 
-  async searchUsers(request, reply) {
-    try {
-      const { q } = request.query;
-
-      if (!q || q.length < 2) {
-        return reply.code(400).send({
-          error: 'Search query must be at least 2 characters'
-        });
-      }
-
-      const users = await this.userModel.searchByDisplayName(q);
-
-      return { success: true, users };
-    } catch (error) {
-      return reply.code(500).send({ error: error.message });
-    }
-  }
-
 
   async changePassword(request, reply) {
     try {
@@ -442,23 +256,21 @@ class ProfileController {
           error: 'New password must be at least 8 characters'
         });
       }
-      const passwordHash = await this.userModel.getPasswordHashById(userId);
 
+      const passwordHash = await this.userModel.getPasswordHashById(userId);
       if (!passwordHash) {
         return reply.code(404).send({ error: 'User not found' });
       }
 
       const passwordMatch = await bcrypt.compare(currentPassword, passwordHash);
-
       if (!passwordMatch) {
         return reply.code(401).send({ error: 'Current password is incorrect' });
       }
 
       const hashedPassword = await bcrypt.hash(newPassword, 10);
-
       await this.userModel.updatePassword(userId, hashedPassword);
-
       return { success: true, message: 'Password changed successfully' };
+
     } catch (error) {
       console.error('Change password error:', error);
       return reply.code(500).send({ error: error.message });
@@ -467,15 +279,12 @@ class ProfileController {
   async getAllUsers(request, reply) {
     try {
       const users = await this.userModel.getAllUsers();
-
       return reply.code(200).send({ success: true, users });
     } catch (error) {
       console.error('Get all users error:', error);
       return reply.code(500).send({ error: error.message });
     }
   }
-
-
   async getTwoFactorStatus(request, reply) {
     try {
       const { username } = request.query;
@@ -540,21 +349,25 @@ class ProfileController {
   }
   async getIdToken(request, reply) {
     try {
-      const { token } = request.query;
-      if (!token) {
-        return reply.code(400).send({ error: 'token is required' });
+      const { username } = request.query;
+      if (!username) {
+        return reply.code(400).send({ error: 'Username is required' });
       }
-      const user = await this.userModel.findByToken(token);
+      const user = await this.userModel.findByUsername(username);
       if (!user) {
         return reply.code(404).send({ error: 'User not found' });
       }
-      return user;
+      const token = user.id_token;
+      return {
+        success: true,
+        id_token: token
+      };
+
     }
     catch (error) {
       return reply.code(500).send({ error: error.message });
     }
   }
-  // i add this for setting secret key for 2FA
   async setsecretkeytwofactor(request, reply) {
     try {
       const { username, two_factor_secret } = request.body;
@@ -655,3 +468,20 @@ class ProfileController {
 
 }
 export default ProfileController;
+
+
+
+  // async getUserProfile(request, reply) {
+  //   try {
+  //     const id = request.headers['x-user-id'];
+  //     const profile = await this.userModel.getProfile(id);
+
+  //     if (!profile) {
+  //       return reply.code(404).send({ error: 'User not found' });
+  //     }
+
+  //     return { success: true, profile };
+  //   } catch (error) {
+  //     return reply.code(500).send({ error: error.message });
+  //   }
+  // }

@@ -23,7 +23,9 @@ export async function signup_post(request, reply) {
           username,
           email,
         },
+       
       }
+
     );
     if (existingUser.data) {
       return reply.code(400).send({

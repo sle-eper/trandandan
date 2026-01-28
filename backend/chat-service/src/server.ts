@@ -341,7 +341,8 @@ server.ready().then(() => {
       // if (!UserData) return;
       if (!socket.data.user) return
       for (const ids of userSocket) {
-
+        console.log("//////////////////user data", socket.data.user);
+        console.log("+++++++++++++++++++++++Sending friendRequestReceived to", socket.data.user.username, friendId, myId, notifId);
         socket.to(ids).emit("friendRequestReceived",
           socket.data.user.username,
           friendId,
