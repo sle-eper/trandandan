@@ -19,5 +19,6 @@ export function setCurrentUserId(id: string) {
     currentUserId = id;
 }
 export function getCurrentUserId(): string {
+    console.log("user id",currentUserId);
     return currentUserId;
 }

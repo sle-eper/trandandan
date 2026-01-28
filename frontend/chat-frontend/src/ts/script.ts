@@ -19,13 +19,13 @@ import { navigate } from "../../../auth_frontend/src_auth/login/router";
 window.addEventListener("keydown", (e) => {
   const parts = window.location.pathname.split("/").filter(Boolean);
 
-  if (e.key === "Escape" && parts[0] === 'chat' && parts.length === 2 ) {
+  // if (e.key === "Escape" && parts[0] === 'chat' && parts.length === 2 ) {
     setImInRoom("");
     setFriendId("");
     const dmZone = document.getElementById("DM");
     if (dmZone) dmZone.innerHTML = choseFriend();
-    navigate(`/chat`);
-  }
+    // navigate(`/chat`);
+  // }
 });
 
 export async function showMainUI() {
@@ -60,7 +60,7 @@ export async function showMainUI() {
       const friendsEvent = document.querySelectorAll(".friend-msg-zone");
       friendsEvent.forEach((friend:any) => {
         friend.addEventListener("click", () => {
-          navigate(`/chat/${friend.dataset.name}`);
+          // navigate(`/chat/${friend.dataset.name}`);
           setImInRoom(friend.dataset.roomname);
           setFriendId(friend.dataset.id);
           const friendId = getFriendId()

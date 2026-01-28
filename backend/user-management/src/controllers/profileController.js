@@ -13,9 +13,11 @@ class ProfileController {
   }
 
   async getUser(request, reply) {
+    console.log("getUser called with params:", request.params);
     try {
       const id = request.params.id;
       const user = await this.userModel.findById(id);
+      console.log("Fetched user:", user);
       if (!user) {
         return reply.code(404).send({ error: 'User not found' });
       }
