@@ -14,6 +14,7 @@ async function fetchUserData(userId: string) {
       },
       timeout: 5000 
     });
+    console.log("Fetched user data:", response.data);
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {

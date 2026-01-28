@@ -108,7 +108,7 @@ export async function login_post(request, reply) {
       username,
     },
   });
-  if (!row) {
+  if (!row.data) {
     return reply.code(400).send({ success: false, message: "User not found" });
   }
   if (Number(row.data.two_factor_enabled) === 1) {
@@ -252,7 +252,8 @@ export async function resetPassword_post(request, reply) {
       .send({ success: false, message: "Passwords do not match." });
   }
   try {
-    const row = await axios.get("http://user-management:3000/profile/User", {
+    console.log("Token:", token);
+    const row = await axios.get("http://user-management:3000/User/TokenId", {
       params: {
         token,
       },

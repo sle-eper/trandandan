@@ -14,9 +14,11 @@ class ProfileController {
 
   async getUser(request, reply) {
     try {
+      
+      console.log('++++++++++++++++++++++++++++++++++++Getting user by ID from params:', id);
       const id = request.params.id;
       const user = await this.userModel.findById(id);
-
+      console.log('+++++++++++++++++++++++++++++++++Found user:', user);
 
       if (!user) {
         return reply.code(404).send({ error: 'User not found' });
@@ -30,6 +32,7 @@ class ProfileController {
 
   async getById(request, reply) {
     try {
+      // console.log('Getting user by ID from headers:', request.headers);
       const id = request.headers['x-user-id'];
       const user = await this.userModel.findById(id);
 
@@ -44,6 +47,8 @@ class ProfileController {
     }
   }
 
+
+
   async setUser(request, reply) {
     try {
       let { username, email, displayName, password, id_token } = request.body;
@@ -52,7 +57,7 @@ class ProfileController {
         return reply.code(400).send({ error: 'email and displayName are required' });
       }
 
-      
+      // Generate username if not provided
       if (!username) {
         username = displayName.replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase();
       } else {
@@ -63,6 +68,8 @@ class ProfileController {
         return reply.code(400).send({ error: 'password or id_token is required' });
       }
 
+      // // Hash password if provided
+      // let password_hash = null;
       console.log(password);
       const userData = {
         username,
@@ -75,7 +82,7 @@ class ProfileController {
       const userId = await this.userModel.create(userData);
       const profile = await this.userModel.findById(userId);
 
-      
+      console.log('Created user profile:', profile);
 
       return reply.code(201).send({
         success: true,
@@ -89,32 +96,21 @@ class ProfileController {
     }
   }
 
+
   async getUserBYemailorUsername(request, reply) {
 
     try {
       const { email, username } = request.query; // can be email or username
-      const { token } = request.query;
-     
-      // const id = request.headers['x-user-id'];
+   
       let user = await this.userModel.findByEmail(email);
       if (user) {
-      
         return reply.code(200).send(user);
       }
       user = await this.userModel.findByUsername(username);
       if (user) {
-        
         return reply.code(200).send(user);
       }
-      user = await this.userModel.findByToken(token);
-      if (user) {
-        
-        return reply.code(200).send(user);
-      }
-      user = await this.userModel.findById(id);
-      if (user) {
-        return reply.code(200).send(user);
-      }
+     
       return reply.code(200).send(null);
     }
     catch (error) {
@@ -143,6 +139,21 @@ class ProfileController {
     }
   }
 
+  // GET /profile/:id - Get another user's profile (view another user's profile /dashboard)
+  async getUserProfile(request, reply) {
+    try {
+      const id = request.headers['x-user-id'];
+      const profile = await this.userModel.getProfile(id);
+
+      if (!profile) {
+        return reply.code(404).send({ error: 'User not found' });
+      }
+
+      return { success: true, profile };
+    } catch (error) {
+      return reply.code(500).send({ error: error.message });
+    }
+  }
 
   // PUT /profile/update - Update profile
   async updateProfile(request, reply) {
@@ -188,103 +199,238 @@ class ProfileController {
       return reply.code(500).send({ error: error.message });
     }
   }
-  
-    // POST /profile/avatar - Upload avatar
-   async uploadAvatar(request, reply) {
-  try {
-    // const userId = request.headers['x-user-id'];
-    const userId = request.headers['x-user-id'];
-   
-    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-    
-  
-    
-    
-    const data = await request.file();
-    
-    if (!data) {
-      return reply.code(400).send({ 
-        success: false,
-        error: 'No file uploaded' 
-      });
-    }
-    
-    
-    if (!ALLOWED_TYPES.includes(data.mimetype)) {
-      return reply.code(400).send({ 
-        success: false,
-        error: 'Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed' 
-      });
-    }
-    
-   
-    const buffer = await data.toBuffer();
-    
-    if (buffer.length > MAX_FILE_SIZE) {
-      return reply.code(413).send({ 
-        success: false,
-        error: `File size exceeds maximum limit of ${MAX_FILE_SIZE / (1024 * 1024)}MB`,
-        maxSize: MAX_FILE_SIZE
-      });
-    }
-    
-    // Prepare upload directory
-    const uploadDir = path.join(process.cwd(), 'public', 'avatars');
-    await fs.promises.mkdir(uploadDir, { recursive: true });
-    
-    
+
+  // POST /profile/avatar - Upload avatar
+  async uploadAvatar(request, reply) {
     try {
-      const oldAvatars = await fs.promises.readdir(uploadDir);
-      const userAvatars = oldAvatars.filter(file => file.startsWith(`${userId}-`));
-      
-      for (const oldAvatar of userAvatars) {
-        await fs.promises.unlink(path.join(uploadDir, oldAvatar));
-        console.log('Deleted old avatar:', oldAvatar);
+      // const userId = request.headers['x-user-id'];
+      const userId = request.headers['x-user-id'];
+
+      const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+      const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+
+
+
+      const data = await request.file();
+
+      if (!data) {
+        return reply.code(400).send({
+          success: false,
+          error: 'No file uploaded'
+        });
       }
-    } catch (cleanupError) {
-      console.warn('Could not clean up old avatars:', cleanupError.message);
-    }
-    
-    // Generate filename and save
-    const extension = data.mimetype.split('/')[1];
-    const filename = `${userId}-${Date.now()}.${extension}`;
-    const filePath = path.join(uploadDir, filename);
-    
-    await fs.promises.writeFile(filePath, buffer);
-    console.log('Avatar saved successfully:', filePath);
-    
-   
-    
-    return reply.code(200).send({
-      success: true,
-      message: 'Avatar uploaded successfully',
-      avatarUrl: filename,
-      fileSize: buffer.length
-    });
-    
-  } catch (error) {
-    console.error('Avatar upload error:', error);
-    
-    
-    if (error.code === 'ENOSPC') {
-      return reply.code(507).send({ 
+
+
+      if (!ALLOWED_TYPES.includes(data.mimetype)) {
+        return reply.code(400).send({
+          success: false,
+          error: 'Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed'
+        });
+      }
+
+
+      const buffer = await data.toBuffer();
+
+      if (buffer.length > MAX_FILE_SIZE) {
+        return reply.code(413).send({
+          success: false,
+          error: `File size exceeds maximum limit of ${MAX_FILE_SIZE / (1024 * 1024)}MB`,
+          maxSize: MAX_FILE_SIZE
+        });
+      }
+
+      // Prepare upload directory
+      const uploadDir = path.join(process.cwd(), 'public', 'avatars');
+      await fs.promises.mkdir(uploadDir, { recursive: true });
+
+
+      try {
+        const oldAvatars = await fs.promises.readdir(uploadDir);
+        const userAvatars = oldAvatars.filter(file => file.startsWith(`${userId}-`));
+
+        for (const oldAvatar of userAvatars) {
+          await fs.promises.unlink(path.join(uploadDir, oldAvatar));
+          console.log('Deleted old avatar:', oldAvatar);
+        }
+      } catch (cleanupError) {
+        console.warn('Could not clean up old avatars:', cleanupError.message);
+      }
+
+      // Generate filename and save
+      const extension = data.mimetype.split('/')[1];
+      const filename = `${userId}-${Date.now()}.${extension}`;
+      const filePath = path.join(uploadDir, filename);
+
+      await fs.promises.writeFile(filePath, buffer);
+      console.log('Avatar saved successfully:', filePath);
+
+      // Verify file was written
+      // const stats = await fs.promises.stat(filePath);
+      // console.log('File size on disk:', stats.size, 'bytes');
+
+      return reply.code(200).send({
+        success: true,
+        message: 'Avatar uploaded successfully',
+        avatarUrl: filename,
+        fileSize: buffer.length
+      });
+
+    } catch (error) {
+      console.error('Avatar upload error:', error);
+
+
+      if (error.code === 'ENOSPC') {
+        return reply.code(507).send({
+          success: false,
+          error: 'Server storage full'
+        });
+      }
+
+      return reply.code(500).send({
         success: false,
-        error: 'Server storage full' 
+        error: 'Failed to upload avatar',
+        // details: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
     }
-    
-    return reply.code(500).send({ 
-      success: false,
-      error: 'Failed to upload avatar',
-      // details: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
   }
-}  
- 
-  
-  
+  // GET /users/search?q=John - Search users 
+  async searchUsers(request, reply) {
+    try {
+      const { q } = request.query;
+
+      if (!q || q.length < 2) {
+        return reply.code(400).send({
+          error: 'Search query must be at least 2 characters'
+        });
+      }
+
+      const users = await this.userModel.searchByDisplayName(q);
+
+      return { success: true, users };
+    } catch (error) {
+      return reply.code(500).send({ error: error.message });
+    }
+  }
+
+
+
+  // POST /profile/avatar - Upload avatar
+  async uploadAvatar(request, reply) {
+    try {
+      // const userId = request.headers['x-user-id'];
+      const userId = request.headers['x-user-id'];
+
+      const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+      const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+
+
+
+      const data = await request.file();
+
+      if (!data) {
+        return reply.code(400).send({
+          success: false,
+          error: 'No file uploaded'
+        });
+      }
+
+
+      if (!ALLOWED_TYPES.includes(data.mimetype)) {
+        return reply.code(400).send({
+          success: false,
+          error: 'Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed'
+        });
+      }
+
+
+      const buffer = await data.toBuffer();
+
+      if (buffer.length > MAX_FILE_SIZE) {
+        return reply.code(413).send({
+          success: false,
+          error: `File size exceeds maximum limit of ${MAX_FILE_SIZE / (1024 * 1024)}MB`,
+          maxSize: MAX_FILE_SIZE
+        });
+      }
+
+      // Prepare upload directory
+      const uploadDir = path.join(process.cwd(), 'public', 'avatars');
+      await fs.promises.mkdir(uploadDir, { recursive: true });
+
+
+      try {
+        const oldAvatars = await fs.promises.readdir(uploadDir);
+        const userAvatars = oldAvatars.filter(file => file.startsWith(`${userId}-`));
+
+        for (const oldAvatar of userAvatars) {
+          await fs.promises.unlink(path.join(uploadDir, oldAvatar));
+          console.log('Deleted old avatar:', oldAvatar);
+        }
+      } catch (cleanupError) {
+        console.warn('Could not clean up old avatars:', cleanupError.message);
+      }
+
+      // Generate filename and save
+      const extension = data.mimetype.split('/')[1];
+      const filename = `${userId}-${Date.now()}.${extension}`;
+      const filePath = path.join(uploadDir, filename);
+
+      await fs.promises.writeFile(filePath, buffer);
+      console.log('Avatar saved successfully:', filePath);
+
+      // Verify file was written
+      // const stats = await fs.promises.stat(filePath);
+      // console.log('File size on disk:', stats.size, 'bytes');
+
+      return reply.code(200).send({
+        success: true,
+        message: 'Avatar uploaded successfully',
+        avatarUrl: filename,
+        fileSize: buffer.length
+      });
+
+    } catch (error) {
+      console.error('Avatar upload error:', error);
+
+
+      if (error.code === 'ENOSPC') {
+        return reply.code(507).send({
+          success: false,
+          error: 'Server storage full'
+        });
+      }
+
+      return reply.code(500).send({
+        success: false,
+        error: 'Failed to upload avatar',
+        // details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
+    }
+  }
+  // GET /users/search?q=John - Search users 
+  async searchUsers(request, reply) {
+    try {
+      const { q } = request.query;
+
+      if (!q || q.length < 2) {
+        return reply.code(400).send({
+          error: 'Search query must be at least 2 characters'
+        });
+      }
+
+      const users = await this.userModel.searchByDisplayName(q);
+
+      return { success: true, users };
+    } catch (error) {
+      return reply.code(500).send({ error: error.message });
+    }
+  }
+
+
   async changePassword(request, reply) {
     try {
       const userId = request.headers['x-user-id'];
@@ -332,6 +478,8 @@ class ProfileController {
       return reply.code(500).send({ error: error.message });
     }
   }
+
+
   async getTwoFactorStatus(request, reply) {
     try {
       const { username } = request.query;
@@ -415,6 +563,7 @@ class ProfileController {
       return reply.code(500).send({ error: error.message });
     }
   }
+  // i add this for setting secret key for 2FA
   async setsecretkeytwofactor(request, reply) {
     try {
       const { username, two_factor_secret } = request.body;
@@ -497,6 +646,7 @@ class ProfileController {
       return reply.code(500).send({ error: error.message });
     }
   }
+
   async getUserStats(request, reply) {
     try {
       const { id } = request.params;
