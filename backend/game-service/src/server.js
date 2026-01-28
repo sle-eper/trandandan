@@ -160,6 +160,21 @@ const start = async () => {
 
                     let game = games.get(gameId);
 
+                    // Reset if game was finished
+                    if (game && game.status === 'finished') {
+                        console.log(`[SOCKET] Resetting finished game ${gameId} for new session`);
+                        game.status = 'waiting';
+                        game.score = { left: 0, right: 0 };
+                        game.players = [];
+                        game.ball = { x: 400, y: 200, dx: 0, dy: 0 };
+                        game.paddles = { left: 150, right: 150 };
+                        if (game.rematchTimeout) {
+                            clearTimeout(game.rematchTimeout);
+                            delete game.rematchTimeout;
+                        }
+                        if (game.rematchRequests) delete game.rematchRequests;
+                    }
+
                     // Lazy Creation
                     if (!game) {
                         console.log(`[SOCKET] Game ${gameId} not found, creating it...`);
