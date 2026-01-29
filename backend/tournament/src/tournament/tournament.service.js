@@ -459,3 +459,19 @@ export async function updateStatus_post(request, reply) {
         return reply.code(500).send({ message: "Internal Server Error" });
     }
 }
+
+export async function getStatus_get(request, reply) {
+    const { tournamentName } = request.query;
+    const db = await getDatabase();
+    const tournament = await db.get('SELECT * FROM tournament WHERE name = ?', [tournamentName]);
+    if (!tournament) {
+        console.log("Tournament Not Found");
+        return reply.code(400).send({ message: "Tournament Not Found" });
+    }
+    try {
+        return reply.code(200).send({ status: tournament.status });
+    } catch (error) {
+        console.log("Error fetching tournament status:", error);
+        return reply.code(500).send({ message: "Internal Server Error" });
+    }
+}
