@@ -11,7 +11,7 @@ await fastify.register(cors, {
 });
 await fastify.register(formbody);
 await initializeDatabase();
-await fastify.register(TourRoutes, { prefix: '/tournament/' });
+await fastify.register(TourRoutes, { prefix: '/Tournament/' });
 const start = async () => {
   try {
     const PORT = 5500;

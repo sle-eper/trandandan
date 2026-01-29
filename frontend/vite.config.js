@@ -6,9 +6,9 @@ export default defineConfig({
     port: 8443,
     strictPort: true,
     allowedHosts: ["frontend", "localhost","nginx"],
-    origin: "https://localhost:8443",  // allow docker hostname
+    origin: "https://10.14.3.4:8443",  // allow docker hostname
      cors: {
-      origin: ["https://localhost:8443", "http://frontend:8443"],
+      origin: ["https://10.14.3.4:8443", "http://frontend:8443"],
       credentials: true,
     },
   },

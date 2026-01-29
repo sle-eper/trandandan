@@ -66,6 +66,7 @@ export async function signup_post(request, reply) {
         password: hashed,
       }
     );
+    console.log("--------------------------");
     // reply
     if (!process.env.JWT_SECRET) {
       throw new Error("JWT_SECRET is missing");
@@ -114,7 +115,11 @@ export async function login_post(request, reply) {
   if (Number(row.data.two_factor_enabled) === 1) {
     return reply.code(206).send({ username: row.data.username, success: true, message: "2FA required" });
   }
-
+  if (!row.data.password_hash) {
+    return reply
+      .code(400)
+      .send({ success: false, message: "Password not set for this user" });
+  }
   const match = await bcrypt.compare(password, row.data.password_hash);
   if (!match) {
     return reply

@@ -128,62 +128,77 @@ function tournamentCard(
    TOURNAMENT BRACKET GENERATION
 ======================= */
 
-function generateBracketHTML( participants?: any, matches?: any, aftermatchmaking?: any, finalists?: any) {
-    return generate4PlayerBracket(participants, matches, aftermatchmaking, finalists);
+function generateBracketHTML(participants?: any, matches?: any, finals?: any) {
+  return generate4PlayerBracket(participants, matches, finals);
 }
 
-function generate4PlayerBracket(participants: any[] = [], matches?: any, aftermatchmaking?: any, finalists?: any) {
-  // Helper to safely get participant nickname
-  const p = (i: number) => participants[i]?.nickname ?? "TBD";
-  console.log("[DEBUG] after matchmaking data", aftermatchmaking)
-  console.log("[DEBUG] matches data", finalists)
-  // Determine tournament stage based on matches data
+function generate4PlayerBracket(participants: any[] = [], matches?: any, finals?: any) {
+  const is4Players = participants.length === 4;
+
   const semiFinal1 = matches?.semiFinals?.[0] || {};
   const semiFinal2 = matches?.semiFinals?.[1] || {};
-  const final = matches?.final || {};
-  
-  // Finalists only (no semi-final winner fallback)
-const finalPlayer1 =  finalists?.player1 ??finalists?.[0] ??"TBD";
+  const final = matches?.finals || {};
+  console.log("mathches---------->>>>>>" , matches);
+  // Helper fallback
+  const p = (i: number) => participants[i]?.nickname ?? "TBD";
 
-const finalPlayer2 =finalists?.player2 ??finalists?.[1] ??"TBD";
+  // --- Semi final players ---
+  const sf1p1 = is4Players
+    ? semiFinal1.player1?.nickname ?? p(0)
+    : p(0);
 
+  const sf1p2 = is4Players
+    ? semiFinal1.player2?.nickname ?? p(1)
+    : p(1);
+
+  const sf2p1 = is4Players
+    ? semiFinal2.player1?.nickname ?? p(2)
+    : p(2);
+
+  const sf2p2 = is4Players
+    ? semiFinal2.player2?.nickname ?? p(3)
+    : p(3);
+
+  // --- Finalists ---
+  const finalPlayer1 = finals?.finalists?.[0]?.nickname ?? "TBD";
+  const finalPlayer2 = finals?.finalists?.[1]?.nickname ?? "TBD";
+
+  // --- Scores ---
   const sf1Score1 = semiFinal1.score1 ?? "—";
   const sf1Score2 = semiFinal1.score2 ?? "—";
   const sf2Score1 = semiFinal2.score1 ?? "—";
   const sf2Score2 = semiFinal2.score2 ?? "—";
-  
+
   const finalScore1 = final.score1 ?? "—";
   const finalScore2 = final.score2 ?? "—";
 
   return `
     <div class="w-full h-full flex items-center justify-center gap-12">
-      <!-- Semi-Finals -->
       <div class="relative w-44" style="height: 280px;">
         <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
           Semi-Final
         </h3>
-        <!-- SF 1 -->
+
         <div class="absolute left-0" style="top: 48px;">
-          ${matchCard(p(0), String(sf1Score1), p(1), String(sf1Score2))}
+          ${matchCard(sf1p1, String(sf1Score1), sf1p2, String(sf1Score2))}
         </div>
-        <!-- SF 2 -->
+
         <div class="absolute left-0" style="top: 168px;">
-          ${matchCard(p(2), String(sf2Score1), p(3), String(sf2Score2))}
+          ${matchCard(sf2p1, String(sf2Score1), sf2p2, String(sf2Score2))}
         </div>
       </div>
-      
-      <!-- Connector Lines SF → F -->
+
       <div class="flex flex-col justify-center">
         <svg width="60" height="280" class="text-white/20">
           ${connectorPair(60, 110, 60, 3)}
         </svg>
       </div>
-      
-      <!-- Final -->
+
       <div class="relative w-44" style="height: 280px;">
         <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
           Final
         </h3>
+
         <div class="absolute left-0" style="top: 108px;">
           ${matchCard(finalPlayer1, String(finalScore1), finalPlayer2, String(finalScore2))}
         </div>
@@ -192,7 +207,8 @@ const finalPlayer2 =finalists?.player2 ??finalists?.[1] ??"TBD";
   `;
 }
 
-function tournamentBracketTemplate(participants: any, matches?: any, aftermatchmaking?:any, finalists?: any) {
+
+function tournamentBracketTemplate(participants: any, matches?: any, finals?: any) {
   return `
     <div class="w-full h-full flex flex-col">
       <!-- Header -->
@@ -221,7 +237,7 @@ function tournamentBracketTemplate(participants: any, matches?: any, aftermatchm
       
       <!-- Bracket Container -->
       <div class="flex-1 flex items-center justify-center p-4">
-        ${generateBracketHTML(participants, matches, aftermatchmaking, finalists)}
+        ${generateBracketHTML(participants, matches, finals)}
       </div>
       
       <!-- Invite Friends Modal -->
@@ -360,7 +376,7 @@ export function renderCreateTournament() {
     const playersSelect = document.getElementById("max-players-select") as HTMLSelectElement;
     currentTournament.name = nameInput.value || "New Tournament";
     currentTournament.maxPlayers = parseInt(playersSelect.value);
-    const result = await fetch("/tournament/create", {
+    const result = await fetch("/Tournament/create", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -376,7 +392,6 @@ export function renderCreateTournament() {
       // 🔥 SHOW BRACKET IMMEDIATELY
       renderTournamentBracket(
         currentTournament.name,
-        null, null
       );
       navigate(
         `/tournement/bracket/${currentTournament.name}?maxPlayers=${currentTournament.maxPlayers}`
@@ -413,7 +428,7 @@ function attachEntryHandlers() {
 export async function renderTournamentList() {
   const main = document.getElementById("dashboard-content");
   if (!main) return;
-  const result = await fetch("/tournament/list", {
+  const result = await fetch("/Tournament/list", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -435,7 +450,7 @@ function attachListHandlers() {
     btn.addEventListener("click", async (e) => {
       const target = e.currentTarget as HTMLElement;
       currentTournament.name = target.dataset.tournamentName || "Tournament";
-      const partic = await fetch(`/tournament/My/status?tournamentName=${encodeURIComponent(currentTournament.name)}`, {
+      const partic = await fetch(`/Tournament/My/status?tournamentName=${encodeURIComponent(currentTournament.name)}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -443,7 +458,7 @@ function attachListHandlers() {
       });
       console.log("Participant status:", partic);
       if (partic.ok) {
-        const tournamentstatus = await fetch(`/tournament/check?tournamentName=${encodeURIComponent(currentTournament.name)}`, {
+        const tournamentstatus = await fetch(`/Tournament/check?tournamentName=${encodeURIComponent(currentTournament.name)}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -452,7 +467,7 @@ function attachListHandlers() {
         const body = await tournamentstatus.json();
         console.log("Tournament status:", body);
         currentTournament.maxPlayers = body.maxPlayers || 4;
-        renderTournamentBracket(currentTournament.name, null, null);
+        renderTournamentBracket(currentTournament.name);
         navigate(`/tournament/bracket/${currentTournament.name}?maxPlayers=${currentTournament.maxPlayers}`);
       }
     });
@@ -465,7 +480,7 @@ function attachListHandlers() {
       const tournamentName = target.dataset.tournamentName;
       const maxPlayers = target.dataset.maxPlayers ? parseInt(target.dataset.maxPlayers) : 4;
       if (!tournamentId || !tournamentName) return;
-      const result = await fetch("/tournament/join", {
+      const result = await fetch("/Tournament/join", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -507,14 +522,14 @@ function attachListHandlers() {
   });
 }
 
-export async function renderTournamentBracket(tournamentName?: string, matches?: any, finalists?: any) {
+export async function renderTournamentBracket(tournamentName?: string) {
   const main = document.getElementById("dashboard-content");
   if (!main) return;
   const Players = 4;
-  
+
   // Fetch participants
   const Participant = await fetch(
-    `/tournament/participant/list?tournamentname=${encodeURIComponent(tournamentName || "")}`,
+    `/Tournament/participant/list?tournamentname=${encodeURIComponent(tournamentName || "")}`,
     {
       method: "GET",
       headers: {
@@ -522,10 +537,10 @@ export async function renderTournamentBracket(tournamentName?: string, matches?:
       },
     });
   const participantBody = await Participant.json();
-  
+
   // Fetch match results
   const matchesResponse = await fetch(
-    `/tournament/matches?tournamentname=${encodeURIComponent(tournamentName || "")}`,
+    `/Tournament/semifinallist?tournamentName=${encodeURIComponent(tournamentName || "")}`,
     {
       method: "GET",
       headers: {
@@ -533,33 +548,42 @@ export async function renderTournamentBracket(tournamentName?: string, matches?:
       },
     });
   const matchesBody = await matchesResponse.json();
-  
-  main.innerHTML = tournamentBracketTemplate(participantBody, matchesBody, matches, finalists);
-  
+
+  const finals = fetch(`/Tournament/finalMatch?tournamentName=${encodeURIComponent(tournamentName || "")}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  const finalsBody = await finals.then(res => res.json());
+  console.log("matches data", matchesBody);
+  main.innerHTML = tournamentBracketTemplate(participantBody, matchesBody, finalsBody);
+
   // Setup socket listeners for real-time updates
   const socket = Socket.getSocketInstance();
-  
+
   // Listen for match completions to update bracket
   socket?.on("match:completed", (data: any) => {
     console.log("Match completed:", data);
     // Refresh the bracket
-    renderTournamentBracket(tournamentName, null, null);
+    renderTournamentBracket(tournamentName);
   });
-  
+
   socket?.on("tournament:roundCompleted", (data: any) => {
     console.log("Round completed:", data);
     showToast(`${data.round} completed!`);
     // Refresh the bracket
-    renderTournamentBracket(tournamentName, null, null);
+    renderTournamentBracket(tournamentName);
   });
-  
+
   socket?.on("tournament:finished", (data: any) => {
     console.log("Tournament finished:", data);
     showToast(`🏆 Tournament Winner: ${data.winner}!`);
     // Refresh the bracket
-    renderTournamentBracket(tournamentName, null, null);
+    renderTournamentBracket(tournamentName);
   });
-  
+
   const addBtn = document.getElementById("add-player-btn");
   addBtn?.addEventListener("click", async () => {
     console.log("Add Player clicked");
@@ -575,13 +599,13 @@ export async function renderTournamentBracket(tournamentName?: string, matches?:
     console.log("Friends data:", friends);
     renderFriendsList(friends.users);
   });
-  
+
   document.getElementById("close-invite-modal")?.addEventListener("click", () => {
     const modal = document.getElementById("invite-modal");
     modal?.classList.add("hidden");
     modal?.classList.remove("flex");
   });
-  
+
   document.addEventListener("click", async (e) => {
     const target = e.target as HTMLElement;
     if (!target.classList.contains("invite-btn")) return;
@@ -593,7 +617,7 @@ export async function renderTournamentBracket(tournamentName?: string, matches?:
     const socket = Socket.getSocketInstance();
     socket?.once("InvitationSended", () => {
       showToast("Invitation sent!");
-      navigate(`/tournament/bracket/tournamentName=${tournamentName}?maxPlayers=${maxPlayers}`);
+      navigate(`/tournament/bracket/tournamentName=${tournamentName}`);
     });
     const response = await fetch("/auth/verify", {
       method: "GET",
@@ -609,7 +633,7 @@ export async function renderTournamentBracket(tournamentName?: string, matches?:
     });
     console.log(`Invited friend ID: ${friendId}`);
   });
-  
+
   document.getElementById("back-to-tournaments")?.addEventListener("click", () => {
     renderTournamentList();
     navigate("/tournement/list");
