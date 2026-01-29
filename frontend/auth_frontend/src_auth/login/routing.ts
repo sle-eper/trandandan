@@ -2,7 +2,7 @@
 import { showMainUI } from "../../../chat-frontend/src/ts/script.ts"
 // import { ProfileApp } from "../../profile_frontend/src/main.ts";
 // import { ProfileApp } from "../../../profile_frontend/src/main.ts";
-import{ ProfileForm } from "../../../profile_frontend/src/components/ProfileForm.ts"
+import { ProfileForm } from "../../../profile_frontend/src/components/ProfileForm.ts"
 // import { spyUi } from "../../src_spy/app.ts"
 import { show2FAPage } from "./2FA.ts"
 import { showHome } from "./home.ts";
@@ -12,7 +12,7 @@ import { PlayerProfileManager } from "../../../profile_frontend/src/components/F
 // import sss from "../images/ping.png"
 // import { currentUserId }? from "./login.ts"
 export function updateContent(html: string) {
-    const content = document.getElementById("dashboard-content");
+  const content = document.getElementById("dashboard-content");
   if (!content) return;
 
   // Fade out
@@ -35,7 +35,7 @@ export function loadHome() {
 }
 
 export function loadChat() {
-    showMainUI();
+  showMainUI();
 }
 
 export function loadProfile() {
@@ -45,23 +45,21 @@ export function loadProfile() {
   // `);
   // const profileForm = new ProfileForm();
   // profileForm.mount('dashboard-content');
-   const profilePage = new PlayerProfileManager();
-   profilePage.showPlayerProfile();
+  const profilePage = new PlayerProfileManager();
+  profilePage.showPlayerProfile();
 }
 export function loadGame(type?: string) {
   games(type);
 }
 
-export function loadtournament()
-{
+export function loadtournament() {
   //   updateContent(`
   //   <h1 class="text-3xl font-bold">tournament</h1>
   //   <p class="text-gray-400 mt-2">Your account settings.</p>
   // `);
   Tournament();
 }
-export function load2FA()
-{
+export function load2FA() {
   // updateContent(`
   //   <h1 class="text-3xl font-bold">2FA</h1>
   //   <p class="text-gray-400 mt-2">Your account settings.</p>

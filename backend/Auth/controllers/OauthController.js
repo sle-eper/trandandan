@@ -71,9 +71,9 @@ export async function googleAuthCallback_get(request, reply) {
                 displayName: name,
                 id_token: id_token,
             });
-            const token = jwt.sign({ id: response.data.id, email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+            const token = jwt.sign({ id: response.data.profile.id, email }, process.env.JWT_SECRET, { expiresIn: '1h' });
             return reply
-                .setCookie('token', token, { httpOnly: true })
+                .setCookie('token', token, { path: '/', httpOnly: true })
                 .redirect(`/auth/callback?token=${token}`);
 
         }
@@ -149,7 +149,8 @@ export async function githubAuthCallback_get(request, reply) {
                 displayName: name,
                 id_token: access_token,
             });
-            const token = jwt.sign({ id: response.data.id, email }, process.env.JWT_SECRET, { expiresIn: "1h" });
+            console.log("Created user:", response);
+            const token = jwt.sign({ id: response.data.profile.id, email }, process.env.JWT_SECRET, { expiresIn: "1h" });
             return reply
                 .setCookie('token', token, { path: '/', httpOnly: true })
                 .redirect(`/auth/callback?token=${token}`);

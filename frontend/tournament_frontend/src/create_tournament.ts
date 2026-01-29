@@ -134,14 +134,15 @@ function tournamentCard(
    TOURNAMENT BRACKET GENERATION
 ======================= */
 
-function generateBracketHTML( participants?: any, matches?: any) {
-    return generate4PlayerBracket(participants, matches);
+function generateBracketHTML( participants?: any, matches?: any, aftermatchmaking?: any, finalists?: any) {
+    return generate4PlayerBracket(participants, matches, aftermatchmaking, finalists);
 }
 
-function generate4PlayerBracket(participants: any[] = [], matches?: any) {
+function generate4PlayerBracket(participants: any[] = [], matches?: any, aftermatchmaking?: any, finalists?: any) {
   // Helper to safely get participant nickname
   const p = (i: number) => participants[i]?.nickname ?? "TBD";
-  
+  console.log("[DEBUG] after matchmaking data", aftermatchmaking)
+  console.log("[DEBUG] matches data", finalists)
   // Determine tournament stage based on matches data
   const semiFinal1 = matches?.semiFinals?.[0] || {};
   const semiFinal2 = matches?.semiFinals?.[1] || {};
@@ -202,7 +203,7 @@ const friends = [
   { id: 3, username: "hamza" },
 ];
 
-function tournamentBracketTemplate(maxPlayers: number, participants: any, matches?: any) {
+function tournamentBracketTemplate(participants: any, matches?: any, aftermatchmaking?:any, finalists?: any) {
   return `
     <div class="w-full h-full flex flex-col">
       <!-- Header -->
@@ -231,7 +232,7 @@ function tournamentBracketTemplate(maxPlayers: number, participants: any, matche
       
       <!-- Bracket Container -->
       <div class="flex-1 flex items-center justify-center p-4">
-        ${generateBracketHTML(participants, matches)}
+        ${generateBracketHTML(participants, matches, aftermatchmaking, finalists)}
       </div>
       
       <!-- Invite Friends Modal -->
@@ -386,7 +387,7 @@ export function renderCreateTournament() {
       // 🔥 SHOW BRACKET IMMEDIATELY
       renderTournamentBracket(
         currentTournament.name,
-        currentTournament.maxPlayers
+        null, null
       );
       navigate(
         `/tournement/bracket/${currentTournament.name}?maxPlayers=${currentTournament.maxPlayers}`
@@ -462,7 +463,7 @@ function attachListHandlers() {
         const body = await tournamentstatus.json();
         console.log("Tournament status:", body);
         currentTournament.maxPlayers = body.maxPlayers || 4;
-        renderTournamentBracket(currentTournament.name, currentTournament.maxPlayers);
+        renderTournamentBracket(currentTournament.name, null, null);
         navigate(`/tournament/bracket/${currentTournament.name}?maxPlayers=${currentTournament.maxPlayers}`);
       }
     });
@@ -501,8 +502,8 @@ function attachListHandlers() {
       });
       socket?.once("tournament:joined", () => {
         console.log("Joined tournament:", tournamentName);
-        showToast("Joined tournament successfully!");
-        //start the tournament
+
+        //start the tournamnet
         if (body.message === "Tournament Full") {
           console.log("Starting tournament as it is full", body.tournament.maxPlayers);
           socket?.emit("matchmaking:start", {
@@ -510,16 +511,17 @@ function attachListHandlers() {
             maxPlayers: body.tournament.maxPlayers,
           });
         }
+        else
+          showToast("Joined tournament successfully!");
       });
     });
   });
 }
 
-export async function renderTournamentBracket(tournamentName?: string, maxPlayers?: number) {
+export async function renderTournamentBracket(tournamentName?: string, matches?: any, finalists?: any) {
   const main = document.getElementById("dashboard-content");
   if (!main) return;
-  const Players = Number(maxPlayers) || 4;
-  console.log("{Debug}", tournamentName, "----", maxPlayers);
+  const Players = 4;
   
   // Fetch participants
   const Participant = await fetch(
@@ -543,7 +545,7 @@ export async function renderTournamentBracket(tournamentName?: string, maxPlayer
     });
   const matchesBody = await matchesResponse.json();
   
-  main.innerHTML = tournamentBracketTemplate(Players, participantBody, matchesBody);
+  main.innerHTML = tournamentBracketTemplate(participantBody, matchesBody, matches, finalists);
   
   // Setup socket listeners for real-time updates
   const socket = Socket.getSocketInstance();
@@ -552,21 +554,21 @@ export async function renderTournamentBracket(tournamentName?: string, maxPlayer
   socket?.on("match:completed", (data: any) => {
     console.log("Match completed:", data);
     // Refresh the bracket
-    renderTournamentBracket(tournamentName, maxPlayers);
+    renderTournamentBracket(tournamentName, null, null);
   });
   
   socket?.on("tournament:roundCompleted", (data: any) => {
     console.log("Round completed:", data);
     showToast(`${data.round} completed!`);
     // Refresh the bracket
-    renderTournamentBracket(tournamentName, maxPlayers);
+    renderTournamentBracket(tournamentName, null, null);
   });
   
   socket?.on("tournament:finished", (data: any) => {
     console.log("Tournament finished:", data);
     showToast(`🏆 Tournament Winner: ${data.winner}!`);
     // Refresh the bracket
-    renderTournamentBracket(tournamentName, maxPlayers);
+    renderTournamentBracket(tournamentName, null, null);
   });
   
   const addBtn = document.getElementById("add-player-btn");

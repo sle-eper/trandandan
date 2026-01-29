@@ -28,6 +28,52 @@ let countdown: CountDown;
 let animationId: number | null = null;
 let winnerName: string | null = null;
 let gameMode: string | null = null;
+let goalTimeout: number | null = null;
+
+function resetLocalState() {
+    console.debug('Resetting local game state');
+    if (goalTimeout) {
+        clearTimeout(goalTimeout);
+        goalTimeout = null;
+    }
+    gameStarted = false;
+    gameOver = false;
+    leftScore = 0;
+    rightScore = 0;
+    winnerName = null;
+
+    if (leftPaddle) leftPaddle.setY((c.height - 100) / 2);
+    if (rightPaddle) rightPaddle.setY((c.height - 100) / 2);
+    if (pongBall) pongBall.resetPositionAndSpeed();
+
+    // Update Scores in HTML
+    const scoreLeftEl = document.getElementById('score-left');
+    const scoreRightEl = document.getElementById('score-right');
+    if (scoreLeftEl) scoreLeftEl.textContent = '0';
+    if (scoreRightEl) scoreRightEl.textContent = '0';
+
+    // Hide overlays
+    const infoBox = document.getElementById('game-info');
+    if (infoBox) infoBox.classList.add('hidden');
+    const endControls = document.getElementById('end-game-controls');
+    if (endControls) endControls.classList.add('hidden');
+}
+
+export function stopGame() {
+    console.debug('Stopping game and cleaning up...');
+    if (animationId !== null) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+    }
+    resetLocalState();
+    if (isRemote) {
+        gameSocket.disconnect();
+        isRemote = false;
+    }
+    (window as any).pongGameCleanup = null;
+}
+
+// Color State
 
 // Color State
 let leftPaddleColor = '#ff0000';
@@ -186,19 +232,17 @@ export function initializeGame() {
 
     c = canvas;
     ctxt = ctx;
-    gameStarted = false;
-    gameOver = false;
-    leftScore = 0;
-    rightScore = 0;
+    // Clear loop if already exists
+    if (animationId !== null) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+    }
+
+    resetLocalState();
     currentGameId = null;
     playerSide = 'left';
     isRemote = false;
     aiMode = false;
-    winnerName = null;
-
-    // Hide End Game Controls
-    const endControls = document.getElementById('end-game-controls');
-    if (endControls) endControls.classList.add('hidden');
 
     updateLocalAvatars();
 
@@ -215,6 +259,8 @@ export function initializeGame() {
     checkUrlForGame();
 
     updateLocalAvatars();
+
+    (window as any).pongGameCleanup = stopGame;
 
     return true;
 }
@@ -307,12 +353,23 @@ function setupSocketListeners() {
     });
 
     s.on('waiting_for_opponent', () => {
+        gameOver = false;
+        gameStarted = false;
+        leftScore = 0;
+        rightScore = 0;
+        const scoreLeftEl = document.getElementById('score-left');
+        const scoreRightEl = document.getElementById('score-right');
+        if (scoreLeftEl) scoreLeftEl.textContent = '0';
+        if (scoreRightEl) scoreRightEl.textContent = '0';
+
+        const endControls = document.getElementById('end-game-controls');
+        if (endControls) endControls.classList.add('hidden');
+
         const infoBox = document.getElementById('game-info');
         if (infoBox) {
             infoBox.classList.remove('hidden');
             infoBox.innerHTML = `Game ID: <span class="text-yellow-400 font-bold select-all">${currentGameId}</span><br>Waiting for opponent...`;
         }
-
     });
 
     s.on('opponent_move', (data: any) => {
@@ -360,17 +417,22 @@ function setupSocketListeners() {
         // Show Return to Lobby button
         const btnLobby = document.getElementById('btn-return-lobby');
         if (btnLobby) btnLobby.classList.remove('hidden');
-
         if (gameMode === 'tournament') {
             const tSocket = getSocketInstance();
             if (tSocket) {
-                console.log('[DEBUG] Tournament mode detected. Emitting match:result', data);
-                tSocket.emit('match:result', {
+                const tournamentName = URLSearchParams.prototype.get.call(new URL(window.location.href).searchParams, 'TournamentName');
+                const final = URLSearchParams.prototype.get.call(new URL(window.location.href).searchParams, 'final');
+                console.log('[DEBUG] Preparing to emit match:result for tournament mode.', tournamentName, final);
+                const result = {
                     gameId: currentGameId,
                     winnerId: data.winner?.id,
                     loserId: data.players?.find((p: any) => p.id !== data.winner?.id)?.id,
-                    score: data.score
-                });
+                    score: data.score, 
+                    tournamentName: tournamentName,
+                    final: final
+                };
+                console.log('[DEBUG] Tournament mode detected. Emitting match:result', result);
+                tSocket.emit('match:result', result);
             }
         }
     });
@@ -419,16 +481,7 @@ const showGameView = () => {
     if (lobby) lobby.classList.add('hidden');
     if (container) container.classList.remove('hidden');
 
-    // Reset game state for a new match
-    gameOver = false;
-    gameStarted = false;
-    leftScore = 0;
-    rightScore = 0;
-    if (pongBall) pongBall.resetPositionAndSpeed();
-
-    // Hide End Game Controls
-    const endControls = document.getElementById('end-game-controls');
-    if (endControls) endControls.classList.add('hidden');
+    resetLocalState();
 
     // Resume animation if it was stopped
     if (!animationId) animate();
@@ -448,9 +501,7 @@ const showLobbyView = () => {
         animationId = null;
     }
 
-    // Reset scores
-    leftScore = 0;
-    rightScore = 0;
+    resetLocalState();
 
     // Disconnect socket if remote
     if (isRemote) {
@@ -494,7 +545,7 @@ function setupMenuButtons() {
         const infoBox = document.getElementById('game-info');
         if (infoBox) {
             infoBox.classList.remove('hidden');
-            infoBox.innerHTML = `<span class="text-red-500 font-bold">Local Multiplayer</span>`;
+            infoBox.innerHTML = `<span class="text-yellow-500 font-bold">Local Multiplayer</span>`;
             setTimeout(() => infoBox.classList.add('hidden'), 3000);
         }
         countdown.start(() => { gameStarted = true; pongBall.start(); });
@@ -527,16 +578,7 @@ function setupMenuButtons() {
             const endControls = document.getElementById('end-game-controls');
             if (endControls) endControls.classList.add('hidden');
 
-            // Reset game state
-            gameOver = false;
-            gameStarted = false;
-            leftScore = 0;
-            rightScore = 0;
-
-            // Reset positions
-            leftPaddle.setY((c.height - 100) / 2);
-            rightPaddle.setY((c.height - 100) / 2);
-            pongBall.resetPositionAndSpeed();
+            resetLocalState();
 
             // Re-identify mode info
             const infoBox = document.getElementById('game-info');
@@ -544,7 +586,7 @@ function setupMenuButtons() {
                 infoBox.classList.remove('hidden');
                 infoBox.innerHTML = aiMode ?
                     `<span class="text-red-500 font-bold">Practice vs AI</span>` :
-                    `<span class="text-red-500 font-bold">Local Multiplayer</span>`;
+                    `<span class="text-yellow-500 font-bold">Local Multiplayer</span>`;
                 setTimeout(() => infoBox.classList.add('hidden'), 3000);
             }
 
@@ -629,7 +671,17 @@ export function animate() {
                 if (scorer === 'left') leftScore++;
                 else rightScore++;
                 if (leftScore >= winningScore || rightScore >= winningScore) { gameOver = true; gameStarted = false; }
-                else { pongBall.resetPositionAndSpeed(); gameStarted = false; setTimeout(() => { if (!gameOver) { pongBall.start(); gameStarted = true; } }, 1000); }
+                else {
+                    pongBall.resetPositionAndSpeed();
+                    gameStarted = false;
+                    goalTimeout = window.setTimeout(() => {
+                        if (!gameOver) {
+                            pongBall.start();
+                            gameStarted = true;
+                        }
+                        goalTimeout = null;
+                    }, 1000);
+                }
             }
         }
     }

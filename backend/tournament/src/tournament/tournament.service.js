@@ -55,17 +55,23 @@ export async function createTournament_post(request, reply) {
 export async function joinTournament_post(request, reply) {
     const userid = request.headers['x-user-id'];
     const username = request.headers['x-user'];
+    console.log("UserID:", userid, "Username:", username);
     const { tournamentName } = request.body;
     const existingUser = await axios.get(
-        "http://user-management:3000/profile/User",
+        `http://user-management:3000/user/${userid}`,
         {
             params: {
-                username,
+                userid
             },
         }
     );
+    if (existingUser.data === null) {
+        return reply.code(404).send({
+            message: "User does not exist!",
+        });
+    }
     const db = await getDatabase();
-    const nickname = existingUser.data.display_name;
+    const nickname = existingUser.data.user.display_name;
     const tournament = await db.get('SELECT * FROM tournament WHERE name  = ?', [tournamentName]);
     if (!tournament) {
         console.log("Tournament Not Found");
@@ -116,10 +122,9 @@ export async function joinTournament_post(request, reply) {
 }
 
 export async function leaveTournament_get(request, reply) {
-    const userid = request.headers['x-user-id'];
-    const { tournamentid } = request.query;
+    const { tournamentName, userId } = request.query;
     const db = await getDatabase();
-    const tournament = await db.get('SELECT * FROM tournament WHERE id  = ?', [tournamentid]);
+    const tournament = await db.get('SELECT * FROM tournament WHERE name  = ?', [tournamentName]);
     if (!tournament) {
         console.log("Tournament Not Found");
         return reply.code(400)
@@ -129,11 +134,12 @@ export async function leaveTournament_get(request, reply) {
         "SELECT * FROM participant WHERE tournamentId = ?",
         [tournament.id]
     );
+    console.log("UserID leaving tournament:", userId, "Tournament Name:", tournamentName);
     for (let i = 0; i < tournament.currentPlayers; i++) {
-        if (String(participants[i].userid) === String(userid)) {
+        if (String(participants[i].userid) === String(userId)) {
             await db.run(
                 "DELETE FROM participant WHERE userid = ?",
-                [userid]
+                [userId]
             );
             await db.run(
                 "UPDATE tournament SET currentPlayers = currentPlayers - 1 WHERE id = ?",
@@ -237,9 +243,11 @@ export async function matchmaking_get(request, reply) {
             "SELECT * FROM participant WHERE tournamentId = ?",
             [tournament.id]
         );
-
+        if (participants.length % 2 !== 0) {
+            return reply.code(400).send({ message: "we have to wait" });
+        }
         if (participants.length < 2) {
-            return reply.code(400).send({ message: "Not enough participants for matchmaking" });
+            return reply.code(206).send(participants);
         }
         const participantStats = [];
         for (let partic of participants) {
@@ -289,3 +297,111 @@ export async function matchmaking_get(request, reply) {
     }
 }
 
+
+
+export async function finalMatch_post(request, reply) {
+    const { tournamentName, winnerId } = request.body;
+
+    console.log("Final Match Result:", tournamentName, winnerId);
+
+    const db = await getDatabase();
+
+    const finalistUser = await axios.get(
+        `http://user-management:3000/user/${winnerId}`,
+        {
+            params: {
+                userid: winnerId
+            },
+        }
+    );
+
+    if (!finalistUser.data) {
+        return reply.code(404).send({ message: "User not found" });
+    }
+
+    const tournament = await db.get(
+        'SELECT * FROM tournament WHERE name = ?',
+        [tournamentName]
+    );
+
+    if (!tournament) {
+        console.log("Tournament Not Found");
+        return reply.code(400).send({ message: "Tournament Not Found" });
+    }
+
+    const final = await db.get(
+        `SELECT * FROM "final" WHERE userid = ? AND tournamentid = ?`,
+        [winnerId, tournament.id]
+    );
+
+    if (final) {
+        console.log("User already in final table");
+        return reply.code(400).send({ message: "User already in final table" });
+    }
+
+    const nickname = finalistUser.data.user.display_name;
+    const userid = finalistUser.data.user.id;
+
+    try {
+        await db.run(
+            `INSERT INTO "final" (nickname, tournamentid, userid)
+             VALUES (?, ?, ?)`,
+            [nickname, tournament.id, userid]
+        );
+
+        return reply.code(200).send({ message: "Match result recorded" });
+    } catch (error) {
+        console.log("Error recording match result:", error);
+        return reply.code(500).send({ message: "Internal Server Error" });
+    }
+}
+
+
+export async function finalMatch_get(request, reply) {
+    const { tournamentName } = request.query;
+    const db = await getDatabase();
+    const tournament = await db.get('SELECT * FROM tournament WHERE name = ?', [tournamentName]);
+    if (!tournament) {
+        console.log("Tournament Not Found");
+        return reply.code(400).send({ message: "Tournament Not Found" });
+    }
+    try {
+        const finalists = await db.all(
+            "SELECT * FROM final WHERE tournamentId = ?",
+            [tournament.id]
+        );
+        return reply.code(200).send({ finalists });
+    } catch (error) {
+        console.log("Error fetching finalists:", error);
+        return reply.code(500).send({ message: "Internal Server Error" });
+    }
+}
+export async function declareWinner_post(request, reply) {
+    const { tournamentName, winnerId } = request.body;
+    console.log("Declaring winner for tournament:", tournamentName, "Winner ID:", winnerId);
+    const db = await getDatabase();
+    const tournament = await db.get('SELECT * FROM tournament WHERE name = ?', [tournamentName]);
+    if (!tournament) {
+        console.log("Tournament Not Found");
+        return reply.code(400).send({ message: "Tournament Not Found" });
+    }
+    const winner = await db.get(
+        `SELECT * FROM final WHERE userid = ? AND tournamentid = ?`,
+        [winnerId, tournament.id]
+    );
+    if (!winner) {
+        console.log("Winner Not Found in final table");
+        return reply.code(400).send({ message: "Winner Not Found in final table" });
+    }
+    try {
+        await db.run(
+            `INSERT INTO Winner (nickname, tournamentid, userid, score)
+             VALUES (?, ?, ?, ?)`,
+            [winner.nickname, tournament.id, winner.userid, winner.score]
+        );
+        return reply.code(200).send({ message: "Winner declared successfully" });
+    } catch (error) {
+        console.log("Error declaring winner:", error);
+        return reply.code(500).send({ message: "Internal Server Error" });
+    }
+}

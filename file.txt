@@ -1,0 +1,20 @@
+
+> fastify-app@1.0.0 start
+> node server.js
+
+{"level":30,"time":1769623307477,"pid":19,"hostname":"c15dfea1b254","msg":"Server listening at http://127.0.0.1:5000"}
+Server listening on port 5000
+{"level":30,"time":1769623307477,"pid":19,"hostname":"c15dfea1b254","msg":"Server listening at http://172.19.0.4:5000"}
+{"level":30,"time":1769623318798,"pid":19,"hostname":"c15dfea1b254","reqId":"req-1","req":{"method":"GET","url":"/auth/verify","host":"auth","remoteAddress":"172.19.0.7","remotePort":41348},"msg":"incoming request"}
+Verifying user...
+{"level":30,"time":1769623318801,"pid":19,"hostname":"c15dfea1b254","reqId":"req-1","res":{"statusCode":401},"responseTime":2.7603169977664948,"msg":"request completed"}
+{"level":30,"time":1769623321366,"pid":19,"hostname":"c15dfea1b254","reqId":"req-2","req":{"method":"GET","url":"/api/auth/google","host":"localhost","remoteAddress":"172.19.0.7","remotePort":51688},"msg":"incoming request"}
+{"level":30,"time":1769623321366,"pid":19,"hostname":"c15dfea1b254","reqId":"req-2","res":{"statusCode":302},"responseTime":0.4138700067996979,"msg":"request completed"}
+{"level":30,"time":1769623364049,"pid":19,"hostname":"c15dfea1b254","reqId":"req-3","req":{"method":"GET","url":"/api/auth/google/callback?code=4%2F0ASc3gC3DQ1HgHN2tXZicWPDVNVkJFfS2QBJR1PA1dGtjx3pHI7FpNzmMNp2XS3uHMQvFrg&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+openid&authuser=0&prompt=consent","host":"localhost","remoteAddress":"172.19.0.7","remotePort":54500},"msg":"incoming request"}
+{"level":30,"time":1769623364344,"pid":19,"hostname":"c15dfea1b254","reqId":"req-3","res":{"statusCode":302},"responseTime":294.47307300567627,"msg":"request completed"}
+{"level":30,"time":1769623364838,"pid":19,"hostname":"c15dfea1b254","reqId":"req-4","req":{"method":"GET","url":"/auth/verify","host":"auth","remoteAddress":"172.19.0.7","remotePort":54502},"msg":"incoming request"}
+Verifying user...
+{"level":30,"time":1769623364839,"pid":19,"hostname":"c15dfea1b254","reqId":"req-4","res":{"statusCode":401},"responseTime":0.3972190022468567,"msg":"request completed"}
+{"level":30,"time":1769623364841,"pid":19,"hostname":"c15dfea1b254","reqId":"req-5","req":{"method":"GET","url":"/auth/verify","host":"auth","remoteAddress":"172.19.0.7","remotePort":54514},"msg":"incoming request"}
+Verifying user...
+{"level":30,"time":1769623364842,"pid":19,"hostname":"c15dfea1b254","reqId":"req-5","res":{"statusCode":401},"responseTime":0.38800397515296936,"msg":"request completed"}

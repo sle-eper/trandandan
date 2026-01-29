@@ -16,11 +16,9 @@ interface Player {
   joined_date?: string;
 }
 
-// Fetch player profile with all data
 export class PlayerFriendship {
 
  static async fetchPlayerProfile(playerId?: number): Promise<Player | null> {
-  console.log('Fetching profile for player ID:', playerId);
   try {
     const response = await axios.get(`/api/users/profile`, {
       headers: {
@@ -55,7 +53,6 @@ export class PlayerFriendship {
   return null;
 };
 
-// Check friendship status
   static async checkFriendshipStatus(friendId: number): Promise<boolean>   {
   try {
    
@@ -78,7 +75,6 @@ export class PlayerFriendship {
     return false;
 };
 
-    // Check if request is pending
     static async checkPendingRequest(friendId: number): Promise<boolean> {
     try {
     const pendingResponse = await axios.get('/api/users/friend/requestStatus', {

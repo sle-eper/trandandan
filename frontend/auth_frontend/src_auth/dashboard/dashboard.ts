@@ -21,7 +21,7 @@ function addNotif(el: any, notification: HTMLElement) {
                           </span>`
 
   let text = "";
-  console.log("Adding notification:", el ,el.type);
+  console.log("Adding notification:", el, el.type);
   switch (el.type) {
     case "challenge":
       text = `🎮 <strong>${el.sender_name}</strong> wants to play`;
@@ -37,7 +37,7 @@ function addNotif(el: any, notification: HTMLElement) {
 
     case "friendRequest":
       console.log("Creating menu item for notifId:", el);
-      createNotificationMenuItem(notification ,el.sender_name, el.send, el.id, el.recv);
+      createNotificationMenuItem(notification, el.sender_name, el.send, el.id, el.recv);
       return;
 
     default:
@@ -105,37 +105,39 @@ export async function showDashboard() {
       </div>
     `;
 
-function getnotif(): Promise<any[]> {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const response = await fetch("/auth/verify", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      });
-      const responseJson = await response.json();
-      const myId = responseJson.id;
+  function getnotif(): Promise<any[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const response = await fetch("/auth/verify", {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        });
+        const responseJson = await response.json();
+        const myId = responseJson.id;
 
-      getSocketInstance()?.once("notif", (data) => {
-        resolve(data);
-      });
+        getSocketInstance()?.once("notif", (data) => {
+          resolve(data);
+        });
 
-      getSocketInstance()?.emit("getNotif", myId);
-    } catch (err) {
-      reject(err);
-    }
-  });
-}
+        getSocketInstance()?.emit("getNotif", myId);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
 
   // Render sidebar + navbar
   const nav = document.getElementById("navbar");
   const sidebar = document.getElementById("sidebar");
-  
+
   if (sidebar) sidebar.innerHTML = renderSidebar();
   if (nav) nav.innerHTML = renderNavBar();
   navBarLogic();
   sidebarLogic();
 
+  navBarLogic();
+  sidebarLogic();
   // Verify user and set up socket listeners
   try {
     const response = await fetch("/auth/verify", {
@@ -146,10 +148,10 @@ function getnotif(): Promise<any[]> {
     const responseJson = await response.json()
     const userID = responseJson.id as string;
     setCurrentUserId(userID);
-    
+
     // Initialize socket notification listener
     socketNotificationListener();
-    
+
     // Get notifications and display them
     let notif = await getnotif()
     const notification = document.getElementById("notification-menu");

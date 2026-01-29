@@ -160,6 +160,21 @@ const start = async () => {
 
                     let game = games.get(gameId);
 
+                    // Reset if game was finished
+                    if (game && game.status === 'finished') {
+                        console.log(`[SOCKET] Resetting finished game ${gameId} for new session`);
+                        game.status = 'waiting';
+                        game.score = { left: 0, right: 0 };
+                        game.players = [];
+                        game.ball = { x: 400, y: 200, dx: 0, dy: 0 };
+                        game.paddles = { left: 150, right: 150 };
+                        if (game.rematchTimeout) {
+                            clearTimeout(game.rematchTimeout);
+                            delete game.rematchTimeout;
+                        }
+                        if (game.rematchRequests) delete game.rematchRequests;
+                    }
+
                     // Lazy Creation
                     if (!game) {
                         console.log(`[SOCKET] Game ${gameId} not found, creating it...`);
@@ -246,14 +261,42 @@ const start = async () => {
                                 }
                             }
                         } else if (game.status === 'playing') {
-                            // If a player leaves during a game, stop the loop and clean up?
-                            // For now, let's just log it. In a real app we might pause or end the match.
-                            const isPlayer = game.players.some(p => p.id === socket.user.id);
-                            if (isPlayer) {
-                                console.log(`[SOCKET] Player left active game ${gameId}. Stopping loop.`);
+                            const disconnectingPlayer = game.players.find(p => p.id === socket.user.id);
+                            if (disconnectingPlayer) {
+                                console.log(`[SOCKET] Player ${socket.user.username} left active game ${gameId}. Stopping loop.`);
                                 stopGameLoop(gameId);
-                                // Optional: notify other player
-                                gameNamespace.to(gameId).emit('player_left');
+
+                                const winner = game.players.find(p => p.id !== socket.user.id);
+                                if (winner) {
+                                    game.status = 'finished';
+
+                                    // Set score to 3-0 for the winner
+                                    if (winner.side === 'left') {
+                                        game.score.left = 3;
+                                        game.score.right = 0;
+                                    } else {
+                                        game.score.left = 0;
+                                        game.score.right = 3;
+                                    }
+
+                                    console.log(`[GAME] Awarding 3-0 victory to ${winner.username} in game ${gameId}`);
+
+                                    gameNamespace.to(gameId).emit('game_over', {
+                                        winner,
+                                        score: game.score,
+                                        players: game.players,
+                                        reason: 'opponent_disconnected'
+                                    });
+
+                                    saveMatchResult(game, winner, disconnectingPlayer);
+
+                                    game.rematchTimeout = setTimeout(() => {
+                                        if (games.has(gameId) && games.get(gameId).status === 'finished') {
+                                            games.delete(gameId);
+                                            console.log(`[GAME] Cleaned up finished game after disconnect: ${gameId}`);
+                                        }
+                                    }, 60000);
+                                }
                             }
                         }
                     });
@@ -450,7 +493,7 @@ function updateGamePhysics(gameId) {
             const winner = game.score.left >= 5 ? game.players.find(p => p.side === 'left') : game.players.find(p => p.side === 'right');
             const loser = game.score.left >= 5 ? game.players.find(p => p.side === 'right') : game.players.find(p => p.side === 'left');
 
-            gameNamespace.to(gameId).emit('game_over', { winner, score: game.score });
+            gameNamespace.to(gameId).emit('game_over', { winner, score: game.score, players: game.players });
             //
             saveMatchResult(game, winner, loser);
             stopGameLoop(gameId);

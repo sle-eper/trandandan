@@ -30,7 +30,7 @@ async function handleOAuthCallback() {
             headers: { "Content-Type": "application/json" },
             credentials: "include", // Important for cookies
         });
-
+        console.log("OAuth verification response:", response);
         if (!response.ok) {
             throw new Error("Authentication verification failed");
         }

@@ -23,7 +23,9 @@ export async function signup_post(request, reply) {
           username,
           email,
         },
+       
       }
+
     );
     if (existingUser.data) {
       return reply.code(400).send({
@@ -164,10 +166,11 @@ export async function logout_post(request, reply) {
 
 export async function verifyUser_get(request, reply) {
   const token = request.cookies.token;
+  console.log("Verifying user...", token);
   if (!token) {
     return reply.code(401).send({ error: "Not Authorized" });
   }
-
+  console.log("Verifying token:", token);
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     return reply
