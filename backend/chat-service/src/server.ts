@@ -132,7 +132,7 @@ server.ready().then(() => {
         await changeAllToRecv(userID, roomName)
         await changeDisplay(userID)
         const messages = await getAllMsg(roomName, limit, offset);
-        const UserData = await fetchUserData(data.friendId,"get_messages");
+        const UserData = await fetchUserData(data.friendId, "get_messages");
         if (!UserData || !messages) return;
         socket.emit('messages_batch', messages.reverse(), UserData?.user?.avatar_url);
       } catch (err) {
@@ -150,7 +150,7 @@ server.ready().then(() => {
         await changeAllToRecv(userID, roomName)
         await changeDisplay(userID)
         const messages = await getAllMsg(roomName, limit, offset);
-        const UserData = await fetchUserData(data.friendId,"get_old_messages");
+        const UserData = await fetchUserData(data.friendId, "get_old_messages");
         if (!messages || !UserData) return;
         socket.emit('messages_old_batch', messages, UserData?.user?.avatar_url);
       } catch (err) {
@@ -518,11 +518,15 @@ server.ready().then(() => {
           clearTimeout(existingTimeout);
           tournamentTimeouts.delete(data.gameId);
         }
-        const sidArray = Array.from(room);
-        const [sid1, sid2] = sidArray;
-        const gameId = data.gameId;
-        io.to(sid1).emit("matchTournament", { gameId, side: 'right', flagTournament: true, tournamentName: data.tournamentName });
-        io.to(sid2).emit("matchTournament", { gameId, side: 'left', flagTournament: true, tournamentName: data.tournamentName });
+        io.to(data.gameId).emit("tournament:bracket", {tournamentName: data.tournamentName});
+        setTimeout(() => {
+          const sidArray = Array.from(room);
+          const [sid1, sid2] = sidArray;
+          const gameId = data.gameId;
+          io.to(sid1).emit("matchTournament", { gameId, side: 'right', flagTournament: true, tournamentName: data.tournamentName });
+          io.to(sid2).emit("matchTournament", { gameId, side: 'left', flagTournament: true, tournamentName: data.tournamentName });
+
+        }, 10000);
       } else {
         setTimeout(() => {
           const room = io.sockets.adapter.rooms.get(data.gameId);
@@ -626,7 +630,7 @@ server.ready().then(() => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ tournamentName: tournamentName , winnerId: socket.data.userId}),
+        body: JSON.stringify({ tournamentName: tournamentName, winnerId: socket.data.userId }),
       });
       const finalMatch = await fetch(`http://tournament:5500/Tournament/finalMatch?tournamentName=${encodeURIComponent(tournamentName)}`, {
         method: 'GET',
@@ -636,33 +640,86 @@ server.ready().then(() => {
       });
       const finalMatchJson = await finalMatch.json();
       console.log("{DEBUG} final match response:", finalMatchJson);
-      if (finalMatchJson.finalists.length === 2) {
+      const status = await fetch(`http://tournament:5500/Tournament/status?tournamentName=${encodeURIComponent(tournamentName)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const statusJson = await status.json();
+      console.log("{DEBUG} tournament status response:", statusJson);
+      if (finalMatchJson.finalists.length === 2 && statusJson.status !== 'final_started') {
         console.log("{DEBUG} final match finalists:", finalMatchJson.finalists);
         console.log("{DEBUG} final match matches:", data);
-        socket.emit("Tournament:bracket", { tournamentName: data.tournamentName});
-        setTimeout(() => {
+
+        // Emit updated bracket (make sure listeners expect this exact event name)
+        io.emit("Tournament:bracket", {
+          tournamentName: data.tournamentName,
+        });
+
+        // OPTIONAL GUARD (recommended)
+        // if (tournament.finalStarted) return;
+        // tournament.finalStarted = true;
+
+        setTimeout(async () => {
           const player1 = finalMatchJson.finalists[0];
           const player2 = finalMatchJson.finalists[1];
-          const gameId = Math.random().toString(36).substring(2, 9);
+
+          // Safer gameId
+          const gameId = `final_${Date.now()}_${player1.userid}_${player2.userid}`;
+
           const player1Sockets = onlineUsers.get(String(player1.userid));
           const player2Sockets = onlineUsers.get(String(player2.userid));
 
+          // Player 1
           if (player1Sockets) {
             for (const sid of player1Sockets) {
-              io.to(sid).emit("matchTournament", { gameId, side: 'right', flagTournament: true, tournamentName: data.tournamentName, final: 'final' });
+              const socket = io.sockets.sockets.get(sid);
+              if (socket) socket.join(gameId);
 
+              io.to(sid).emit("matchTournament", {
+                gameId,
+                side: "left",
+                flagTournament: true,
+                tournamentName: data.tournamentName,
+                final: "final",
+              });
             }
           }
+
+          // Player 2
           if (player2Sockets) {
             for (const sid of player2Sockets) {
-              io.to(sid).emit("matchTournament", { gameId, side: 'right', flagTournament: true, tournamentName: data.tournamentName, final: 'final' });
+              const socket = io.sockets.sockets.get(sid);
+              if (socket) socket.join(gameId);
+
+              io.to(sid).emit("matchTournament", {
+                gameId,
+                side: "right",
+                flagTournament: true,
+                tournamentName: data.tournamentName,
+                final: "final",
+              });
             }
           }
+          await fetch('http://tournament:5500/Tournament/status', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              tournamentName: tournamentName,
+              status: 'final_started'
+            }),
+          })
+          console.log(
+            `{FINAL STARTED} room=${gameId}, players=${player1.userid} vs ${player2.userid}`
+          );
         }, 10000);
-        // Notify players about final match results if needed
       }
+
       else
-        socket.emit("Tournament:bracket", { tournamentName: data.tournamentName});
+        socket.emit("Tournament:bracket", { tournamentName: data.tournamentName });
 
     });
 
