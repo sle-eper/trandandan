@@ -184,24 +184,30 @@ export async function navBarLogic() {
   }
 
   // Toggle settings menu
-  notifBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    if(notifmenu.children.length === 0) return;
-    const isOpen = notifmenu.classList.contains("opacity-100");
-    if (isOpen) {
-      closeNotifMenu();
-    } else {
-      openNotifMenu();
-    }
-    if (!menu?.classList.contains("hidden")) {
-      menu?.classList.add("hidden");
-    }
-    setNotifIcon(false);
-  })
+  if(!notifBtn.dataset.click)
+  {
+    notifBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if(notifmenu.children.length === 0) return;
+      const isOpen = notifmenu.classList.contains("opacity-100");
+      if (isOpen) {
+        closeNotifMenu();
+      } else {
+        openNotifMenu();
+      }
+      if (!menu?.classList.contains("hidden")) {
+        menu?.classList.add("hidden");
+      }
+      setNotifIcon(false);
+    })
+    notifBtn.dataset.click = "true";
+  }
 
   // if(!btn.dataset.click)
   // {
   // console.log("before clicked-settings");
+  if(!btn.dataset.click)
+  {
     btn.addEventListener("click", (e) => {
       // console.log("clicked-settings");
       e.stopPropagation();
@@ -226,6 +232,8 @@ export async function navBarLogic() {
     // btn.dataset.click = "true";
   // }
   // console.log("after clicked-settings");
+  btn.dataset.click = "true";
+  }
 
 
   // Close when clicking outside
