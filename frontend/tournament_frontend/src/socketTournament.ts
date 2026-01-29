@@ -161,7 +161,8 @@ export async function match_endedHandlerTournament(data: any) {
     const responseData = await response.json();
     console.log("this is the response data after adding to final table", responseData);
     socket.emit("tournament:Final", data);
-    navigate('/home');
+    tournamentBracketHandler(data);
+    // navigate('/home');
     return;
   }
   else if (data.result === 'lost') {
@@ -200,6 +201,7 @@ export function tournamentChampionHandler(data: any) {
 export function tournamentBracketHandler(data: any) {
   console.log("Received tournament bracket data:", data);
   renderTournamentBracket(data.tournamentName, data.matches, data.finalMatches);
+  console.log("data.finalmatches\n", data.finalMatches);
   navigate(`/tournament/bracket/${data.tournamentName}`);
 }
 

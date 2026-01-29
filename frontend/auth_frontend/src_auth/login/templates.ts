@@ -322,43 +322,6 @@ export const verifyTemplate = () => `
 // }
 
 
-function matchRow(name: string, score: string, time: string, win: boolean) {
-  return `
-    <div class="flex items-center justify-between p-3 rounded-lg bg-black/30">
-      <div class="flex items-center gap-3">
-        <span class="w-2 h-2 rounded-full ${win ? "bg-green-500" : "bg-red-500"}"></span>
-        <span>${name}</span>
-      </div>
-      <div class="text-right text-sm text-gray-400">
-        <p>${score}</p>
-        <p>${time}</p>
-      </div>
-    </div>
-  `;
-}
-
-function friendRow(name: string, status: string) {
-  return `
-    <div class="flex items-center justify-between">
-      <div>
-        <p class="font-medium">${name}</p>
-        <p class="text-gray-400 text-sm">${status}</p>
-      </div>
-      <button class="text-sm px-3 py-1 rounded-md border border-white/20 hover:bg-white/10">
-        Invite
-      </button>
-    </div>
-  `;
-}
-
-// type HomeTemplateData = {
-//   totalMatches: number;
-//   wins: number;
-//   winRate: number;
-//   matches: any[];
-//   userId: number;
-// };
-
 export interface MatchData {
   id: number;
   user1_id: number;
@@ -484,8 +447,6 @@ export function homeTemplate(data: DashboardData): string {
           ${detailStatRow("Points Scored", data.totalPointsScored, "text-emerald-400")}
           ${detailStatRow("Points Conceded", data.totalPointsConceded, "text-red-400")}
           ${detailStatRow("Point Differential", `${pointDiffSign}${pointDiff}`, pointDiffColor)}
-          ${detailStatRow("Avg Match Duration", `${data.avgMatchDuration}s`, "text-cyan-400")}
-          ${detailStatRow("Games This Week", getGamesThisWeek(data.matches), "text-amber-400")}
         </div>
 
         <!-- Mini progress bars -->
@@ -611,7 +572,6 @@ function matchCard(match: MatchData, userId: number, index: number): string {
             <div class="flex items-center gap-2">
               <span class="text-sm font-medium text-white">${isWin ? 'Victory' : 'Defeat'}</span>
             </div>
-            <div class="text-xs text-gray-500">${timeAgo}</div>
           </div>
         </div>
         <div class="flex items-center gap-1">
@@ -659,7 +619,6 @@ export function matchDetailTemplate(match: MatchData, userId: number): string {
       <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full ${resultBg} ${resultColor} text-sm font-medium mb-2">
         ${isWin ? 'Victory' : 'Defeat'}
       </div>
-      <p class="text-sm text-gray-400">${date.toLocaleDateString()} at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
     </div>
 
     <div class="flex items-center justify-center gap-8 mb-6">
@@ -676,8 +635,6 @@ export function matchDetailTemplate(match: MatchData, userId: number): string {
 
     <div class="space-y-3 mb-6">
       <div class="flex justify-between items-center py-2 border-b border-white/5">
-        <span class="text-sm text-gray-400">Duration</span>
-        <span class="text-sm font-medium text-white">${Math.floor(duration / 60)}m ${duration % 60}s</span>
       </div>
       <div class="flex justify-between items-center py-2 border-b border-white/5">
         <span class="text-sm text-gray-400">Point Difference</span>

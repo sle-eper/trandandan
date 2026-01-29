@@ -1,5 +1,4 @@
 import { navigate } from "../../auth_frontend/src_auth/app"
-import { show2FAPage } from "../../auth_frontend/src_auth/login/2FA";
 import * as Socket from "../../socket_manager/socket";
 
 /* =======================
@@ -9,11 +8,6 @@ let currentTournament = {
   name: "",
   maxPlayers: 4
 };
-
-const CARD_HEIGHT = 56;
-const GAP_R16 = 40;
-const MATCH_STEP = CARD_HEIGHT + GAP_R16; // 96
-const COLUMN_TOP_PADDING = 32; // px
 
 /* =======================
    PAGE TEMPLATES
@@ -148,8 +142,11 @@ function generate4PlayerBracket(participants: any[] = [], matches?: any, afterma
   const semiFinal2 = matches?.semiFinals?.[1] || {};
   const final = matches?.final || {};
   
-  const sf1Winner = semiFinal1.winner || "TBD";
-  const sf2Winner = semiFinal2.winner || "TBD";
+  // Finalists only (no semi-final winner fallback)
+const finalPlayer1 =  finalists?.player1 ??finalists?.[0] ??"TBD";
+
+const finalPlayer2 =finalists?.player2 ??finalists?.[1] ??"TBD";
+
   const sf1Score1 = semiFinal1.score1 ?? "—";
   const sf1Score2 = semiFinal1.score2 ?? "—";
   const sf2Score1 = semiFinal2.score1 ?? "—";
@@ -188,20 +185,12 @@ function generate4PlayerBracket(participants: any[] = [], matches?: any, afterma
           Final
         </h3>
         <div class="absolute left-0" style="top: 108px;">
-          ${matchCard(sf1Winner, String(finalScore1), sf2Winner, String(finalScore2))}
+          ${matchCard(finalPlayer1, String(finalScore1), finalPlayer2, String(finalScore2))}
         </div>
       </div>
     </div>
   `;
 }
-
-
-let joinedPlayers: string[] = [];
-const friends = [
-  { id: 1, username: "ayoub" },
-  { id: 2, username: "youssef" },
-  { id: 3, username: "hamza" },
-];
 
 function tournamentBracketTemplate(participants: any, matches?: any, aftermatchmaking?:any, finalists?: any) {
   return `
