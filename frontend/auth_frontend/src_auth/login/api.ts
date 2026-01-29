@@ -32,10 +32,8 @@ export async function signupUser(
       credentials: "include", // VERY IMPORTANT FOR Cookies
       body: JSON.stringify({ username, email, password, confirm }),
     });
-    console.log("success");
     return await response.json();
   } catch (err) {
-    console.log(`hnaa`);
     console.error(err);
     return { success: false };
   }

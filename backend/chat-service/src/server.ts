@@ -65,7 +65,7 @@ server.ready().then(() => {
         socket.disconnect();
         return;
       }
-      socket.data.user = (await fetchUserData(userId))?.user;
+      socket.data.user = (await fetchUserData(userId, "server"))?.user;
       if (!socket.data.user) {
         socket.disconnect();
         return;
@@ -131,7 +131,7 @@ server.ready().then(() => {
         await changeAllToRecv(userID, roomName)
         await changeDisplay(userID)
         const messages = await getAllMsg(roomName, limit, offset);
-        const UserData = await fetchUserData(data.friendId);
+        const UserData = await fetchUserData(data.friendId,"get_messages");
         if (!UserData || !messages) return;
         socket.emit('messages_batch', messages.reverse(), UserData?.user?.avatar_url);
       } catch (err) {
@@ -149,7 +149,7 @@ server.ready().then(() => {
         await changeAllToRecv(userID, roomName)
         await changeDisplay(userID)
         const messages = await getAllMsg(roomName, limit, offset);
-        const UserData = await fetchUserData(data.friendId);
+        const UserData = await fetchUserData(data.friendId,"get_old_messages");
         if (!messages || !UserData) return;
         socket.emit('messages_old_batch', messages, UserData?.user?.avatar_url);
       } catch (err) {
@@ -630,7 +630,7 @@ server.ready().then(() => {
       if (finalMatchJson.finalists.length === 2) {
         console.log("{DEBUG} final match finalists:", finalMatchJson.finalists);
         console.log("{DEBUG} final match matches:", data);
-        socket.emit("Tournament:bracket", { tournamentName: data.tournamentName, matches: participantsMatchingJson.matches, final: finalMatchJson.matches });
+        socket.emit("Tournament:bracket", { tournamentName: data.tournamentName});
         setTimeout(() => {
           const player1 = finalMatchJson.finalists[0];
           const player2 = finalMatchJson.finalists[1];

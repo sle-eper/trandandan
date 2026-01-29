@@ -58,7 +58,10 @@ function attachSignupHandlers() {
       showSignupError("Please fill all fields.");
       return;
     }
-
+    if(email.indexOf("@") === -1) {
+      showSignupError("Please enter a valid email.");
+      return;
+    }
     if (password !== confirm) {
       showSignupError("Passwords do not match.");
       return;

@@ -66,6 +66,7 @@ export async function signup_post(request, reply) {
         password: hashed,
       }
     );
+    console.log("--------------------------");
     // reply
     if (!process.env.JWT_SECRET) {
       throw new Error("JWT_SECRET is missing");

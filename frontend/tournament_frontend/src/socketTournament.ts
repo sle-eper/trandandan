@@ -116,7 +116,7 @@ export function start_gameHandlerTournament(data: any) {
   notif.querySelector(".accept")?.addEventListener("click", async () => {
     const socket = Socket.getSocketInstance();
     socket.emit("game:tournament:joined", data);
-    renderTournamentBracket(data.tournamentName, data.matches, null);
+    renderTournamentBracket(data.tournamentName, data.matches);
     navigate(`/tournament/bracket/${data.tournamentName}`);
     notif.remove();
   });

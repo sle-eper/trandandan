@@ -128,24 +128,23 @@ function tournamentCard(
    TOURNAMENT BRACKET GENERATION
 ======================= */
 
-function generateBracketHTML( participants?: any, matches?: any, aftermatchmaking?: any, finalists?: any) {
-    return generate4PlayerBracket(participants, matches, aftermatchmaking, finalists);
+function generateBracketHTML( participants?: any, matches?: any) {
+    return generate4PlayerBracket(participants, matches);
 }
 
-function generate4PlayerBracket(participants: any[] = [], matches?: any, aftermatchmaking?: any, finalists?: any) {
+function generate4PlayerBracket(participants: any[] = [], matches?: any) {
   // Helper to safely get participant nickname
   const p = (i: number) => participants[i]?.nickname ?? "TBD";
-  console.log("[DEBUG] after matchmaking data", aftermatchmaking)
-  console.log("[DEBUG] matches data", finalists)
+  console.log("matches data in bracket:", matches);
   // Determine tournament stage based on matches data
   const semiFinal1 = matches?.semiFinals?.[0] || {};
   const semiFinal2 = matches?.semiFinals?.[1] || {};
   const final = matches?.final || {};
   
   // Finalists only (no semi-final winner fallback)
-const finalPlayer1 =  finalists?.player1 ??finalists?.[0] ??"TBD";
+const finalPlayer1 =  "TBD";
 
-const finalPlayer2 =finalists?.player2 ??finalists?.[1] ??"TBD";
+const finalPlayer2 = "TBD";
 
   const sf1Score1 = semiFinal1.score1 ?? "—";
   const sf1Score2 = semiFinal1.score2 ?? "—";
@@ -192,7 +191,7 @@ const finalPlayer2 =finalists?.player2 ??finalists?.[1] ??"TBD";
   `;
 }
 
-function tournamentBracketTemplate(participants: any, matches?: any, aftermatchmaking?:any, finalists?: any) {
+function tournamentBracketTemplate(participants: any, matches?: any) {
   return `
     <div class="w-full h-full flex flex-col">
       <!-- Header -->
@@ -221,7 +220,7 @@ function tournamentBracketTemplate(participants: any, matches?: any, aftermatchm
       
       <!-- Bracket Container -->
       <div class="flex-1 flex items-center justify-center p-4">
-        ${generateBracketHTML(participants, matches, aftermatchmaking, finalists)}
+        ${generateBracketHTML(participants, matches)}
       </div>
       
       <!-- Invite Friends Modal -->
@@ -507,7 +506,7 @@ function attachListHandlers() {
   });
 }
 
-export async function renderTournamentBracket(tournamentName?: string, matches?: any, finalists?: any) {
+export async function renderTournamentBracket(tournamentName?: string) {
   const main = document.getElementById("dashboard-content");
   if (!main) return;
   const Players = 4;
@@ -525,7 +524,7 @@ export async function renderTournamentBracket(tournamentName?: string, matches?:
   
   // Fetch match results
   const matchesResponse = await fetch(
-    `/tournament/matches?tournamentname=${encodeURIComponent(tournamentName || "")}`,
+    `/tournament/semifinallist?tournamentName=${encodeURIComponent(tournamentName || "")}`,
     {
       method: "GET",
       headers: {
@@ -533,8 +532,8 @@ export async function renderTournamentBracket(tournamentName?: string, matches?:
       }, 
     });
   const matchesBody = await matchesResponse.json();
-  
-  main.innerHTML = tournamentBracketTemplate(participantBody, matchesBody, matches, finalists);
+  console.log("matches data", matchesBody);
+  main.innerHTML = tournamentBracketTemplate(participantBody, matchesBody);
   
   // Setup socket listeners for real-time updates
   const socket = Socket.getSocketInstance();

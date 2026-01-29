@@ -84,17 +84,9 @@ export function attachLoginHandlers() {
       }
       if (body.success) {
         socketInstance();
-        // const response = await fetch("/auth/verify", {
-        //     method: "GET",
-        //     headers: { "Content-Type": "application/json" },
-        //     credentials: "include", // VERY IMPORTANT FOR Cookies
-        //   });
-        //   const responseJson = await response.json()
-        //   const userID = responseJson.id as string;
-        //   setCurrentUserId(userID);//TODO khasha tkon fach ylogi 
         navigate("/home");
       } else {
-        showError(body.message || "Invalid username or password.");
+        showError("Invalid username or password.");
       }
     } catch (err) {
       console.error(err);
