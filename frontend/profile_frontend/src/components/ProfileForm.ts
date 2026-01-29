@@ -112,7 +112,6 @@ export class Toast {
     }
   }
 
-  // Public API
   static success(message: string, duration?: number): void {
     this.show(message, 'success', duration);
   }
@@ -156,16 +155,10 @@ export class ProfileForm {
     try {
    
       this.userData = await User.fetchUserProfile();
-      // console.log('Loaded user data:', `http://localhost:8080/uploads/default.png`, this.userData)
       if (this.userData) {
         this.oldProfileData = JSON.parse(JSON.stringify(this.userData));
         this.avatarPreview = this.userData.avatarUrl || this.avatarPreview;
-        console.log('online status:', this.userData.onlineStatus);
-        if (this.userData.onlineStatus !== 'offline') {
-          this.isOnline = true;
-        } else {
-          this.isOnline = false;
-        }
+        
       } else {
         console.log('No existing profile found, using defaults');
       }
@@ -180,14 +173,14 @@ export class ProfileForm {
         const email = this.userData?.email || '';
         const displayName = this.userData?.displayName || '';
         const bio = this.userData?.bio || '';
-        console.log('Rendering profile form with data:', this.userData);
+     
         return ` 
-           <div class="w-full h-full flex items-center justify-center">
+        <div class="w-full h-full flex items-center justify-center p-4"> 
     <!-- Main Card - Takes full space -->
-    <div class="w-full h-full bg-black/40 backdrop-blur-sm rounded-2xl shadow-2xl  flex flex-col">
+    <div class="w-full h-full bg-black/40 backdrop-blur-sm rounded-2xl shadow-2xl  flex flex-col overflow-hidden ">
       
       <!-- Header inside card -->
-      <div class="text-center pt-6 pb-4">
+      <div class="text-center pt-6 pb-4 ">
         <h1 class="text-2xl md:text-3xl font-bold text-white flex items-center justify-center gap-2">
           <svg class="text-yellow-500" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
@@ -202,6 +195,7 @@ export class ProfileForm {
       </div>
 
     <!-- Content wrapper - centered -->
+    <div class="flex-1 overflow-y-auto px-6 pb-6">
     <div class="flex-1 flex items-center justify-center px-8 pb-6 overflow-hidden">
       <div class="w-full max-w-5xl">
         <!-- Two Column Layout - Centered -->
@@ -354,14 +348,13 @@ export class ProfileForm {
     </div>
   </div>
 </div>
-
+</div>
 
     `;
   } 
 
     private attachEventListeners(): void {
     const avatarInput = document.getElementById('avatar-upload') as HTMLInputElement;
-    const onlineToggle = document.getElementById('online-toggle') as HTMLInputElement;
     const saveBtn = document.getElementById('save-btn');
     const cancelBtn = document.getElementById('cancel-btn');
     const changePasswordBtn = document.getElementById('change-password-btn');
@@ -375,9 +368,6 @@ export class ProfileForm {
 
     if (avatarInput) {
       avatarInput.addEventListener('change', this.handleAvatarChange.bind(this));
-    }
-    if (onlineToggle) {
-      onlineToggle.addEventListener('change', this.handleStatusToggle.bind(this));
     }
     if (saveBtn) {
       saveBtn.addEventListener('click', this.handleSave.bind(this));
@@ -420,30 +410,14 @@ export class ProfileForm {
     reader.readAsDataURL(file);
   }
 
-  private handleStatusToggle(event: Event): void {
-    const checkbox = event.target as HTMLInputElement;
-    this.isOnline = checkbox.checked;
-    
-    const indicator = document.getElementById('status-indicator');
-    const statusText = document.getElementById('status-text');
-    
-    if (indicator && statusText) {
-      if (this.isOnline) {
-        indicator.className = 'w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse';
-        statusText.textContent = 'Online';
-      } else {
-        indicator.className = 'w-2.5 h-2.5 rounded-full bg-gray-500 animate-pulse';
-        statusText.textContent = 'Offline';
-      }
-    }
-  }
+   
 
-  private hasChanges(oldData: UserProfile | null, newData: UserProfile): Partial<UserProfile> | null {
+  private hasChanges(oldData: UserProfile | null, newData: UserProfile ): Partial<UserProfile> | null {
     if (!oldData) {
       return newData;
     }
 
-    const changed: Partial<UserProfile> = {};
+    const changed: Partial<UserProfile>  = {};
 
     for (const key in newData) {
       const k = key as keyof UserProfile;
@@ -499,7 +473,6 @@ export class ProfileForm {
       displayName: (document.getElementById('displayName') as HTMLInputElement).value,
       bio: (document.getElementById('bio') as HTMLTextAreaElement).value,
       avatarUrl: this.avatarPreview,
-      onlineStatus: this.isOnline ? 'online' : 'offline'
     };
     
      let changedData = this.hasChanges(this.oldProfileData, formData);
@@ -509,7 +482,7 @@ export class ProfileForm {
     }
 
     if (this.selectedAvatarFile) {
-      console.log('Uploading new avatar...');
+      
       const uploadedAvatarPath = await this.uploadAvatar(this.selectedAvatarFile);
       
       if (!uploadedAvatarPath) {
@@ -527,7 +500,6 @@ export class ProfileForm {
       }
     }
     if (changedData) {
-      console.log('Saving profile with changes:', changedData);
       const success = await User.saveUserProfile(changedData);
       
       if (success) {
@@ -571,11 +543,7 @@ export class ProfileForm {
       console.error(`Container with id "${containerId}" not found`);
       return;
     }
-
-    // Fetch user data
     await this.loadUserData();
-    
-    // Render with actual data
     container.innerHTML = this.render();
     this.attachEventListeners();
   }

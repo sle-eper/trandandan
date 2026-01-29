@@ -133,7 +133,11 @@ export async function showDashboard() {
 
   if (sidebar) sidebar.innerHTML = renderSidebar();
   if (nav) nav.innerHTML = renderNavBar();
+  navBarLogic();
+  sidebarLogic();
 
+  navBarLogic();
+  sidebarLogic();
   // Verify user and set up socket listeners
   try {
     const response = await fetch("/auth/verify", {
@@ -163,6 +167,5 @@ export async function showDashboard() {
   }
 
   // Apply logic handlers after everything is rendered
-  navBarLogic();
-  sidebarLogic();
+
 }

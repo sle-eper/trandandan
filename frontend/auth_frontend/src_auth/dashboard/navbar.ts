@@ -165,6 +165,7 @@ function setNotifIcon(active: boolean) {
 
 
 export async function navBarLogic() {
+  console.log("samaykom")
   const btn = document.getElementById("settings-btn");
   const notifBtn = document.getElementById("notification-btn");
   const notifmenu = document.getElementById("notification-menu");
@@ -198,26 +199,34 @@ export async function navBarLogic() {
     setNotifIcon(false);
   })
 
-  btn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const isHidden = menu.classList.contains("hidden");
+  // if(!btn.dataset.click)
+  // {
+  // console.log("before clicked-settings");
+    btn.addEventListener("click", (e) => {
+      // console.log("clicked-settings");
+      e.stopPropagation();
+      const isHidden = menu.classList.contains("hidden");
+  
+      if (isHidden) {
+        // OPEN MENU
+        menu.classList.remove("hidden");
+        if(!notifmenu.classList.contains("hidden"))
+            notifmenu.classList.add("hidden");
+        setTimeout(() => {
+          menu.classList.remove("opacity-0", "translate-y-[-6px]");
+          menu.classList.add("opacity-100", "translate-y-0");
+        }, 10);
+      } else {
+        // CLOSE MENU
+        menu.classList.add("opacity-0", "translate-y-[-6px]");
+        menu.classList.remove("opacity-100", "translate-y-0");
+        setTimeout(() => menu.classList.add("hidden"), 150);
+      }
+    });
+    // btn.dataset.click = "true";
+  // }
+  // console.log("after clicked-settings");
 
-    if (isHidden) {
-      // OPEN MENU
-      menu.classList.remove("hidden");
-      if(!notifmenu.classList.contains("hidden"))
-          notifmenu.classList.add("hidden");
-      setTimeout(() => {
-        menu.classList.remove("opacity-0", "translate-y-[-6px]");
-        menu.classList.add("opacity-100", "translate-y-0");
-      }, 10);
-    } else {
-      // CLOSE MENU
-      menu.classList.add("opacity-0", "translate-y-[-6px]");
-      menu.classList.remove("opacity-100", "translate-y-0");
-      setTimeout(() => menu.classList.add("hidden"), 150);
-    }
-  });
 
   // Close when clicking outside
   document.addEventListener("click", (e) => {
@@ -259,10 +268,10 @@ export async function navBarLogic() {
         });
         if (result.ok) {
           console.log('Logout successful');
-          const socket = getSocketInstance();
-          if (socket) {
-            socket.disconnect();
-          }
+          // const socket = getSocketInstance();
+          // if (socket) {
+          //   socket.disconnect();
+          // }
           reSetSocket();
           navigate("/login");
         }

@@ -1,7 +1,7 @@
 import * as Socket from "../../socket_manager/socket";
 import { navigate } from "../../auth_frontend/src_auth/app"
 import { addMenuNotification } from "../../chat-frontend/src/ts/chat_ui_tools";
-import {  renderTournamentBracket , showToast } from "./create_tournament";
+import { renderTournamentBracket, showToast } from "./create_tournament";
 
 export function inviteHandlerReceived(data: any) {
 
@@ -41,7 +41,7 @@ export function inviteHandlerReceived(data: any) {
   container.appendChild(notif);
 
   notif.querySelector(".accept")?.addEventListener("click", async () => {
-    const result = await fetch("/tournament/participant/add", {
+    const result = await fetch("/Tournament/participant/add", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -77,7 +77,7 @@ export function inviteHandlerReceived(data: any) {
 
 }
 export function start_gameHandlerTournament(data: any) {
-console.log("------------------------------------", data);
+  console.log("------------------------------------", data);
   const container = document.getElementById("play-notification-container");
   if (!container) return;
 
@@ -115,37 +115,52 @@ console.log("------------------------------------", data);
 
   notif.querySelector(".accept")?.addEventListener("click", async () => {
     const socket = Socket.getSocketInstance();
-    console.log("++++++++++++++++++++++++++++++++++++++++++", data);
     socket.emit("game:tournament:joined", data);
-    renderTournamentBracket(data.tournamentName, data.maxPlayers, 1);
+    renderTournamentBracket(data.tournamentName, data.matches);
     navigate(`/tournament/bracket/${data.tournamentName}`);
     notif.remove();
   });
 
   notif.querySelector(".reject")?.addEventListener("click", () => {
     const socket = Socket.getSocketInstance();
+    console.log("this the data to leave tournament:", data);
     socket.emit("Tournament:leave", data);
     notif.remove();
   });
   addMenuNotification("🎮 ", `<strong>${data.tournamentName}</strong> Go to Game`, data.notfId);
   setTimeout(() => {
     const socket = Socket.getSocketInstance();
+    console.log("this the data to leave tournament:", data);
     socket.emit("Tournament:leave", data);
     notif.remove();
   }, 40000);
 
 }
 
-export function match_endedHandlerTournament(data: any) {
-  if (data.result === 'won') {
+export async function match_endedHandlerTournament(data: any) {
   console.log("Tournament match ended handler called with data:", data);
-  const message = data.message || "Your tournament match has ended.";
-  showToast(message);
-  }
-  else if(data.result === 'lost') {
-    console.log("Tournament match ended handler called with data:", data);
-    const message = data.message || "Your tournament match has ended.";
+  const result = await fetch("/Tournament/list", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  console.log("Get list", result);
+  if (data.result === 'won') {
+    const message = "You won your tournament match!";
     showToast(message);
+    const socket = Socket.getSocketInstance();
+    socket.emit("tournament:Final", data);
+    tournamentBracketHandler(data);
+    // navigate('/home');
+    return;
+  }
+  else if (data.result === 'lost') {
+    const message = "You lost your tournament match.";
+    showToast(message);
+    console.log("this the data to leave tournament: for user", data.userId, data);
+    navigate('/home');
+    return;
   }
 }
 
@@ -154,5 +169,36 @@ export function match_endedHandlerTournament(data: any) {
 export function matchHandlerTournament(data: any) {
   console.log('Starting remote game from chat challenge:', data.gameId, 'as side:', data.side);
   // Redirect using the SPA router navigate function, passing both gameId and side
-  navigate(`/game/pong?gameId=${data.gameId}&side=${data.side}&mode=tournament`);
+  navigate(`/game/pong?TournamentName=${data.tournamentName}&gameId=${data.gameId}&side=${data.side}&mode=tournament&final=${data.final}`);
 }
+
+export async function finalResultHandlerTournament(data: any) {
+  await fetch("https://localhost:8443/Tournament/declareWinner", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ tournamentName: data.tournamentName, winnerId: data.winnerId }),
+  });
+  const socket = Socket.getSocketInstance();
+  socket.emit("tournament:Goo", data);
+}
+export async function tournamentChampionHandler(data: any) {
+  await fetch("https://localhost:8443/Tournament/status", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ tournamentName: data.tournamentName, status: "completed" }),
+  });
+  showToast(data.message);
+  navigate('/home');
+}
+
+export function tournamentBracketHandler(data: any) {
+  console.log("Received tournament bracket data:", data);
+  renderTournamentBracket(data.tournamentName);
+  console.log("data.finalmatches\n", data.finalMatches);
+  navigate(`/tournament/bracket/${data.tournamentName}`);
+}
+

@@ -4,7 +4,9 @@ class FriendsController {
     constructor(database) {
       this.friendshipModel = new Friendship(database);
     }
-  
+    
+
+
     // GET /friends - Get friends list
     async getFriends(request, reply) {
       try {
@@ -17,11 +19,10 @@ class FriendsController {
         return reply.code(500).send({ error: error.message });
       }
     }
-  
-    // POST /friends/request - Send friend request
+
+    // Send friend request
     async sendRequest(request, reply) {
       try {
-      
         const userId = request.headers['x-user-id'];
         const { friendId } = request.body;
         console.log("sendRequest called with userId:", userId, "friendId:", friendId);
@@ -31,24 +32,18 @@ class FriendsController {
           });
         }
         
-        
         const result = await this.friendshipModel.sendRequest(userId, friendId);
-        
         return reply.code(201).send(result);
       } catch (error) {
         return reply.code(500).send({ error: error.message });
       }
     }
-  
-    // POST /friends/accept - Accept friend request
+    // Accept friend request
     async acceptRequest(request, reply) {
       try {
        
-        // const userId = request.user.userId;
         const userId = request.headers['x-user-id'];
-        
         const friendId = request.body;
-        console.log("acceptRequest called with userId:", userId, "friendId:", friendId);
         const result = await this.friendshipModel.acceptRequest( userId,friendId);
         
         return result;
@@ -56,14 +51,12 @@ class FriendsController {
         return reply.code(500).send({ error: error.message });
       }
     }
+    // Reject friend request
     async rejectRequest(request, reply) {
       try {
        
         const userId = request.headers['x-user-id'];
-        
-        const friendId = request.body;
-        console.log("rejectRequest called with body:",friendId,userId);
-        
+        const friendId = request.body;        
         const result = await this.friendshipModel.rejectRequest( userId,friendId);
         
         return result;
@@ -71,6 +64,7 @@ class FriendsController {
         return reply.code(500).send({ error: error.message });
       }
     }
+    // Remove friend
     async removeFriend(request, reply) {
       try {
        
@@ -84,74 +78,54 @@ class FriendsController {
         return reply.code(500).send({ error: error.message });
       }
     }
-  
-    // GET /friends/requests - Get pending requests
-    async getPendingRequests(request, reply) {
-      try {
-        
-        const userId = request.user.userId;
-        const requests = await this.friendshipModel.getPendingRequests(userId);
-        
-        return { success: true, requests };
-      } catch (error) {
-        return reply.code(500).send({ error: error.message });
-      }
-    }
-
-    // PUT /friends/status - Change friend status
+    // Change friend status
     async changeFriendStatus(request, reply) {
       try {
         const userId = request.params.userId;
         const { friendId, status } = request.body;
         const result = await this.friendshipModel.changeFriendStatus(userId, friendId, status);
-        console.log("changeFriendStatus result:", result);
         return result;
       } catch (error) {
         return reply.code(500).send({ error: error.message });
       }
     }
-
-    // GET /friendships/status - Get status of two friends
+    //  Get status of two friends
     async getStatusOfFriends(request, reply) {
       try {
         const { userId, friendId } = request.params;
-        
-        
         const result = await this.friendshipModel.getStatusOfTwoFriends(userId, friendId);
-        
         return result;
       } catch (error) {
         return reply.code(500).send({ error: error.message });
       }
     }
-
-  async checkFriendshipStatus(request, reply) {
-  try {
-    const userId = request.headers['x-user-id'];
-    const friendId = request.query.friendId;
-    
-    console.log("Checking friendship status between userId:", userId, "and friendId:", friendId);
-    
-    const result = await this.friendshipModel.getStatusOfTwoFriends(userId, friendId);
-    
-    
-    if (!result || !result.status1 || !result.status2) {
-      console.log("No friendship record found");
-      return reply.code(200).send({ areFriends: false });
+    async checkFriendshipStatus(request, reply) {
+    try {
+      const userId = request.headers['x-user-id'];
+      const friendId = request.query.friendId;
+      
+      console.log("Checking friendship status between userId:", userId, "and friendId:", friendId);
+      
+      const result = await this.friendshipModel.getStatusOfTwoFriends(userId, friendId);
+      
+      
+      if (!result || !result.status1 || !result.status2) {
+        console.log("No friendship record found");
+        return reply.code(200).send({ areFriends: false });
+      }
+      
+      console.log("Friendship statuses:", result);
+      const areFriends = result.status1.status === 'accepted' && result.status2.status === 'accepted';
+      
+      console.log("areFriends:", areFriends);
+      
+      return reply.code(200).send({ areFriends });
+      
+    } catch (error) {
+      console.error("Error checking friendship status:", error);
+      return reply.code(500).send({ error: error.message });
     }
-    
-    console.log("Friendship statuses:", result);
-    const areFriends = result.status1.status === 'accepted' && result.status2.status === 'accepted';
-    
-    console.log("areFriends:", areFriends);
-    
-    return reply.code(200).send({ areFriends });
-    
-  } catch (error) {
-    console.error("Error checking friendship status:", error);
-    return reply.code(500).send({ error: error.message });
-  }
-}
+    }
     async checkPendingRequest(request, reply) {
       try {
         const userId = request.headers['x-user-id'];
@@ -181,19 +155,18 @@ class FriendsController {
         return reply.code(500).send({ error: error.message });
       }
     }
-
-    async removeFriendship(request, reply) {
-      try {
-        const userId = request.headers['x-user-id'];
-        const friendId = request.query.friendId;
-        
-        const result = await this.friendshipModel.removeFriendship(userId, friendId);
-        
-        return result;
-      } catch (error) {
-        return reply.code(500).send({ error: error.message });
-      }
-    }
   }
 
   export default FriendsController;
+
+
+   // async getFriends(request, reply) {
+    //   try {
+        
+    //     const userId = request.params.id;
+    //     const friends = await this.friendshipModel.getFriends(userId);
+    //     return { success: true, friends };
+    //   } catch (error) {
+    //     return reply.code(500).send({ error: error.message });
+    //   }
+    // }

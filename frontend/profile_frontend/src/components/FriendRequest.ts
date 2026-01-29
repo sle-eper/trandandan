@@ -3,8 +3,6 @@ import { PlayerFriendship} from '../Player.ts';
 import type { Player } from '../Player.ts';
 import { ProfileForm}  from './ProfileForm.ts';
 import  { User } from '../User.ts';
-import { navigate } from "../../../auth_frontend/src_auth/app.ts";
-// import { socket } from "../../../auth_frontend/src_auth/login/login.ts";
 import { getSocketInstance } from "../../../socket_manager/socket.ts";
 import { createFriendRequestNotification } from "./RequestHandling.ts";
 import {Toast} from "./ProfileForm.ts";
@@ -65,7 +63,7 @@ function simpleConfirm(message: string): Promise<boolean> {
   });
 }
 
-// Socket listener for friend request received
+
 export const friendRequestReceivedHandler = (from: string, myId: string,friendId: string, notifId: string) => {
  
   console.log('Friend request received myId:', myId, 'with frienID:', friendId, 'from:', from, 'notifId:', notifId); ;
@@ -82,7 +80,7 @@ interface FriendshipStatus {
   isCurrentUser: boolean;
 }
 
-// Player Profile Manager Class
+
 export class PlayerProfileManager {
   private currentUserId: number | null = null;
   private showEditProfileCallback: ProfileForm | null = null;
@@ -94,7 +92,6 @@ export class PlayerProfileManager {
   
   async initialize(): Promise<void> {
     const currentUser = await User.fetchUserProfile();
-    console.log('Current user profile in PlayerProfileManager:', currentUser);
     if (currentUser) {
       this.currentUserId = currentUser.id ?? null;
     }
@@ -102,14 +99,12 @@ export class PlayerProfileManager {
 
   
 
-  // Check friendship status
   private async checkFriendshipStatus(playerId: number): Promise<FriendshipStatus> {
    
     if (!this.currentUserId) {
       console.log('Initializing current user ID for friendship status check...');
       await this.initialize();
     }
-    console.log('Checking friendship status for playerId:', playerId, 'currentUserId:', this.currentUserId);
     if (playerId === this.currentUserId) {
       return {
         isFriend: false,
@@ -147,10 +142,9 @@ export class PlayerProfileManager {
     }
   }
 
-  // Get action buttons HTML based on friendship status
+  
   private getActionButtonsHTML(player: Player, status: FriendshipStatus): string {
     if (status.isCurrentUser) {
-      console.log('Generating action buttons for current user profile...');
       return `
         <button id="edit-profile"
                 class="px-6 py-3 rounded-xl bg-gradient-to-r from-[#9B1C1C] to-[#6F1414]
@@ -196,8 +190,7 @@ export class PlayerProfileManager {
         </button>
       `;
     }
-
-    // Not friends, no pending request
+    
     return `
       <button id="send-friend-request-${player.id}"
               class="px-6 py-3 rounded-xl bg-gradient-to-r from-[#FD1D1D] to-[#711F21]
@@ -212,12 +205,12 @@ export class PlayerProfileManager {
     `;
   }
 
-  // Main function to show player profile
+
   async showPlayerProfile(playerId?: number): Promise<void> {
     const mainContent = document.getElementById('dashboard-content');
     if (!mainContent) return;
 
-    // Show loading state
+   
     mainContent.innerHTML = `
       <div class="flex items-center justify-center h-full">
         <div class="text-white/50 flex flex-col items-center gap-4">
@@ -227,32 +220,24 @@ export class PlayerProfileManager {
       </div>
     `;
 
-    // Initialize current user ID if not set
+
     if (!this.currentUserId) {
-      console.log('Initializing current user ID...');
+      
       await this.initialize();
     }
 
-    // Fetch player data and friendship status
-    let player: Player | null = null;
-    let status: FriendshipStatus = { isFriend: false, isPending: false, isCurrentUser: false };
-    if (!playerId && this.currentUserId) {
-      playerId = this.currentUserId;
-      status  = await this.checkFriendshipStatus(playerId);
-      if (status.isCurrentUser) 
-         player = await PlayerFriendship.fetchPlayerProfile(this.currentUserId);
-    }
-    else if (playerId)
-   { 
-       status  = await this.checkFriendshipStatus(playerId)
-      if (status.isCurrentUser) {
-      player  = await PlayerFriendship.fetchPlayerProfile(this.currentUserId!);
+    
+   
+      const targetPlayerId = playerId || this.currentUserId;
+
+      if (!targetPlayerId) {
+        throw new Error('No valid player ID available');
       }
-      else {
-        player = await PlayerFriendship.fetchPlayerProfile(playerId);
-      }
-    }
-    console.log('Fetched player data:', player,);
+
+      const status = await this.checkFriendshipStatus(targetPlayerId);
+      const profileId = status.isCurrentUser ? this.currentUserId! : targetPlayerId;
+      const player = await PlayerFriendship.fetchPlayerProfile(profileId);
+
     if (!player) {
       mainContent.innerHTML = `
         <div class="flex items-center justify-center h-full">
@@ -262,13 +247,6 @@ export class PlayerProfileManager {
       return;
     }
     
-    // If it's the current user and edit component is provided
-    // if (status.isCurrentUser && this.showEditProfileCallback) {
-    //   console.log('Rendering edit profile component for current user...');
-    //   // this.showEditProfileCallback.render();
-
-    //   return;
-    // }
 
     const profileHTML = `
       <div class="w-full max-w-4xl mx-auto h-full p-6">
@@ -415,11 +393,11 @@ export class PlayerProfileManager {
 
     mainContent.innerHTML = profileHTML;
 
-    // Add event listeners based on status
+    
     this.attachEventListeners(player, status, this.currentUserId!);
   }
 
-  // Attach event listeners
+ 
   private attachEventListeners(player: Player, status: FriendshipStatus, currentUserId: number): void {
     if (status.isCurrentUser) {
 
@@ -453,7 +431,6 @@ export class PlayerProfileManager {
       });
     } else {
       const friendRequestBtn = document.getElementById(`send-friend-request-${player.id}`) as HTMLButtonElement;
-      const messageBtn = document.getElementById(`send-message-${player.id}`);
 
       friendRequestBtn?.addEventListener('click', async () => {
         try {
@@ -466,7 +443,6 @@ export class PlayerProfileManager {
           await this.sendFriendRequest(player.id);
           console.log('Emitting friendRequestSent event via socket...', String(currentUserId), String(player.id));
           getSocketInstance()?.emit('friendRequestSent', currentUserId, player.id);
-          // Refresh the profile to show pending state
           this.showPlayerProfile(player.id);
         } catch (error) {
           console.error('Error sending friend request:', error);
@@ -478,9 +454,7 @@ export class PlayerProfileManager {
         }
       });
 
-      messageBtn?.addEventListener('click', () => {
-        console.log('Send message to player:', player.id);
-      });
+      
     }
   }
 
@@ -500,8 +474,6 @@ export class PlayerProfileManager {
         throw new Error('Failed to send friend request');
       }
 
-      
-      console.log('Friend request sent:', response.data);
     } catch (error) {
       console.error('Error sending friend request:', error);
       throw error;
@@ -518,7 +490,7 @@ export class PlayerProfileManager {
         params: { friendId: receiverId }
       });
       
-      console.log('Friend request cancelled:', response.data);
+   
     } catch (error) {
       console.error('Error cancelling friend request:', error);
       throw error;
@@ -533,8 +505,7 @@ export class PlayerProfileManager {
         },
         withCredentials: true,
       });
-      
-      console.log('Unfriended user:', response.data);
+    
     } catch (error) {
       console.error('Error unfriending user:', error);
       throw error;
@@ -549,7 +520,6 @@ export class PlayerProfileManager {
 }
 
 export const socketNotificationListenerHandler = async (from : string,myId: string,friendId: string) => {
-  console.log('Friend request accepted:', {from, myId, friendId});
   
   const manager = new PlayerProfileManager();
   await manager.showPlayerProfile(parseInt(myId));
@@ -558,7 +528,6 @@ export const socketNotificationListenerHandler = async (from : string,myId: stri
 }
 
 export const socketNotificationListenerRejectHandler = async (from : string,myId: string,friendId: string) => {
-  console.log('Friend request rejected:', {from, myId, friendId});
 
   const manager = new PlayerProfileManager();
   await manager.showPlayerProfile(parseInt(myId));
@@ -566,9 +535,7 @@ export const socketNotificationListenerRejectHandler = async (from : string,myId
 }
 
 export const friendDisconnectHandler = async (playerId: number) => {
-  console.log('Handling friend disconnect for playerId:', playerId);
   const statusBadge = document.getElementById(`online-status-badge-${playerId}`);
-  console.log('Found status badgeeeee:',statusBadge );
   if (statusBadge) {
     statusBadge.textContent = '⚫ Offline';
     statusBadge.classList.remove('online', 'bg-green-500/20', 'text-green-400', 'border-green-500/30');
@@ -577,9 +544,7 @@ export const friendDisconnectHandler = async (playerId: number) => {
 
 }
 export const friendConnectHandler = async (playerId: number) => {
-  console.log('Handling friend connect for playerId:', playerId);
   const statusBadge = document.getElementById(`online-status-badge-${playerId}`);
-  console.log('Found status badge:',statusBadge );
   if (statusBadge) {
     statusBadge.textContent = '🟢 Online';
     statusBadge.classList.remove('offline', 'bg-white/5', 'text-white/70', 'border-white/10');

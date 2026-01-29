@@ -77,15 +77,15 @@ export async function getNotif(id: string) {
             if(!userCache.has(String(notif.send)))
             {
                 try{
-                    const userData = await fetchUserData(String(notif.send));
-                    userCache.set(notif.send, userData.user.username);
+                    const userData = await fetchUserData(String(notif.send),"get_notif");
+                    userCache.set(String(notif.send), String(userData.user.username));
                     // result.push({...notif,sender_name: users.user.username });
                 }catch{
-                    userCache.set(notif.send, "Unknown user");
+                    userCache.set(String(notif.send), "Unknown user");
                     // result.push({...notif,sender_name: "Unknown user" });
                 }
             }
-            result.push({...notif,sender_name: userCache.get(notif.send) });
+            result.push({...notif,sender_name: userCache.get(String(notif.send)) });
         }
         // console.log(result);
         return result;

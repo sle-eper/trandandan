@@ -457,11 +457,16 @@ function setupSocketListeners() {
         if (gameMode === 'tournament') {
             const tSocket = getSocketInstance();
             if (tSocket) {
+                const tournamentName = URLSearchParams.prototype.get.call(new URL(window.location.href).searchParams, 'TournamentName');
+                const final = URLSearchParams.prototype.get.call(new URL(window.location.href).searchParams, 'final');
+                console.log('[DEBUG] Preparing to emit match:result for tournament mode.', tournamentName, final);
                 const result = {
                     gameId: currentGameId,
                     winnerId: data.winner?.id,
                     loserId: data.players?.find((p: any) => p.id !== data.winner?.id)?.id,
-                    score: data.score
+                    score: data.score, 
+                    tournamentName: tournamentName,
+                    final: final
                 };
                 console.log('[DEBUG] Tournament mode detected. Emitting match:result', result);
                 tSocket.emit('match:result', result);

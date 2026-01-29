@@ -52,17 +52,6 @@ class UserModule {
         return row ? row.password_hash : null;
     }
 
-    async updatePassword(userId, newPasswordHash) {
-        await this.db.run(
-            'UPDATE users SET password_hash = ? WHERE id = ?',
-            [newPasswordHash, userId]
-        );
-    }
-
-    // async isDisplayNameAvailable(displayName){
-
-    // }
-
     async getProfile(userId) {
         return await this.db.get(
             `SELECT 
@@ -85,7 +74,7 @@ class UserModule {
             [
                 user.email,
                 user.username,
-                user.password,   // ✅ FIX
+                user.password,  
                 user.display_name || user.username
             ]
         );
@@ -143,6 +132,12 @@ class UserModule {
         return await this.getProfile(userId);
     }
 
+    async updatePassword(userId, newPasswordHash) {
+        await this.db.run(
+            'UPDATE users SET password_hash = ? WHERE id = ?',
+            [newPasswordHash, userId]
+        );
+    }
 
     async updateOnlineStatus(userId, status) {
         await this.db.run(
@@ -153,31 +148,7 @@ class UserModule {
         );
     }
 
-    async findAll() {
-        return this.db.all('SELECT * FROM users');
-    }
-
-    async delete(id) {
-        const result = await this.db.run(
-            'DELETE FROM users WHERE id = ?',
-            [id]
-        );
-        return result.changes;
-    }
-    async searchByDisplayName(query) {
-
-        if (!query || query.trim() === '') {
-            return [];
-        }
-
-        const searchPattern = `%${query}%`;
-
-        return await this.db.all(
-            'SELECT id, username, display_name, avatar_url FROM users WHERE display_name LIKE ?',
-            [searchPattern]
-        );
-    }
-    // add this methods for 2FA
+   
     async setTwoFactorSecret(userId, secret) {
         console.log("Setting 2FA secret in DB for userId:", userId);
         await this.db.run(
