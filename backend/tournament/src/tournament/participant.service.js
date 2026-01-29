@@ -8,14 +8,11 @@ export async function addParticipant_post(request, reply) {
     try {
         console.log("userId:", userId);
         const row = await axios.get(
-            "http://user-management:3000/User",
+            `http://user-management:3000/user/${userId}`,
             {
-                params: {
-                    id: userId
-                },
             }
         );
-        console.log("----------------------------------------");
+        console.log("----------------------------------------", row.data);
         if (Number(tournament.maxPlayers) === Number(tournament.currentPlayers)) {
             console.log("Tournament Full");
             return reply.code(400)
@@ -34,7 +31,7 @@ export async function addParticipant_post(request, reply) {
         const res = await db.run(
             `INSERT INTO participant (nickname, tournamentid, userid)
                 VALUES(?, ?,?)`,
-            [row.data.display_name, tournament.id, userId]
+            [row.data.user.display_name, tournament.id, userId]
         );
         await db.run(
             "UPDATE tournament SET currentPlayers = currentPlayers + 1 WHERE id = ?",

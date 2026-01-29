@@ -603,7 +603,7 @@ export async function renderTournamentBracket(tournamentName?: string) {
     const socket = Socket.getSocketInstance();
     socket?.once("InvitationSended", () => {
       showToast("Invitation sent!");
-      navigate(`/tournament/bracket/tournamentName=${tournamentName}?maxPlayers=${maxPlayers}`);
+      navigate(`/tournament/bracket/tournamentName=${tournamentName}`);
     });
     const response = await fetch("/auth/verify", {
       method: "GET",
