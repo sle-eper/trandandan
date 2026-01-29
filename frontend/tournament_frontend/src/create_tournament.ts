@@ -128,29 +128,31 @@ function tournamentCard(
    TOURNAMENT BRACKET GENERATION
 ======================= */
 
-function generateBracketHTML( participants?: any, matches?: any) {
-    return generate4PlayerBracket(participants, matches);
+function generateBracketHTML(participants?: any, matches?: any, finals?: any) {
+  return generate4PlayerBracket(participants, matches, finals);
 }
 
-function generate4PlayerBracket(participants: any[] = [], matches?: any) {
+function generate4PlayerBracket(participants: any[] = [], matches?: any, finals?: any) {
   // Helper to safely get participant nickname
   const p = (i: number) => participants[i]?.nickname ?? "TBD";
   console.log("matches data in bracket:", matches);
+  console.log("finals data in bracket:", finals);
   // Determine tournament stage based on matches data
   const semiFinal1 = matches?.semiFinals?.[0] || {};
   const semiFinal2 = matches?.semiFinals?.[1] || {};
-  const final = matches?.final || {};
-  
+  const final = matches?.finals || {};
+
   // Finalists only (no semi-final winner fallback)
-const finalPlayer1 =  "TBD";
+  const finalPlayer1 = finals?.finalists?.[0]?.nickname || "TBD";
+  console.log("Finalist 1:", finalPlayer1);
 
-const finalPlayer2 = "TBD";
-
+  const finalPlayer2 = finals?.finalists?.[1]?.nickname || "TBD";
+  console.log("Finalist 2:", finalPlayer2);
   const sf1Score1 = semiFinal1.score1 ?? "—";
   const sf1Score2 = semiFinal1.score2 ?? "—";
   const sf2Score1 = semiFinal2.score1 ?? "—";
   const sf2Score2 = semiFinal2.score2 ?? "—";
-  
+
   const finalScore1 = final.score1 ?? "—";
   const finalScore2 = final.score2 ?? "—";
 
@@ -191,7 +193,7 @@ const finalPlayer2 = "TBD";
   `;
 }
 
-function tournamentBracketTemplate(participants: any, matches?: any) {
+function tournamentBracketTemplate(participants: any, matches?: any, finals?: any) {
   return `
     <div class="w-full h-full flex flex-col">
       <!-- Header -->
@@ -220,7 +222,7 @@ function tournamentBracketTemplate(participants: any, matches?: any) {
       
       <!-- Bracket Container -->
       <div class="flex-1 flex items-center justify-center p-4">
-        ${generateBracketHTML(participants, matches)}
+        ${generateBracketHTML(participants, matches, finals)}
       </div>
       
       <!-- Invite Friends Modal -->
@@ -359,7 +361,7 @@ export function renderCreateTournament() {
     const playersSelect = document.getElementById("max-players-select") as HTMLSelectElement;
     currentTournament.name = nameInput.value || "New Tournament";
     currentTournament.maxPlayers = parseInt(playersSelect.value);
-    const result = await fetch("/tournament/create", {
+    const result = await fetch("/Tournament/create", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -412,7 +414,7 @@ function attachEntryHandlers() {
 export async function renderTournamentList() {
   const main = document.getElementById("dashboard-content");
   if (!main) return;
-  const result = await fetch("/tournament/list", {
+  const result = await fetch("/Tournament/list", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -434,7 +436,7 @@ function attachListHandlers() {
     btn.addEventListener("click", async (e) => {
       const target = e.currentTarget as HTMLElement;
       currentTournament.name = target.dataset.tournamentName || "Tournament";
-      const partic = await fetch(`/tournament/My/status?tournamentName=${encodeURIComponent(currentTournament.name)}`, {
+      const partic = await fetch(`/Tournament/My/status?tournamentName=${encodeURIComponent(currentTournament.name)}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -442,7 +444,7 @@ function attachListHandlers() {
       });
       console.log("Participant status:", partic);
       if (partic.ok) {
-        const tournamentstatus = await fetch(`/tournament/check?tournamentName=${encodeURIComponent(currentTournament.name)}`, {
+        const tournamentstatus = await fetch(`/Tournament/check?tournamentName=${encodeURIComponent(currentTournament.name)}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -464,7 +466,7 @@ function attachListHandlers() {
       const tournamentName = target.dataset.tournamentName;
       const maxPlayers = target.dataset.maxPlayers ? parseInt(target.dataset.maxPlayers) : 4;
       if (!tournamentId || !tournamentName) return;
-      const result = await fetch("/tournament/join", {
+      const result = await fetch("/Tournament/join", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -510,10 +512,10 @@ export async function renderTournamentBracket(tournamentName?: string) {
   const main = document.getElementById("dashboard-content");
   if (!main) return;
   const Players = 4;
-  
+
   // Fetch participants
   const Participant = await fetch(
-    `/tournament/participant/list?tournamentname=${encodeURIComponent(tournamentName || "")}`,
+    `/Tournament/participant/list?tournamentname=${encodeURIComponent(tournamentName || "")}`,
     {
       method: "GET",
       headers: {
@@ -521,44 +523,53 @@ export async function renderTournamentBracket(tournamentName?: string) {
       },
     });
   const participantBody = await Participant.json();
-  
+
   // Fetch match results
   const matchesResponse = await fetch(
-    `/tournament/semifinallist?tournamentName=${encodeURIComponent(tournamentName || "")}`,
+    `/Tournament/semifinallist?tournamentName=${encodeURIComponent(tournamentName || "")}`,
     {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-      }, 
+      },
     });
   const matchesBody = await matchesResponse.json();
+
+  const finals = fetch(`/Tournament/finalMatch?tournamentName=${encodeURIComponent(tournamentName || "")}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  const finalsBody = await finals.then(res => res.json());
   console.log("matches data", matchesBody);
-  main.innerHTML = tournamentBracketTemplate(participantBody, matchesBody);
-  
+  main.innerHTML = tournamentBracketTemplate(participantBody, matchesBody, finalsBody);
+
   // Setup socket listeners for real-time updates
   const socket = Socket.getSocketInstance();
-  
+
   // Listen for match completions to update bracket
   socket?.on("match:completed", (data: any) => {
     console.log("Match completed:", data);
     // Refresh the bracket
     renderTournamentBracket(tournamentName, null, null);
   });
-  
+
   socket?.on("tournament:roundCompleted", (data: any) => {
     console.log("Round completed:", data);
     showToast(`${data.round} completed!`);
     // Refresh the bracket
     renderTournamentBracket(tournamentName, null, null);
   });
-  
+
   socket?.on("tournament:finished", (data: any) => {
     console.log("Tournament finished:", data);
     showToast(`🏆 Tournament Winner: ${data.winner}!`);
     // Refresh the bracket
     renderTournamentBracket(tournamentName, null, null);
   });
-  
+
   const addBtn = document.getElementById("add-player-btn");
   addBtn?.addEventListener("click", async () => {
     console.log("Add Player clicked");
@@ -574,13 +585,13 @@ export async function renderTournamentBracket(tournamentName?: string) {
     console.log("Friends data:", friends);
     renderFriendsList(friends.users);
   });
-  
+
   document.getElementById("close-invite-modal")?.addEventListener("click", () => {
     const modal = document.getElementById("invite-modal");
     modal?.classList.add("hidden");
     modal?.classList.remove("flex");
   });
-  
+
   document.addEventListener("click", async (e) => {
     const target = e.target as HTMLElement;
     if (!target.classList.contains("invite-btn")) return;
@@ -608,7 +619,7 @@ export async function renderTournamentBracket(tournamentName?: string) {
     });
     console.log(`Invited friend ID: ${friendId}`);
   });
-  
+
   document.getElementById("back-to-tournaments")?.addEventListener("click", () => {
     renderTournamentList();
     navigate("/tournement/list");

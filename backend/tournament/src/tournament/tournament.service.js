@@ -293,6 +293,11 @@ export async function matchmaking_get(request, reply) {
                  VALUES(?, ?, ?)`,
                 [match.player1.nickname, match.tournamentId, match.player1.userid]  
             );
+            await db.run(
+                `INSERT INTO semifinal (nickname, tournamentid, userid)
+                 VALUES(?, ?, ?)`,
+                [match.player2.nickname, match.tournamentId, match.player2.userid]  
+            );
         }
         return reply.send({
             tournament: tournament.name,
@@ -310,7 +315,7 @@ export async function matchmaking_get(request, reply) {
 export async function finalMatch_post(request, reply) {
     const { tournamentName, winnerId } = request.body;
 
-    console.log("Final Match Result:", tournamentName, winnerId);
+    console.log("**********Final Match Result:", tournamentName, winnerId);
 
     const db = await getDatabase();
 
@@ -378,6 +383,7 @@ export async function finalMatch_get(request, reply) {
             "SELECT * FROM final WHERE tournamentId = ?",
             [tournament.id]
         );
+        console.log("Finalists fetched:", finalists);
         return reply.code(200).send({ finalists });
     } catch (error) {
         console.log("Error fetching finalists:", error);

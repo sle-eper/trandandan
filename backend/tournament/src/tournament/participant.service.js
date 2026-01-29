@@ -8,13 +8,14 @@ export async function addParticipant_post(request, reply) {
     try {
         console.log("userId:", userId);
         const row = await axios.get(
-            "http://user-management:3000/user/",
+            "http://user-management:3000/User",
             {
                 params: {
                     id: userId
                 },
             }
         );
+        console.log("----------------------------------------");
         if (Number(tournament.maxPlayers) === Number(tournament.currentPlayers)) {
             console.log("Tournament Full");
             return reply.code(400)

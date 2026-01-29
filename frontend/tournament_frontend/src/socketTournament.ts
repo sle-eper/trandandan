@@ -41,7 +41,7 @@ export function inviteHandlerReceived(data: any) {
   container.appendChild(notif);
 
   notif.querySelector(".accept")?.addEventListener("click", async () => {
-    const result = await fetch("/tournament/participant/add", {
+    const result = await fetch("/Tournament/participant/add", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -139,7 +139,7 @@ export function start_gameHandlerTournament(data: any) {
 
 export async function match_endedHandlerTournament(data: any) {
   console.log("Tournament match ended handler called with data:", data);
-  const result = await fetch("/tournament/list", {
+  const result = await fetch("/Tournament/list", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -173,7 +173,7 @@ export function matchHandlerTournament(data: any) {
 }
 
 export async function finalResultHandlerTournament(data: any) {
-  await fetch("https://localhost:8443/tournament/declareWinner", {
+  await fetch("https://localhost:8443/Tournament/declareWinner", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -184,7 +184,7 @@ export async function finalResultHandlerTournament(data: any) {
   socket.emit("tournament:Goo", data);
 }
 export async function tournamentChampionHandler(data: any) {
-  await fetch("https://localhost:8443/tournament/status", {
+  await fetch("https://localhost:8443/Tournament/status", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -197,7 +197,7 @@ export async function tournamentChampionHandler(data: any) {
 
 export function tournamentBracketHandler(data: any) {
   console.log("Received tournament bracket data:", data);
-  renderTournamentBracket(data.tournamentName, data.matches, data.finalMatches);
+  renderTournamentBracket(data.tournamentName);
   console.log("data.finalmatches\n", data.finalMatches);
   navigate(`/tournament/bracket/${data.tournamentName}`);
 }
