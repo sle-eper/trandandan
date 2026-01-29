@@ -291,6 +291,30 @@ function setupSocketListeners() {
         if (btnLobby) btnLobby.classList.remove('hidden');
     });
 
+    s.on('error', (data: any) => {
+        console.error('[SOCKET] Error:', data);
+        const message = typeof data === 'string' ? data : (data.message || 'An error occurred');
+        const infoBox = document.getElementById('game-info');
+        if (infoBox) {
+            infoBox.classList.remove('hidden');
+            infoBox.innerHTML = `<span class="text-red-500 font-bold">ERROR</span><br><span class="text-sm text-white/80">${message}</span>`;
+        }
+        gameOver = true;
+        gameStarted = false;
+
+        // Show Return to Lobby button and hide end game controls
+        const btnLobby = document.getElementById('btn-return-lobby');
+        if (btnLobby) btnLobby.classList.remove('hidden');
+
+        const endControls = document.getElementById('end-game-controls');
+        if (endControls) endControls.classList.add('hidden');
+
+        // Auto-return to lobby after 3 seconds
+        setTimeout(() => {
+            showLobbyView();
+        }, 3000);
+    });
+
     s.on('game_start', (game: any) => {
         console.log('[DEBUG] game_start received!', game);
         gameOver = false;
