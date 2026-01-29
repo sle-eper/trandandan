@@ -217,8 +217,6 @@ export function initializeGame() {
         </div>
     `;
 
-    // Attach Lobby Color Listeners (if present in DOM)
-    setupLobbyColorListeners();
 
     const mount = container.querySelector('#canvas-mount');
     const canvas = document.createElement('canvas');
@@ -834,68 +832,3 @@ async function updateRemoteAvatars(players: any[]) {
     }
 }
 
-// Setup listeners for the Main Menu (Lobby) color pickers
-function setupLobbyColorListeners() {
-    const HELLFIRE_PALETTE = [
-        '#FF0000', // Red
-        '#00FFFF', // Blue
-        '#00FF00', // Green
-        '#FFD700', // Gold
-        '#9D00FF'  // Purple
-    ];
-
-    // Helper to update game state based on input ID
-    const updateGameState = (targetId: string, color: string) => {
-        if (targetId === 'lobby-color-left') {
-            leftPaddleColor = color;
-            if (leftPaddle) leftPaddle.color = color;
-        } else if (targetId === 'lobby-color-right') {
-            rightPaddleColor = color;
-            if (rightPaddle) rightPaddle.color = color;
-        } else if (targetId === 'lobby-color-ball') {
-            ballColor = color;
-            if (pongBall) pongBall.color = color;
-        } else if (targetId === 'lobby-color-arena') {
-            arenaColor = color;
-        }
-    };
-
-    // Attach listeners to Carousel Arrows
-    const arrows = document.querySelectorAll('.color-arrow');
-    arrows.forEach(arrow => {
-        arrow.addEventListener('click', () => {
-            const targetId = arrow.getAttribute('data-target');
-            const direction = arrow.getAttribute('data-dir'); // 'prev' or 'next'
-            if (!targetId || !direction) return;
-
-            // Get current color from the PREVIEW element
-            const previewEl = document.getElementById(`preview-${targetId}`);
-            if (!previewEl) return;
-
-            const currentColor = previewEl.getAttribute('data-color') || '#FF0000';
-            const currentIndex = HELLFIRE_PALETTE.indexOf(currentColor);
-
-            // Calculate next index
-            let nextIndex = 0;
-            if (direction === 'next') {
-                nextIndex = (currentIndex + 1) % HELLFIRE_PALETTE.length;
-            } else {
-                nextIndex = (currentIndex - 1 + HELLFIRE_PALETTE.length) % HELLFIRE_PALETTE.length;
-            }
-
-            const nextColor = HELLFIRE_PALETTE[nextIndex];
-
-            // Update Preview DOM
-            previewEl.setAttribute('data-color', nextColor);
-            previewEl.style.backgroundColor = nextColor;
-            previewEl.style.boxShadow = `0 0 10px ${nextColor}60`;
-
-            // Update hidden input
-            const input = document.getElementById(targetId) as HTMLInputElement;
-            if (input) input.value = nextColor;
-
-            // Update Game Logic
-            updateGameState(targetId, nextColor);
-        });
-    });
-}
