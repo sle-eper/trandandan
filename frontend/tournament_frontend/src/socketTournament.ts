@@ -150,18 +150,9 @@ export async function match_endedHandlerTournament(data: any) {
     const message = "You won your tournament match!";
     showToast(message);
     const socket = Socket.getSocketInstance();
-    const response = await fetch("https://localhost:8443/tournament/finalMatch", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ tournamentName: data.tournamentName, winnerId: data.userid }),
-    });
-
-    const responseData = await response.json();
-    console.log("this is the response data after adding to final table", responseData);
     socket.emit("tournament:Final", data);
-    navigate('/home');
+    tournamentBracketHandler(data);
+    // navigate('/home');
     return;
   }
   else if (data.result === 'lost') {
@@ -192,7 +183,14 @@ export async function finalResultHandlerTournament(data: any) {
   const socket = Socket.getSocketInstance();
   socket.emit("tournament:Goo", data);
 }
-export function tournamentChampionHandler(data: any) {
+export async function tournamentChampionHandler(data: any) {
+  await fetch("https://localhost:8443/tournament/status", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ tournamentName: data.tournamentName, status: "completed" }),
+  });
   showToast(data.message);
   navigate('/home');
 }
@@ -200,6 +198,7 @@ export function tournamentChampionHandler(data: any) {
 export function tournamentBracketHandler(data: any) {
   console.log("Received tournament bracket data:", data);
   renderTournamentBracket(data.tournamentName, data.matches, data.finalMatches);
+  console.log("data.finalmatches\n", data.finalMatches);
   navigate(`/tournament/bracket/${data.tournamentName}`);
 }
 

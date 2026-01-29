@@ -475,6 +475,17 @@ server.ready().then(() => {
         },
       }
       )
+      await fetch(`http://tournament:5500/tournament/updateStatus`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tournamentName: data.tournamentName,
+          status: 'playing'
+        }),
+      }
+      )
       const participantsMatchingJson = await participantsMatching.json();
       for (const match of participantsMatchingJson.matches) {
         const player1 = match.player1;
@@ -618,17 +629,8 @@ server.ready().then(() => {
       const finalMatchJson = await finalMatchResponse.json();
       if (finalMatchJson.finalists.length === 2) {
         console.log("{DEBUG} final match finalists:", finalMatchJson.finalists);
-        console.log("{DEBUG} final match matches:",data);
-         const participantsMatching = await fetch(`http://tournament:5500/tournament/matchmaking?tournamentName=${encodeURIComponent(data.tournamentName)}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-      )
-      const participantsMatchingJson = await participantsMatching.json();
-        console.log("{DEBUG} semifinal matches:", participantsMatchingJson.matches);
-        socket.emit("Tournament:bracket", {tournamentName: data.tournamentName, matches:participantsMatchingJson.matches, final: finalMatchJson.matches });
+        console.log("{DEBUG} final match matches:", data);
+        socket.emit("Tournament:bracket", { tournamentName: data.tournamentName, matches: participantsMatchingJson.matches, final: finalMatchJson.matches });
         setTimeout(() => {
           const player1 = finalMatchJson.finalists[0];
           const player2 = finalMatchJson.finalists[1];

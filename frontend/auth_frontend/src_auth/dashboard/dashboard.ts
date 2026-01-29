@@ -133,6 +133,8 @@ export async function showDashboard() {
 
   if (sidebar) sidebar.innerHTML = renderSidebar();
   if (nav) nav.innerHTML = renderNavBar();
+  navBarLogic();
+  sidebarLogic();
 
   navBarLogic();
   sidebarLogic();

@@ -286,6 +286,14 @@ export async function matchmaking_get(request, reply) {
                 tournamentId: tournament.id
             });
         }
+        for (let match of matches) {
+            console.log("Match:", match.player1.nickname, "vs", match.player2 ? match.player2.nickname : "BYE");
+            await db.run(
+                `INSERT INTO semifinal (nickname, tournamentid, userid)
+                 VALUES(?, ?, ?)`,
+                [match.player1.nickname, match.tournamentId, match.player1.userid]  
+            );
+        }
         return reply.send({
             tournament: tournament.name,
             matches
@@ -402,6 +410,46 @@ export async function declareWinner_post(request, reply) {
         return reply.code(200).send({ message: "Winner declared successfully" });
     } catch (error) {
         console.log("Error declaring winner:", error);
+        return reply.code(500).send({ message: "Internal Server Error" });
+    }
+}
+
+export async function semifinalist_get(request, reply) {
+    const { tournamentName } = request.query;
+    const db = await getDatabase();
+    const tournament = await db.get('SELECT * FROM tournament WHERE name = ?', [tournamentName]);
+    if (!tournament) {
+        console.log("Tournament Not Found");
+        return reply.code(400).send({ message: "Tournament Not Found" });
+    }
+    try {
+        const semifinalists = await db.all(
+            "SELECT * FROM semifinal WHERE tournamentId = ?",
+            [tournament.id]
+        );
+        return reply.code(200).send({ semifinalists });
+    } catch (error) {
+        console.log("Error fetching semifinalists:", error);
+        return reply.code(500).send({ message: "Internal Server Error" });
+    }
+}
+
+export async function updateStatus_post(request, reply) {
+    const { tournamentName, status } = request.body;
+    const db = await getDatabase();
+    const tournament = await db.get('SELECT * FROM tournament WHERE name = ?', [tournamentName]);
+    if (!tournament) {
+        console.log("Tournament Not Found");
+        return reply.code(400).send({ message: "Tournament Not Found" });
+    }
+    try {
+        await db.run(
+            "UPDATE tournament SET status = ? WHERE id = ?",
+            [status, tournament.id]
+        );
+        return reply.code(200).send({ message: "Tournament status updated successfully" });
+    } catch (error) {
+        console.log("Error updating tournament status:", error);
         return reply.code(500).send({ message: "Internal Server Error" });
     }
 }
