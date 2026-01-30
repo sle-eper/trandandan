@@ -133,41 +133,31 @@ function generateBracketHTML(participants?: any, matches?: any, finals?: any) {
 }
 
 function generate4PlayerBracket(participants: any[] = [], matches?: any, finals?: any) {
-  const is4Players = participants.length === 4;
+  const allFourReady =
+    participants.length === 4 &&
+    participants.every(p => p && p.nickname) &&
+    matches?.semiFinals?.length === 2;
 
   const semiFinal1 = matches?.semiFinals?.[0] || {};
   const semiFinal2 = matches?.semiFinals?.[1] || {};
   const final = matches?.finals || {};
-  console.log("mathches---------->>>>>>" , matches);
-  // Helper fallback
+
   const p = (i: number) => participants[i]?.nickname ?? "TBD";
 
-  // --- Semi final players ---
-  const sf1p1 = is4Players
-    ? semiFinal1.player1?.nickname ?? p(0)
-    : p(0);
+  // If all 4 joined → use real matches
+  // else → show waiting participants
+  const sf1p1 = allFourReady ? semiFinal1.player1?.nickname : p(0);
+  const sf1p2 = allFourReady ? semiFinal1.player2?.nickname : p(1);
+  const sf2p1 = allFourReady ? semiFinal2.player1?.nickname : p(2);
+  const sf2p2 = allFourReady ? semiFinal2.player2?.nickname : p(3);
 
-  const sf1p2 = is4Players
-    ? semiFinal1.player2?.nickname ?? p(1)
-    : p(1);
+  const sf1Score1 = allFourReady ? semiFinal1.score1 ?? "—" : "—";
+  const sf1Score2 = allFourReady ? semiFinal1.score2 ?? "—" : "—";
+  const sf2Score1 = allFourReady ? semiFinal2.score1 ?? "—" : "—";
+  const sf2Score2 = allFourReady ? semiFinal2.score2 ?? "—" : "—";
 
-  const sf2p1 = is4Players
-    ? semiFinal2.player1?.nickname ?? p(2)
-    : p(2);
-
-  const sf2p2 = is4Players
-    ? semiFinal2.player2?.nickname ?? p(3)
-    : p(3);
-
-  // --- Finalists ---
   const finalPlayer1 = finals?.finalists?.[0]?.nickname ?? "TBD";
   const finalPlayer2 = finals?.finalists?.[1]?.nickname ?? "TBD";
-
-  // --- Scores ---
-  const sf1Score1 = semiFinal1.score1 ?? "—";
-  const sf1Score2 = semiFinal1.score2 ?? "—";
-  const sf2Score1 = semiFinal2.score1 ?? "—";
-  const sf2Score2 = semiFinal2.score2 ?? "—";
 
   const finalScore1 = final.score1 ?? "—";
   const finalScore2 = final.score2 ?? "—";
@@ -206,6 +196,8 @@ function generate4PlayerBracket(participants: any[] = [], matches?: any, finals?
     </div>
   `;
 }
+
+
 
 
 function tournamentBracketTemplate(participants: any, matches?: any, finals?: any) {
