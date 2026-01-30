@@ -133,28 +133,43 @@ function generateBracketHTML(participants?: any, matches?: any, finals?: any) {
 }
 
 function generate4PlayerBracket(participants: any[] = [], matches?: any, finals?: any) {
-  const allFourReady =
-    participants.length === 4 &&
-    participants.every(p => p && p.nickname) &&
-    matches?.semiFinals?.length === 2;
+  const semifinalists = matches?.semifinalists ?? [];
 
+  // Check if backend matchmaking is ready
+  const allFourReady =
+    semifinalists.length === 4 &&
+    semifinalists.every(p => p && p.nickname);
+
+  // Helper fallback
+  const p = (i: number) => participants[i]?.nickname ?? "TBD";
+
+  // Build semi-final pairs
+  let sf1p1: string, sf1p2: string, sf2p1: string, sf2p2: string;
+
+  if (allFourReady) {
+    // Backend pairing rule: 0-1 and 3-2
+    sf1p1 = semifinalists[0].nickname;
+    sf1p2 = semifinalists[1].nickname;
+
+    sf2p1 = semifinalists[3].nickname;
+    sf2p2 = semifinalists[2].nickname;
+  } else {
+    // fallback while waiting for matchmaking
+    sf1p1 = p(0);
+    sf1p2 = p(1);
+    sf2p1 = p(2);
+    sf2p2 = p(3);
+  }
+
+  // Scores (if your backend adds them later)
   const semiFinal1 = matches?.semiFinals?.[0] || {};
   const semiFinal2 = matches?.semiFinals?.[1] || {};
   const final = matches?.finals || {};
 
-  const p = (i: number) => participants[i]?.nickname ?? "TBD";
-
-  // If all 4 joined → use real matches
-  // else → show waiting participants
-  const sf1p1 = allFourReady ? semiFinal1.player1?.nickname : p(0);
-  const sf1p2 = allFourReady ? semiFinal1.player2?.nickname : p(1);
-  const sf2p1 = allFourReady ? semiFinal2.player1?.nickname : p(2);
-  const sf2p2 = allFourReady ? semiFinal2.player2?.nickname : p(3);
-
-  const sf1Score1 = allFourReady ? semiFinal1.score1 ?? "—" : "—";
-  const sf1Score2 = allFourReady ? semiFinal1.score2 ?? "—" : "—";
-  const sf2Score1 = allFourReady ? semiFinal2.score1 ?? "—" : "—";
-  const sf2Score2 = allFourReady ? semiFinal2.score2 ?? "—" : "—";
+  const sf1Score1 = semiFinal1.score1 ?? "—";
+  const sf1Score2 = semiFinal1.score2 ?? "—";
+  const sf2Score1 = semiFinal2.score1 ?? "—";
+  const sf2Score2 = semiFinal2.score2 ?? "—";
 
   const finalPlayer1 = finals?.finalists?.[0]?.nickname ?? "TBD";
   const finalPlayer2 = finals?.finalists?.[1]?.nickname ?? "TBD";
@@ -196,6 +211,7 @@ function generate4PlayerBracket(participants: any[] = [], matches?: any, finals?
     </div>
   `;
 }
+
 
 
 
@@ -382,12 +398,12 @@ export function renderCreateTournament() {
     if (result.ok) {
       showToast("Tournament created successfully!");
       // 🔥 SHOW BRACKET IMMEDIATELY
-      renderTournamentBracket(
-        currentTournament.name,
-      );
-      navigate(
-        `/tournement/bracket/${currentTournament.name}?maxPlayers=${currentTournament.maxPlayers}`
-      );
+      // renderTournamentBracket(
+      //   currentTournament.name,
+      // );
+      // navigate(
+      //   `/tournement/bracket/${currentTournament.name}?maxPlayers=${currentTournament.maxPlayers}`
+      // );
       // still notify backend
       const socket = Socket.getSocketInstance();
       socket?.emit("tournament:create", {

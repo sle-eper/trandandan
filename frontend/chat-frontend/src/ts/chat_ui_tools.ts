@@ -38,7 +38,6 @@ export function renderConnectionError(container: HTMLElement) {
 
 
 export function setupPopupEvents() {
-    //Ai
     const friendId = getFriendId();
     const blockButton = document.getElementById("block-button");
     const unblockButton = document.getElementById("unblock-button");

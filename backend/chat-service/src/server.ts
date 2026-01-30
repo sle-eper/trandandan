@@ -447,7 +447,6 @@ server.ready().then(() => {
     socket.on("tournament:create", async (data) => {
       // console.log("tournament create event received", data);
       socket.join(data.room);
-      socket.emit("tournament:created", data);
     });
     socket.on("tournament:invite", async (data) => {
       const friendSocket = onlineUsers.get(data.friendId);
@@ -511,7 +510,6 @@ server.ready().then(() => {
     socket.on("game:tournament:joined", async (data) => {
       socket.join(data.gameId);
       const room = io.sockets.adapter.rooms.get(data.gameId);
-
       if (room && room.size === 2) {
         const existingTimeout = tournamentTimeouts.get(data.gameId);
         if (existingTimeout) {
