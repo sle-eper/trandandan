@@ -511,7 +511,6 @@ server.ready().then(() => {
     socket.on("game:tournament:joined", async (data) => {
       socket.join(data.gameId);
       const room = io.sockets.adapter.rooms.get(data.gameId);
-
       if (room && room.size === 2) {
         const existingTimeout = tournamentTimeouts.get(data.gameId);
         if (existingTimeout) {
