@@ -350,14 +350,16 @@ export function renderCreateTournament() {
             <label class="text-sm text-gray-400">
               Max Players
             </label>
-            <select
-              id="max-players-select"
-              class="w-full mt-1 px-4 py-2 rounded-xl
-                     bg-black/40 border border-white/10
-                     outline-none focus:border-red-500">
-              <option value="4">4</option>
-            </select>
+
+            <div class="w-full mt-1 px-4 py-2 rounded-xl
+                        bg-black/40 border border-white/10
+                        text-white">
+              4 players
+            </div>
+
+            <input id="max-players-select" type="hidden" value="4" />
           </div>
+
           <div class="flex gap-3 mt-6">
             <button id="create"
               class="flex-1 py-2 rounded-xl bg-gradient-to-r from-[#9B1C1C] to-[#6F1414]
