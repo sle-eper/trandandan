@@ -133,58 +133,77 @@ function generateBracketHTML(participants?: any, matches?: any, finals?: any) {
 }
 
 function generate4PlayerBracket(participants: any[] = [], matches?: any, finals?: any) {
-  // Helper to safely get participant nickname
+  const semifinalists = matches?.semifinalists ?? [];
+
+  // Check if backend matchmaking is ready
+  const allFourReady =
+    semifinalists.length === 4 &&
+    semifinalists.every(p => p && p.nickname);
+
+  // Helper fallback
   const p = (i: number) => participants[i]?.nickname ?? "TBD";
-  console.log("matches data in bracket:", matches);
-  console.log("finals data in bracket:", finals);
-  // Determine tournament stage based on matches data
+
+  // Build semi-final pairs
+  let sf1p1: string, sf1p2: string, sf2p1: string, sf2p2: string;
+
+  if (allFourReady) {
+    // Backend pairing rule: 0-1 and 3-2
+    sf1p1 = semifinalists[0].nickname;
+    sf1p2 = semifinalists[1].nickname;
+
+    sf2p1 = semifinalists[3].nickname;
+    sf2p2 = semifinalists[2].nickname;
+  } else {
+    // fallback while waiting for matchmaking
+    sf1p1 = p(0);
+    sf1p2 = p(1);
+    sf2p1 = p(2);
+    sf2p2 = p(3);
+  }
+
+  // Scores (if your backend adds them later)
   const semiFinal1 = matches?.semiFinals?.[0] || {};
   const semiFinal2 = matches?.semiFinals?.[1] || {};
   const final = matches?.finals || {};
 
-  // Finalists only (no semi-final winner fallback)
-  const finalPlayer1 = finals?.finalists?.[0]?.nickname || "TBD";
-  console.log("Finalist 1:", finalPlayer1);
-
-  const finalPlayer2 = finals?.finalists?.[1]?.nickname || "TBD";
-  console.log("Finalist 2:", finalPlayer2);
   const sf1Score1 = semiFinal1.score1 ?? "—";
   const sf1Score2 = semiFinal1.score2 ?? "—";
   const sf2Score1 = semiFinal2.score1 ?? "—";
   const sf2Score2 = semiFinal2.score2 ?? "—";
+
+  const finalPlayer1 = finals?.finalists?.[0]?.nickname ?? "TBD";
+  const finalPlayer2 = finals?.finalists?.[1]?.nickname ?? "TBD";
 
   const finalScore1 = final.score1 ?? "—";
   const finalScore2 = final.score2 ?? "—";
 
   return `
     <div class="w-full h-full flex items-center justify-center gap-12">
-      <!-- Semi-Finals -->
       <div class="relative w-44" style="height: 280px;">
         <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
           Semi-Final
         </h3>
-        <!-- SF 1 -->
+
         <div class="absolute left-0" style="top: 48px;">
-          ${matchCard(p(0), String(sf1Score1), p(1), String(sf1Score2))}
+          ${matchCard(sf1p1, String(sf1Score1), sf1p2, String(sf1Score2))}
         </div>
-        <!-- SF 2 -->
+
         <div class="absolute left-0" style="top: 168px;">
-          ${matchCard(p(2), String(sf2Score1), p(3), String(sf2Score2))}
+          ${matchCard(sf2p1, String(sf2Score1), sf2p2, String(sf2Score2))}
         </div>
       </div>
-      
-      <!-- Connector Lines SF → F -->
+
       <div class="flex flex-col justify-center">
         <svg width="60" height="280" class="text-white/20">
           ${connectorPair(60, 110, 60, 3)}
         </svg>
       </div>
-      
-      <!-- Final -->
+
       <div class="relative w-44" style="height: 280px;">
         <h3 class="text-xs text-gray-400 uppercase tracking-wider text-center absolute -top-12 w-full">
           Final
         </h3>
+
         <div class="absolute left-0" style="top: 108px;">
           ${matchCard(finalPlayer1, String(finalScore1), finalPlayer2, String(finalScore2))}
         </div>
@@ -192,6 +211,10 @@ function generate4PlayerBracket(participants: any[] = [], matches?: any, finals?
     </div>
   `;
 }
+
+
+
+
 
 function tournamentBracketTemplate(participants: any, matches?: any, finals?: any) {
   return `
@@ -327,14 +350,16 @@ export function renderCreateTournament() {
             <label class="text-sm text-gray-400">
               Max Players
             </label>
-            <select
-              id="max-players-select"
-              class="w-full mt-1 px-4 py-2 rounded-xl
-                     bg-black/40 border border-white/10
-                     outline-none focus:border-red-500">
-              <option value="4">4</option>
-            </select>
+
+            <div class="w-full mt-1 px-4 py-2 rounded-xl
+                        bg-black/40 border border-white/10
+                        text-white">
+              4 players
+            </div>
+
+            <input id="max-players-select" type="hidden" value="4" />
           </div>
+
           <div class="flex gap-3 mt-6">
             <button id="create"
               class="flex-1 py-2 rounded-xl bg-gradient-to-r from-[#9B1C1C] to-[#6F1414]
@@ -375,13 +400,12 @@ export function renderCreateTournament() {
     if (result.ok) {
       showToast("Tournament created successfully!");
       // 🔥 SHOW BRACKET IMMEDIATELY
-      renderTournamentBracket(
-        currentTournament.name,
-        null, null
-      );
-      navigate(
-        `/tournement/bracket/${currentTournament.name}?maxPlayers=${currentTournament.maxPlayers}`
-      );
+      // renderTournamentBracket(
+      //   currentTournament.name,
+      // );
+      // navigate(
+      //   `/tournement/bracket/${currentTournament.name}?maxPlayers=${currentTournament.maxPlayers}`
+      // );
       // still notify backend
       const socket = Socket.getSocketInstance();
       socket?.emit("tournament:create", {
@@ -453,7 +477,7 @@ function attachListHandlers() {
         const body = await tournamentstatus.json();
         console.log("Tournament status:", body);
         currentTournament.maxPlayers = body.maxPlayers || 4;
-        renderTournamentBracket(currentTournament.name, null, null);
+        renderTournamentBracket(currentTournament.name);
         navigate(`/tournament/bracket/${currentTournament.name}?maxPlayers=${currentTournament.maxPlayers}`);
       }
     });
@@ -553,21 +577,21 @@ export async function renderTournamentBracket(tournamentName?: string) {
   socket?.on("match:completed", (data: any) => {
     console.log("Match completed:", data);
     // Refresh the bracket
-    renderTournamentBracket(tournamentName, null, null);
+    renderTournamentBracket(tournamentName);
   });
 
   socket?.on("tournament:roundCompleted", (data: any) => {
     console.log("Round completed:", data);
     showToast(`${data.round} completed!`);
     // Refresh the bracket
-    renderTournamentBracket(tournamentName, null, null);
+    renderTournamentBracket(tournamentName);
   });
 
   socket?.on("tournament:finished", (data: any) => {
     console.log("Tournament finished:", data);
     showToast(`🏆 Tournament Winner: ${data.winner}!`);
     // Refresh the bracket
-    renderTournamentBracket(tournamentName, null, null);
+    renderTournamentBracket(tournamentName);
   });
 
   const addBtn = document.getElementById("add-player-btn");

@@ -454,7 +454,6 @@ server.ready().then(() => {
     socket.on("tournament:create", async (data) => {
       // console.log("tournament create event received", data);
       socket.join(data.room);
-      socket.emit("tournament:created", data);
     });
     socket.on("tournament:invite", async (data) => {
       const friendSocket = onlineUsers.get(data.friendId);

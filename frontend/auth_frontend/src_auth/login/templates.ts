@@ -421,8 +421,14 @@ export function homeTemplate(data: DashboardData): string {
             </div>
             <div class="flex items-center gap-2">
               <span class="w-3 h-3 rounded-full bg-red-500"></span>
-              <span class="text-gray-300">Losses <strong class="text-white ml-1">${100 - data.winRate}%</strong></span>
+              <span class="text-gray-300">
+                Losses
+                <strong class="text-white ml-1">
+                  ${data.totalMatches === 0 ? 0 : 100 - data.winRate}%
+                </strong>
+              </span>
             </div>
+
           </div>
         </div>
       </div>
