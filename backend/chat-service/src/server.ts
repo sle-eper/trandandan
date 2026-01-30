@@ -420,6 +420,13 @@ server.ready().then(() => {
     });
     socket.on("disconnect", () => {
       try {
+        for (const room of socket.rooms) {
+          if (room != socket.id) 
+            {
+              socket.emit("tournament:leave", { tournamentName: room });
+              socket.leave(room);
+            }
+        }
         const id = socket.data.userId;
         if (id && onlineUsers.has(id)) {
           onlineUsers.get(id).delete(socket.id);
@@ -543,8 +550,12 @@ server.ready().then(() => {
       }
     });
     socket.on("Tournament:leave", async (data) => {
+      console.log("*************************Leaving tournament:", data.tournamentName, "for user:", socket.data.userId);
+      socket.leave(data.tournamentName);
+      socket.leave(data.gameId);
       const room = io.sockets.adapter.rooms.get(data.gameId);
       if (room && room.size === 1) {
+        console.log("*************************Opponent left tournament game, declaring winner:", socket.data.userId);
         const sidArray = Array.from(room);
         const sid = sidArray[0];
         io.to(sid).emit("match:ended", {
@@ -711,9 +722,7 @@ server.ready().then(() => {
               status: 'final_started'
             }),
           })
-          console.log(
-            `{FINAL STARTED} room=${gameId}, players=${player1.userid} vs ${player2.userid}`
-          );
+          console.log("--------------------------");
         }, 10000);
       }
 
