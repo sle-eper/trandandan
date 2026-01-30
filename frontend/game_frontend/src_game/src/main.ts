@@ -464,7 +464,7 @@ function setupSocketListeners() {
                     gameId: currentGameId,
                     winnerId: data.winner?.id,
                     loserId: data.players?.find((p: any) => p.id !== data.winner?.id)?.id,
-                    score: data.score, 
+                    score: data.score,
                     tournamentName: tournamentName,
                     final: final
                 };
@@ -567,6 +567,7 @@ function setupMenuButtons() {
     const btnAI = document.getElementById('btn-ai');
     if (btnAI) btnAI.onclick = () => {
         aiMode = true; isRemote = false; showGameView();
+        updateLocalAvatars();
         const infoBox = document.getElementById('game-info');
         if (infoBox) {
             infoBox.classList.remove('hidden');
@@ -579,6 +580,7 @@ function setupMenuButtons() {
     const btnFriend = document.getElementById('btn-friend');
     if (btnFriend) btnFriend.onclick = () => {
         aiMode = false; isRemote = false; showGameView();
+        updateLocalAvatars();
         const infoBox = document.getElementById('game-info');
         if (infoBox) {
             infoBox.classList.remove('hidden');
@@ -805,59 +807,81 @@ async function fetchUserProfile(userId?: string) {
 }
 
 async function updateLocalAvatars() {
-    // Fetch current user via session if possible
-    const profile = await fetchUserProfile();
-    if (!profile) return;
+    console.debug('Updating local avatars. AI Mode:', aiMode);
 
-    const avatarImg = document.getElementById('avatar-left') as HTMLImageElement;
-    const nameSpan = document.getElementById('name-left');
+    const avatarLeft = document.getElementById('avatar-left') as HTMLImageElement;
+    const nameLeft = document.getElementById('name-left');
+    const avatarRight = document.getElementById('avatar-right') as HTMLImageElement;
+    const nameRight = document.getElementById('name-right');
 
     const getValidValue = (v: any) => (v && String(v) !== 'undefined' && String(v) !== 'null') ? v : null;
+    const defaultAvatar = '/api/uploads/default.png';
 
-    // Resolve Avatar URL
-    let avatarSrc = '/api/users/static/avatars/default.png';
-    const rawAvatar = getValidValue(profile.avatar) || getValidValue(profile.avatar_url);
-    if (rawAvatar) {
-        if (rawAvatar.startsWith('http') || rawAvatar.startsWith('/')) {
-            avatarSrc = rawAvatar;
-        } else {
-            avatarSrc = `/api/uploads/${rawAvatar}`;
+    // Fetch current user via session if possible
+    const profile = await fetchUserProfile();
+
+    if (profile) {
+        // Resolve Left Avatar URL (current user)
+        let leftSrc = defaultAvatar;
+        const rawAvatar = getValidValue(profile.avatar_url) || getValidValue(profile.avatar);
+        if (rawAvatar) {
+            if (rawAvatar.startsWith('http') || rawAvatar.startsWith('/')) {
+                leftSrc = rawAvatar;
+            } else {
+                leftSrc = `/api/uploads/${rawAvatar}`;
+            }
         }
+
+        if (avatarLeft) avatarLeft.src = leftSrc;
+        if (nameLeft) {
+            const name = getValidValue(profile.display_name) || getValidValue(profile.username) || getValidValue(profile.name);
+            nameLeft.innerText = name || 'Player 1';
+        }
+    } else {
+        if (avatarLeft) avatarLeft.src = defaultAvatar;
+        if (nameLeft) nameLeft.innerText = 'Player 1';
     }
 
-    if (avatarImg) avatarImg.src = avatarSrc;
-    if (nameSpan) {
-        const name = getValidValue(profile.username) || getValidValue(profile.display_name) || getValidValue(profile.name);
-        nameSpan.innerText = name || 'Player 1';
+    // Handle Right Avatar (Opponent)
+    if (aiMode) {
+        if (avatarRight) avatarRight.src = 'https://api.dicebear.com/7.x/bottts/svg?seed=AI';
+        if (nameRight) nameRight.innerText = 'AI Bot';
+    } else {
+        // Local Versus Friend
+        if (avatarRight) avatarRight.src = defaultAvatar;
+        if (nameRight) nameRight.innerText = 'Player 2';
     }
 }
 
 async function updateRemoteAvatars(players: any[]) {
     for (const p of players) {
         const profile = await fetchUserProfile(p.id);
-        if (!profile) continue;
         const side = p.side === 'left' ? 'left' : 'right';
         const avatarImg = document.getElementById(`avatar-${side}`) as HTMLImageElement;
         const nameSpan = document.getElementById(`name-${side}`);
 
         const getValidValue = (v: any) => (v && String(v) !== 'undefined' && String(v) !== 'null') ? v : null;
+        const defaultAvatar = '/api/uploads/default.png';
 
-        // Resolve Avatar URL
-        let avatarSrc = '/api/users/static/avatars/default.png';
-        const rawAvatar = getValidValue(profile.avatar) || getValidValue(profile.avatar_url);
-        if (rawAvatar) {
-            if (rawAvatar.startsWith('http') || rawAvatar.startsWith('/')) {
-                avatarSrc = rawAvatar;
-            } else {
-                avatarSrc = `/api/uploads/${rawAvatar}`;
+        let avatarSrc = defaultAvatar;
+        let displayName = side === 'left' ? 'Player 1' : 'Player 2';
+
+        if (profile) {
+            const rawAvatar = getValidValue(profile.avatar_url) || getValidValue(profile.avatar);
+            if (rawAvatar) {
+                if (rawAvatar.startsWith('http') || rawAvatar.startsWith('/')) {
+                    avatarSrc = rawAvatar;
+                } else {
+                    avatarSrc = `/api/uploads/${rawAvatar}`;
+                }
             }
+            displayName = getValidValue(profile.display_name) || getValidValue(profile.username) || getValidValue(profile.name) || displayName;
+        } else if (p.username) {
+            displayName = p.username;
         }
 
         if (avatarImg) avatarImg.src = avatarSrc;
-        if (nameSpan) {
-            const name = getValidValue(profile.username) || getValidValue(profile.display_name) || getValidValue(profile.name);
-            nameSpan.innerText = name || (side === 'left' ? 'Player 1' : 'Player 2');
-        }
+        if (nameSpan) nameSpan.innerText = displayName;
     }
 }
 
