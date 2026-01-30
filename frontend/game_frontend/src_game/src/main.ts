@@ -217,8 +217,6 @@ export function initializeGame() {
         </div>
     `;
 
-    // Attach Lobby Color Listeners (if present in DOM)
-    setupLobbyColorListeners();
 
     const mount = container.querySelector('#canvas-mount');
     const canvas = document.createElement('canvas');
@@ -277,6 +275,45 @@ function setupSocketListeners() {
     s.off('ball_update');
     s.off('game_over');
     s.off('player_left');
+    s.off('connect_error');
+
+    s.on('connect_error', (err: any) => {
+        console.error('[SOCKET] Connection Error:', err);
+        const infoBox = document.getElementById('game-info');
+        if (infoBox) {
+            infoBox.classList.remove('hidden');
+            infoBox.innerHTML = `<span class="text-red-500 font-bold">CONNECTION ERROR</span><br><span class="text-xs text-white/60">Server is unreachable</span>`;
+        }
+        gameOver = true;
+        gameStarted = false;
+        // Show Return to Lobby button
+        const btnLobby = document.getElementById('btn-return-lobby');
+        if (btnLobby) btnLobby.classList.remove('hidden');
+    });
+
+    s.on('error', (data: any) => {
+        console.error('[SOCKET] Error:', data);
+        const message = typeof data === 'string' ? data : (data.message || 'An error occurred');
+        const infoBox = document.getElementById('game-info');
+        if (infoBox) {
+            infoBox.classList.remove('hidden');
+            infoBox.innerHTML = `<span class="text-red-500 font-bold">ERROR</span><br><span class="text-sm text-white/80">${message}</span>`;
+        }
+        gameOver = true;
+        gameStarted = false;
+
+        // Show Return to Lobby button and hide end game controls
+        const btnLobby = document.getElementById('btn-return-lobby');
+        if (btnLobby) btnLobby.classList.remove('hidden');
+
+        const endControls = document.getElementById('end-game-controls');
+        if (endControls) endControls.classList.add('hidden');
+
+        // Auto-return to lobby after 3 seconds
+        setTimeout(() => {
+            showLobbyView();
+        }, 3000);
+    });
 
     s.on('game_start', (game: any) => {
         console.log('[DEBUG] game_start received!', game);
@@ -427,7 +464,7 @@ function setupSocketListeners() {
                     gameId: currentGameId,
                     winnerId: data.winner?.id,
                     loserId: data.players?.find((p: any) => p.id !== data.winner?.id)?.id,
-                    score: data.score, 
+                    score: data.score,
                     tournamentName: tournamentName,
                     final: final
                 };
@@ -530,6 +567,7 @@ function setupMenuButtons() {
     const btnAI = document.getElementById('btn-ai');
     if (btnAI) btnAI.onclick = () => {
         aiMode = true; isRemote = false; showGameView();
+        updateLocalAvatars();
         const infoBox = document.getElementById('game-info');
         if (infoBox) {
             infoBox.classList.remove('hidden');
@@ -542,6 +580,7 @@ function setupMenuButtons() {
     const btnFriend = document.getElementById('btn-friend');
     if (btnFriend) btnFriend.onclick = () => {
         aiMode = false; isRemote = false; showGameView();
+        updateLocalAvatars();
         const infoBox = document.getElementById('game-info');
         if (infoBox) {
             infoBox.classList.remove('hidden');
@@ -768,124 +807,81 @@ async function fetchUserProfile(userId?: string) {
 }
 
 async function updateLocalAvatars() {
-    // Fetch current user via session if possible
-    const profile = await fetchUserProfile();
-    if (!profile) return;
+    console.debug('Updating local avatars. AI Mode:', aiMode);
 
-    const avatarImg = document.getElementById('avatar-left') as HTMLImageElement;
-    const nameSpan = document.getElementById('name-left');
+    const avatarLeft = document.getElementById('avatar-left') as HTMLImageElement;
+    const nameLeft = document.getElementById('name-left');
+    const avatarRight = document.getElementById('avatar-right') as HTMLImageElement;
+    const nameRight = document.getElementById('name-right');
 
     const getValidValue = (v: any) => (v && String(v) !== 'undefined' && String(v) !== 'null') ? v : null;
+    const defaultAvatar = '/api/uploads/default.png';
 
-    // Resolve Avatar URL
-    let avatarSrc = '/api/users/static/avatars/default.png';
-    const rawAvatar = getValidValue(profile.avatar) || getValidValue(profile.avatar_url);
-    if (rawAvatar) {
-        if (rawAvatar.startsWith('http') || rawAvatar.startsWith('/')) {
-            avatarSrc = rawAvatar;
-        } else {
-            avatarSrc = `/api/uploads/${rawAvatar}`;
+    // Fetch current user via session if possible
+    const profile = await fetchUserProfile();
+
+    if (profile) {
+        // Resolve Left Avatar URL (current user)
+        let leftSrc = defaultAvatar;
+        const rawAvatar = getValidValue(profile.avatar_url) || getValidValue(profile.avatar);
+        if (rawAvatar) {
+            if (rawAvatar.startsWith('http') || rawAvatar.startsWith('/')) {
+                leftSrc = rawAvatar;
+            } else {
+                leftSrc = `/api/uploads/${rawAvatar}`;
+            }
         }
+
+        if (avatarLeft) avatarLeft.src = leftSrc;
+        if (nameLeft) {
+            const name = getValidValue(profile.display_name) || getValidValue(profile.username) || getValidValue(profile.name);
+            nameLeft.innerText = name || 'Player 1';
+        }
+    } else {
+        if (avatarLeft) avatarLeft.src = defaultAvatar;
+        if (nameLeft) nameLeft.innerText = 'Player 1';
     }
 
-    if (avatarImg) avatarImg.src = avatarSrc;
-    if (nameSpan) {
-        const name = getValidValue(profile.username) || getValidValue(profile.display_name) || getValidValue(profile.name);
-        nameSpan.innerText = name || 'Player 1';
+    // Handle Right Avatar (Opponent)
+    if (aiMode) {
+        if (avatarRight) avatarRight.src = 'https://api.dicebear.com/7.x/bottts/svg?seed=AI';
+        if (nameRight) nameRight.innerText = 'AI Bot';
+    } else {
+        // Local Versus Friend
+        if (avatarRight) avatarRight.src = defaultAvatar;
+        if (nameRight) nameRight.innerText = 'Player 2';
     }
 }
 
 async function updateRemoteAvatars(players: any[]) {
     for (const p of players) {
         const profile = await fetchUserProfile(p.id);
-        if (!profile) continue;
         const side = p.side === 'left' ? 'left' : 'right';
         const avatarImg = document.getElementById(`avatar-${side}`) as HTMLImageElement;
         const nameSpan = document.getElementById(`name-${side}`);
 
         const getValidValue = (v: any) => (v && String(v) !== 'undefined' && String(v) !== 'null') ? v : null;
+        const defaultAvatar = '/api/uploads/default.png';
 
-        // Resolve Avatar URL
-        let avatarSrc = '/api/users/static/avatars/default.png';
-        const rawAvatar = getValidValue(profile.avatar) || getValidValue(profile.avatar_url);
-        if (rawAvatar) {
-            if (rawAvatar.startsWith('http') || rawAvatar.startsWith('/')) {
-                avatarSrc = rawAvatar;
-            } else {
-                avatarSrc = `/api/uploads/${rawAvatar}`;
+        let avatarSrc = defaultAvatar;
+        let displayName = side === 'left' ? 'Player 1' : 'Player 2';
+
+        if (profile) {
+            const rawAvatar = getValidValue(profile.avatar_url) || getValidValue(profile.avatar);
+            if (rawAvatar) {
+                if (rawAvatar.startsWith('http') || rawAvatar.startsWith('/')) {
+                    avatarSrc = rawAvatar;
+                } else {
+                    avatarSrc = `/api/uploads/${rawAvatar}`;
+                }
             }
+            displayName = getValidValue(profile.display_name) || getValidValue(profile.username) || getValidValue(profile.name) || displayName;
+        } else if (p.username) {
+            displayName = p.username;
         }
 
         if (avatarImg) avatarImg.src = avatarSrc;
-        if (nameSpan) {
-            const name = getValidValue(profile.username) || getValidValue(profile.display_name) || getValidValue(profile.name);
-            nameSpan.innerText = name || (side === 'left' ? 'Player 1' : 'Player 2');
-        }
+        if (nameSpan) nameSpan.innerText = displayName;
     }
 }
 
-// Setup listeners for the Main Menu (Lobby) color pickers
-function setupLobbyColorListeners() {
-    const HELLFIRE_PALETTE = [
-        '#FF0000', // Red
-        '#00FFFF', // Blue
-        '#00FF00', // Green
-        '#FFD700', // Gold
-        '#9D00FF'  // Purple
-    ];
-
-    // Helper to update game state based on input ID
-    const updateGameState = (targetId: string, color: string) => {
-        if (targetId === 'lobby-color-left') {
-            leftPaddleColor = color;
-            if (leftPaddle) leftPaddle.color = color;
-        } else if (targetId === 'lobby-color-right') {
-            rightPaddleColor = color;
-            if (rightPaddle) rightPaddle.color = color;
-        } else if (targetId === 'lobby-color-ball') {
-            ballColor = color;
-            if (pongBall) pongBall.color = color;
-        } else if (targetId === 'lobby-color-arena') {
-            arenaColor = color;
-        }
-    };
-
-    // Attach listeners to Carousel Arrows
-    const arrows = document.querySelectorAll('.color-arrow');
-    arrows.forEach(arrow => {
-        arrow.addEventListener('click', () => {
-            const targetId = arrow.getAttribute('data-target');
-            const direction = arrow.getAttribute('data-dir'); // 'prev' or 'next'
-            if (!targetId || !direction) return;
-
-            // Get current color from the PREVIEW element
-            const previewEl = document.getElementById(`preview-${targetId}`);
-            if (!previewEl) return;
-
-            const currentColor = previewEl.getAttribute('data-color') || '#FF0000';
-            const currentIndex = HELLFIRE_PALETTE.indexOf(currentColor);
-
-            // Calculate next index
-            let nextIndex = 0;
-            if (direction === 'next') {
-                nextIndex = (currentIndex + 1) % HELLFIRE_PALETTE.length;
-            } else {
-                nextIndex = (currentIndex - 1 + HELLFIRE_PALETTE.length) % HELLFIRE_PALETTE.length;
-            }
-
-            const nextColor = HELLFIRE_PALETTE[nextIndex];
-
-            // Update Preview DOM
-            previewEl.setAttribute('data-color', nextColor);
-            previewEl.style.backgroundColor = nextColor;
-            previewEl.style.boxShadow = `0 0 10px ${nextColor}60`;
-
-            // Update hidden input
-            const input = document.getElementById(targetId) as HTMLInputElement;
-            if (input) input.value = nextColor;
-
-            // Update Game Logic
-            updateGameState(targetId, nextColor);
-        });
-    });
-}

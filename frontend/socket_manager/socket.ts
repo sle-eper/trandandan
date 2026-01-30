@@ -9,7 +9,7 @@ export function reSetSocket(){
 
 export function socketInstance(): Socket {
   if (!socket) {
-    return socket = io("https://10.14.2.1:8443", {
+    return socket = io("https://localhost:8443", {
       path: "/socket.io",
       withCredentials: true,
       transports: ["websocket"],
@@ -23,13 +23,13 @@ export function socketInstance(): Socket {
 export function getSocketInstance(): Socket | null {
   // get current url
   const currentPath = window.location.pathname;
-  if(currentPath === '/login' || currentPath === '/') {
+  if (currentPath === '/login' || currentPath === '/') {
     return null;
   }
-  if(!socket) {
+  if (!socket) {
     console.log('Creating new socket instance');
     return socketInstance();
-  } 
+  }
   console.log('Returning existing socket instance');
   return socket;
 }
