@@ -41,7 +41,7 @@ const BALL_SPEED = 4;
 const BALL_RADIUS = 10;
 const TICK_RATE = 16; // ~60fps
 const START_DELAY = 6500; // 6.5s to safe-guard frontend countdown (approx 6s duration)
-const SERVE_DELAY = 1500; // 1.5s for serving after a goal
+const SERVE_DELAY = 500; // 1.5s for serving after a goal
 
 // Helper: Verify Token or trust Nginx headers
 const getUserFromRequest = (request) => {

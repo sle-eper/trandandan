@@ -719,7 +719,7 @@ export function animate() {
                             gameStarted = true;
                         }
                         goalTimeout = null;
-                    }, 1000);
+                    }, 500);
                 }
             }
         }
