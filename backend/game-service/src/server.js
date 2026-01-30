@@ -175,18 +175,11 @@ const start = async () => {
                         if (game.rematchRequests) delete game.rematchRequests;
                     }
 
-                    // Lazy Creation
+                    // Check if game exists - don't create it automatically
                     if (!game) {
-                        console.log(`[SOCKET] Game ${gameId} not found, creating it...`);
-                        game = {
-                            id: gameId,
-                            players: [],
-                            status: 'waiting',
-                            score: { left: 0, right: 0 },
-                            ball: { x: 400, y: 200, dx: 0, dy: 0 },
-                            paddles: { left: 150, right: 150 }
-                        };
-                        games.set(gameId, game);
+                        console.log(`[SOCKET] Game ${gameId} not found. User ${socket.user.username} cannot join.`);
+                        socket.emit('error', { message: 'Game not found. Please check the Game ID.' });
+                        return;
                     }
 
                     if (game) {

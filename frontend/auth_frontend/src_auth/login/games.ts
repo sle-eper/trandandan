@@ -79,40 +79,6 @@ export function games(type?: string) {
             </button>
           </div>
 
-          <!-- Customization Section -->
-          <div class="w-full max-w-5xl px-4 mt-8 grid grid-cols-1 md:grid-cols-4 gap-4">
-             ${(() => {
-        const createColorCarousel = (idPrefix: string, defaultHex: string, label: string) => `
-                        <div class="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 transition-all group flex flex-col items-center gap-3 backdrop-blur-sm">
-                            <span class="text-xs font-bold text-white/70 uppercase tracking-widest group-hover:text-white transition-colors">${label}</span>
-                            <div class="flex items-center gap-4">
-                                <button class="color-arrow p-2 rounded-full hover:bg-white/10 text-white/50 hover:text-cyan-400 transition-all active:scale-95" data-target="${idPrefix}" data-dir="prev">
-                                    <span class="material-symbols-outlined text-xl">chevron_left</span>
-                                </button>
-                                
-                                <div class="color-preview w-10 h-10 rounded-full ring-2 ring-white/10 shadow-lg transition-all scale-100 hover:scale-110"
-                                     id="preview-${idPrefix}"
-                                     data-color="${defaultHex}"
-                                     style="background-color: ${defaultHex}; box-shadow: 0 0 15px ${defaultHex}40;">
-                                </div>
-
-                                <button class="color-arrow p-2 rounded-full hover:bg-white/10 text-white/50 hover:text-cyan-400 transition-all active:scale-95" data-target="${idPrefix}" data-dir="next">
-                                    <span class="material-symbols-outlined text-xl">chevron_right</span>
-                                </button>
-                            </div>
-                            <input type="hidden" id="${idPrefix}" value="${defaultHex}">
-                        </div>
-                    `;
-
-        return `
-                        ${createColorCarousel('lobby-color-left', '#FF0000', 'Left Paddle')}
-                        ${createColorCarousel('lobby-color-right', '#FFD700', 'Right Paddle')}
-                        ${createColorCarousel('lobby-color-ball', '#FF0000', 'Ball Color')}
-                        ${createColorCarousel('lobby-color-arena', '#100505', 'Arena Theme')}
-                    `;
-      })()}
-          </div>
-
           <div class="flex justify-center flex-col items-center gap-4 w-full max-w-md">
             <div id="join-section" class="hidden w-full animate-slide-up">
                <div class="flex gap-2">

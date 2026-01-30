@@ -5,12 +5,10 @@ export async function createTournament_post(request, reply) {
     const userid = request.headers['x-user-id'];
     const username = request.headers['x-user'];
     try {
+        console.log("Existing User:", username, "UserID:", userid);
         const existingUser = await axios.get(
-            "http://user-management:3000/profile/User",
+            `http://user-management:3000/user/${userid}`,
             {
-                params: {
-                    username,
-                },
             }
         );
         if (!existingUser.data) {
@@ -19,7 +17,7 @@ export async function createTournament_post(request, reply) {
                 message: "User does not exist!",
             });
         }
-        const nickname = existingUser.data.display_name;
+        const nickname = existingUser.data.user.display_name;
         const { tournamentname, maxPlayers } = request.body;
         const db = getDatabase();
         console.log(nickname, userid, tournamentname, maxPlayers);

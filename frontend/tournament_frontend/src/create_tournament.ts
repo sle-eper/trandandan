@@ -539,7 +539,7 @@ export async function renderTournamentBracket(tournamentName?: string) {
 
   // Fetch participants
   const Participant = await fetch(
-    `/Tournament/participant/list?tournamentname=${encodeURIComponent(tournamentName || "")}`,
+    `/Tournament/participant/list?tournamentName=${encodeURIComponent(tournamentName || "")}`,
     {
       method: "GET",
       headers: {

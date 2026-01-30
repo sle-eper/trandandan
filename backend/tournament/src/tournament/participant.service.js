@@ -95,10 +95,10 @@ export async function removeParticipant_post(request, reply) {
 export async function listParticipants_get(request, reply) {
     try {
         const ownerid = request.headers['x-user-id'];
-        const { tournamentname } = request.query;
+        const { tournamentName } = request.query;
         const db = await getDatabase();
-        console.log("tournament id:", tournamentname);
-        const tournament = await db.get('SELECT * FROM tournament WHERE name  = ?', [tournamentname]);
+        console.log("tournament id:", tournamentName);
+        const tournament = await db.get('SELECT * FROM tournament WHERE name  = ?', [tournamentName]);
         if (!tournament) {
             console.log("Forbidden");
             return reply.code(404)

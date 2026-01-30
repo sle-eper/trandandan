@@ -21,6 +21,8 @@ import cookie from "cookie";
 import { fetchUserData, getStatusOfTowFriends, changeStatusOfFriends, getFriendsOfUser, updateUserStat } from "./fetchingData";
 import fastify from "fastify";
 import fastifyIO from "fastify-socket.io";
+import axios from "axios";
+
 const server = fastify({ logger: true });
 server.register(fastifyIO, {
   path: "/socket.io",
@@ -272,7 +274,23 @@ server.ready().then(() => {
         if (!idInput || !friendIdInput) return;
         const id = String(idInput);
         const friendId = String(friendIdInput);
-        const gameId = Math.random().toString(36).substring(2, 9);
+
+        // Create game in game-service
+        let gameId;
+        try {
+          const user = socket.data.user;
+          const response = await axios.post('http://game-service:4000/api/game/create', {}, {
+            headers: {
+              'x-user-id': user.id,
+              'x-user': user.username
+            }
+          });
+          gameId = response.data.gameId;
+        } catch (e: any) {
+          console.error("[CHAT] Failed to create game in game-service:", e.message);
+          socket.emit("chat_error", "Failed to initialize game session");
+          return;
+        }
 
         // Notify both players to start the game
         const challengerSockets = onlineUsers.get(friendId);
@@ -490,7 +508,21 @@ server.ready().then(() => {
       for (const match of participantsMatchingJson.matches) {
         const player1 = match.player1;
         const player2 = match.player2;
-        const gameId = Math.random().toString(36).substring(2, 9);
+
+        let gameId;
+        try {
+          const response = await axios.post('http://game-service:4000/api/game/create', {}, {
+            headers: {
+              'x-user-id': player1.userid,
+              'x-user': player1.username || 'tournament_player'
+            }
+          });
+          gameId = response.data.gameId;
+        } catch (e: any) {
+          console.error("[CHAT] Failed to create tournament game:", e.message);
+          continue;
+        }
+
         const player1Sockets = onlineUsers.get(String(player1.userid));
         const player2Sockets = onlineUsers.get(String(player2.userid));
         if (player1Sockets) {
@@ -666,22 +698,24 @@ server.ready().then(() => {
       if (finalMatchJson.finalists.length === 2 && statusJson.status !== 'final_started') {
         console.log("{DEBUG} final match finalists:", finalMatchJson.finalists);
         console.log("{DEBUG} final match matches:", data);
-
-        // Emit updated bracket (make sure listeners expect this exact event name)
-        io.emit("Tournament:bracket", {
-          tournamentName: data.tournamentName,
-        });
-
-        // OPTIONAL GUARD (recommended)
-        // if (tournament.finalStarted) return;
-        // tournament.finalStarted = true;
-
+        socket.emit("Tournament:bracket", { tournamentName: data.tournamentName });
         setTimeout(async () => {
           const player1 = finalMatchJson.finalists[0];
           const player2 = finalMatchJson.finalists[1];
 
-          // Safer gameId
-          const gameId = `final_${Date.now()}_${player1.userid}_${player2.userid}`;
+          let gameId;
+          try {
+            const response = await axios.post('http://game-service:4000/api/game/create', {}, {
+              headers: {
+                'x-user-id': player1.userid,
+                'x-user': player1.username || 'tournament_finalist'
+              }
+            });
+            gameId = response.data.gameId;
+          } catch (e: any) {
+            console.error("[CHAT] Failed to create tournament final game:", e.message);
+            return;
+          }
 
           const player1Sockets = onlineUsers.get(String(player1.userid));
           const player2Sockets = onlineUsers.get(String(player2.userid));

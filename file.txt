@@ -1,20 +1,175 @@
 
-> fastify-app@1.0.0 start
+> fastify-app@1.0.0 dev
 > node server.js
 
-{"level":30,"time":1769623307477,"pid":19,"hostname":"c15dfea1b254","msg":"Server listening at http://127.0.0.1:5000"}
-Server listening on port 5000
-{"level":30,"time":1769623307477,"pid":19,"hostname":"c15dfea1b254","msg":"Server listening at http://172.19.0.4:5000"}
-{"level":30,"time":1769623318798,"pid":19,"hostname":"c15dfea1b254","reqId":"req-1","req":{"method":"GET","url":"/auth/verify","host":"auth","remoteAddress":"172.19.0.7","remotePort":41348},"msg":"incoming request"}
-Verifying user...
-{"level":30,"time":1769623318801,"pid":19,"hostname":"c15dfea1b254","reqId":"req-1","res":{"statusCode":401},"responseTime":2.7603169977664948,"msg":"request completed"}
-{"level":30,"time":1769623321366,"pid":19,"hostname":"c15dfea1b254","reqId":"req-2","req":{"method":"GET","url":"/api/auth/google","host":"localhost","remoteAddress":"172.19.0.7","remotePort":51688},"msg":"incoming request"}
-{"level":30,"time":1769623321366,"pid":19,"hostname":"c15dfea1b254","reqId":"req-2","res":{"statusCode":302},"responseTime":0.4138700067996979,"msg":"request completed"}
-{"level":30,"time":1769623364049,"pid":19,"hostname":"c15dfea1b254","reqId":"req-3","req":{"method":"GET","url":"/api/auth/google/callback?code=4%2F0ASc3gC3DQ1HgHN2tXZicWPDVNVkJFfS2QBJR1PA1dGtjx3pHI7FpNzmMNp2XS3uHMQvFrg&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+openid&authuser=0&prompt=consent","host":"localhost","remoteAddress":"172.19.0.7","remotePort":54500},"msg":"incoming request"}
-{"level":30,"time":1769623364344,"pid":19,"hostname":"c15dfea1b254","reqId":"req-3","res":{"statusCode":302},"responseTime":294.47307300567627,"msg":"request completed"}
-{"level":30,"time":1769623364838,"pid":19,"hostname":"c15dfea1b254","reqId":"req-4","req":{"method":"GET","url":"/auth/verify","host":"auth","remoteAddress":"172.19.0.7","remotePort":54502},"msg":"incoming request"}
-Verifying user...
-{"level":30,"time":1769623364839,"pid":19,"hostname":"c15dfea1b254","reqId":"req-4","res":{"statusCode":401},"responseTime":0.3972190022468567,"msg":"request completed"}
-{"level":30,"time":1769623364841,"pid":19,"hostname":"c15dfea1b254","reqId":"req-5","req":{"method":"GET","url":"/auth/verify","host":"auth","remoteAddress":"172.19.0.7","remotePort":54514},"msg":"incoming request"}
-Verifying user...
-{"level":30,"time":1769623364842,"pid":19,"hostname":"c15dfea1b254","reqId":"req-5","res":{"statusCode":401},"responseTime":0.38800397515296936,"msg":"request completed"}
+✅ Connected to SQLite database
+📌 DB FILE PATH = /tournament/data/Tournament.db
+{"level":30,"time":1769796138510,"pid":19,"hostname":"e11be71c1612","msg":"Server listening at http://127.0.0.1:5500"}
+Server listening on port 5500
+{"level":30,"time":1769796138511,"pid":19,"hostname":"e11be71c1612","msg":"Server listening at http://172.19.0.9:5500"}
+{"level":30,"time":1769796154041,"pid":19,"hostname":"e11be71c1612","reqId":"req-1","req":{"method":"POST","url":"/Tournament/create","host":"localhost","remoteAddress":"172.19.0.6","remotePort":39206},"msg":"incoming request"}
+nnnn 8 00)) 4
+{"level":30,"time":1769796154064,"pid":19,"hostname":"e11be71c1612","reqId":"req-1","res":{"statusCode":200},"responseTime":22.787985000759363,"msg":"request completed"}
+{"level":30,"time":1769796156339,"pid":19,"hostname":"e11be71c1612","reqId":"req-2","req":{"method":"GET","url":"/Tournament/list","host":"localhost","remoteAddress":"172.19.0.6","remotePort":39212},"msg":"incoming request"}
+{"level":30,"time":1769796156340,"pid":19,"hostname":"e11be71c1612","reqId":"req-2","res":{"statusCode":200},"responseTime":1.0322679989039898,"msg":"request completed"}
+{"level":30,"time":1769796156352,"pid":19,"hostname":"e11be71c1612","reqId":"req-3","req":{"method":"GET","url":"/Tournament/list","host":"localhost","remoteAddress":"172.19.0.6","remotePort":39222},"msg":"incoming request"}
+{"level":30,"time":1769796156353,"pid":19,"hostname":"e11be71c1612","reqId":"req-3","res":{"statusCode":200},"responseTime":0.6413959991186857,"msg":"request completed"}
+{"level":30,"time":1769796159424,"pid":19,"hostname":"e11be71c1612","reqId":"req-4","req":{"method":"POST","url":"/Tournament/join","host":"localhost","remoteAddress":"172.19.0.6","remotePort":39234},"msg":"incoming request"}
+UserID: 9 Username: lobaba
+{"level":30,"time":1769796159434,"pid":19,"hostname":"e11be71c1612","reqId":"req-4","res":{"statusCode":200},"responseTime":9.05061100050807,"msg":"request completed"}
+{"level":30,"time":1769796162922,"pid":19,"hostname":"e11be71c1612","reqId":"req-5","req":{"method":"GET","url":"/Tournament/list","host":"localhost","remoteAddress":"172.19.0.6","remotePort":53216},"msg":"incoming request"}
+{"level":30,"time":1769796162922,"pid":19,"hostname":"e11be71c1612","reqId":"req-5","res":{"statusCode":200},"responseTime":0.7224650010466576,"msg":"request completed"}
+{"level":30,"time":1769796162927,"pid":19,"hostname":"e11be71c1612","reqId":"req-6","req":{"method":"GET","url":"/Tournament/list","host":"localhost","remoteAddress":"172.19.0.6","remotePort":53232},"msg":"incoming request"}
+{"level":30,"time":1769796162928,"pid":19,"hostname":"e11be71c1612","reqId":"req-6","res":{"statusCode":200},"responseTime":0.9490649998188019,"msg":"request completed"}
+{"level":30,"time":1769796165481,"pid":19,"hostname":"e11be71c1612","reqId":"req-7","req":{"method":"POST","url":"/Tournament/join","host":"localhost","remoteAddress":"172.19.0.6","remotePort":53244},"msg":"incoming request"}
+UserID: 3 Username: ayya
+{"level":30,"time":1769796165491,"pid":19,"hostname":"e11be71c1612","reqId":"req-7","res":{"statusCode":200},"responseTime":10.05731499940157,"msg":"request completed"}
+{"level":30,"time":1769796167980,"pid":19,"hostname":"e11be71c1612","reqId":"req-8","req":{"method":"GET","url":"/Tournament/list","host":"localhost","remoteAddress":"172.19.0.6","remotePort":53248},"msg":"incoming request"}
+{"level":30,"time":1769796167981,"pid":19,"hostname":"e11be71c1612","reqId":"req-8","res":{"statusCode":200},"responseTime":0.9121820013970137,"msg":"request completed"}
+{"level":30,"time":1769796167987,"pid":19,"hostname":"e11be71c1612","reqId":"req-9","req":{"method":"GET","url":"/Tournament/list","host":"localhost","remoteAddress":"172.19.0.6","remotePort":53250},"msg":"incoming request"}
+{"level":30,"time":1769796167988,"pid":19,"hostname":"e11be71c1612","reqId":"req-9","res":{"statusCode":200},"responseTime":0.833254998549819,"msg":"request completed"}
+{"level":30,"time":1769796170233,"pid":19,"hostname":"e11be71c1612","reqId":"req-a","req":{"method":"POST","url":"/Tournament/join","host":"localhost","remoteAddress":"172.19.0.6","remotePort":53260},"msg":"incoming request"}
+UserID: 1 Username: ayoub
+==== Tournament Full ==== {
+  id: 73,
+  name: '00))',
+  status: 'waiting',
+  ownerid: 8,
+  maxPlayers: 4,
+  currentPlayers: 4,
+  created_at: '2026-01-30 18:02:34',
+  updated_at: '2026-01-30 18:02:34'
+}
+{"level":30,"time":1769796170246,"pid":19,"hostname":"e11be71c1612","reqId":"req-a","res":{"statusCode":200},"responseTime":13.049708999693394,"msg":"request completed"}
+{"level":30,"time":1769796170259,"pid":19,"hostname":"e11be71c1612","reqId":"req-b","req":{"method":"GET","url":"/Tournament/matchmaking?tournamentName=00))","host":"tournament:5500","remoteAddress":"172.19.0.3","remotePort":50004},"msg":"incoming request"}
+we have to matchmaking the participants of tournament: 00))
+Match: ayoub vs ayya
+Match: gogo vs nnnn
+{"level":30,"time":1769796170276,"pid":19,"hostname":"e11be71c1612","reqId":"req-b","res":{"statusCode":200},"responseTime":17.65357599966228,"msg":"request completed"}
+{"level":30,"time":1769796170282,"pid":19,"hostname":"e11be71c1612","reqId":"req-c","req":{"method":"POST","url":"/Tournament/updateStatus","host":"tournament:5500","remoteAddress":"172.19.0.3","remotePort":50010},"msg":"incoming request"}
+{"level":30,"time":1769796170282,"pid":19,"hostname":"e11be71c1612","reqId":"req-c","msg":"Route POST:/Tournament/updateStatus not found"}
+{"level":30,"time":1769796170282,"pid":19,"hostname":"e11be71c1612","reqId":"req-c","res":{"statusCode":404},"responseTime":0.35226899944245815,"msg":"request completed"}
+{"level":30,"time":1769796172261,"pid":19,"hostname":"e11be71c1612","reqId":"req-d","req":{"method":"GET","url":"/Tournament/participant/list?tournamentname=00))","host":"localhost","remoteAddress":"172.19.0.6","remotePort":50850},"msg":"incoming request"}
+tournament id: undefined
+Forbidden
+{"level":30,"time":1769796172262,"pid":19,"hostname":"e11be71c1612","reqId":"req-d","res":{"statusCode":404},"responseTime":0.714835999533534,"msg":"request completed"}
+{"level":30,"time":1769796172264,"pid":19,"hostname":"e11be71c1612","reqId":"req-e","req":{"method":"GET","url":"/Tournament/participant/list?tournamentname=00))","host":"localhost","remoteAddress":"172.19.0.6","remotePort":50862},"msg":"incoming request"}
+tournament id: undefined
+Forbidden
+{"level":30,"time":1769796172264,"pid":19,"hostname":"e11be71c1612","reqId":"req-e","res":{"statusCode":404},"responseTime":0.48029799945652485,"msg":"request completed"}
+{"level":30,"time":1769796174907,"pid":19,"hostname":"e11be71c1612","reqId":"req-f","req":{"method":"GET","url":"/Tournament/participant/list?tournamentname=00))","host":"localhost","remoteAddress":"172.19.0.6","remotePort":50864},"msg":"incoming request"}
+tournament id: undefined
+Forbidden
+{"level":30,"time":1769796174907,"pid":19,"hostname":"e11be71c1612","reqId":"req-f","res":{"statusCode":404},"responseTime":0.4140309989452362,"msg":"request completed"}
+{"level":30,"time":1769796174918,"pid":19,"hostname":"e11be71c1612","reqId":"req-g","req":{"method":"GET","url":"/Tournament/participant/list?tournamentname=00))","host":"localhost","remoteAddress":"172.19.0.6","remotePort":50876},"msg":"incoming request"}
+tournament id: undefined
+Forbidden
+{"level":30,"time":1769796174918,"pid":19,"hostname":"e11be71c1612","reqId":"req-g","res":{"statusCode":404},"responseTime":0.3614290002733469,"msg":"request completed"}
+{"level":30,"time":1769796209837,"pid":19,"hostname":"e11be71c1612","reqId":"req-h","req":{"method":"GET","url":"/Tournament/list","host":"localhost","remoteAddress":"172.19.0.6","remotePort":49222},"msg":"incoming request"}
+{"level":30,"time":1769796209840,"pid":19,"hostname":"e11be71c1612","reqId":"req-h","res":{"statusCode":200},"responseTime":2.193343000486493,"msg":"request completed"}
+{"level":30,"time":1769796209841,"pid":19,"hostname":"e11be71c1612","reqId":"req-i","req":{"method":"GET","url":"/Tournament/list","host":"localhost","remoteAddress":"172.19.0.6","remotePort":49238},"msg":"incoming request"}
+{"level":30,"time":1769796209843,"pid":19,"hostname":"e11be71c1612","reqId":"req-i","res":{"statusCode":200},"responseTime":1.7496849987655878,"msg":"request completed"}
+{"level":30,"time":1769796209845,"pid":19,"hostname":"e11be71c1612","reqId":"req-j","req":{"method":"GET","url":"/Tournament/list","host":"localhost","remoteAddress":"172.19.0.6","remotePort":49240},"msg":"incoming request"}
+{"level":30,"time":1769796209847,"pid":19,"hostname":"e11be71c1612","reqId":"req-j","res":{"statusCode":200},"responseTime":1.709375999867916,"msg":"request completed"}
+{"level":30,"time":1769796209847,"pid":19,"hostname":"e11be71c1612","reqId":"req-k","req":{"method":"POST","url":"/Tournament/finalMatch","host":"tournament:5500","remoteAddress":"172.19.0.3","remotePort":50004},"msg":"incoming request"}
+**********Final Match Result: 00)) 1
+{"level":30,"time":1769796209852,"pid":19,"hostname":"e11be71c1612","reqId":"req-l","req":{"method":"GET","url":"/Tournament/participant/list?tournamentname=00))","host":"localhost","remoteAddress":"172.19.0.6","remotePort":49242},"msg":"incoming request"}
+tournament id: undefined
+Forbidden
+{"level":30,"time":1769796209854,"pid":19,"hostname":"e11be71c1612","reqId":"req-l","res":{"statusCode":404},"responseTime":1.5869459994137287,"msg":"request completed"}
+{"level":30,"time":1769796209860,"pid":19,"hostname":"e11be71c1612","reqId":"req-m","req":{"method":"GET","url":"/Tournament/list","host":"localhost","remoteAddress":"172.19.0.6","remotePort":49254},"msg":"incoming request"}
+{"level":30,"time":1769796209870,"pid":19,"hostname":"e11be71c1612","reqId":"req-k","res":{"statusCode":200},"responseTime":22.184518998488784,"msg":"request completed"}
+{"level":30,"time":1769796209872,"pid":19,"hostname":"e11be71c1612","reqId":"req-m","res":{"statusCode":200},"responseTime":12.188619999215007,"msg":"request completed"}
+{"level":30,"time":1769796209873,"pid":19,"hostname":"e11be71c1612","reqId":"req-n","req":{"method":"POST","url":"/Tournament/finalMatch","host":"tournament:5500","remoteAddress":"172.19.0.3","remotePort":50010},"msg":"incoming request"}
+**********Final Match Result: 00)) 1
+{"level":30,"time":1769796209876,"pid":19,"hostname":"e11be71c1612","reqId":"req-o","req":{"method":"GET","url":"/Tournament/participant/list?tournamentname=00))","host":"localhost","remoteAddress":"172.19.0.6","remotePort":49262},"msg":"incoming request"}
+tournament id: undefined
+Forbidden
+{"level":30,"time":1769796209878,"pid":19,"hostname":"e11be71c1612","reqId":"req-o","res":{"statusCode":404},"responseTime":2.0412159990519285,"msg":"request completed"}
+{"level":30,"time":1769796209880,"pid":19,"hostname":"e11be71c1612","reqId":"req-p","req":{"method":"GET","url":"/Tournament/finalMatch?tournamentName=00))","host":"tournament:5500","remoteAddress":"172.19.0.3","remotePort":40530},"msg":"incoming request"}
+Finalists fetched: [
+  { id: 79, nickname: 'ayoub', tournamentid: 73, userid: 1, score: 0 }
+]
+{"level":30,"time":1769796209884,"pid":19,"hostname":"e11be71c1612","reqId":"req-p","res":{"statusCode":200},"responseTime":3.246638000011444,"msg":"request completed"}
+User already in final table
+{"level":30,"time":1769796209884,"pid":19,"hostname":"e11be71c1612","reqId":"req-n","res":{"statusCode":400},"responseTime":11.058059001341462,"msg":"request completed"}
+{"level":30,"time":1769796209888,"pid":19,"hostname":"e11be71c1612","reqId":"req-q","req":{"method":"GET","url":"/Tournament/status?tournamentName=00))","host":"tournament:5500","remoteAddress":"172.19.0.3","remotePort":50004},"msg":"incoming request"}
+{"level":30,"time":1769796209889,"pid":19,"hostname":"e11be71c1612","reqId":"req-q","res":{"statusCode":200},"responseTime":0.6095300000160933,"msg":"request completed"}
+{"level":30,"time":1769796209889,"pid":19,"hostname":"e11be71c1612","reqId":"req-r","req":{"method":"GET","url":"/Tournament/finalMatch?tournamentName=00))","host":"tournament:5500","remoteAddress":"172.19.0.3","remotePort":40530},"msg":"incoming request"}
+Finalists fetched: [
+  { id: 79, nickname: 'ayoub', tournamentid: 73, userid: 1, score: 0 }
+]
+{"level":30,"time":1769796209890,"pid":19,"hostname":"e11be71c1612","reqId":"req-r","res":{"statusCode":200},"responseTime":0.3736889995634556,"msg":"request completed"}
+{"level":30,"time":1769796209892,"pid":19,"hostname":"e11be71c1612","reqId":"req-s","req":{"method":"GET","url":"/Tournament/status?tournamentName=00))","host":"tournament:5500","remoteAddress":"172.19.0.3","remotePort":50004},"msg":"incoming request"}
+{"level":30,"time":1769796209892,"pid":19,"hostname":"e11be71c1612","reqId":"req-s","res":{"statusCode":200},"responseTime":0.26392799988389015,"msg":"request completed"}
+{"level":30,"time":1769796229780,"pid":19,"hostname":"e11be71c1612","reqId":"req-t","req":{"method":"GET","url":"/Tournament/list","host":"localhost","remoteAddress":"172.19.0.6","remotePort":55366},"msg":"incoming request"}
+{"level":30,"time":1769796229782,"pid":19,"hostname":"e11be71c1612","reqId":"req-t","res":{"statusCode":200},"responseTime":1.6945979986339808,"msg":"request completed"}
+{"level":30,"time":1769796229782,"pid":19,"hostname":"e11be71c1612","reqId":"req-u","req":{"method":"GET","url":"/Tournament/list","host":"localhost","remoteAddress":"172.19.0.6","remotePort":55372},"msg":"incoming request"}
+{"level":30,"time":1769796229783,"pid":19,"hostname":"e11be71c1612","reqId":"req-u","res":{"statusCode":200},"responseTime":1.0411300007253885,"msg":"request completed"}
+{"level":30,"time":1769796229789,"pid":19,"hostname":"e11be71c1612","reqId":"req-v","req":{"method":"GET","url":"/Tournament/list","host":"localhost","remoteAddress":"172.19.0.6","remotePort":55386},"msg":"incoming request"}
+{"level":30,"time":1769796229792,"pid":19,"hostname":"e11be71c1612","reqId":"req-v","res":{"statusCode":200},"responseTime":3.0792939998209476,"msg":"request completed"}
+{"level":30,"time":1769796229793,"pid":19,"hostname":"e11be71c1612","reqId":"req-w","req":{"method":"POST","url":"/Tournament/finalMatch","host":"tournament:5500","remoteAddress":"172.19.0.3","remotePort":50004},"msg":"incoming request"}
+**********Final Match Result: 00)) 9
+{"level":30,"time":1769796229796,"pid":19,"hostname":"e11be71c1612","reqId":"req-x","req":{"method":"GET","url":"/Tournament/list","host":"localhost","remoteAddress":"172.19.0.6","remotePort":55398},"msg":"incoming request"}
+{"level":30,"time":1769796229797,"pid":19,"hostname":"e11be71c1612","reqId":"req-x","res":{"statusCode":200},"responseTime":1.4740299992263317,"msg":"request completed"}
+{"level":30,"time":1769796229804,"pid":19,"hostname":"e11be71c1612","reqId":"req-w","res":{"statusCode":200},"responseTime":10.637920999899507,"msg":"request completed"}
+{"level":30,"time":1769796229806,"pid":19,"hostname":"e11be71c1612","reqId":"req-y","req":{"method":"GET","url":"/Tournament/finalMatch?tournamentName=00))","host":"tournament:5500","remoteAddress":"172.19.0.3","remotePort":50010},"msg":"incoming request"}
+Finalists fetched: [
+  { id: 79, nickname: 'ayoub', tournamentid: 73, userid: 1, score: 0 },
+  { id: 80, nickname: 'gogo', tournamentid: 73, userid: 9, score: 0 }
+]
+{"level":30,"time":1769796229808,"pid":19,"hostname":"e11be71c1612","reqId":"req-y","res":{"statusCode":200},"responseTime":1.1849830001592636,"msg":"request completed"}
+{"level":30,"time":1769796229811,"pid":19,"hostname":"e11be71c1612","reqId":"req-z","req":{"method":"POST","url":"/Tournament/finalMatch","host":"tournament:5500","remoteAddress":"172.19.0.3","remotePort":50004},"msg":"incoming request"}
+**********Final Match Result: 00)) 9
+{"level":30,"time":1769796229814,"pid":19,"hostname":"e11be71c1612","reqId":"req-10","req":{"method":"GET","url":"/Tournament/status?tournamentName=00))","host":"tournament:5500","remoteAddress":"172.19.0.3","remotePort":40530},"msg":"incoming request"}
+{"level":30,"time":1769796229815,"pid":19,"hostname":"e11be71c1612","reqId":"req-10","res":{"statusCode":200},"responseTime":1.278974998742342,"msg":"request completed"}
+{"level":30,"time":1769796229817,"pid":19,"hostname":"e11be71c1612","reqId":"req-11","req":{"method":"GET","url":"/Tournament/participant/list?tournamentname=00))","host":"localhost","remoteAddress":"172.19.0.6","remotePort":55414},"msg":"incoming request"}
+tournament id: undefined
+Forbidden
+{"level":30,"time":1769796229819,"pid":19,"hostname":"e11be71c1612","reqId":"req-11","res":{"statusCode":404},"responseTime":1.9644609987735748,"msg":"request completed"}
+User already in final table
+{"level":30,"time":1769796229820,"pid":19,"hostname":"e11be71c1612","reqId":"req-z","res":{"statusCode":400},"responseTime":8.944133000448346,"msg":"request completed"}
+{"level":30,"time":1769796229822,"pid":19,"hostname":"e11be71c1612","reqId":"req-12","req":{"method":"GET","url":"/Tournament/finalMatch?tournamentName=00))","host":"tournament:5500","remoteAddress":"172.19.0.3","remotePort":50010},"msg":"incoming request"}
+Finalists fetched: [
+  { id: 79, nickname: 'ayoub', tournamentid: 73, userid: 1, score: 0 },
+  { id: 80, nickname: 'gogo', tournamentid: 73, userid: 9, score: 0 }
+]
+{"level":30,"time":1769796229826,"pid":19,"hostname":"e11be71c1612","reqId":"req-12","res":{"statusCode":200},"responseTime":3.3144480008631945,"msg":"request completed"}
+{"level":30,"time":1769796229829,"pid":19,"hostname":"e11be71c1612","reqId":"req-13","req":{"method":"GET","url":"/Tournament/status?tournamentName=00))","host":"tournament:5500","remoteAddress":"172.19.0.3","remotePort":50004},"msg":"incoming request"}
+{"level":30,"time":1769796229830,"pid":19,"hostname":"e11be71c1612","reqId":"req-14","req":{"method":"GET","url":"/Tournament/participant/list?tournamentname=00))","host":"localhost","remoteAddress":"172.19.0.6","remotePort":55420},"msg":"incoming request"}
+tournament id: undefined
+{"level":30,"time":1769796229831,"pid":19,"hostname":"e11be71c1612","reqId":"req-13","res":{"statusCode":200},"responseTime":1.9821949992328882,"msg":"request completed"}
+Forbidden
+{"level":30,"time":1769796229832,"pid":19,"hostname":"e11be71c1612","reqId":"req-14","res":{"statusCode":404},"responseTime":1.3788760006427765,"msg":"request completed"}
+{"level":30,"time":1769796239823,"pid":19,"hostname":"e11be71c1612","reqId":"req-15","req":{"method":"POST","url":"/Tournament/status","host":"tournament:5500","remoteAddress":"172.19.0.3","remotePort":50004},"msg":"incoming request"}
+{"level":30,"time":1769796239827,"pid":19,"hostname":"e11be71c1612","reqId":"req-15","res":{"statusCode":200},"responseTime":3.8326890002936125,"msg":"request completed"}
+{"level":30,"time":1769796239843,"pid":19,"hostname":"e11be71c1612","reqId":"req-16","req":{"method":"POST","url":"/Tournament/status","host":"tournament:5500","remoteAddress":"172.19.0.3","remotePort":50004},"msg":"incoming request"}
+{"level":30,"time":1769796239845,"pid":19,"hostname":"e11be71c1612","reqId":"req-16","res":{"statusCode":200},"responseTime":1.737738998606801,"msg":"request completed"}
+{"level":30,"time":1769796274689,"pid":19,"hostname":"e11be71c1612","reqId":"req-17","req":{"method":"POST","url":"/Tournament/declareWinner","host":"localhost","remoteAddress":"172.19.0.6","remotePort":58682},"msg":"incoming request"}
+Declaring winner for tournament: 00)) Winner ID: 1
+{"level":30,"time":1769796274690,"pid":19,"hostname":"e11be71c1612","reqId":"req-18","req":{"method":"POST","url":"/Tournament/declareWinner","host":"localhost","remoteAddress":"172.19.0.6","remotePort":58688},"msg":"incoming request"}
+Declaring winner for tournament: 00)) Winner ID: 1
+{"level":30,"time":1769796274691,"pid":19,"hostname":"e11be71c1612","reqId":"req-19","req":{"method":"POST","url":"/Tournament/declareWinner","host":"localhost","remoteAddress":"172.19.0.6","remotePort":58704},"msg":"incoming request"}
+Declaring winner for tournament: 00)) Winner ID: 1
+{"level":30,"time":1769796274691,"pid":19,"hostname":"e11be71c1612","reqId":"req-1a","req":{"method":"POST","url":"/Tournament/declareWinner","host":"localhost","remoteAddress":"172.19.0.6","remotePort":58718},"msg":"incoming request"}
+Declaring winner for tournament: 00)) Winner ID: 1
+{"level":30,"time":1769796274693,"pid":19,"hostname":"e11be71c1612","reqId":"req-17","res":{"statusCode":200},"responseTime":3.8491499982774258,"msg":"request completed"}
+{"level":30,"time":1769796274698,"pid":19,"hostname":"e11be71c1612","reqId":"req-18","res":{"statusCode":200},"responseTime":7.84612499922514,"msg":"request completed"}
+{"level":30,"time":1769796274707,"pid":19,"hostname":"e11be71c1612","reqId":"req-19","res":{"statusCode":200},"responseTime":16.157707000151277,"msg":"request completed"}
+{"level":30,"time":1769796274708,"pid":19,"hostname":"e11be71c1612","reqId":"req-1a","res":{"statusCode":200},"responseTime":16.279068000614643,"msg":"request completed"}
+{"level":30,"time":1769796274708,"pid":19,"hostname":"e11be71c1612","reqId":"req-1b","req":{"method":"POST","url":"/Tournament/status","host":"localhost","remoteAddress":"172.19.0.6","remotePort":58732},"msg":"incoming request"}
+{"level":30,"time":1769796274709,"pid":19,"hostname":"e11be71c1612","reqId":"req-1c","req":{"method":"POST","url":"/Tournament/status","host":"localhost","remoteAddress":"172.19.0.6","remotePort":58742},"msg":"incoming request"}
+{"level":30,"time":1769796274711,"pid":19,"hostname":"e11be71c1612","reqId":"req-1d","req":{"method":"POST","url":"/Tournament/status","host":"localhost","remoteAddress":"172.19.0.6","remotePort":58744},"msg":"incoming request"}
+{"level":30,"time":1769796274714,"pid":19,"hostname":"e11be71c1612","reqId":"req-1b","res":{"statusCode":200},"responseTime":5.2471169997006655,"msg":"request completed"}
+{"level":30,"time":1769796274715,"pid":19,"hostname":"e11be71c1612","reqId":"req-1e","req":{"method":"POST","url":"/Tournament/status","host":"localhost","remoteAddress":"172.19.0.6","remotePort":58754},"msg":"incoming request"}
+{"level":30,"time":1769796274715,"pid":19,"hostname":"e11be71c1612","reqId":"req-1c","res":{"statusCode":200},"responseTime":6.134416000917554,"msg":"request completed"}
+{"level":30,"time":1769796274716,"pid":19,"hostname":"e11be71c1612","reqId":"req-1d","res":{"statusCode":200},"responseTime":4.475473999977112,"msg":"request completed"}
+{"level":30,"time":1769796274716,"pid":19,"hostname":"e11be71c1612","reqId":"req-1f","req":{"method":"POST","url":"/Tournament/status","host":"localhost","remoteAddress":"172.19.0.6","remotePort":58762},"msg":"incoming request"}
+{"level":30,"time":1769796274717,"pid":19,"hostname":"e11be71c1612","reqId":"req-1e","res":{"statusCode":200},"responseTime":2.4940609987825155,"msg":"request completed"}
+{"level":30,"time":1769796274718,"pid":19,"hostname":"e11be71c1612","reqId":"req-1g","req":{"method":"POST","url":"/Tournament/status","host":"localhost","remoteAddress":"172.19.0.6","remotePort":58766},"msg":"incoming request"}
+{"level":30,"time":1769796274719,"pid":19,"hostname":"e11be71c1612","reqId":"req-1f","res":{"statusCode":200},"responseTime":2.2177580017596483,"msg":"request completed"}
+{"level":30,"time":1769796274719,"pid":19,"hostname":"e11be71c1612","reqId":"req-1g","res":{"statusCode":200},"responseTime":1.2114930003881454,"msg":"request completed"}
+{"level":30,"time":1769796274723,"pid":19,"hostname":"e11be71c1612","reqId":"req-1h","req":{"method":"POST","url":"/Tournament/status","host":"localhost","remoteAddress":"172.19.0.6","remotePort":58772},"msg":"incoming request"}
+{"level":30,"time":1769796274724,"pid":19,"hostname":"e11be71c1612","reqId":"req-1h","res":{"statusCode":200},"responseTime":1.0091099999845028,"msg":"request completed"}
+{"level":30,"time":1769796274746,"pid":19,"hostname":"e11be71c1612","reqId":"req-1i","req":{"method":"POST","url":"/Tournament/status","host":"localhost","remoteAddress":"172.19.0.6","remotePort":58784},"msg":"incoming request"}
+{"level":30,"time":1769796274747,"pid":19,"hostname":"e11be71c1612","reqId":"req-1i","res":{"statusCode":200},"responseTime":1.3661299999803305,"msg":"request completed"}
