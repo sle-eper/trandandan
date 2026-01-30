@@ -642,6 +642,7 @@ server.ready().then(() => {
         },
         body: JSON.stringify({ tournamentName: tournamentName, winnerId: socket.data.userId }),
       });
+      console.log("{DEBUG} final match request sent for tournament:", tournamentName);
       const finalMatch = await fetch(`http://tournament:5500/Tournament/finalMatch?tournamentName=${encodeURIComponent(tournamentName)}`, {
         method: 'GET',
         headers: {

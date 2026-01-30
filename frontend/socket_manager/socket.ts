@@ -9,7 +9,7 @@ export function reSetSocket(){
 
 export function socketInstance(): Socket {
   if (!socket) {
-    return socket = io("https://10.14.4.3:8443", {
+    return socket = io("https://10.14.2.1:8443", {
       path: "/socket.io",
       withCredentials: true,
       transports: ["websocket"],
