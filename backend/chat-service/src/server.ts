@@ -518,6 +518,23 @@ server.ready().then(() => {
         }
         io.to(data.gameId).emit("tournament:bracket", {tournamentName: data.tournamentName});
         setTimeout(() => {
+          
+          const room1 = io.sockets.adapter.rooms.get(data.gameId);
+          if (!room1 || room1.size < 2) 
+            {
+              if (room1 && room1.size === 1) {
+                const sidArray = Array.from(room1);
+                const sid = sidArray[0];
+                io.to(sid).emit("match:ended", {
+                  userid: socket.data.userId,
+                  result: 'won',
+                  message: 'Opponent did not join in time. You win by default.',
+                  tournamentName: data.tournamentName
+                });
+                socket.leave(data.gameId);
+              }
+              return;
+            }
           const sidArray = Array.from(room);
           const [sid1, sid2] = sidArray;
           const gameId = data.gameId;
