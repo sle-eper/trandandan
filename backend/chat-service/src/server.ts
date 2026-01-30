@@ -421,11 +421,10 @@ server.ready().then(() => {
     socket.on("disconnect", () => {
       try {
         for (const room of socket.rooms) {
-          if (room != socket.id) 
-            {
-              socket.emit("tournament:leave", { tournamentName: room });
-              socket.leave(room);
-            }
+          if (room != socket.id) {
+            socket.emit("tournament:leave", { tournamentName: room });
+            socket.leave(room);
+          }
         }
         const id = socket.data.userId;
         if (id && onlineUsers.has(id)) {
@@ -523,8 +522,21 @@ server.ready().then(() => {
           clearTimeout(existingTimeout);
           tournamentTimeouts.delete(data.gameId);
         }
-        io.to(data.gameId).emit("tournament:bracket", {tournamentName: data.tournamentName});
+        io.to(data.gameId).emit("tournament:bracket", { tournamentName: data.tournamentName });
         setTimeout(() => {
+          const room1 = io.sockets.adapter.rooms.get(data.gameId);
+          if (!room1 || room1.size < 2) {
+            const sidArray11 = room1 ? Array.from(room1) : [];
+            for (const sid of sidArray11) {
+              io.to(sid).emit("match:ended", {
+                userid: socket.data.userId,
+                result: 'won',
+                message: 'Opponent did not join in time. You win by default.',
+                tournamentName: data.tournamentName
+              });
+            }
+              return;
+            }
           const sidArray = Array.from(room);
           const [sid1, sid2] = sidArray;
           const gameId = data.gameId;
