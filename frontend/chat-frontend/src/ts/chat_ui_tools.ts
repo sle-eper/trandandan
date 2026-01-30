@@ -223,9 +223,14 @@ export function onScroll() {
     }
 }
 
-export   function fetchListOfFriends(): Promise<any> {
-    return new Promise((resolve) => {
-      getSocketInstance()?.once("friends_list", (friends:any[]) => {
+export function fetchListOfFriends(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error("Timeout: friends list request took too long"));
+      }, 5000); // 5 second timeout
+
+      getSocketInstance()?.once("friends_list", (friends: any[]) => {
+        clearTimeout(timeout);
         resolve(friends);
       });
       getSocketInstance()?.emit("get_friends");

@@ -173,15 +173,21 @@ export function matchHandlerTournament(data: any) {
 }
 
 export async function finalResultHandlerTournament(data: any) {
-  await fetch("/Tournament/declareWinner", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ tournamentName: data.tournamentName, winnerId: data.winnerId }),
-  });
-  const socket = Socket.getSocketInstance();
-  socket.emit("tournament:Goo", data);
+  if (data.status === "Winner") {
+    await fetch("/Tournament/declareWinner", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ tournamentName: data.tournamentName, winnerId: data.winnerId }),
+    });
+    const socket = Socket.getSocketInstance();
+    socket.emit("tournament:Goo", data);
+  }
+  else {
+    const socket = Socket.getSocketInstance();
+    socket.emit("tournament:Goo", data);
+  }
 }
 export async function tournamentChampionHandler(data: any) {
   await fetch("/Tournament/status", {

@@ -548,25 +548,24 @@ server.ready().then(() => {
           clearTimeout(existingTimeout);
           tournamentTimeouts.delete(data.gameId);
         }
-        io.to(data.gameId).emit("tournament:bracket", {tournamentName: data.tournamentName});
+        io.to(data.gameId).emit("tournament:bracket", { tournamentName: data.tournamentName });
         setTimeout(() => {
-          
+
           const room1 = io.sockets.adapter.rooms.get(data.gameId);
-          if (!room1 || room1.size < 2) 
-            {
-              if (room1 && room1.size === 1) {
-                const sidArray = Array.from(room1);
-                const sid = sidArray[0];
-                io.to(sid).emit("match:ended", {
-                  userid: socket.data.userId,
-                  result: 'won',
-                  message: 'Opponent did not join in time. You win by default.',
-                  tournamentName: data.tournamentName
-                });
-                socket.leave(data.gameId);
-              }
-              return;
+          if (!room1 || room1.size < 2) {
+            if (room1 && room1.size === 1) {
+              const sidArray = Array.from(room1);
+              const sid = sidArray[0];
+              io.to(sid).emit("match:ended", {
+                userid: socket.data.userId,
+                result: 'won',
+                message: 'Opponent did not join in time. You win by default.',
+                tournamentName: data.tournamentName
+              });
+              socket.leave(data.gameId);
             }
+            return;
+          }
           const sidArray = Array.from(room);
           const [sid1, sid2] = sidArray;
           const gameId = data.gameId;
@@ -637,16 +636,15 @@ server.ready().then(() => {
 
         if (winnerSockets) {
           for (const sid of winnerSockets) {
-            io.to(sid).emit("tournament:finalResult", data);
+            io.to(sid).emit("tournament:finalResult", "Winner", data);
           }
         }
 
         if (loserSockets) {
           for (const sid of loserSockets) {
-            io.to(sid).emit("tournament:finalResult", data);
+            io.to(sid).emit("tournament:finalResult", "Loser", data);
           }
         }
-
         return;
       }
       const loserSockets = onlineUsers.get(String(loser));
@@ -767,8 +765,10 @@ server.ready().then(() => {
         }, 10000);
       }
 
-      else
+      else {
+        console.log("{DEBUG} Not enough finalists to start final match or final already started.");
         socket.emit("Tournament:bracket", { tournamentName: data.tournamentName });
+      }
 
     });
 

@@ -52,8 +52,10 @@ export async function showMainUI() {
     
     if (chatContent) {
       chatContent.classList.add("gap-6");
-      const friends = await fetchListOfFriends();
-      // console.table(friends.waitingMsg);
+      try {
+        const friends = await fetchListOfFriends();
+        console.log(`desplay`,friends);
+        // console.table(friends.waitingMsg);
   
       chatContent.innerHTML = listOfMsg(friends.friends,friends.waitingMsg,userID);
       if(friends && friends.friends.length > 0)
@@ -285,5 +287,9 @@ export async function showMainUI() {
           }
         });
       });
+      } catch (error) {
+        console.error("Failed to fetch friends list:", error);
+        chatContent.innerHTML = "<p>Failed to load chat. Please refresh the page.</p>";
+      }
     }
   }
