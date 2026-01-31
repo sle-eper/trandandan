@@ -43,7 +43,7 @@ class GameSocketService {
         try {
             const ls = localStorage.getItem(name);
             if (ls) return ls;
-        } catch (e) {}
+        } catch (e) { }
         return null;
     }
 
@@ -74,15 +74,17 @@ class GameSocketService {
             });
 
             if (!response.ok) {
-                console.error(`Game creation failed with status: ${response.status}`);
-                return null;
+                const errorData = await response.json().catch(() => ({}));
+                const msg = errorData.error || `Game creation failed (${response.status})`;
+                console.error(msg);
+                throw new Error(msg);
             }
 
             const data = await response.json();
             return data.gameId;
         } catch (err) {
             console.error('Network error during game creation:', err);
-            return null;
+            throw err;
         }
     }
 }

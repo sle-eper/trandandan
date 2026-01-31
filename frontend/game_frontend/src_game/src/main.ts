@@ -629,13 +629,27 @@ function setupMenuButtons() {
 }
 
 async function startRemoteGame() {
-    gameSocket.connect();
-    const gameId = await gameSocket.createGame();
-    if (gameId) {
-        currentGameId = gameId;
-        isRemote = true;
-        playerSide = 'left';
-        gameSocket.socket.emit('join_game', { gameId, side: 'left' });
+    try {
+        gameSocket.connect();
+        const gameId = await gameSocket.createGame();
+        if (gameId) {
+            currentGameId = gameId;
+            isRemote = true;
+            playerSide = 'left';
+            gameSocket.socket.emit('join_game', { gameId, side: 'left' });
+        }
+    } catch (err: any) {
+        console.error('Failed to start remote game:', err);
+        const msg = err.message || 'Failed to create game';
+
+        const infoBox = document.getElementById('game-info');
+        if (infoBox) {
+            infoBox.classList.remove('hidden');
+            infoBox.innerHTML = `<span class="text-red-500 font-bold">ERROR</span><br><span class="text-sm text-white/80">${msg}</span>`;
+        }
+
+        // Return to lobby after a delay
+        setTimeout(() => showLobbyView(), 3000);
     }
 }
 
@@ -644,12 +658,19 @@ async function joinMatch() {
     const gameId = input?.value.trim();
     if (!gameId) return;
 
-    showGameView();
-    gameSocket.connect();
-    currentGameId = gameId;
-    isRemote = true;
-    playerSide = 'right';
-    gameSocket.socket.emit('join_game', { gameId, side: 'right' });
+    try {
+        showGameView();
+        gameSocket.connect();
+        currentGameId = gameId;
+        isRemote = true;
+        playerSide = 'right';
+        gameSocket.socket.emit('join_game', { gameId, side: 'right' });
+    } catch (err: any) {
+        console.error('Failed to join match:', err);
+        const msg = err.message || 'Failed to join match';
+        alert(msg);
+        showLobbyView();
+    }
 }
 
 function checkUrlForGame() {

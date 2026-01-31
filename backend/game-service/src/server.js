@@ -79,9 +79,17 @@ fastify.post('/api/game/create', async (request, reply) => {
     if (!user) return reply.code(401).send({ error: "Unauthorized" });
 
     // Prevent multiple game creation for the same user
-    for (const g of games.values()) {
+    for (const [gid, g] of games.entries()) {
         if (g.status !== 'finished' && g.players.some(p => String(p.id) === String(user.id))) {
-            return reply.code(400).send({ error: "You already have an active game." });
+            if (g.status === 'playing') {
+                return reply.code(400).send({ error: "You already have an active online match in another session." });
+            } else {
+                // Remove from waiting game
+                g.players = g.players.filter(p => String(p.id) !== String(user.id));
+                if (g.players.length === 0) {
+                    games.delete(gid);
+                }
+            }
         }
     }
 
@@ -178,69 +186,93 @@ const start = async () => {
                         return;
                     }
 
-                    if (game) {
-                        socket.join(gameId);
+                    for (const [otherId, otherGame] of games.entries()) {
+                        if (otherId !== gameId && otherGame.status !== 'finished' && otherGame.players.some(p => String(p.id) === String(socket.user.id))) {
+                            const otherPlayer = otherGame.players.find(p => String(p.id) === String(socket.user.id));
+                            const oldSocketId = otherPlayer?.socketId;
 
-                        let player = game.players.find(p => String(p.id) === String(socket.user.id));
-
-                        if (player) {
-                            player.socketId = socket.id;
-
-                            if (game.status === 'playing') {
-                                socket.emit('game_start', game);
-                            } else {
-                                socket.emit('waiting_for_opponent', game);
-                            }
-                            return;
-                        }
-
-                        // New player joining
-                        if (game.players.length < 2) {
-                            // Check if user is already in another game
-                            for (const g of games.values()) {
-                                if (g.id !== gameId && g.status !== 'finished' && g.players.some(p => String(p.id) === String(socket.user.id))) {
-                                    socket.emit('error', { message: 'You are already in another active game.' });
-                                    return;
+                            if (oldSocketId && oldSocketId !== socket.id) {
+                                const oldSocket = gameNamespace.sockets.get(oldSocketId);
+                                if (oldSocket) {
+                                    oldSocket.emit('error', { message: 'You have been disconnected because you joined another match in another session.' });
+                                    oldSocket.disconnect();
                                 }
                             }
 
-                            let side;
-                            const occupiedSides = game.players.map(p => p.side);
-
-                            if (requestedSide && !occupiedSides.includes(requestedSide)) {
-                                side = requestedSide;
-                            } else {
-                                side = occupiedSides.includes('left') ? 'right' : 'left';
+                            if (otherGame.status === 'waiting') {
+                                otherGame.players = otherGame.players.filter(p => String(p.id) !== String(socket.user.id));
+                                if (otherGame.players.length === 0) {
+                                    games.delete(otherId);
+                                }
+                            } else if (otherGame.status === 'playing') {
+                                
                             }
+                        }
+                    }
 
-                            game.players.push({
-                                id: socket.user.id,
-                                username: socket.user.username,
-                                side,
-                                socketId: socket.id
-                            });
+                    socket.join(gameId);
+                    let player = game.players.find(p => String(p.id) === String(socket.user.id));
 
-                            if (game.players.length === 2) {
-                                game.status = 'playing';
-                                gameNamespace.to(gameId).emit('game_start', game);
-                                startGameLoop(gameId);
-                            } else {
-                                socket.emit('waiting_for_opponent', game);
+                    if (player) {
+                        const oldSocketId = player.socketId;
+                        player.socketId = socket.id;
+
+                        if (oldSocketId && oldSocketId !== socket.id) {
+                            const oldSocket = gameNamespace.sockets.get(oldSocketId);
+                            if (oldSocket) {
+                                oldSocket.emit('error', { message: 'Session moved to another tab.' });
+                                oldSocket.disconnect();
                             }
+                        }
+
+                        if (game.status === 'playing') {
+                            socket.emit('game_start', game);
                         } else {
-                            socket.emit('game_full');
+                            socket.emit('waiting_for_opponent', game);
+                        }
+                        return;
+                    }
+
+                    if (game.players.length < 2) {
+                        let side;
+                        const occupiedSides = game.players.map(p => p.side);
+
+                        if (requestedSide && !occupiedSides.includes(requestedSide)) {
+                            side = requestedSide;
+                        } else {
+                            side = occupiedSides.includes('left') ? 'right' : 'left';
+                        }
+
+                        game.players.push({
+                            id: socket.user.id,
+                            username: socket.user.username,
+                            side,
+                            socketId: socket.id
+                        });
+
+                        if (game.players.length === 2) {
+                            game.status = 'playing';
+                            gameNamespace.to(gameId).emit('game_start', game);
+                            startGameLoop(gameId);
+                        } else {
+                            socket.emit('waiting_for_opponent', game);
                         }
                     } else {
-                        socket.emit('error', 'Game not found');
+                        socket.emit('game_full');
                     }
                 });
 
                 socket.on('disconnect', () => {
-                    userSockets.delete(socket.user.username);
-                    userSockets.delete(socket.user.id);
+                    if (userSockets.get(socket.user.username) === socket.id) {
+                        userSockets.delete(socket.user.username);
+                    }
+                    if (userSockets.get(socket.user.id) === socket.id) {
+                        userSockets.delete(socket.user.id);
+                    }
+
                     games.forEach((game, gameId) => {
                         if (game.status === 'waiting') {
-                            const index = game.players.findIndex(p => String(p.id) === String(socket.user.id));
+                            const index = game.players.findIndex(p => p.socketId === socket.id);
                             if (index !== -1) {
                                 game.players.splice(index, 1);
                                 if (game.players.length === 0) {
@@ -248,14 +280,13 @@ const start = async () => {
                                 }
                             }
                         } else if (game.status === 'playing') {
-                            const disconnectingPlayer = game.players.find(p => String(p.id) === String(socket.user.id));
+                            const disconnectingPlayer = game.players.find(p => p.socketId === socket.id);
                             if (disconnectingPlayer) {
                                 stopGameLoop(gameId);
+                                game.status = 'finished';
 
-                                const winner = game.players.find(p => String(p.id) !== String(socket.user.id));
+                                const winner = game.players.find(p => p.socketId !== socket.id);
                                 if (winner) {
-                                    game.status = 'finished';
-
                                     if (winner.side === 'left') {
                                         game.score.left = 3;
                                         game.score.right = 0;
@@ -272,13 +303,13 @@ const start = async () => {
                                     });
 
                                     saveMatchResult(game, winner, disconnectingPlayer);
-
-                                    game.rematchTimeout = setTimeout(() => {
-                                        if (games.has(gameId) && games.get(gameId).status === 'finished') {
-                                            games.delete(gameId);
-                                        }
-                                    }, 60000);
                                 }
+
+                                game.rematchTimeout = setTimeout(() => {
+                                    if (games.has(gameId) && games.get(gameId).status === 'finished') {
+                                        games.delete(gameId);
+                                    }
+                                }, 60000);
                             }
                         }
                     });
@@ -317,7 +348,6 @@ const start = async () => {
                             game.paddles = { left: 150, right: 150 };
                             game.rematchRequests = new Set();
 
-                            // Broadcast reset state to all clients
                             gameNamespace.to(gameId).emit('game_start', game);
 
                             stopGameLoop(gameId);
