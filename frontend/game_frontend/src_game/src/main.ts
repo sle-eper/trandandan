@@ -445,6 +445,10 @@ function setupSocketListeners() {
         winnerName = data.winner?.username || (leftScore > rightScore ? 'Left Player' : 'Right Player');
         drawWin(winnerName + ' Wins!');
 
+        // Show End Game Controls
+        const endControls = document.getElementById('end-game-controls');
+        if (endControls) endControls.classList.remove('hidden');
+
         // Show Return to Lobby button
         const btnLobby = document.getElementById('btn-return-lobby');
         if (btnLobby) btnLobby.classList.remove('hidden');
@@ -475,6 +479,10 @@ function setupSocketListeners() {
         gameStarted = false;
         gameOver = true;
 
+        // Show End Game Controls
+        const endControls = document.getElementById('end-game-controls');
+        if (endControls) endControls.classList.remove('hidden');
+
         // Show Return to Lobby button
         const btnLobby = document.getElementById('btn-return-lobby');
         if (btnLobby) btnLobby.classList.remove('hidden');
@@ -500,7 +508,9 @@ const handleVisibilityChange = () => {
             animationId = null;
         }
     } else {
-        if (!gameOver && !animationId) animate();
+        const container = document.getElementById('game-container');
+        const isGameView = container && !container.classList.contains('hidden');
+        if (isGameView && !animationId) animate();
     }
 };
 
@@ -752,10 +762,14 @@ export function animate() {
             // Reset button state (in case of rematch)
             const btnRematch = document.getElementById('btn-rematch');
             if (btnRematch) {
-                btnRematch.classList.remove('opacity-50', 'pointer-events-none');
-                const btnText = btnRematch.childNodes[2];
-                if (btnText) btnText.textContent = ' Rematch';
-                btnRematch.classList.remove('hidden');
+                if (gameMode === 'tournament') {
+                    btnRematch.classList.add('hidden');
+                } else {
+                    btnRematch.classList.remove('opacity-50', 'pointer-events-none');
+                    const btnText = btnRematch.childNodes[2];
+                    if (btnText) btnText.textContent = ' Rematch';
+                    btnRematch.classList.remove('hidden');
+                }
             }
         }
     }
