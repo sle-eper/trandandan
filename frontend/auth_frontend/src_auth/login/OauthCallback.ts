@@ -23,32 +23,26 @@ async function handleOAuthCallback() {
         // Get token from URL (if using query param method)
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
-        console.log("OAuth Token:", token);
         // Verify authentication with backend
         const response = await fetch("/auth/verify", {
             method: "GET",
             headers: { "Content-Type": "application/json" },
             credentials: "include", // Important for cookies
         });
-        console.log("OAuth verification response:", response);
         if (!response.ok) {
             throw new Error("Authentication verification failed");
         }
 
         const data = await response.json();
-        console.log("-----------------------------------------------data", data)
         if (response.ok) {
             // Initialize socket connection
-            console.log("Initializing socket after OAuth...");
             socketInstance();
             navigate("/home");
 
         } else {
-            console.error("OAuth authentication failed");
             navigate("/login");
         }
     } catch (error) {
-        console.error("OAuth callback error:", error);
         navigate("/login");
     }
 }

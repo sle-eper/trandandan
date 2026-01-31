@@ -5,12 +5,10 @@ export async function loginUser(username: string, password: string) {
     const response = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include", // VERY IMPORTANT FOR Cookies
+      credentials: "include", 
       body: JSON.stringify({ username, password }),
-      // credentials: "include", // VERY IMPORTANT to handle cookies
     });
     const body = await response.json();
-    // console.log("login response body:", body);
     return { response, body };
   } catch (err) {
     console.error(err);
@@ -24,12 +22,11 @@ export async function signupUser(
   password: string,
   confirm: string
 ) {
-  console.log("data", username, email, password);
   try {
     const response = await fetch("/api/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include", // VERY IMPORTANT FOR Cookies
+      credentials: "include", 
       body: JSON.stringify({ username, email, password, confirm }),
     });
     return await response.json();
@@ -62,6 +59,5 @@ export async function fetchMatchHistory(userId: number) {
   if (!res.ok) {
     throw new Error("Failed to fetch match history");
   }
-  console.log("success");
   return res.json();
 }

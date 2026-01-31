@@ -10,20 +10,19 @@ export function games(type?: string) {
   const main = document.getElementById("dashboard-content");
   if (!main) return;
 
-  // 👇 GAME SELECTION PAGE
+
   if (!type) {
     main.innerHTML = gamesTemplate();
     return;
   }
 
-  // 👇 SPY GAME
+
   if (type === "spy") {
     main.innerHTML = `<div id="spy-root" class="w-full h-full"></div>`;
     spyUi();
     return;
   }
 
-  // 👇 PONG GAME
   if (type === "pong") {
     main.innerHTML = `
       <div id="pong-root" class="relative w-full h-full flex flex-col items-center justify-center gap-8">
@@ -82,11 +81,11 @@ export function games(type?: string) {
           <div class="flex justify-center flex-col items-center gap-4 w-full max-w-md">
             <div id="join-section" class="hidden w-full animate-slide-up">
                <div class="flex gap-2">
-                 <input type="text" id="join-id" placeholder="Enter Match ID..." class="flex-grow px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white focus:border-cyan-500 outline-none transition-all placeholder:text-white/20 font-mono text-lg backdrop-blur-sm">
-                 <button id="btn-join" class="px-8 py-4 bg-gradient-to-r from-cyan-600 to-cyan-500 rounded-2xl font-bold text-white hover:from-cyan-500 hover:to-cyan-400 transition-all shadow-lg hover:shadow-cyan-500/25 tracking-wider uppercase text-sm">Join</button>
+                 <input type="text" id="join-id" placeholder="Enter Match ID..." class="flex-grow px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white focus:border-[#9B1C1C] outline-none transition-all placeholder:text-white/20 font-mono text-lg backdrop-blur-sm">
+                 <button id="btn-join" class="px-8 py-4 bg-gradient-to-b from-[#9B1C1C] to-[#6F1414] rounded-2xl font-bold text-white hover:opacity-90 transition-all shadow-lg hover:shadow-red-900/25 tracking-wider uppercase text-sm">Join</button>
                </div>
             </div>
-            <button id="toggle-join" class="px-6 py-2 rounded-full text-sm text-white/40 hover:text-cyan-400 hover:bg-white/5 transition-all border border-transparent hover:border-white/10 flex items-center gap-2">
+            <button id="toggle-join" class="px-6 py-2 rounded-full text-sm text-white/40 hover:text-[#9B1C1C] hover:bg-white/5 transition-all border border-transparent hover:border-white/10 flex items-center gap-2">
                 <span class="material-symbols-outlined text-lg">login</span>
                 Join existing match via ID
             </button>
@@ -103,7 +102,6 @@ export function games(type?: string) {
         </div>
       </div>`;
 
-    // Initialize the Pong game and start animation loop
     const ok = initializeGame();
     if (ok) {
       animate();

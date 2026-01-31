@@ -1,4 +1,4 @@
-// src_auth/notfound.ts
+
 export function showNotFound(containerId = "login-app") {
   const app = document.getElementById(containerId);
   if (!app) return;

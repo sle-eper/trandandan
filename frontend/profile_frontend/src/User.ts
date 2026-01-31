@@ -21,7 +21,6 @@ export class User {
                 withCredentials: true,
             });
             if (response && response.data) {
-                console.log('User profile fetched successfully', response);
                 const userObj = response.data.user;
 
         
@@ -45,7 +44,6 @@ export class User {
 
     static async saveUserProfile(profile: Partial<UserProfile>): Promise<boolean> {
         try {
-            console.log('Saving user profile:', profile);
         const response = await axios.put('/api/users/profile/update', profile, {
            
             headers: {
@@ -67,9 +65,7 @@ export class User {
             },
             withCredentials: true
         });
-        console.log('Avatar upload response:', response);
         if (response.status === 200 && response.data.avatarUrl) {
-            console.log('Avatar URL:', response.data.avatarUrl);
             return response.data.avatarUrl; 
         }
 

@@ -11,7 +11,7 @@ dotenv.config();
 const fastify = Fastify({ logger: true });
 
 await fastify.register(cors, {
-    origin: true, // Reflect the request origin, required for credentials: true
+    origin: true, 
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true
 });
@@ -26,26 +26,22 @@ await fastify.register(fastifySocketIO, {
     }
 });
 
-// In-memory state
-const games = new Map(); // gameId -> gameState
-const userSockets = new Map(); // userId/username -> socketId
-const gameIntervals = new Map(); // gameId -> intervalId
+const games = new Map();
+const userSockets = new Map(); 
+const gameIntervals = new Map(); 
 let gameNamespace;
 
-// Constants matching frontend
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 400;
 const PADDLE_HEIGHT = 100;
 const PADDLE_WIDTH = 10;
 const BALL_SPEED = 4;
 const BALL_RADIUS = 10;
-const TICK_RATE = 16; // ~60fps
-const START_DELAY = 6500; // 6.5s to safe-guard frontend countdown (approx 6s duration)
-const SERVE_DELAY = 1500; // 1.5s for serving after a goal
+const TICK_RATE = 16; 
+const START_DELAY = 6500;
+const SERVE_DELAY = 900;
 
-// Helper: Verify Token or trust Nginx headers
 const getUserFromRequest = (request) => {
-    // 1. Check for Nginx pre-verified headers
     const nginxUserId = request.headers['x-user-id'];
     const nginxUsername = request.headers['x-user'];
 
@@ -53,8 +49,7 @@ const getUserFromRequest = (request) => {
         return { id: parseInt(nginxUserId), username: nginxUsername };
     }
 
-    // 2. Fallback: Manual JWT verification
-    // Support standard headers OR Socket.IO handshake auth object
+    //Manual JWT verification
     const authHeader = request.headers['authorization'];
     let token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : request.auth?.token;
 
@@ -64,14 +59,12 @@ const getUserFromRequest = (request) => {
     }
 
     if (!token) {
-        console.log('No token found in request headers or auth object');
         return null;
     }
 
     try {
         return jwt.verify(token, process.env.JWT_SECRET);
     } catch (err) {
-        console.log('Token verification failed:', err.message);
         return null;
     }
 };
@@ -91,7 +84,6 @@ fastify.post('/api/game/create', async (request, reply) => {
         paddles: { left: 150, right: 150 }
     };
     games.set(gameId, game);
-    console.log(`[GAME] Created: ${gameId} by ${user.username}. Total games: ${games.size}`);
     return { gameId };
 });
 
@@ -129,7 +121,6 @@ const start = async () => {
 
             gameNamespace = fastify.io.of('/game');
 
-            // Auth Middleware for Sockets
             gameNamespace.use((socket, next) => {
                 const user = getUserFromRequest(socket.handshake);
                 if (!user) return next(new Error('Authentication error'));
@@ -147,7 +138,6 @@ const start = async () => {
                 userSockets.set(socket.user.id, socket.id);
 
                 socket.on('join_game', (data) => {
-                    // Support both old string format and new object format { gameId, side }
                     let gameId, requestedSide;
                     if (typeof data === 'string') {
                         gameId = data;
@@ -156,13 +146,10 @@ const start = async () => {
                         requestedSide = data.side;
                     }
 
-                    console.log(`[SOCKET] User ${socket.user.username} attempting to join game: ${gameId} (Requested side: ${requestedSide || 'any'})`);
 
                     let game = games.get(gameId);
 
-                    // Reset if game was finished
                     if (game && game.status === 'finished') {
-                        console.log(`[SOCKET] Resetting finished game ${gameId} for new session`);
                         game.status = 'waiting';
                         game.score = { left: 0, right: 0 };
                         game.players = [];
@@ -175,23 +162,18 @@ const start = async () => {
                         if (game.rematchRequests) delete game.rematchRequests;
                     }
 
-                    // Check if game exists - don't create it automatically
                     if (!game) {
-                        console.log(`[SOCKET] Game ${gameId} not found. User ${socket.user.username} cannot join.`);
                         socket.emit('error', { message: 'Game not found. Please check the Game ID.' });
                         return;
                     }
 
                     if (game) {
                         socket.join(gameId);
-                        console.log(`[SOCKET] User ${socket.user.username} successfully joined room: ${gameId}`);
 
-                        // Check if player already in game
                         let player = game.players.find(p => p.id === socket.user.id);
 
                         if (player) {
                             player.socketId = socket.id;
-                            console.log(`[SOCKET] User ${socket.user.username} re-joined with new socket`);
 
                             if (game.status === 'playing') {
                                 socket.emit('game_start', game);
@@ -203,7 +185,6 @@ const start = async () => {
 
                         // New player joining
                         if (game.players.length < 2) {
-                            // Determine side: use requested if available and free, otherwise take whatever is left
                             let side;
                             const occupiedSides = game.players.map(p => p.side);
 
@@ -212,8 +193,6 @@ const start = async () => {
                             } else {
                                 side = occupiedSides.includes('left') ? 'right' : 'left';
                             }
-
-                            console.log(`[SOCKET] Assigning ${socket.user.username} to side: ${side}`);
 
                             game.players.push({
                                 id: socket.user.id,
@@ -240,30 +219,24 @@ const start = async () => {
                 socket.on('disconnect', () => {
                     userSockets.delete(socket.user.username);
                     userSockets.delete(socket.user.id);
-                    console.log(`[SOCKET] User ${socket.user.username} disconnected`);
-                    // Find any game where this player was waiting and remove them
                     games.forEach((game, gameId) => {
                         if (game.status === 'waiting') {
                             const index = game.players.findIndex(p => p.id === socket.user.id);
                             if (index !== -1) {
                                 game.players.splice(index, 1);
-                                console.log(`[SOCKET] Removed ${socket.user.username} from waiting game ${gameId}`);
                                 if (game.players.length === 0) {
                                     games.delete(gameId);
-                                    console.log(`[SOCKET] Deleted empty waiting game ${gameId}`);
                                 }
                             }
                         } else if (game.status === 'playing') {
                             const disconnectingPlayer = game.players.find(p => p.id === socket.user.id);
                             if (disconnectingPlayer) {
-                                console.log(`[SOCKET] Player ${socket.user.username} left active game ${gameId}. Stopping loop.`);
                                 stopGameLoop(gameId);
 
                                 const winner = game.players.find(p => p.id !== socket.user.id);
                                 if (winner) {
                                     game.status = 'finished';
 
-                                    // Set score to 3-0 for the winner
                                     if (winner.side === 'left') {
                                         game.score.left = 3;
                                         game.score.right = 0;
@@ -271,8 +244,6 @@ const start = async () => {
                                         game.score.left = 0;
                                         game.score.right = 3;
                                     }
-
-                                    console.log(`[GAME] Awarding 3-0 victory to ${winner.username} in game ${gameId}`);
 
                                     gameNamespace.to(gameId).emit('game_over', {
                                         winner,
@@ -286,7 +257,6 @@ const start = async () => {
                                     game.rematchTimeout = setTimeout(() => {
                                         if (games.has(gameId) && games.get(gameId).status === 'finished') {
                                             games.delete(gameId);
-                                            console.log(`[GAME] Cleaned up finished game after disconnect: ${gameId}`);
                                         }
                                     }, 60000);
                                 }
@@ -315,17 +285,13 @@ const start = async () => {
                         if (!game.rematchRequests) game.rematchRequests = new Set();
                         game.rematchRequests.add(socket.user.id);
 
-                        console.log(`[REMATCH] Request from ${socket.user.username} for game ${gameId}. Total: ${game.rematchRequests.size}`);
 
-                        // Notify the other player
                         socket.to(gameId).emit('rematch_requested', { from: socket.user.username });
 
                         if (game.rematchRequests.size === 2) {
-                            console.log(`[REMATCH] Both players agreed for game ${gameId}. Restarting!`);
 
                             if (game.rematchTimeout) clearTimeout(game.rematchTimeout);
 
-                            // Reset state
                             game.status = 'playing';
                             game.score = { left: 0, right: 0 };
                             game.ball = { x: 400, y: 200, dx: 0, dy: 0 };
@@ -338,18 +304,13 @@ const start = async () => {
                             stopGameLoop(gameId);
                             startGameLoop(gameId);
                         }
-                    } else {
-                        console.log(`[REMATCH] Game ${gameId} not found or invalid status`);
                     }
                 });
 
-                // ball_sync is now deprecated as server is authoritative
-                // socket.on('ball_sync', ...)
             });
         });
 
         await fastify.listen({ port: PORT, host: '0.0.0.0' });
-        console.log(`Game Service running on port ${PORT}`);
     } catch (err) {
         fastify.log.error(err);
         process.exit(1);
@@ -367,13 +328,11 @@ async function saveMatchResult(game, winner, loser) {
             winner_id: winner.id,
             game_mode: 'classic'
         });
-        console.log('Match result saved to user-management');
     } catch (err) {
         console.error('Failed to save match result:', err.message);
     }
 }
 
-// --- Server-Authoritative Logic ---
 
 function startGameLoop(gameId, delay = START_DELAY) {
     if (gameIntervals.has(gameId)) return;
@@ -381,11 +340,9 @@ function startGameLoop(gameId, delay = START_DELAY) {
     const game = games.get(gameId);
     if (!game) return;
 
-    // Wait for delay/countdown
     setTimeout(() => {
         if (!games.has(gameId)) return;
 
-        // Initial ball velocity
         game.ball.dx = BALL_SPEED * (Math.random() > 0.5 ? 1 : -1);
         game.ball.dy = (Math.random() * 2 - 1) * BALL_SPEED;
 
@@ -394,7 +351,6 @@ function startGameLoop(gameId, delay = START_DELAY) {
         }, TICK_RATE);
 
         gameIntervals.set(gameId, intervalId);
-        console.log(`[GAME] Started loop for: ${gameId}`);
     }, delay);
 }
 
@@ -403,7 +359,6 @@ function stopGameLoop(gameId) {
     if (intervalId) {
         clearInterval(intervalId);
         gameIntervals.delete(gameId);
-        console.log(`[GAME] Stopped loop for: ${gameId}`);
     }
 }
 
@@ -421,7 +376,6 @@ function updateGamePhysics(gameId) {
     ball.x += ball.dx;
     ball.y += ball.dy;
 
-    // Wall Rebound (Top/Bottom)
     if (ball.y - BALL_RADIUS <= 0) {
         ball.y = BALL_RADIUS;
         ball.dy *= -1;
@@ -430,38 +384,31 @@ function updateGamePhysics(gameId) {
         ball.dy *= -1;
     }
 
-    // Paddle Collisions
     const paddleWidth = PADDLE_WIDTH;
     const paddleHeight = PADDLE_HEIGHT;
 
-    // Left Paddle Hit
     if (ball.dx < 0 && ball.x - BALL_RADIUS <= paddleWidth) {
-        // Double check vertical range
         if (ball.y >= paddles.left && ball.y <= paddles.left + paddleHeight) {
             ball.dx = Math.abs(ball.dx) * 1.05; // Bounce back & speed up
             ball.x = paddleWidth + BALL_RADIUS;
 
-            // Add spin (vertical influence)
             const relativeIntersectY = (paddles.left + (paddleHeight / 2)) - ball.y;
             const normalizedIntersectY = relativeIntersectY / (paddleHeight / 2);
             ball.dy = -normalizedIntersectY * Math.abs(ball.dx);
         }
     }
 
-    // Right Paddle Hit
     if (ball.dx > 0 && ball.x + BALL_RADIUS >= CANVAS_WIDTH - paddleWidth) {
         if (ball.y >= paddles.right && ball.y <= paddles.right + paddleHeight) {
             ball.dx = -Math.abs(ball.dx) * 1.05; // Bounce back & speed up
             ball.x = CANVAS_WIDTH - paddleWidth - BALL_RADIUS;
 
-            // Add spin (vertical influence)
             const relativeIntersectY = (paddles.right + (paddleHeight / 2)) - ball.y;
             const normalizedIntersectY = relativeIntersectY / (paddleHeight / 2);
             ball.dy = -normalizedIntersectY * Math.abs(ball.dx);
         }
     }
 
-    // Scoring
     let scored = false;
     if (ball.x <= 0) {
         game.score.right++;
@@ -477,38 +424,32 @@ function updateGamePhysics(gameId) {
         ball.dx = 0;
         ball.dy = 0;
 
-        // Broadcast reset state immediately so clients see the ball at center
         gameNamespace.to(gameId).emit('goal_scored', { ball: game.ball, score: game.score });
 
-        // Check for Game Over
         if (game.score.left >= 5 || game.score.right >= 5) {
             game.status = 'finished';
             const winner = game.score.left >= 5 ? game.players.find(p => p.side === 'left') : game.players.find(p => p.side === 'right');
             const loser = game.score.left >= 5 ? game.players.find(p => p.side === 'right') : game.players.find(p => p.side === 'left');
 
             gameNamespace.to(gameId).emit('game_over', { winner, score: game.score, players: game.players });
-            //
+            
             saveMatchResult(game, winner, loser);
             stopGameLoop(gameId);
 
-            // Wait some time before deleting the game to allow for rematch requests
-            // If they don't rematch within 60 seconds, delete it.
+            
             game.rematchTimeout = setTimeout(() => {
                 if (games.has(gameId) && games.get(gameId).status === 'finished') {
                     games.delete(gameId);
-                    console.log(`[GAME] Cleaned up finished game: ${gameId}`);
                 }
             }, 60000);
 
             return;
         }
 
-        // Delay briefly before serving (shorter delay than initial start)
         stopGameLoop(gameId);
         setTimeout(() => startGameLoop(gameId, SERVE_DELAY), 100);
     }
 
-    // Broadcast current state to all players in the room
     gameNamespace.to(gameId).emit('ball_update', { ball: game.ball, score: game.score });
 }
 

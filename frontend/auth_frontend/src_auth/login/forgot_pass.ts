@@ -29,7 +29,6 @@ function attachForgotHandlers() {
       return;
     }
 
-    // TODO: call reset API -> then navigate
     const res = await fetch("/api/auth/forget-password",{
       method: "POST",
       headers: {
@@ -38,8 +37,6 @@ function attachForgotHandlers() {
       credentials: "include",
       body: JSON.stringify({email})
     });
-    console.log("Reset link sent to email             " ,  res);
-    //send request to backend 
   
     navigate("/mailsended");
   });

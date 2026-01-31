@@ -70,7 +70,6 @@ export function attachVerifyHandlers() {
       showError("Please enter the complete verification code.");
       return;
     }
-    // 🚧 MOCK verification (replace later with API)
     const result = await fetch("/api/auth/verify-2factor", {
           method: "POST",
           headers: {
@@ -79,9 +78,7 @@ export function attachVerifyHandlers() {
           credentials: "include",
           body: JSON.stringify({ code: inputs.map(i => i.value).join(""), username: new URLSearchParams(window.location.search).get("username") })
         });
-        console.log("Enter pressed", result);
 
-    // ✅ Success → go to login
     if(result.status === 200)
     {
       navigate("home");

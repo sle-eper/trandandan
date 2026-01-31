@@ -1,7 +1,6 @@
 import { navigate } from "../app";
 import { PlayerSearch } from "./playerSearch";
-// import { socket } from "../login/login";
-import { getSocketInstance } from "../../../socket_manager/socket";
+
 import {reSetSocket} from "../../../socket_manager/socket"
 import logo from "../images/pingponglogo.jpg?inline"
 
@@ -165,7 +164,6 @@ function setNotifIcon(active: boolean) {
 
 
 export async function navBarLogic() {
-  console.log("samaykom")
   const btn = document.getElementById("settings-btn");
   const notifBtn = document.getElementById("notification-btn");
   const notifmenu = document.getElementById("notification-menu");
@@ -203,13 +201,9 @@ export async function navBarLogic() {
     notifBtn.dataset.click = "true";
   }
 
-  // if(!btn.dataset.click)
-  // {
-  // console.log("before clicked-settings");
   if(!btn.dataset.click)
   {
     btn.addEventListener("click", (e) => {
-      // console.log("clicked-settings");
       e.stopPropagation();
       const isHidden = menu.classList.contains("hidden");
   
@@ -229,9 +223,6 @@ export async function navBarLogic() {
         setTimeout(() => menu.classList.add("hidden"), 150);
       }
     });
-    // btn.dataset.click = "true";
-  // }
-  // console.log("after clicked-settings");
   btn.dataset.click = "true";
   }
 
@@ -265,7 +256,6 @@ export async function navBarLogic() {
     });
   }
 
-  // ✅ SIGN OUT BUTTON
   if (signOutBtn) {
     signOutBtn.addEventListener("click", async () => {
       document.body.classList.add("flex", "items-center", "justify-center", "px-6", "md:px-20");
@@ -275,11 +265,6 @@ export async function navBarLogic() {
           credentials: 'include',
         });
         if (result.ok) {
-          console.log('Logout successful');
-          // const socket = getSocketInstance();
-          // if (socket) {
-          //   socket.disconnect();
-          // }
           reSetSocket();
           navigate("/login");
         }
@@ -289,29 +274,23 @@ export async function navBarLogic() {
     });
   }
 
-  // ✅ PROFILE NAV
   if (profile) {
     profile.addEventListener("click", async () => {
       navigate("/profile");
     });
   }
 
-  // ✅ CHANGE ACCOUNT
   if (changeAccountBtn) {
     changeAccountBtn.addEventListener("click", () => {
       document.body.classList.add("flex", "items-center", "justify-center", "px-6", "md:px-20");
       navigate("/login");
     });
   }
-
-  // ✅ ENABLE 2FA
   if (enable2FABtn) {
     enable2FABtn.addEventListener("click", () => {
       navigate("/2FA");
     });
   }
-
-  // Initialize player search only if elements exist
   if (searchInput && searchResults) {
     const playerSearch = new PlayerSearch(searchInput, searchResults);
     await playerSearch.loadPlayersFromAPI();

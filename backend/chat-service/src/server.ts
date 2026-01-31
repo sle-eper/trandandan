@@ -57,7 +57,6 @@ server.ready().then(() => {
     try {
       const cookies = cookie.parse(socket.handshake.headers.cookie ?? "");
       const token = cookies.token;
-      console.log("------------------------", token)
       if (!token) {
         socket.disconnect();
         return;
@@ -68,7 +67,7 @@ server.ready().then(() => {
         socket.disconnect();
         return;
       }
-      socket.data.user = (await fetchUserData(userId, "server"))?.user;
+      socket.data.user = (await fetchUserData(userId))?.user;
       if (!socket.data.user) {
         socket.disconnect();
         return;
@@ -80,9 +79,6 @@ server.ready().then(() => {
         updateUserStat(userId, "online");
       }
       onlineUsers.get(userId)?.add(socket.id);
-      console.log("--------------------------");
-      console.log("New client connected, userId:", userId);
-      console.log("size of onlineUsers", onlineUsers.size, "---->", onlineUsers);
     } catch (err) {
       console.error('Error inside log:', err);
       socket.emit("chat_error", "Failed to log");
@@ -107,7 +103,6 @@ server.ready().then(() => {
             const friendSocketId = onlineUsers.get(friendId);
             const msgId: string = await saveMsg(id, friendId, msg, roomName, "waiting");
             const timeOfMsg: string = await getTimeOfMsg(msgId);
-            // const UserData = await fetchUserData(id); // get data of user from user-management service
             if (!socket.data.user) return
             socket.to(roomName).emit("receive_message", msg, msgId, id, timeOfMsg, socket.data.user.avatar_url);
             if (friendSocketId) {
@@ -134,7 +129,7 @@ server.ready().then(() => {
         await changeAllToRecv(userID, roomName)
         await changeDisplay(userID)
         const messages = await getAllMsg(roomName, limit, offset);
-        const UserData = await fetchUserData(data.friendId, "get_messages");
+        const UserData = await fetchUserData(data.friendId);
         if (!UserData || !messages) return;
         socket.emit('messages_batch', messages.reverse(), UserData?.user?.avatar_url);
       } catch (err) {
@@ -152,7 +147,7 @@ server.ready().then(() => {
         await changeAllToRecv(userID, roomName)
         await changeDisplay(userID)
         const messages = await getAllMsg(roomName, limit, offset);
-        const UserData = await fetchUserData(data.friendId, "get_old_messages");
+        const UserData = await fetchUserData(data.friendId);
         if (!messages || !UserData) return;
         socket.emit('messages_old_batch', messages, UserData?.user?.avatar_url);
       } catch (err) {
@@ -258,7 +253,6 @@ server.ready().then(() => {
         const notfId = await saveNotif(id, friendId, 'challenge', null);
         const friendSocket = onlineUsers.get(friendId);
         if (!friendSocket) return;
-        // const UserData = await fetchUserData(id);
         if (!socket.data.user) return
         for (const isd of friendSocket) {
           io.to(isd).emit("request_to_play", socket.data.user.username, id, notfId);
@@ -306,7 +300,6 @@ server.ready().then(() => {
             io.to(sid).emit("start_game", { gameId, side: 'right' });
           }
         }
-        console.log(`[GAME] Match accepted: ${gameId} between ${id} and ${friendId}`);
       } catch (err) {
         console.error('Error in accept_play:', err);
       }
@@ -319,8 +312,6 @@ server.ready().then(() => {
         const notifId = await saveNotif(id, friendId, 'reject', null);
         const Sockets = onlineUsers.get(friendId);
         if (!Sockets || !socket.data.user) return;
-        // const UserData = await fetchUserData(id);
-        // if (!UserData) return;
         for (const isd of Sockets) {
           io.to(isd).emit("not_agree", socket.data.user.username, notifId);
         }
@@ -356,12 +347,8 @@ server.ready().then(() => {
 
       if (!userSocket) return;
 
-      // const UserData = await fetchUserData(myId);
-      // if (!UserData) return;
       if (!socket.data.user) return
       for (const ids of userSocket) {
-        console.log("//////////////////user data", socket.data.user);
-        console.log("+++++++++++++++++++++++Sending friendRequestReceived to", socket.data.user.username, friendId, myId, notifId);
         socket.to(ids).emit("friendRequestReceived",
           socket.data.user.username,
           friendId,
@@ -378,9 +365,6 @@ server.ready().then(() => {
         const friendSocket = onlineUsers.get(String(friendId));
         if (!friendSocket) return;
 
-        // const UserData = await fetchUserData(myId);
-        // if (!UserData)
-        //   return;
         if (!socket.data.user) return
         for (const isd of friendSocket) {
           socket.to(isd).emit("friendRequestAccepted", socket.data.user.username, myId, friendId);
@@ -395,9 +379,6 @@ server.ready().then(() => {
         deleteNotification(notifId);
         const friendSocket = onlineUsers.get(String(friendId));
         if (!friendSocket) return;
-        // const UserData = await fetchUserData(myId);
-        // if (!UserData)
-        //   return;
         if (!socket.data.user) return
         for (const isd of friendSocket) {
           socket.to(isd).emit("friendRequestRejected", socket.data.user.username, myId, friendId);
@@ -443,12 +424,10 @@ server.ready().then(() => {
           onlineUsers.get(id).delete(socket.id);
           if (onlineUsers.get(id)!.size === 0) {
             onlineUsers.delete(id);
-            console.log("size of onlineUsers", onlineUsers.size, "---->", onlineUsers);
             socket.broadcast.emit("user_offline", id);
             updateUserStat(id, "offline");
           }
         }
-        console.log("after this size of onlineUsers", onlineUsers.size);
       }
       catch (err) {
         console.error('Error in disconnect:', err);
@@ -463,7 +442,6 @@ server.ready().then(() => {
     // ************************************************************************************
 
     socket.on("tournament:create", async (data) => {
-      // console.log("tournament create event received", data);
       socket.join(data.room);
     });
     socket.on("tournament:invite", async (data) => {
@@ -548,24 +526,25 @@ server.ready().then(() => {
           clearTimeout(existingTimeout);
           tournamentTimeouts.delete(data.gameId);
         }
-        io.to(data.gameId).emit("tournament:bracket", { tournamentName: data.tournamentName });
+        io.to(data.gameId).emit("tournament:bracket", {tournamentName: data.tournamentName});
         setTimeout(() => {
-
+          
           const room1 = io.sockets.adapter.rooms.get(data.gameId);
-          if (!room1 || room1.size < 2) {
-            if (room1 && room1.size === 1) {
-              const sidArray = Array.from(room1);
-              const sid = sidArray[0];
-              io.to(sid).emit("match:ended", {
-                userid: socket.data.userId,
-                result: 'won',
-                message: 'Opponent did not join in time. You win by default.',
-                tournamentName: data.tournamentName
-              });
-              socket.leave(data.gameId);
+          if (!room1 || room1.size < 2) 
+            {
+              if (room1 && room1.size === 1) {
+                const sidArray = Array.from(room1);
+                const sid = sidArray[0];
+                io.to(sid).emit("match:ended", {
+                  userid: socket.data.userId,
+                  result: 'won',
+                  message: 'Opponent did not join in time. You win by default.',
+                  tournamentName: data.tournamentName
+                });
+                socket.leave(data.gameId);
+              }
+              return;
             }
-            return;
-          }
           const sidArray = Array.from(room);
           const [sid1, sid2] = sidArray;
           const gameId = data.gameId;
@@ -636,15 +615,16 @@ server.ready().then(() => {
 
         if (winnerSockets) {
           for (const sid of winnerSockets) {
-            io.to(sid).emit("tournament:finalResult", "Winner", data);
+            io.to(sid).emit("tournament:finalResult", data);
           }
         }
 
         if (loserSockets) {
           for (const sid of loserSockets) {
-            io.to(sid).emit("tournament:finalResult", "Loser", data);
+            io.to(sid).emit("tournament:finalResult", data);
           }
         }
+
         return;
       }
       const loserSockets = onlineUsers.get(String(loser));
@@ -684,7 +664,6 @@ server.ready().then(() => {
         },
       });
       const finalMatchJson = await finalMatch.json();
-      console.log("{DEBUG} final match response:", finalMatchJson);
       const status = await fetch(`http://tournament:5500/Tournament/status?tournamentName=${encodeURIComponent(tournamentName)}`, {
         method: 'GET',
         headers: {
@@ -692,10 +671,7 @@ server.ready().then(() => {
         },
       });
       const statusJson = await status.json();
-      console.log("{DEBUG} tournament status response:", statusJson);
       if (finalMatchJson.finalists.length === 2 && statusJson.status !== 'final_started') {
-        console.log("{DEBUG} final match finalists:", finalMatchJson.finalists);
-        console.log("{DEBUG} final match matches:", data);
         socket.emit("Tournament:bracket", { tournamentName: data.tournamentName });
         setTimeout(async () => {
           const player1 = finalMatchJson.finalists[0];
@@ -759,16 +735,11 @@ server.ready().then(() => {
               status: 'final_started'
             }),
           })
-          console.log(
-            `{FINAL STARTED} room=${gameId}, players=${player1.userid} vs ${player2.userid}`
-          );
         }, 10000);
       }
 
-      else {
-        console.log("{DEBUG} Not enough finalists to start final match or final already started.");
+      else
         socket.emit("Tournament:bracket", { tournamentName: data.tournamentName });
-      }
 
     });
 

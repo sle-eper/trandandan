@@ -159,9 +159,7 @@ export class ProfileForm {
         this.oldProfileData = JSON.parse(JSON.stringify(this.userData));
         this.avatarPreview = this.userData.avatarUrl || this.avatarPreview;
         
-      } else {
-        console.log('No existing profile found, using defaults');
-      }
+      } 
     } catch (error) {
       console.error('Error loading user data:', error);
     } 
@@ -438,7 +436,6 @@ export class ProfileForm {
     const response = await User.updateAvatar(formData);
     
     if (response) {
-      console.log('Avatar uploaded successfully:', response);
       return response;
     }
     
@@ -490,7 +487,6 @@ export class ProfileForm {
         return;
       }
 
-      console.log('Avatar uploaded successfully:', uploadedAvatarPath);
       formData.avatarUrl = uploadedAvatarPath;
       
       if (changedData) {

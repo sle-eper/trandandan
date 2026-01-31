@@ -34,35 +34,21 @@ class GameSocketService {
             console.log('Game Socket Disconnected');
         });
 
-        // Game invites are handled by the main app, not here
-        // This prevents unwanted tab opening/navigation
-        /*
-        this.socket.on('game_invite', (data: any) => {
-            console.log('Received Game Invite:', data);
-            if (confirm(`Game Invite from ${data.from}. Accept?`)) {
-                window.location.href = `/game?gameId=${data.gameId}`;
-            }
-        });
-        */
     }
 
     private getCookie(name: string): string | null {
         const value = `; ${document.cookie}`;
         const parts = value.split(`; ${name}=`);
         if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
-        // Fallback to localStorage token for clients that store token there
         try {
             const ls = localStorage.getItem(name);
             if (ls) return ls;
-        } catch (e) {
-            // ignore (e.g., localStorage not available)
-        }
+        } catch (e) {}
         return null;
     }
 
     public connect() {
         if (!this.socket.connected) {
-            // Refresh token before connecting if needed
             this.socket.auth = { token: this.getCookie('token') };
             this.socket.connect();
         }
@@ -84,7 +70,6 @@ class GameSocketService {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify({}),
-                // This is crucial: it tells the browser to send cookies (like the 'token')
                 credentials: 'include'
             });
 

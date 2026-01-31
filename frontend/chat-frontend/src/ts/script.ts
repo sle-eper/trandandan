@@ -12,22 +12,16 @@ import {
   choseFriend,
   generateBlockButton,
 } from "../components/content";
-import { navigate } from "../../../auth_frontend/src_auth/login/router";
 
 
-//TODO esc hebila 
 window.addEventListener("keydown", (e) => {
-  // const parts = window.location.pathname.split("/").filter(Boolean);
 
-  if (e.key === "Escape")/*  && parts[0] === 'chat' && parts.length === 2 ) { */
-  {
+  if (e.key === "Escape"){
     setImInRoom("");
     setFriendId("");
     const dmZone = document.getElementById("DM");
       if (dmZone) dmZone.innerHTML = choseFriend();
   }
-    // navigate(`/chat`);
-  // }
 });
 
 export async function showMainUI() {
@@ -47,24 +41,18 @@ export async function showMainUI() {
       return;
     }
   
-    // let chatZone: HTMLDivElement;
     let dmZone: HTMLElement | null;
     
     if (chatContent) {
       chatContent.classList.add("gap-6");
-      try {
-        const friends = await fetchListOfFriends();
-        console.log(`desplay`,friends);
-        // console.table(friends.waitingMsg);
+      const friends = await fetchListOfFriends();
   
       chatContent.innerHTML = listOfMsg(friends.friends,friends.waitingMsg,userID);
       if(friends && friends.friends.length > 0)
         chatContent.innerHTML += DM();
-      //     //get all of list friends
       const friendsEvent = document.querySelectorAll(".friend-msg-zone");
       friendsEvent.forEach((friend:any) => {
         friend.addEventListener("click", () => {
-          // navigate(`/chat/${friend.dataset.name}`);
           setImInRoom(friend.dataset.roomname);
           setFriendId(friend.dataset.id);
           const friendId = getFriendId()
@@ -72,11 +60,9 @@ export async function showMainUI() {
           if (friendFind) {
             const roomName: string = [userID, friendFind.id].sort().join("_");
             const dm = document.getElementById("DM");
-            // const listContainer = document.getElementById("list-of-msg-container");
             if (dm){
                 dm.dataset.roomName = roomName;
                 dm.classList.remove("hidden")
-                // listContainer?.classList.add("hidden")
               }
             
             getSocketInstance()?.emit("joinToRoom", roomName);
@@ -199,7 +185,6 @@ export async function showMainUI() {
               if(!challenge.dataset.click)
               {
                 challenge.addEventListener("click", () => {
-                  console.log("challenge clicked");
                   let remaining = 10;
                   const originalText = textEl?.textContent;
     
@@ -287,9 +272,5 @@ export async function showMainUI() {
           }
         });
       });
-      } catch (error) {
-        console.error("Failed to fetch friends list:", error);
-        chatContent.innerHTML = "<p>Failed to load chat. Please refresh the page.</p>";
-      }
     }
   }

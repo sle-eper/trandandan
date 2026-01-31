@@ -5,7 +5,6 @@ export async function createTournament_post(request, reply) {
     const userid = request.headers['x-user-id'];
     const username = request.headers['x-user'];
     try {
-        console.log("Existing User:", username, "UserID:", userid);
         const existingUser = await axios.get(
             `http://user-management:3000/user/${userid}`,
             {
@@ -20,10 +19,8 @@ export async function createTournament_post(request, reply) {
         const nickname = existingUser.data.user.display_name;
         const { tournamentname, maxPlayers } = request.body;
         const db = getDatabase();
-        console.log(nickname, userid, tournamentname, maxPlayers);
         const tournament = await db.get('SELECT * FROM tournament WHERE name  = ?', [tournamentname]);
         if (tournament) {
-            console.log("Tournament Exist");
             return reply.code(409)
                 .send({
                     success: false,
@@ -43,7 +40,6 @@ export async function createTournament_post(request, reply) {
         );
     }
     catch (error) {
-        console.log(error);
         return reply.code(500)
             .send({ success: false, message: error.message });
     }
@@ -53,7 +49,6 @@ export async function createTournament_post(request, reply) {
 export async function joinTournament_post(request, reply) {
     const userid = request.headers['x-user-id'];
     const username = request.headers['x-user'];
-    console.log("UserID:", userid, "Username:", username);
     const { tournamentName } = request.body;
     const existingUser = await axios.get(
         `http://user-management:3000/user/${userid}`,
@@ -72,7 +67,6 @@ export async function joinTournament_post(request, reply) {
     const nickname = existingUser.data.user.display_name;
     const tournament = await db.get('SELECT * FROM tournament WHERE name  = ?', [tournamentName]);
     if (!tournament) {
-        console.log("Tournament Not Found");
         return reply.code(400)
             .send({ message: "Tournament Not Found" });
     }
@@ -106,7 +100,6 @@ export async function joinTournament_post(request, reply) {
                 "UPDATE tournament SET status = 'full' WHERE id = ?",
                 [tournament.id]
             );
-            console.log("==== Tournament Full ====", tournamentUpdated);
             return reply.code(200).send({ message: "Tournament Full", tournament: tournamentUpdated });
 
         }
@@ -124,7 +117,6 @@ export async function leaveTournament_get(request, reply) {
     const db = await getDatabase();
     const tournament = await db.get('SELECT * FROM tournament WHERE name  = ?', [tournamentName]);
     if (!tournament) {
-        console.log("Tournament Not Found");
         return reply.code(400)
             .send("Tournament Not Found")
     }
@@ -132,7 +124,6 @@ export async function leaveTournament_get(request, reply) {
         "SELECT * FROM participant WHERE tournamentId = ?",
         [tournament.id]
     );
-    console.log("UserID leaving tournament:", userId, "Tournament Name:", tournamentName);
     for (let i = 0; i < tournament.currentPlayers; i++) {
         if (String(participants[i].userid) === String(userId)) {
             await db.run(
@@ -164,7 +155,6 @@ export async function checkTournament_get(request, reply) {
     const db = await getDatabase();
     const tournament = await db.get('SELECT * FROM tournament WHERE name  = ?', [tournamentName]);
     if (!tournament) {
-        console.log("Tournament Not Found");
         return reply.code(404)
             .send("Tournament Not Found")
     }
@@ -180,7 +170,6 @@ export async function startTournament_post(request, reply) {
 
     const tournament = await db.get('SELECT * FROM tournament WHERE name = ?', [tournamentname]);
     if (!tournament) {
-        console.log("Tournament Not Found");
         return reply.code(400).send("Tournament Not Found");
     }
     const participants = await db.all(
@@ -203,7 +192,6 @@ export async function startTournament_post(request, reply) {
 
         // Important: consume response to avoid hanging
         const data = await res.text();
-        console.log("Notify response:", data);
     } catch (err) {
         console.error("Error notifying chat service:", err);
     }
@@ -217,7 +205,6 @@ export async function listTournaments_get(request, reply) {
         const tournaments = await db.all('SELECT * FROM tournament');
         return reply.code(200).send({ success: true, tournaments });
     } catch (error) {
-        console.log(error);
         return reply.code(500).send({ success: false, message: error.message });
     }
 }
@@ -228,12 +215,10 @@ export async function matchmaking_get(request, reply) {
     const { tournamentName } = request.query;
     try {
 
-        console.log("we have to matchmaking the participants of tournament:", tournamentName);
         const db = await getDatabase();
         const tournament = await db.get('SELECT * FROM tournament WHERE name = ?', [tournamentName]);
 
         if (!tournament) {
-            console.log("Tournament Not Found");
             return reply.code(400).send({ message: "Tournament Not Found" });
         }
 
@@ -285,7 +270,6 @@ export async function matchmaking_get(request, reply) {
             });
         }
         for (let match of matches) {
-            console.log("Match:", match.player1.nickname, "vs", match.player2 ? match.player2.nickname : "BYE");
             await db.run(
                 `INSERT INTO semifinal (nickname, tournamentid, userid)
                  VALUES(?, ?, ?)`,
@@ -303,7 +287,6 @@ export async function matchmaking_get(request, reply) {
         });
     }
     catch (error) {
-        console.log("Error during matchmaking:", error);
         return reply.code(500).send({ message: "Internal Server Error" });
     }
 }
@@ -313,7 +296,6 @@ export async function matchmaking_get(request, reply) {
 export async function finalMatch_post(request, reply) {
     const { tournamentName, winnerId } = request.body;
 
-    console.log("**********Final Match Result:", tournamentName, winnerId);
 
     const db = await getDatabase();
 
@@ -336,7 +318,6 @@ export async function finalMatch_post(request, reply) {
     );
 
     if (!tournament) {
-        console.log("Tournament Not Found");
         return reply.code(400).send({ message: "Tournament Not Found" });
     }
 
@@ -346,7 +327,6 @@ export async function finalMatch_post(request, reply) {
     );
 
     if (final) {
-        console.log("User already in final table");
         return reply.code(400).send({ message: "User already in final table" });
     }
 
@@ -362,7 +342,6 @@ export async function finalMatch_post(request, reply) {
 
         return reply.code(200).send({ message: "Match result recorded" });
     } catch (error) {
-        console.log("Error recording match result:", error);
         return reply.code(500).send({ message: "Internal Server Error" });
     }
 }
@@ -373,7 +352,6 @@ export async function finalMatch_get(request, reply) {
     const db = await getDatabase();
     const tournament = await db.get('SELECT * FROM tournament WHERE name = ?', [tournamentName]);
     if (!tournament) {
-        console.log("Tournament Not Found");
         return reply.code(400).send({ message: "Tournament Not Found" });
     }
     try {
@@ -381,20 +359,16 @@ export async function finalMatch_get(request, reply) {
             "SELECT * FROM final WHERE tournamentId = ?",
             [tournament.id]
         );
-        console.log("Finalists fetched:", finalists);
         return reply.code(200).send({ finalists });
     } catch (error) {
-        console.log("Error fetching finalists:", error);
         return reply.code(500).send({ message: "Internal Server Error" });
     }
 }
 export async function declareWinner_post(request, reply) {
     const { tournamentName, winnerId } = request.body;
-    console.log("Declaring winner for tournament:", tournamentName, "Winner ID:", winnerId);
     const db = await getDatabase();
     const tournament = await db.get('SELECT * FROM tournament WHERE name = ?', [tournamentName]);
     if (!tournament) {
-        console.log("Tournament Not Found");
         return reply.code(400).send({ message: "Tournament Not Found" });
     }
     const winner = await db.get(
@@ -402,7 +376,6 @@ export async function declareWinner_post(request, reply) {
         [winnerId, tournament.id]
     );
     if (!winner) {
-        console.log("Winner Not Found in final table");
         return reply.code(400).send({ message: "Winner Not Found in final table" });
     }
     try {
@@ -413,7 +386,6 @@ export async function declareWinner_post(request, reply) {
         );
         return reply.code(200).send({ message: "Winner declared successfully" });
     } catch (error) {
-        console.log("Error declaring winner:", error);
         return reply.code(500).send({ message: "Internal Server Error" });
     }
 }
@@ -423,7 +395,6 @@ export async function semifinalist_get(request, reply) {
     const db = await getDatabase();
     const tournament = await db.get('SELECT * FROM tournament WHERE name = ?', [tournamentName]);
     if (!tournament) {
-        console.log("Tournament Not Found");
         return reply.code(400).send({ message: "Tournament Not Found" });
     }
     try {
@@ -433,7 +404,6 @@ export async function semifinalist_get(request, reply) {
         );
         return reply.code(200).send({ semifinalists });
     } catch (error) {
-        console.log("Error fetching semifinalists:", error);
         return reply.code(500).send({ message: "Internal Server Error" });
     }
 }
@@ -443,7 +413,6 @@ export async function updateStatus_post(request, reply) {
     const db = await getDatabase();
     const tournament = await db.get('SELECT * FROM tournament WHERE name = ?', [tournamentName]);
     if (!tournament) {
-        console.log("Tournament Not Found");
         return reply.code(400).send({ message: "Tournament Not Found" });
     }
     try {
@@ -453,7 +422,6 @@ export async function updateStatus_post(request, reply) {
         );
         return reply.code(200).send({ message: "Tournament status updated successfully" });
     } catch (error) {
-        console.log("Error updating tournament status:", error);
         return reply.code(500).send({ message: "Internal Server Error" });
     }
 }
@@ -463,13 +431,11 @@ export async function getStatus_get(request, reply) {
     const db = await getDatabase();
     const tournament = await db.get('SELECT * FROM tournament WHERE name = ?', [tournamentName]);
     if (!tournament) {
-        console.log("Tournament Not Found");
         return reply.code(400).send({ message: "Tournament Not Found" });
     }
     try {
         return reply.code(200).send({ status: tournament.status });
     } catch (error) {
-        console.log("Error fetching tournament status:", error);
         return reply.code(500).send({ message: "Internal Server Error" });
     }
 }

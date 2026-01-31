@@ -1,14 +1,8 @@
-// login.ts
+
 import { loginTemplate, sharedImage } from "./templates";
 import { loginUser } from "./api";
 import { navigate } from "../app";
-// import { socketListener, socketNotificationListener } from "../../../chat-frontend/src/ts/chat_socket";
-// import { io } from "socket.io-client";
-// export const socket = io("http://localhost:3000");
-// import { showDashboard } from "../dashboard/dashboard";
-// import { showMainUI } from "../../src/ts/script.ts";
 import {socketInstance} from "../../../socket_manager/socket"
-import { setCurrentUserId } from "../../../chat-frontend/src/ts/global_var";
 function showError(msg: string) {
   const errorBox = document.getElementById("login-error");
   if (!errorBox) return;
@@ -36,7 +30,7 @@ export function showLoginPage(containerId = "login-app") {
 
   attachLoginHandlers();
 }
-let currentUserId: string | null = null; // store user_id globally
+let currentUserId: string | null = null;
 
 export function attachLoginHandlers() {
   const form = document.getElementById("login-form") as HTMLFormElement | null;
@@ -78,7 +72,6 @@ export function attachLoginHandlers() {
     try {
       const { response, body } = await loginUser(username, password);
       if (response && response.status === 206) {
-        // Show 2FA page
         navigate("/verify?username=" + body.username);
         return  ;
       }
@@ -94,13 +87,11 @@ export function attachLoginHandlers() {
     }
   };
 
-  // ✅ ENTER KEY (form submit)
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     submitLogin();
   });
 
-  // ✅ Button click
   btn.addEventListener("click", (e) => {
     e.preventDefault();
     submitLogin();

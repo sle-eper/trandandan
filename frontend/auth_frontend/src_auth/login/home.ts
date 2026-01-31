@@ -5,25 +5,9 @@ import {
   type DashboardData,
 } from "./templates";
 import {fetchMatchHistory} from "./api";
-// Mock API function - replace with your actual API
-// async function fetchMatchHistory(userId: number): Promise<MatchData[]> {
-//   // Simulated match data for demo
-//   return [
-//     { id: 1, user1_id: userId, user2_id: 4, user1_score: 5, user2_score: 4, winner_id: userId, played_at: new Date().toISOString(), duration: 145 },
-//     { id: 2, user1_id: userId, user2_id: 4, user1_score: 5, user2_score: 2, winner_id: userId, played_at: new Date(Date.now() - 3600000).toISOString(), duration: 98 },
-//     { id: 3, user1_id: 4, user2_id: userId, user1_score: 5, user2_score: 3, winner_id: 4, played_at: new Date(Date.now() - 86400000).toISOString(), duration: 167 },
-//     { id: 4, user1_id: userId, user2_id: 4, user1_score: 4, user2_score: 5, winner_id: 4, played_at: new Date(Date.now() - 86400000 * 2).toISOString(), duration: 203 },
-//     { id: 5, user1_id: userId, user2_id: 10, user1_score: 5, user2_score: 3, winner_id: userId, played_at: new Date(Date.now() - 86400000 * 3).toISOString(), duration: 122 },
-//     { id: 6, user1_id: 10, user2_id: userId, user1_score: 0, user2_score: 5, winner_id: userId, played_at: new Date(Date.now() - 86400000 * 4).toISOString(), duration: 78 },
-//     { id: 7, user1_id: userId, user2_id: 7, user1_score: 5, user2_score: 4, winner_id: userId, played_at: new Date(Date.now() - 86400000 * 5).toISOString(), duration: 189 },
-//     { id: 8, user1_id: 3, user2_id: userId, user1_score: 5, user2_score: 2, winner_id: 3, played_at: new Date(Date.now() - 86400000 * 6).toISOString(), duration: 134 },
-//   ];
-// }
-
 let currentMatches: MatchData[] = [];
 let currentUserId: number = 1;
 
-// Expose functions to window for onclick handlers
 declare global {
   interface Window {
     showMatchDetail: (index: number) => void;

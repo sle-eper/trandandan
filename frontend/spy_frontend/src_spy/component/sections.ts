@@ -1,5 +1,4 @@
 import spaySections from "../sectionsData/sectionsData"
-// import sectionName from "../img/sectionName.png"
 
 let sectionBound:boolean = false;
 
@@ -18,7 +17,6 @@ export function selectSection(selected: string[] )
     const cards = document.querySelectorAll(".section-card");
     cards.forEach(c =>{
         c.addEventListener('click',()=>{
-            console.log("hhaaaaaaa");
             const id  = c.getAttribute("data-id")
             const element = document.querySelector(`[data-id="${id}"]`);
             if(!id) return;

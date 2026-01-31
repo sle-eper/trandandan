@@ -51,7 +51,6 @@ function attachChangepassHandlers() {
       credentials: "include",
       body: JSON.stringify({ newPassword: password, confirmPassword: confirm, token })
     });
-    console.log("Password changed successfully", restult);
     if (!password || !confirm || password !== confirm) {
       alert("Passwords must match and cannot be empty.");
       return;

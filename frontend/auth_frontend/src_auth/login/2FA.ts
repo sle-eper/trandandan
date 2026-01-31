@@ -126,9 +126,7 @@ function attach2FAHandlers() {
       headers: { "Content-Type": "application/json" },
       credentials: "include", // VERY IMPORTANT FOR Cookies
     });
-    console.log("2FA setup response:", res);
     const data = await res.json();
-    console.log("2FA setup data:", data.qrImage);
     if (qrImage) {
       qrImage.src = data.qrImage;
     }
@@ -143,19 +141,15 @@ function attach2FAHandlers() {
     }
 
 
-    console.log("Entered 2FA code:", code);
     navigate("/dashboard");
   };
 
   btn.addEventListener("click", submit2FA);
 
   submit2FA();
-  // Enter key triggers verify
   inputs.forEach((input) =>
     input.addEventListener("keydown", async (e) => {
       if (e.key === "Enter") {
-        console.log("==========================================");
-        console.log(inputs.map((i) => i.value).join(""));
         const response = await fetch('/api/auth/2f/verify-2fa', {
           method: 'POST',
           headers: {
@@ -164,8 +158,6 @@ function attach2FAHandlers() {
           credentials: 'include',
           body: JSON.stringify({ code: inputs.map((i) => i.value).join("") }),
         });
-        console.log("2FA verify response:", response);
-        // alert("If that email exists, a reset link was sent (stub).");
         e.preventDefault();
       }
     })

@@ -13,7 +13,6 @@ export function socketInstance(): Socket {
       path: "/socket.io",
       withCredentials: true,
       transports: ["websocket"],
-      // autoConnect: true,
     });
   }
   return socket;
@@ -21,15 +20,12 @@ export function socketInstance(): Socket {
 
 
 export function getSocketInstance(): Socket | null {
-  // get current url
   const currentPath = window.location.pathname;
   if (currentPath === '/login' || currentPath === '/') {
     return null;
   }
   if (!socket) {
-    console.log('Creating new socket instance');
     return socketInstance();
   }
-  console.log('Returning existing socket instance');
   return socket;
 }

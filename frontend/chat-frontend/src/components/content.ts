@@ -45,9 +45,7 @@ function  friendCart(friend:any,waitingMsg:object,myId:string):string
         else
             status = 'send'
 
-        // if(friend.online_status === 'online')
 
-        // navigateSilent(`/chat/${friend.username}`);
         return `<div id='msg-zone' data-id="${friend.id}" class="flex justify-center  px-2 hover:bg-[#E63946]/20 transition-colors duration-300 py-5">
                     <div  class=" friend-msg-zone flex w-[95%] hover:cursor-pointer" data-id="${friend.id}" data-name = "${friend.username}" data-roomname = "${roomName}"  >
                     <div class="relative">
@@ -84,7 +82,6 @@ function  friendCart(friend:any,waitingMsg:object,myId:string):string
 
 export function listOfMsg(friends:any,waitingMsg:object,myId:string): string //done
 {
-    // console.log(friends);
     if(!friends || friends.length === 0)
     {
         return `<div class="flex flex-col items-center justify-center h-full text-center gap-4 px-6">
@@ -153,7 +150,6 @@ export function generateBlockButton(status:string):string
 }
 /* ****************************************************************************************************************************************************************** */
 export function profileNav(img:string,userAccount:string,id:string,onlineStatus:string):string{
-    // const profile = new PlayerProfileManager();
     return`
         <div id="profile-nav" class="flex h-[10%] items-center p-5 justify-between relative ">
             <div class="flex items-center gap-6">
@@ -261,10 +257,8 @@ export function sendMsg(msg:string,time:string):string{
     </div>`
     
 }
-// <img src="${img}" alt="" class="h-10 w-10 rounded-full mt-2 ml-2">
 
 
-// <img src='/api/uploads/${img}' alt="" class="h-10 w-10 rounded-full mt-2 mr-2">
 export function receivedMsg(msg:string,time:string,img:string):string{
 
     return `<div id="sent-msg" class="flex mt-5 w-[30vw] justify-start pl-5 ">

@@ -1,8 +1,6 @@
 import { friendDisconnectHandler, friendRequestReceivedHandler, socketNotificationListenerHandler, socketNotificationListenerRejectHandler, friendConnectHandler } from "../../../profile_frontend/src/components/FriendRequest";
 import { friendRequestCancelledHandler } from "../../../profile_frontend/src/components/RequestHandling";
 import { getSocketInstance } from "../../../socket_manager/socket";
-// import { Tournament } from "../../../tournament_frontend/src/creat/e_tournament";
-// import { liveHandler ,  receiveMessageHandler,allowMsgHandler,blockOrAcceptedHandler,messages_batchHandler, messages_old_batchHandler, request_to_playHandler, not_agreeHandler, msg_notificationHandler, user_onlineHandler, user_offlineHandler } from "./chat_handlers"
 import * as Tournament from "../../../tournament_frontend/src/socketTournament";
 import { start_gameHandler, chatErrorHandler } from "./chat_handlers";
 import { liveHandler, receiveMessageHandler, allowMsgHandler, blockOrAcceptedHandler, messages_batchHandler, messages_old_batchHandler, request_to_playHandler, not_agreeHandler, msg_notificationHandler, user_onlineHandler, user_offlineHandler } from "./chat_handlers"
@@ -43,9 +41,6 @@ export function socketListener() {
 export function socketNotificationListener() {
   const socket = getSocketInstance();
   if (!socket) return;
-  console.log("############################Setting up notification socket listeners####################");
-
-
   // Remove old listeners to prevent duplicates
   socket.off("user_online");
   socket.off("user_offline");

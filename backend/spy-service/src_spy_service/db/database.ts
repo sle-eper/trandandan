@@ -38,5 +38,4 @@ export function getHistory(user_id:number){
         WHERE user_id = ?
         `).get(user_id);
     return stats;
-    // console.log(stats);
 }

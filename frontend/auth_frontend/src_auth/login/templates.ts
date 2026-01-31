@@ -1,4 +1,4 @@
-// templates.ts
+
 import image1 from "../images/pingpong1.jpg?inline"
 import image2 from "../images/pingpong2.jpg?inline"
 import image3 from "../images/pingpong3.jpg?inline"
@@ -312,14 +312,6 @@ export const verifyTemplate = () => `
     </div>
   </div>
 `;
-// function statCard(title: string, value: string | number) {
-//   return `
-//     <div class="bg-black/40 rounded-xl border border-white/10 p-5">
-//       <p class="text-gray-400 text-sm">${title}</p>
-//       <p class="text-3xl font-bold mt-2">${value}</p>
-//     </div>
-//   `;
-// }
 
 
 export interface MatchData {

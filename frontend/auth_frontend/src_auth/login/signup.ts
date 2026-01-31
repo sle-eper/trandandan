@@ -1,9 +1,7 @@
-// src/login/signup.ts
 import { signupTemplate, sharedImage } from "./templates";
 import { navigate } from "../app";
 import { signupUser } from "./api";
 import { socketInstance } from "../../../socket_manager/socket";
-// import { socket } from "./login";
 
 export function showSignupPage(containerId = "login-app") {
   const app = document.getElementById(containerId);
@@ -83,7 +81,7 @@ function attachSignupHandlers() {
 
   btn.addEventListener("click", submitSignup);
 
-  // ⌨️ ENTER KEY SUPPORT
+
   const handleEnter = (e: KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -96,8 +94,6 @@ function attachSignupHandlers() {
   passwordInput.addEventListener("keydown", handleEnter);
   confirmInput.addEventListener("keydown", handleEnter);
 
-  // 👁 Password visibility toggles (already added before)
-    // 👁 PASSWORD VISIBILITY TOGGLE
   const togglePassword = document.getElementById("toggle-signup-password");
   const toggleConfirm = document.getElementById("toggle-signup-confirm");
 

@@ -4,8 +4,7 @@ import { db } from './db/database';
 const USER_MANAGEMENT_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://user-management:3000';
 
 // Service function to fetch user data
-async function fetchUserData(userId: string , from:string) {
-  console.log("Fetching data for user ID:", userId, "from:", from);
+async function fetchUserData(userId: string ) {
   try {
     const response = await axios.get(`${USER_MANAGEMENT_SERVICE_URL}/user/${userId}`, {
       headers: {
@@ -14,7 +13,6 @@ async function fetchUserData(userId: string , from:string) {
       },
       timeout: 5000 
     });
-    console.log("Fetched user data:", response.data);
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -113,7 +111,6 @@ async function getFriendsOfUser(userId: string) {
   }
 }
 async function getStatusOfTowFriends(userId:string,friendId:string):Promise<object> {
-  // console.log("Getting friendship status between", userId, "and", friendId);
   try {
     const res = await axios.get(`${USER_MANAGEMENT_SERVICE_URL}/friendship/status/${userId}/${friendId}`, {
       headers: {
@@ -125,7 +122,6 @@ async function getStatusOfTowFriends(userId:string,friendId:string):Promise<obje
     if (!res.data || !res.data.status1 || !res.data.status2) {
       throw new Error("Invalid friendship response");
     }
-    // console.log("res.data", res.data);
     return res.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -148,8 +144,6 @@ async function changeStatusOfFriends(status:string,userId:string,friendId:string
       },
       timeout: 5000 
     });
-    // console.log("froom",response.data)
-    // return response.data;
     return getStatusOfTowFriends(userId,friendId)
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -162,7 +156,6 @@ async function changeStatusOfFriends(status:string,userId:string,friendId:string
 
 
 async function updateUserStat( userId: string, status: string) {
-  console.log("Updating status for user ID:", userId, "to status:", status);
   try {
      const response = await axios.put(`${USER_MANAGEMENT_SERVICE_URL}/user/${userId}/status`, {
       status
@@ -173,7 +166,6 @@ async function updateUserStat( userId: string, status: string) {
       },
       timeout: 5000 
     });
-    // console.log("User status updated successfully:", response.data);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.error(`Failed to update user status: ${error.message}`);

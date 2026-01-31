@@ -18,7 +18,6 @@ async function fetchAllUsers(): Promise<Player[]| undefined> {
       withCredentials: true,
     });
     const usersData = response.data.users;
-  //  console.log('Fetched users data:', usersData);
     const players: Player[] = [];
     
     
@@ -33,7 +32,6 @@ async function fetchAllUsers(): Promise<Player[]| undefined> {
       players.push(player);
     });
     return players;
-    // console.log('Players:', players);
   } catch (error) {
     console.error('Error fetching all users:', error);
   }
@@ -50,7 +48,6 @@ class PlayerSearch {
     this.searchInput = searchInput;
     this.searchResults = searchResults;
     
-    // Sample player data - replace with your actual data source or API call
     
     this.profileManager = new PlayerProfileManager();
     this.initializeEventListeners();
@@ -148,11 +145,9 @@ class PlayerSearch {
   }
 
   private async selectPlayer(playerId: number): Promise<void> {
-    console.log('Selected player:', playerId);
   const selectedPlayer = this.players.find(p => p.id === playerId);
   
   if (selectedPlayer) {
-    console.log('Selected player details:', selectedPlayer);
     await this.profileManager.showPlayerProfile(selectedPlayer.id);
   }
   
@@ -183,14 +178,5 @@ class PlayerSearch {
     }
   }
 }
-
-// Initialize the search when DOM is ready
-// document.addEventListener('DOMContentLoaded', () => {
-//   const playerSearch = new PlayerSearch();
-  
-  // Optional: Load players from API
-  // playerSearch.loadPlayersFromAPI('/api/players');
-// });
-
 export { PlayerSearch };
 export type { Player };

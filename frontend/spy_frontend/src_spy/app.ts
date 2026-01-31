@@ -26,7 +26,6 @@ export async function spyUi()
         credentials: "include",
     });
     const responseJson = await response.json()
-    console.log("response user:", responseJson);
     const myId =  responseJson.user.id;
     const userName = responseJson.user.username;
 ;
@@ -70,8 +69,6 @@ export async function spyUi()
         // let correctChoice:string;
         game?.addEventListener("click",async(e)=>{
                 const el = e.target as HTMLElement;
-                console.log("tolll",selected.length)
-                console.log(el.id)
                 if(el.id === 'historyCard')
                 {
                     
@@ -140,7 +137,6 @@ export async function spyUi()
                     if(confirm && !confirm.dataset.bound)
                     {
                         confirm.addEventListener("click",()=>{
-                            console.log("spaysNumber",spaysNumber)
                             if(spaysNumber > 0 && spaysNumber <= 3 )
                             {
                                 document.getElementById("local-mode")?.classList.remove('hidden')
@@ -213,7 +209,6 @@ export async function spyUi()
                         confirm.addEventListener("click",()=>{
                             if(playerNumber > 0 && playerNumber <= 10)
                             {
-                                // console.log(playerNumber);
                                 document.getElementById("local-mode")?.classList.remove('hidden')
                                 document.getElementById("counter-players")?.classList.add('hidden')
                                 const playerInput = document.getElementById("playersInput");
@@ -415,7 +410,6 @@ export async function spyUi()
                     }
                     //kanfar9 3lihom roles 
                     spays = roleDistribution(players,data.players,data.spays,selected)
-                    console.log(spays)
                     player1 = spays[0];
                     game.innerHTML = `<div id="cards-container"></div>`;
                     const backCard = renderBackCard()
@@ -486,7 +480,6 @@ export async function spyUi()
                 }
                 if(el.id === 'guess-the-word')
                 {
-                    console.log(correctChoice)
                     game.innerHTML = `<div class="relative h-full w-full flex flex-col items-center justify-center gap-8">
                                                     <div
                                         id="notification-root"
@@ -638,7 +631,6 @@ export async function spyUi()
                 }
                 if(el.id === 'confirm-spy')
                 {
-                    console.log("click 1",whoAsks)
                     const select = document.getElementById("spy-select") as HTMLSelectElement;
                     const result = document.getElementById("spy-result") as HTMLDivElement;
                     const id = Number(select.value);

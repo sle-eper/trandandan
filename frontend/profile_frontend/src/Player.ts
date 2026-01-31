@@ -30,7 +30,6 @@ export class PlayerFriendship {
     
     if (response && response.data) {
       const userObj = response.data.profile;
-      console.log('Player profile fetched successfully', response.data);
       return {
         id: userObj.id,
         name: userObj.username,
@@ -64,7 +63,6 @@ export class PlayerFriendship {
         params: { friendId }
         });
             if (response && response.data) {
-                console.log('Friendship status fetched successfully', response.data);
                 if(response.data.areFriends) {
                 return true;
             }
@@ -86,7 +84,6 @@ export class PlayerFriendship {
     });
     
     if (pendingResponse && pendingResponse.data && pendingResponse.data.isPending) {
-       console.log('Friend request is pending' , pendingResponse.data.isPending);
         return true;
     }
     }catch (error) {

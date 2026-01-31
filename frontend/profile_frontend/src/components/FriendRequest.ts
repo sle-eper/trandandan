@@ -8,7 +8,6 @@ import { createFriendRequestNotification } from "./RequestHandling.ts";
 import {Toast} from "./ProfileForm.ts";
 
 function simpleConfirm(message: string): Promise<boolean> {
-  console.log('Displaying confirmation dialog with message:', message);
   return new Promise((resolve) => {
   
     const overlay = document.createElement('div');
@@ -66,7 +65,6 @@ function simpleConfirm(message: string): Promise<boolean> {
 
 export const friendRequestReceivedHandler = (from: string, myId: string,friendId: string, notifId: string) => {
  
-  console.log('Friend request received myId:', myId, 'with frienID:', friendId, 'from:', from, 'notifId:', notifId); ;
   const existing = document.querySelector(`[data-notif-id="${notifId}"]`);
   if (existing) existing.remove();
   
@@ -102,7 +100,6 @@ export class PlayerProfileManager {
   private async checkFriendshipStatus(playerId: number): Promise<FriendshipStatus> {
    
     if (!this.currentUserId) {
-      console.log('Initializing current user ID for friendship status check...');
       await this.initialize();
     }
     if (playerId === this.currentUserId) {
@@ -404,7 +401,6 @@ export class PlayerProfileManager {
       const editBtn = document.getElementById('edit-profile');
       editBtn?.addEventListener('click', () => {
         if (this.showEditProfileCallback) {
-          console.log('Edit profile button clicked, rendering edit profile component...');
           this.showEditProfileCallback.mount('dashboard-content');
         }
       });
@@ -413,7 +409,6 @@ export class PlayerProfileManager {
      const unfriendBtn = document.getElementById(`unfriend-${player.id}`);
      unfriendBtn?.addEventListener('click', async () => {
       const confirmed = await simpleConfirm(`Are you sure you want to unfriend ${player.display_name}?`)
-      console.log('Unfriend button clicked for player:', player.id, 'Confirmed:', confirmed);
       if (confirmed) {
         await this.unfriendUser(player.id);
         this.showPlayerProfile(player.id);
@@ -423,7 +418,6 @@ export class PlayerProfileManager {
     } else if (status.isPending) {
       const cancelBtn = document.getElementById(`cancel-request-${player.id}`);
       cancelBtn?.addEventListener('click', async () => {
-        console.log('Attaching cancel friend request listener for player:', player.id);
         await this.cancelFriendRequest(player.id);
         getSocketInstance()?.emit('cancelFriendRequest', player.id, String(currentUserId));
        
@@ -441,7 +435,6 @@ export class PlayerProfileManager {
           `;
           
           await this.sendFriendRequest(player.id);
-          console.log('Emitting friendRequestSent event via socket...', String(currentUserId), String(player.id));
           getSocketInstance()?.emit('friendRequestSent', currentUserId, player.id);
           this.showPlayerProfile(player.id);
         } catch (error) {

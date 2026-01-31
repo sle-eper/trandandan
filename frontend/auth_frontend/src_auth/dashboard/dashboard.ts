@@ -4,9 +4,7 @@ import { renderNavBar } from "./navbar";
 import { renderSidebar } from "./sidebar";
 import { navBarLogic } from "./navbar";
 import { sidebarLogic } from "./sidebar";
-// import { socket } from "../login/login";
 import { getSocketInstance } from "../../../socket_manager/socket";
-// import { socketInstance } from "../../../socket_manager/socket";
 import { createNotificationMenuItem } from "../../../profile_frontend/src/components/RequestHandling";
 import { socketNotificationListener } from "../../../chat-frontend/src/ts/chat_socket";
 import { setCurrentUserId } from "../../../chat-frontend/src/ts/global_var";
@@ -15,13 +13,11 @@ import { setCurrentUserId } from "../../../chat-frontend/src/ts/global_var";
 function addNotif(el: any, notification: HTMLElement) {
   const notifIcon = document.getElementById("notif-icon");
   if (!notifIcon) return;
-  // red notification icon
   notifIcon.innerHTML = `<span class=" text-[#E63946]  material-symbols-outlined">
                           notifications_unread
                           </span>`
 
   let text = "";
-  console.log("Adding notification:", el, el.type);
   switch (el.type) {
     case "challenge":
       text = `🎮 <strong>${el.sender_name}</strong> wants to play`;
@@ -36,7 +32,6 @@ function addNotif(el: any, notification: HTMLElement) {
       break;
 
     case "friendRequest":
-      console.log("Creating menu item for notifId:", el);
       createNotificationMenuItem(notification, el.sender_name, el.send, el.id, el.recv);
       return;
 

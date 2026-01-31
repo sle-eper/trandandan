@@ -6,15 +6,12 @@ export async function addParticipant_post(request, reply) {
     const db = await getDatabase();
     const tournament = await db.get('SELECT * FROM tournament WHERE name  = ?', [tournamentName]);
     try {
-        console.log("userId:", userId);
         const row = await axios.get(
             `http://user-management:3000/user/${userId}`,
             {
             }
         );
-        console.log("----------------------------------------", row.data);
         if (Number(tournament.maxPlayers) === Number(tournament.currentPlayers)) {
-            console.log("Tournament Full");
             return reply.code(400)
                 .send({ message: "Tournament Full" })
 
@@ -24,7 +21,6 @@ export async function addParticipant_post(request, reply) {
             [tournament.id, userId]
         );
         if (participants.length > 0) {
-            console.log("the user already in tournament ")
             return reply.code(400)
                 .send("the user already in tournament ")
         }
@@ -49,7 +45,6 @@ export async function addParticipant_post(request, reply) {
             .send(res)
     }
     catch (error) {
-        console.log(error);
         return reply.code(500)
             .send(error)
     }
@@ -60,11 +55,6 @@ export async function removeParticipant_post(request, reply) {
     const { tournamentname, userid } = request.body;
     const db = await getDatabase();
     const tournament = await db.get('SELECT * FROM tournament WHERE name  = ?', [tournamentname]);
-    // if (!(Number(tournament.ownerid) === Number(ownerid))) {
-    //     console.log("Forbidden");
-    //     return reply.code(403)
-    //     .send("Forbidden")
-    // }
     const participants = await db.all(
         "SELECT * FROM participant WHERE tournamentId = ? AND userid = ?",
         [tournament.id, userid]
@@ -83,7 +73,6 @@ export async function removeParticipant_post(request, reply) {
                 .send("the user is deleted")
         }
         catch (error) {
-            console.log(error);
             return reply.code(500)
                 .send(error)
         }
@@ -97,10 +86,8 @@ export async function listParticipants_get(request, reply) {
         const ownerid = request.headers['x-user-id'];
         const { tournamentName } = request.query;
         const db = await getDatabase();
-        console.log("tournament id:", tournamentName);
         const tournament = await db.get('SELECT * FROM tournament WHERE name  = ?', [tournamentName]);
         if (!tournament) {
-            console.log("Forbidden");
             return reply.code(404)
             .send("Not Found")
         }
@@ -112,7 +99,6 @@ export async function listParticipants_get(request, reply) {
             .send(participants)
     }
     catch (error) {
-        console.log(error);
         return reply.code(500)
     }
 }
@@ -137,7 +123,6 @@ export async function getMyStatus_get(request, reply) {
         }
     }
     catch (error) {
-        console.log(error);
         return reply.code(500)
     }
 

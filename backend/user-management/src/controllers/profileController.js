@@ -13,11 +13,9 @@ class ProfileController {
   }
 
   async getUser(request, reply) {
-    console.log("getUser called with params:", request.params);
     try {
       const id = request.params.id;
       const user = await this.userModel.findById(id);
-      console.log("Fetched user:", user);
       if (!user) {
         return reply.code(404).send({ error: 'User not found' });
       }
@@ -72,7 +70,6 @@ class ProfileController {
       const userId = await this.userModel.create(userData);
       const profile = await this.userModel.findById(userId);
 
-      console.log('Created user profile:', profile);
 
       return reply.code(201).send({
         success: true,
@@ -134,7 +131,6 @@ class ProfileController {
         const existingUser = await this.userModel.findByEmail(updates.email);
 
         if (existingUser && existingUser.id !== userId) {
-          console.log('Email already taken:', updates.email);
           return reply.code(409).send({
             error: 'Email already taken'
           });
@@ -144,7 +140,6 @@ class ProfileController {
         const existingUser = await this.userModel.findByUsername(updates.username);
 
         if (existingUser && existingUser.id !== userId) {
-          console.log('Username already taken:', updates.username);
           return reply.code(409).send({
             error: 'Username already taken'
           });
@@ -156,7 +151,6 @@ class ProfileController {
         );
 
         if (availableName && availableName.id !== userId) {
-          console.log('Display name already taken:', updates.displayName);
           return reply.code(409).send({
             error: 'Display name already taken'
           });
@@ -210,7 +204,6 @@ class ProfileController {
 
         for (const oldAvatar of userAvatars) {
           await fs.promises.unlink(path.join(uploadDir, oldAvatar));
-          console.log('Deleted old avatar:', oldAvatar);
         }
       } catch (cleanupError) {
         console.warn('Could not clean up old avatars:', cleanupError.message);
@@ -373,7 +366,6 @@ class ProfileController {
   async setsecretkeytwofactor(request, reply) {
     try {
       const { username, two_factor_secret } = request.body;
-      console.log("Received username and secret:", username, two_factor_secret);
       if (!username || !two_factor_secret) {
         return reply.code(400).send({ error: 'Username and secret are required' });
       }

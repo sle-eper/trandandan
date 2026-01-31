@@ -1,6 +1,3 @@
-// import { navigate } from "../app";
-
-// We keep your UI EXACTLY the same — only add href + data-route attributes
 
 export function renderSidebar(): string {
   return `
@@ -81,8 +78,6 @@ export function renderSidebar(): string {
   `;
 }
 
-
-// Only highlight active item — NO loading content here
 export function sidebarLogic() {
   const path = window.location.pathname;
 

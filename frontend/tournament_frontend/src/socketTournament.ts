@@ -48,7 +48,6 @@ export function inviteHandlerReceived(data: any) {
       },
       body: JSON.stringify({ tournamentName: data.tournamentName, userId: data.friendId }),
     });
-    console.log("User rejected the tournament invitation.", result);
     if (!result.ok) {
       showToast(result.statusText || "Failed to join tournament.");
       notif.remove();
@@ -77,7 +76,6 @@ export function inviteHandlerReceived(data: any) {
 
 }
 export function start_gameHandlerTournament(data: any) {
-  console.log("------------------------------------", data);
   const container = document.getElementById("play-notification-container");
   if (!container) return;
 
@@ -116,21 +114,17 @@ export function start_gameHandlerTournament(data: any) {
   notif.querySelector(".accept")?.addEventListener("click", async () => {
     const socket = Socket.getSocketInstance();
     socket.emit("game:tournament:joined", data);
-    // renderTournamentBracket(data.tournamentName);
-    // navigate(`/tournament/bracket/${data.tournamentName}`);
     notif.remove();
   });
 
   notif.querySelector(".reject")?.addEventListener("click", () => {
     const socket = Socket.getSocketInstance();
-    console.log("this the data to leave tournament:", data);
     socket.emit("Tournament:leave", data);
     notif.remove();
   });
   addMenuNotification("🎮 ", `<strong>${data.tournamentName}</strong> Go to Game`, data.notfId);
   setTimeout(() => {
     const socket = Socket.getSocketInstance();
-    console.log("this the data to leave tournament:", data);
     socket.emit("Tournament:leave", data);
     notif.remove();
   }, 40000);
@@ -138,27 +132,23 @@ export function start_gameHandlerTournament(data: any) {
 }
 
 export async function match_endedHandlerTournament(data: any) {
-  console.log("Tournament match ended handler called with data:", data);
   const result = await fetch("/Tournament/list", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
     },
   });
-  console.log("Get list", result);
   if (data.result === 'won') {
     const message = "You won your tournament match!";
     showToast(message);
     const socket = Socket.getSocketInstance();
     socket.emit("tournament:Final", data);
     tournamentBracketHandler(data);
-    // navigate('/home');
     return;
   }
   else if (data.result === 'lost') {
     const message = "You lost your tournament match.";
     showToast(message);
-    console.log("this the data to leave tournament: for user", data.userId, data);
     navigate('/home');
     return;
   }
@@ -167,8 +157,6 @@ export async function match_endedHandlerTournament(data: any) {
 
 
 export function matchHandlerTournament(data: any) {
-  console.log('Starting remote game from chat challenge:', data.gameId, 'as side:', data.side);
-  // Redirect using the SPA router navigate function, passing both gameId and side
   navigate(`/game/pong?TournamentName=${data.tournamentName}&gameId=${data.gameId}&side=${data.side}&mode=tournament&final=${data.final}`);
 }
 
@@ -202,9 +190,7 @@ export async function tournamentChampionHandler(data: any) {
 }
 
 export function tournamentBracketHandler(data: any) {
-  console.log("Received tournament bracket data:", data);
   renderTournamentBracket(data.tournamentName);
-  console.log("data.finalmatches\n", data.finalMatches);
   navigate(`/tournament/bracket/${data.tournamentName}`);
 }
 

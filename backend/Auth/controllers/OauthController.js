@@ -149,7 +149,6 @@ export async function githubAuthCallback_get(request, reply) {
                 displayName: name,
                 id_token: access_token,
             });
-            console.log("Created user:", response);
             const token = jwt.sign({ id: response.data.profile.id, email }, process.env.JWT_SECRET, { expiresIn: "1h" });
             return reply
                 .setCookie('token', token, { path: '/', httpOnly: true })

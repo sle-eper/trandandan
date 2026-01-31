@@ -26,8 +26,6 @@ function winningWord(selected):object
 {
 
     const idSection =  selected[rand(0,selected.length - 1)]
-    // console.log(selected.length -1)
-    // console.log(rand(0,selected.length - 1))
     const section =  spaySections.find((s)=>{
         return s.id == idSection
     })
@@ -93,6 +91,5 @@ export function roleDistribution(playersData:any,numberOfPlayer:number,spays:num
         }
         return p
     })
-    // console.log(winningWord())
     return game
 }

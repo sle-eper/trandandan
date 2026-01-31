@@ -10,8 +10,6 @@ export async function history() {
         }
 
         const { data } = await response.json();
-        console.log(data)
-
         return `
         <div id='historySection' class="hidden flex flex-col items-center justify-center gap-4 py-12">
             <div class="col-span-2 md:col-span-3  flex justify-center mb-10 text-4xl font-bold uppercase text-[#ff4d4d] tracking-wide font-['Share_Tech_Mono']

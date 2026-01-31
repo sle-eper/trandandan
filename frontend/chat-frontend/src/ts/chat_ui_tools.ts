@@ -1,4 +1,3 @@
-// import { currentUserId } from "../../../auth_frontend/src_auth/login/login";
 import { getFriendId,getCurrentUserId } from "./global_var";
 import { getSocketInstance } from "../../../socket_manager/socket"
 import { sendMsg, lastMsg } from "../components/content";
@@ -38,6 +37,7 @@ export function renderConnectionError(container: HTMLElement) {
 
 
 export function setupPopupEvents() {
+    //Ai
     const friendId = getFriendId();
     const blockButton = document.getElementById("block-button");
     const unblockButton = document.getElementById("unblock-button");
@@ -116,7 +116,6 @@ export function setupPopupEvents() {
                 const msgTime = document.getElementById(`time-of-msg-${friendId}`);
                 const time = getTime();
                 chatZone.innerHTML += sendMsg(value, time);
-                console.log("user", getCurrentUserId(), "friend", friendId);
                 getSocketInstance()?.emit("send_message", { value, userID: getCurrentUserId(), friendId });
                 moveUp(friendId);
                 const container = document.getElementById(
@@ -186,7 +185,6 @@ export function addMenuNotification(
     });
 
     notification.prepend(msgNotif);
-    console.log("Notification added to menu");
 }
 
 let firestOne: boolean;
@@ -223,14 +221,9 @@ export function onScroll() {
     }
 }
 
-export function fetchListOfFriends(): Promise<any> {
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        reject(new Error("Timeout: friends list request took too long"));
-      }, 5000); // 5 second timeout
-
-      getSocketInstance()?.once("friends_list", (friends: any[]) => {
-        clearTimeout(timeout);
+export   function fetchListOfFriends(): Promise<any> {
+    return new Promise((resolve) => {
+      getSocketInstance()?.once("friends_list", (friends:any[]) => {
         resolve(friends);
       });
       getSocketInstance()?.emit("get_friends");

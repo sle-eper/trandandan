@@ -14,7 +14,6 @@ export async function initializeDatabase() {
       filename: dbPath,
       driver: sqlite3.Database
     });
-    console.log('✅ Connected to SQLite database');
     await db.exec('PRAGMA foreign_keys = ON;');
     await createTables();
 
@@ -37,7 +36,6 @@ export function getDatabase() {
 export async function closeDatabase() {
   if (db) {
     await db.close();
-    console.log('✅ Database connection closed');
   }
 }
 

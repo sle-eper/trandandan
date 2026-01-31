@@ -75,21 +75,6 @@ addRoute("/game/:type", (params) =>
   })
 );
 
-// addRoute("/game/spy/:step", (params) =>
-//   protectedRoute(() => {
-//     showDashboard();
-//     spyUi(params?.step);
-//   })
-// );
-// addRoute("/game/spy/win_page/:step", (params) =>
-//   protectedRoute(() => {
-//     showDashboard();
-//     // game.innerHTML = renderSpyChoice(params?.step)
-//     // spyUi(params?.step);
-//   })
-// );
-
-
 
 addRoute("/chat", () =>
   protectedRoute(() => {
@@ -97,13 +82,6 @@ addRoute("/chat", () =>
     loadChat();
   })
 );
-// addRoute("/chat/:username", (params) =>
-//   protectedRoute(() => {
-//     showDashboard();
-//     showMainUI();
-//   })
-// );
-
 
 addRoute("/tournement", () =>
   protectedRoute(() => {

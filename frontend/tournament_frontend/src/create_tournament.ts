@@ -445,7 +445,6 @@ export async function renderTournamentList() {
     },
   });
   const tournament = await result.json();
-  console.log("Tournaments data:", tournament);
   main.innerHTML = tournamentListTemplate(tournament.tournaments || []);
   attachListHandlers();
 }
@@ -466,7 +465,6 @@ function attachListHandlers() {
           "Content-Type": "application/json",
         },
       });
-      console.log("Participant status:", partic);
       if (partic.ok) {
         const tournamentstatus = await fetch(`/Tournament/check?tournamentName=${encodeURIComponent(currentTournament.name)}`, {
           method: "GET",
@@ -475,7 +473,6 @@ function attachListHandlers() {
           }
         });
         const body = await tournamentstatus.json();
-        console.log("Tournament status:", body);
         currentTournament.maxPlayers = body.maxPlayers || 4;
         renderTournamentBracket(currentTournament.name);
         navigate(`/tournament/bracket/${currentTournament.name}?maxPlayers=${currentTournament.maxPlayers}`);
@@ -515,11 +512,9 @@ function attachListHandlers() {
         tournamentName: tournamentName,
       });
       socket?.once("tournament:joined", () => {
-        console.log("Joined tournament:", tournamentName);
 
         //start the tournamnet
         if (body.message === "Tournament Full") {
-          console.log("Starting tournament as it is full", body.tournament.maxPlayers);
           socket?.emit("matchmaking:start", {
             tournamentName: tournamentName,
             maxPlayers: body.tournament.maxPlayers,
@@ -567,7 +562,6 @@ export async function renderTournamentBracket(tournamentName?: string) {
       },
     });
   const finalsBody = await finals.then(res => res.json());
-  console.log("matches data", matchesBody);
   main.innerHTML = tournamentBracketTemplate(participantBody, matchesBody, finalsBody);
 
   // Setup socket listeners for real-time updates
@@ -575,20 +569,17 @@ export async function renderTournamentBracket(tournamentName?: string) {
 
   // Listen for match completions to update bracket
   socket?.on("match:completed", (data: any) => {
-    console.log("Match completed:", data);
     // Refresh the bracket
     renderTournamentBracket(tournamentName);
   });
 
   socket?.on("tournament:roundCompleted", (data: any) => {
-    console.log("Round completed:", data);
     showToast(`${data.round} completed!`);
     // Refresh the bracket
     renderTournamentBracket(tournamentName);
   });
 
   socket?.on("tournament:finished", (data: any) => {
-    console.log("Tournament finished:", data);
     showToast(`🏆 Tournament Winner: ${data.winner}!`);
     // Refresh the bracket
     renderTournamentBracket(tournamentName);
@@ -596,7 +587,6 @@ export async function renderTournamentBracket(tournamentName?: string) {
 
   const addBtn = document.getElementById("add-player-btn");
   addBtn?.addEventListener("click", async () => {
-    console.log("Add Player clicked");
     const modal = document.getElementById("invite-modal");
     modal?.classList.remove("hidden");
     modal?.classList.add("flex");
@@ -606,7 +596,6 @@ export async function renderTournamentBracket(tournamentName?: string) {
         "Content-Type": "application/json",
       },
     }).then(res => res.json());
-    console.log("Friends data:", friends);
     renderFriendsList(friends.users);
   });
 
@@ -641,7 +630,6 @@ export async function renderTournamentBracket(tournamentName?: string) {
       userId: userID,
       friendId: friendId,
     });
-    console.log(`Invited friend ID: ${friendId}`);
   });
 
   document.getElementById("back-to-tournaments")?.addEventListener("click", () => {

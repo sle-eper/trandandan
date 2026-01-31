@@ -264,7 +264,6 @@ export function initializeGame() {
 }
 
 function setupSocketListeners() {
-    console.log('[DEBUG] Setting up socket listeners...');
     const s = gameSocket.socket;
 
     s.off('game_start');
@@ -316,7 +315,6 @@ function setupSocketListeners() {
     });
 
     s.on('game_start', (game: any) => {
-        console.log('[DEBUG] game_start received!', game);
         gameOver = false;
         gameStarted = false;
         currentGameId = game.id;
@@ -329,13 +327,11 @@ function setupSocketListeners() {
 
         if (me) {
             playerSide = me.side;
-            console.log(`[DEBUG] Identified as ${playerSide} player.`);
         }
 
         if (game.score) {
             leftScore = game.score.left;
             rightScore = game.score.right;
-            console.log('[DEBUG] Score synced from game_start:', { left: leftScore, right: rightScore });
             // Immediately update HTML score display
             const scoreLeftEl = document.getElementById('score-left');
             const scoreRightEl = document.getElementById('score-right');
@@ -428,11 +424,9 @@ function setupSocketListeners() {
     });
 
     s.on('goal_scored', (data: any) => {
-        console.log('[DEBUG] Goal Scored!', data);
         pongBall.syncState(data.ball);
         leftScore = data.score.left;
         rightScore = data.score.right;
-        console.log('[DEBUG] Score updated via goal_scored:', { left: leftScore, right: rightScore });
         // Update HTML immediately
         const scoreLeftEl = document.getElementById('score-left');
         const scoreRightEl = document.getElementById('score-right');
@@ -459,7 +453,6 @@ function setupSocketListeners() {
             if (tSocket) {
                 const tournamentName = URLSearchParams.prototype.get.call(new URL(window.location.href).searchParams, 'TournamentName');
                 const final = URLSearchParams.prototype.get.call(new URL(window.location.href).searchParams, 'final');
-                console.log('[DEBUG] Preparing to emit match:result for tournament mode.', tournamentName, final);
                 const result = {
                     gameId: currentGameId,
                     winnerId: data.winner?.id,
@@ -468,7 +461,6 @@ function setupSocketListeners() {
                     tournamentName: tournamentName,
                     final: final
                 };
-                console.log('[DEBUG] Tournament mode detected. Emitting match:result', result);
                 tSocket.emit('match:result', result);
             }
         }
@@ -600,10 +592,8 @@ function setupMenuButtons() {
     const btnRematch = document.getElementById('btn-rematch');
     if (btnRematch) {
         btnRematch.onclick = () => {
-            console.log('[DEBUG] Rematch button clicked. isRemote:', isRemote, 'gameId:', currentGameId);
             if (isRemote && currentGameId) {
                 // Remote Rematch
-                console.log('[DEBUG] Emitting request_rematch for', currentGameId);
                 gameSocket.socket.emit('request_rematch', { gameId: currentGameId });
 
                 // Visual feedback
@@ -719,7 +709,7 @@ export function animate() {
                             gameStarted = true;
                         }
                         goalTimeout = null;
-                    }, 1000);
+                    }, 500);
                 }
             }
         }
@@ -802,7 +792,7 @@ async function fetchUserProfile(userId?: string) {
         const response = await fetch(url);
         if (!response.ok) return null;
         const json = await response.json();
-        return json.user || json; // Unwrap if wrapped in { user: ... }
+        return json.user || json;
     } catch (e) { return null; }
 }
 

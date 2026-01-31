@@ -77,17 +77,14 @@ export async function getNotif(id: string) {
             if(!userCache.has(String(notif.send)))
             {
                 try{
-                    const userData = await fetchUserData(String(notif.send),"get_notif");
+                    const userData = await fetchUserData(String(notif.send));
                     userCache.set(String(notif.send), String(userData.user.username));
-                    // result.push({...notif,sender_name: users.user.username });
                 }catch{
                     userCache.set(String(notif.send), "Unknown user");
-                    // result.push({...notif,sender_name: "Unknown user" });
                 }
             }
             result.push({...notif,sender_name: userCache.get(String(notif.send)) });
         }
-        // console.log(result);
         return result;
     }catch(err)
     {
@@ -118,7 +115,6 @@ export function saveMsg(send:string,recv:string,msg:string,room:string,status:st
             throw new Error("Invalid data in saveMsg");
         const msgData = db.prepare(`INSERT INTO msg(send,recv,msg,room,status) VALUES (?,?,?,?,?)`).run(send,recv,msg,room,status)
         const msgId = String(msgData.lastInsertRowid)
-        // console.log(msgId)
         return msgId
     }catch(err)
     {

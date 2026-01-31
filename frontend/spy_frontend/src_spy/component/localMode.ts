@@ -6,7 +6,6 @@ import history from "../img/history.png?inline"
 
 export function displayCard(index:number)
 {
-    console.log(index)
     const players = document.getElementById('playersCard-container');
     const spyNumber = document.getElementById('spaysCard-container');
     const sections = document.getElementById('sectionsCard-container');

@@ -150,7 +150,6 @@ class UserModule {
 
    
     async setTwoFactorSecret(userId, secret) {
-        console.log("Setting 2FA secret in DB for userId:", userId);
         await this.db.run(
             `UPDATE users 
            SET two_factor_secret = ? WHERE id = ?`,
@@ -158,7 +157,6 @@ class UserModule {
         );
     }
     async setTwoFactorFlag(userId) {
-        console.log("Enabling 2FA for userId:", userId);
         await this.db.run(
             `UPDATE users 
            SET two_factor_enabled = 1 WHERE id = ?`,
@@ -166,7 +164,6 @@ class UserModule {
         );
     }
     async setIdToken(username, token) {
-        console.log("set the token for username:", username);
         await this.db.run(
             `UPDATE users 
            SET id_token = ? WHERE username = ?`,

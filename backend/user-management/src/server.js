@@ -53,15 +53,11 @@ fastify.get('/api', (req, reply) => {
 
 async function start() {
     try {
-        console.log('🔄 Initializing database...');
         await initializeDatabase();
 
-        console.log('🔄 Getting database instance...');
         const db = getDatabase();
 
-        console.log('🔄 Attaching database to Fastify...');
         fastify.decorate('db', db);
-        console.log('✅ Database attached, fastify.db exists:', !!fastify.db);
 
 
 
@@ -72,10 +68,8 @@ async function start() {
 
 
 
-        console.log('🔄 Starting server...');
         await fastify.listen({ port: 3000, host: '0.0.0.0' });
 
-        console.log('✅ Server listening on port 3000');
     } catch (error) {
         fastify.log.error(error, '❌ Error starting server:');
         process.exit(1);
@@ -83,7 +77,6 @@ async function start() {
 }
 
 process.on('SIGINT', async () => {
-    console.log('🔄 Shutting down gracefully...');
     await closeDatabase();
     await fastify.close();
     process.exit(0);

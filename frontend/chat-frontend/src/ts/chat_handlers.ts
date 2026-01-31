@@ -1,5 +1,3 @@
-// import { currentUserId } from "../../../auth_frontend/src_auth/login/login";
-import { friendDisconnectHandler } from "../../../profile_frontend/src/components/FriendRequest";
 import { getSocketInstance } from "../../../socket_manager/socket";
 import { lastMsg, receivedMsg,inputMsg, sendMsg } from "../components/content";
 import { moveUp,setupPopupEvents,addMenuNotification } from "./chat_ui_tools";
@@ -10,7 +8,6 @@ import {renderConnectionError} from "./chat_ui_tools"
 
 export const liveHandler = (id:string, roomName:string, msg:string, timeOfMsg:string)=>{
     moveUp(id);
-    // console.log("id", id);
     const timeOfMsgSpan: HTMLSpanElement = document.getElementById(
       `time-of-msg-${id}`
     ) as HTMLSpanElement;
@@ -65,7 +62,6 @@ export const allowMsgHandler = (allow: boolean,status:string) => {
 }
 
 export const blockOrAcceptedHandler = (roomName: string, statusGlobal: string,status:string) => {
-    console.log(statusGlobal,status);
     const dm = document.getElementById("DM");
     if (dm && dm.dataset.roomName == roomName) {
       const msg = document.getElementById("x");
@@ -199,7 +195,6 @@ export const request_to_playHandler = (from:string,friendId:string,notifId:strin
       });
 
       notif.querySelector(".reject")?.addEventListener("click", () => {
-        // console.log("reject clicked", friendId);
         getSocketInstance()?.emit("reject_play", getCurrentUserId(),friendId);
         notif.remove();
       });
@@ -212,7 +207,6 @@ export const request_to_playHandler = (from:string,friendId:string,notifId:strin
 }
 
 export const not_agreeHandler = (from:string ,notifId:string) => {
-    console.log("not_agreeHandler called from:", from);
     const container = document.getElementById("play-notification-container");
 
   if (!container) return;
@@ -306,7 +300,5 @@ export const user_offlineHandler = (userId: string) => {
   });
 };
 export const start_gameHandler = (data: { gameId: string, side: string }) => {
-  console.log('Starting remote game from chat challenge:', data.gameId, 'as side:', data.side);
-  // Redirect using the SPA router navigate function, passing both gameId and side
   navigate(`/game/pong?gameId=${data.gameId}&side=${data.side}`);
 };

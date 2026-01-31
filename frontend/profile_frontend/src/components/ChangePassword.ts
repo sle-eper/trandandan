@@ -250,7 +250,6 @@ export class ChangePasswordModal {
       });
 
       const data = await response.data;
-      console.log(response);
       if (!response || response.status !== 200) {
         throw new Error(data.error || 'Failed to change password');
       }

@@ -66,7 +66,6 @@ export async function signup_post(request, reply) {
         password: hashed,
       }
     );
-    console.log("--------------------------");
     // reply
     if (!process.env.JWT_SECRET) {
       throw new Error("JWT_SECRET is missing");
@@ -171,11 +170,9 @@ export async function logout_post(request, reply) {
 
 export async function verifyUser_get(request, reply) {
   const token = request.cookies.token;
-  console.log("Verifying user...", token);
   if (!token) {
     return reply.code(401).send({ error: "Not Authorized" });
   }
-  console.log("Verifying token:", token);
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     return reply
@@ -258,7 +255,6 @@ export async function resetPassword_post(request, reply) {
       .send({ success: false, message: "Passwords do not match." });
   }
   try {
-    console.log("Token:", token);
     const row = await axios.get("http://user-management:3000/User/TokenId", {
       params: {
         token,
