@@ -11,7 +11,7 @@ export default class CountDown {
             </div>
         `;
         const canvasContainer = document.querySelector('.canvas-container');
-        console.debug(' CountDown constructor, canvasContainer=', canvasContainer);
+        // console.debug(' CountDown constructor, canvasContainer=', canvasContainer);
         if (canvasContainer) {
             canvasContainer.appendChild(this.countdownContainer);
         }

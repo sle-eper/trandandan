@@ -18,20 +18,20 @@ class GameSocketService {
         });
 
         this.socket.on('connect', () => {
-            console.log('Game Socket Connected:', this.socket.id);
+            // console.log('Game Socket Connected:', this.socket.id);
         });
 
         this.socket.on('user_info', (user: any) => {
-            console.log('User info received:', user);
+            // console.log('User info received:', user);
             this.userData = user;
         });
 
         this.socket.on('connect_error', (err) => {
-            console.error('Game Socket Connection Error:', err.message);
+            // console.error('Game Socket Connection Error:', err.message);
         });
 
         this.socket.on('disconnect', () => {
-            console.log('Game Socket Disconnected');
+            // console.log('Game Socket Disconnected');
         });
 
     }

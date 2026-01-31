@@ -55,7 +55,7 @@ export function navigateSilent(path: string) {
 function router(onNotFound?: (() => void) | Event) {
   // Cleanup any running game sessions before switching routes
   if ((window as any).pongGameCleanup) {
-    console.debug('Cleaning up game via central router');
+    // console.debug('Cleaning up game via central router');
     (window as any).pongGameCleanup();
   }
 

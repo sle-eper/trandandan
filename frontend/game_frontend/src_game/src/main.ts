@@ -7,7 +7,7 @@ import '../css/gameVisuals.css';
 import { gameSocket } from './services/gameSocket';
 import { getSocketInstance } from '../../../socket_manager/socket';
 
-console.debug('Game module loaded');
+// console.debug('Game module loaded');
 
 // Game state variables
 let c: HTMLCanvasElement;
@@ -31,7 +31,7 @@ let gameMode: string | null = null;
 let goalTimeout: number | null = null;
 
 function resetLocalState() {
-    console.debug('Resetting local game state');
+    // console.debug('Resetting local game state');
     if (goalTimeout) {
         clearTimeout(goalTimeout);
         goalTimeout = null;
@@ -60,7 +60,7 @@ function resetLocalState() {
 }
 
 export function stopGame() {
-    console.debug('Stopping game and cleaning up...');
+    // console.debug('Stopping game and cleaning up...');
     if (animationId !== null) {
         cancelAnimationFrame(animationId);
         animationId = null;
@@ -142,7 +142,7 @@ const handleKeyUp = (e: KeyboardEvent) => {
 };
 
 export function initializeGame() {
-    console.debug('Initializing game...');
+    // console.debug('Initializing game...');
 
     if (animationId !== null) {
         cancelAnimationFrame(animationId);
@@ -832,7 +832,6 @@ async function fetchUserProfile(userId?: string) {
 }
 
 async function updateLocalAvatars() {
-    console.debug('Updating local avatars. AI Mode:', aiMode);
 
     const avatarLeft = document.getElementById('avatar-left') as HTMLImageElement;
     const nameLeft = document.getElementById('name-left');
