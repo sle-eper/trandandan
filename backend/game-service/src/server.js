@@ -11,7 +11,7 @@ dotenv.config();
 const fastify = Fastify({ logger: true });
 
 await fastify.register(cors, {
-    origin: true, 
+    origin: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true
 });
@@ -27,8 +27,8 @@ await fastify.register(fastifySocketIO, {
 });
 
 const games = new Map();
-const userSockets = new Map(); 
-const gameIntervals = new Map(); 
+const userSockets = new Map();
+const gameIntervals = new Map();
 let gameNamespace;
 
 const CANVAS_WIDTH = 800;
@@ -37,7 +37,7 @@ const PADDLE_HEIGHT = 100;
 const PADDLE_WIDTH = 10;
 const BALL_SPEED = 4;
 const BALL_RADIUS = 10;
-const TICK_RATE = 16; 
+const TICK_RATE = 16;
 const START_DELAY = 6500;
 const SERVE_DELAY = 900;
 
@@ -46,7 +46,7 @@ const getUserFromRequest = (request) => {
     const nginxUsername = request.headers['x-user'];
 
     if (nginxUserId && nginxUsername) {
-        return { id: parseInt(nginxUserId), username: nginxUsername };
+        return { id: String(nginxUserId), username: nginxUsername };
     }
 
     //Manual JWT verification
@@ -63,7 +63,11 @@ const getUserFromRequest = (request) => {
     }
 
     try {
-        return jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        if (decoded && decoded.id) {
+            decoded.id = String(decoded.id);
+        }
+        return decoded;
     } catch (err) {
         return null;
     }
@@ -73,6 +77,13 @@ const getUserFromRequest = (request) => {
 fastify.post('/api/game/create', async (request, reply) => {
     const user = getUserFromRequest(request);
     if (!user) return reply.code(401).send({ error: "Unauthorized" });
+
+    // Prevent multiple game creation for the same user
+    for (const g of games.values()) {
+        if (g.status !== 'finished' && g.players.some(p => String(p.id) === String(user.id))) {
+            return reply.code(400).send({ error: "You already have an active game." });
+        }
+    }
 
     const gameId = Math.random().toString(36).substring(2, 8); // 6 characters
     const game = {
@@ -170,7 +181,7 @@ const start = async () => {
                     if (game) {
                         socket.join(gameId);
 
-                        let player = game.players.find(p => p.id === socket.user.id);
+                        let player = game.players.find(p => String(p.id) === String(socket.user.id));
 
                         if (player) {
                             player.socketId = socket.id;
@@ -185,6 +196,14 @@ const start = async () => {
 
                         // New player joining
                         if (game.players.length < 2) {
+                            // Check if user is already in another game
+                            for (const g of games.values()) {
+                                if (g.id !== gameId && g.status !== 'finished' && g.players.some(p => String(p.id) === String(socket.user.id))) {
+                                    socket.emit('error', { message: 'You are already in another active game.' });
+                                    return;
+                                }
+                            }
+
                             let side;
                             const occupiedSides = game.players.map(p => p.side);
 
@@ -221,7 +240,7 @@ const start = async () => {
                     userSockets.delete(socket.user.id);
                     games.forEach((game, gameId) => {
                         if (game.status === 'waiting') {
-                            const index = game.players.findIndex(p => p.id === socket.user.id);
+                            const index = game.players.findIndex(p => String(p.id) === String(socket.user.id));
                             if (index !== -1) {
                                 game.players.splice(index, 1);
                                 if (game.players.length === 0) {
@@ -229,11 +248,11 @@ const start = async () => {
                                 }
                             }
                         } else if (game.status === 'playing') {
-                            const disconnectingPlayer = game.players.find(p => p.id === socket.user.id);
+                            const disconnectingPlayer = game.players.find(p => String(p.id) === String(socket.user.id));
                             if (disconnectingPlayer) {
                                 stopGameLoop(gameId);
 
-                                const winner = game.players.find(p => p.id !== socket.user.id);
+                                const winner = game.players.find(p => String(p.id) !== String(socket.user.id));
                                 if (winner) {
                                     game.status = 'finished';
 
@@ -269,7 +288,7 @@ const start = async () => {
                     const { gameId, y } = data;
                     const game = games.get(gameId);
                     if (game) {
-                        const player = game.players.find(p => p.id === socket.user.id);
+                        const player = game.players.find(p => String(p.id) === String(socket.user.id));
                         if (player) {
                             game.paddles[player.side] = y;
                             socket.to(gameId).emit('opponent_move', { side: player.side, y });
@@ -283,7 +302,7 @@ const start = async () => {
 
                     if (game && (game.status === 'finished' || game.status === 'playing')) {
                         if (!game.rematchRequests) game.rematchRequests = new Set();
-                        game.rematchRequests.add(socket.user.id);
+                        game.rematchRequests.add(String(socket.user.id));
 
 
                         socket.to(gameId).emit('rematch_requested', { from: socket.user.username });
@@ -432,11 +451,11 @@ function updateGamePhysics(gameId) {
             const loser = game.score.left >= 5 ? game.players.find(p => p.side === 'right') : game.players.find(p => p.side === 'left');
 
             gameNamespace.to(gameId).emit('game_over', { winner, score: game.score, players: game.players });
-            
+
             saveMatchResult(game, winner, loser);
             stopGameLoop(gameId);
 
-            
+
             game.rematchTimeout = setTimeout(() => {
                 if (games.has(gameId) && games.get(gameId).status === 'finished') {
                     games.delete(gameId);
