@@ -23,77 +23,54 @@
 - [Project Structure](#-project-structure)
 - [Getting Started](#-getting-started)
 - [Environment Variables](#-environment-variables)
-- [Contributing](#-contributing)
-- [License](#-license)
 
 ---
 
 ## 🎮 About
 
-**Trandandan** is a full-stack web-based Ping Pong game built with a microservices architecture. Players can register, log in via credentials or OAuth (Google & GitHub), chat with other players, and compete in real-time matches — all accessible through a single API gateway.
+**Trandandan** is a full-stack web-based Ping Pong game built with a microservices architecture. Players can register, log in via credentials or OAuth (Google & GitHub), chat with other players, and compete in real-time matches — all served securely through an SSL-terminating API gateway.
 
 ---
 
 ## ✨ Features
 
-- 🏓 **Ping Pong Game** — playable in the browser
-- 💬 **Real-time Chat** — built-in chat system between players
-- 🔐 **JWT Authentication** — secure session management
-- 🌐 **OAuth 2.0** — sign in with Google or GitHub
-- 👤 **User Management** — registration, login, and user profiles
-- 🚀 **Microservices** — each concern is a separate, independently deployable service
-- 🐳 **Docker Compose** — one command to run the whole stack
+### 🏓 Game Modes
+- **1v1 Local** — two players compete on the same machine using the same keyboard
+- **1v1 Online** — real-time multiplayer matches over the network
+- **Tournament Mode** — bracket-based competition between multiple players
+- **AI Opponent** — play solo against a bot
+
+### 💬 Chat
+- **Real-time messaging** between players via WebSocket
+- **In-game chat** during active matches
+- **Direct messages** between registered users
+
+### 🔐 Auth & Users
+- **JWT Authentication** — stateless, secure session management
+- **OAuth 2.0** — sign in with Google or GitHub
+- **User Management** — registration, login, and player profiles
+
+### 🏗 Infrastructure
+- **SSL/TLS** — HTTPS enforced at the gateway level; Nginx handles termination
+- **Microservices** — each concern is a separate, independently deployable service
+- **Docker Compose** — one command spins up the entire stack
 
 ---
 
-## 🏗 Architecture
-
-```
-                        ┌──────────────────────────────┐
-                        │         Browser / Client      │
-                        └──────────────┬───────────────┘
-                                       │
-                                  HTTP :8080
-                                       │
-                        ┌──────────────▼───────────────┐
-                        │      API Gateway (Nginx)      │
-                        │          port 8080            │
-                        └────┬──────────────┬──────────┘
-                             │              │
-                    /auth/*  │              │  /users/*
-                             │              │
-             ┌───────────────▼──┐     ┌────▼────────────────┐
-             │  Auth Service    │     │  User Management     │
-             │   port 5000      │     │     port 3001        │
-             │  Google OAuth    │     │   SQLite / JSON DB   │
-             │  GitHub OAuth    │     │                      │
-             │  JWT Tokens      │     └──────────────────────┘
-             └──────────────────┘
-
-             ┌──────────────────────────────────────────────┐
-             │              Chat Service                     │
-             │         (WebSocket / Real-time)               │
-             └──────────────────────────────────────────────┘
-
-             ┌──────────────────────────────────────────────┐
-             │         Frontend — Login Page                 │
-             │         HTML / CSS / JavaScript              │
-             └──────────────────────────────────────────────┘
-```
-
----
-
+    
 ## 🛠 Tech Stack
 
-| Layer          | Technology                        |
-|----------------|-----------------------------------|
-| Frontend       | HTML, CSS, TypeScript             |
-| Backend        | Node.js, TypeScript, JavaScript   |
-| Auth           | JWT, OAuth 2.0 (Google & GitHub)  |
-| Database       | SQLite / JSON flat file           |
-| API Gateway    | Nginx                             |
-| Chat           | JavaScript (WebSocket)            |
-| Containerization | Docker, Docker Compose          |
+| Layer            | Technology                              |
+|------------------|-----------------------------------------|
+| Frontend         | HTML, CSS, JavaScript                   |
+| Game Engine      | JavaScript (Canvas API)                 |
+| Backend          | Node.js, TypeScript                     |
+| Auth             | JWT, OAuth 2.0 (Google & GitHub)        |
+| Real-time        | WebSocket                               |
+| Database         | SQLite / JSON flat file                 |
+| API Gateway      | Nginx (SSL termination, reverse proxy)  |
+| Security         | TLS/SSL — HTTPS enforced at gateway     |
+| Containerization | Docker, Docker Compose                  |
 
 ---
 
@@ -101,14 +78,20 @@
 
 ```
 trandandan/
-├── api-gateway/          # Nginx reverse proxy config
+├── api-gateway/                  # Nginx config — SSL termination & routing
+│   ├── nginx.conf                # Reverse proxy rules per service
+│   └── certs/                    # SSL certificate & key
 ├── backend/
-│   ├── Auth/             # Authentication service (JWT + OAuth)
-│   └── user-management/  # User CRUD and profile management
-├── chat/                 # Real-time chat module
+│   ├── Auth/                     # Authentication service — JWT + OAuth
+│   │   └── .env                  # OAuth credentials & secrets (not committed)
+│   └── user-management/          # User CRUD, profiles, SQLite/JSON storage
+│       └── data/                 # Persistent player data
+├── chat/                         # Real-time chat + game matchmaking service
+│                                 #   WebSocket server, DMs, in-game chat,
+│                                 #   tournament logic, AI opponent
 ├── frontend/
-│   └── login_page/       # Login & signup UI
-├── docker-compose.yml    # Orchestrates all services
+│   └── login_page/               # Login & signup UI (HTML/CSS/JS)
+├── docker-compose.yml            # Orchestrates all services on app-network
 └── TODO.md
 ```
 
@@ -130,111 +113,57 @@ Make sure you have the following installed:
 git clone https://github.com/sle-eper/trandandan.git
 cd trandandan
 
-# 2. Switch to the final version branch
-git checkout gogo
-
-# 3. Set up environment variables (see section below)
+# 2. Set up environment variables (see section below)
 cp backend/Auth/.env.example backend/Auth/.env
-# Edit the .env file with your credentials
+# Edit the file with your OAuth credentials and secrets
 
-# 4. Build and start all services
+# 3. Build and start all services
 docker-compose up --build
 ```
 
-### Access the App
-
-Once all containers are running, open your browser:
-
-| Service        | URL                        |
-|----------------|----------------------------|
-| App (Gateway)  | http://localhost:8080       |
-| Auth Service   | http://localhost:5000       |
-| User Service   | http://localhost:3001       |
+The app is served at **https://localhost** once all containers are healthy.
 
 ---
 
 ## 🔑 Environment Variables
 
-The Auth service requires a `.env` file at `backend/Auth/.env`.
+Create `backend/Auth/.env` and fill in the variables below. Never commit this file — it is already listed in `.gitignore`.
 
-Create the file and fill in the following variables:
+**JWT**
 
-```env
-# ── JWT ──────────────────────────────────────────
-JWT_SECRET=your_super_secret_key_here
+| Variable | Description |
+|---|---|
+| `JWT_SECRET` | Secret key used to sign and verify tokens |
 
-# ── Google OAuth ─────────────────────────────────
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-GOOGLE_CALLBACK_URL=http://localhost:8080/auth/google/callback
+**Google OAuth**
 
-# ── GitHub OAuth ─────────────────────────────────
-GITHUB_CLIENT_ID=your_github_client_id
-GITHUB_CLIENT_SECRET=your_github_client_secret
-GITHUB_CALLBACK_URL=http://localhost:8080/auth/github/callback
+| Variable | Description |
+|---|---|
+| `GOOGLE_CLIENT_ID` | Client ID from Google Cloud Console |
+| `GOOGLE_CLIENT_SECRET` | Client secret from Google Cloud Console |
+| `GOOGLE_CALLBACK_URL` | Must be `https://localhost/auth/google/callback` |
 
-# ── App ──────────────────────────────────────────
-PORT=5000
-NODE_ENV=development
-```
+To obtain Google credentials: go to [Google Cloud Console](https://console.cloud.google.com/) → APIs & Services → Credentials → Create OAuth 2.0 Client ID (Web Application), and add the callback URL above as an authorized redirect URI.
 
-### How to get OAuth credentials
+**GitHub OAuth**
 
-**Google:**
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project → APIs & Services → Credentials
-3. Create OAuth 2.0 Client ID (Web Application)
-4. Add `http://localhost:8080/auth/google/callback` as an authorized redirect URI
+| Variable | Description |
+|---|---|
+| `GITHUB_CLIENT_ID` | Client ID from GitHub Developer Settings |
+| `GITHUB_CLIENT_SECRET` | Client secret from GitHub Developer Settings |
+| `GITHUB_CALLBACK_URL` | Must be `https://localhost/auth/github/callback` |
 
-**GitHub:**
-1. Go to GitHub → Settings → Developer Settings → OAuth Apps
-2. Create a new OAuth App
-3. Set the callback URL to `http://localhost:8080/auth/github/callback`
+To obtain GitHub credentials: go to GitHub → Settings → Developer Settings → OAuth Apps → New OAuth App, and set the callback URL above.
 
----
+**App**
 
-## 🤝 Contributing
-
-Contributions are welcome! Here's how to get started:
-
-```bash
-# 1. Fork the repository
-# 2. Create your feature branch
-git checkout -b feature/your-feature-name
-
-# 3. Commit your changes
-git commit -m "feat: add your feature description"
-
-# 4. Push to your branch
-git push origin feature/your-feature-name
-
-# 5. Open a Pull Request against the gogo branch
-```
-
-### Commit Message Convention
-
-This project follows [Conventional Commits](https://www.conventionalcommits.org/):
-
-| Prefix     | Use for                        |
-|------------|--------------------------------|
-| `feat:`    | New features                   |
-| `fix:`     | Bug fixes                      |
-| `docs:`    | Documentation changes          |
-| `refactor:`| Code refactoring               |
-| `chore:`   | Build tasks, config changes    |
-
-### Reporting Issues
-
-Found a bug or have a suggestion? [Open an issue](https://github.com/sle-eper/trandandan/issues) with a clear description and steps to reproduce.
-
----
-
-## 📄 License
-
-This project is open source and available under the [MIT License](LICENSE).
+| Variable | Description |
+|---|---|
+| `PORT` | Port the Auth service listens on (default: `5000`) |
+| `NODE_ENV` | Runtime environment (`development` or `production`) |
 
 ---
 
 <div align="center">
-Made with ❤️ by <a href="https://github.com/sle-eper">sle-eper</a>
+ ❤️ 
 </div>
