@@ -28,7 +28,7 @@
 
 ## 🎮 About
 
-**Trandandan** is a full-stack web-based Ping Pong game built with a microservices architecture. Players can register, log in via credentials or OAuth (Google & GitHub), chat with other players, and compete in real-time matches — all served securely through an SSL-terminating API gateway.
+**ft_transcendance** is a full-stack web-based Ping Pong game built with a microservices architecture. Players can register, log in via credentials or OAuth (Google & GitHub), chat with other players, and compete in real-time matches — all served securely through an SSL-terminating API gateway.
 
 ---
 
